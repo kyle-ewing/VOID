@@ -1,0 +1,32 @@
+package macro.buildorders;
+
+import bwapi.TechType;
+import bwapi.Unit;
+import bwapi.UnitType;
+import bwapi.UpgradeType;
+import planner.PlannedItem;
+import planner.PlannedItemStatus;
+import planner.PlannedItemType;
+
+import java.util.ArrayList;
+
+public class TwoRaxAcademy implements BuildOrder {
+    public BuildOrderName getBuildOrderName() {
+        return BuildOrderName.TWORAXACADEMY;
+    }
+
+    public ArrayList<PlannedItem> getBuildOrder() {
+        ArrayList<PlannedItem> buildOrder = new ArrayList<>();
+        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 9, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 11, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 13, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 14, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 18, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 19, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(TechType.Stim_Packs, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, 1));
+        buildOrder.add(new PlannedItem(UpgradeType.U_238_Shells, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, 1));
+        //buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 28, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        return buildOrder;
+    }
+}

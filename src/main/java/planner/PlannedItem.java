@@ -1,0 +1,143 @@
+package planner;
+
+import bwapi.*;
+
+public class PlannedItem {
+    private UnitType unitType;
+    private Integer supply = 0;
+    private PlannedItemStatus plannedItemStatus;
+    private PlannedItemType plannedItemType;
+    private TilePosition buildPosition;
+    private Unit assignedBuilder;
+    private Unit techBuilding;
+    private TechType techUpgrade;
+    private UpgradeType upgradeType;
+
+    //priority 1-5, 1 being the highest
+    private int priority;
+
+
+//    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, TilePosition buildPosition) {
+//        this.unitType = unitType;
+//        this.supply = supply;
+//        this.plannedItemStatus = plannedItemStatus;
+//        this.plannedItemType = plannedItemType;
+//        this.buildPosition = buildPosition;
+//    }
+
+    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
+        this.unitType = unitType;
+        this.supply = supply;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.priority = priority;
+        assignedBuilder = null;
+        buildPosition = null;
+    }
+
+    public PlannedItem(UnitType unitType, PlannedItemType plannedItemType, int priority) {
+        this.unitType = unitType;
+        this.plannedItemStatus = PlannedItemStatus.NOT_STARTED;
+        this.priority = priority;
+        this.plannedItemType = plannedItemType;
+    }
+
+    public PlannedItem(TechType techUpgrade, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
+        this.supply = supply;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.techUpgrade = techUpgrade;
+        this.priority = priority;
+        this.upgradeType = null;
+    }
+
+    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
+        this.supply = supply;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.upgradeType = upgradeType;
+        this.priority = priority;
+        this.techUpgrade = null;
+    }
+
+
+    public PlannedItemStatus getPlannedItemStatus() {
+        return plannedItemStatus;
+    }
+
+    public void setPlannedItemStatus(PlannedItemStatus plannedItemStatus) {
+        this.plannedItemStatus = plannedItemStatus;
+    }
+
+    public PlannedItemType getPlannedItemType() {
+        return plannedItemType;
+    }
+
+    public void setPlannedItemType(PlannedItemType plannedItemType) {
+        this.plannedItemType = plannedItemType;
+    }
+
+    public UnitType getUnitType() {
+        return unitType;
+    }
+
+    public void setUnitType(UnitType unitType) {
+        this.unitType = unitType;
+    }
+
+    public Integer getSupply() {
+        return supply;
+    }
+
+    public void setSupply(Integer supply) {
+        this.supply = supply;
+    }
+
+    public TilePosition getBuildPosition() {
+        return buildPosition;
+    }
+
+    public void setBuildPosition(TilePosition setBuildPosition) {
+        this.buildPosition = setBuildPosition;
+    }
+
+    public Unit getAssignedBuilder() {
+        return assignedBuilder;
+    }
+
+    public void setAssignedBuilder(Unit assignedBuilder) {
+        this.assignedBuilder = assignedBuilder;
+    }
+
+    public Unit getTechBuilding() {
+        return techBuilding;
+    }
+
+    public void setTechBuilding(Unit techBuilding) {
+        this.techBuilding = techBuilding;
+    }
+
+    public TechType getTechUpgrade() {
+        return techUpgrade;
+    }
+
+    public void setTechUpgrade(TechType techUpgrade) {
+        this.techUpgrade = techUpgrade;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public UpgradeType getUpgradeType() {
+        return upgradeType;
+    }
+
+    public void setUpgradeType(UpgradeType upgradeType) {
+        this.upgradeType = upgradeType;
+    }
+}
