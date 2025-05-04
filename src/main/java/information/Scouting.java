@@ -2,6 +2,7 @@ package information;
 
 import bwapi.Player;
 import bwem.BWEM;
+import bwem.Base;
 import macro.ResourceManager;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
@@ -14,6 +15,8 @@ public class Scouting {
     private EnemyInformation enemyInformation;
     private boolean isScouting = false;
 
+    private Workers scout;
+
     public Scouting(BWEM bwem, Player player, ResourceManager resourceManager, BaseInfo baseInfo, EnemyInformation enemyInformation) {
         this.bwem = bwem;
         this.player = player;
@@ -23,9 +26,26 @@ public class Scouting {
     }
 
     public void sendScout() {
+        if(scout == null) {
+            selectScout();
+        }
+
+        for(Base startingBase : baseInfo.getStartingBases()) {
+            if(startingBase == baseInfo.getStartingBase()) {
+                continue;
+            }
+
+            if(!baseInfo.isExplored(startingBase)) {
+                scout.getUnit().move(startingBase.getCenter());
+            }
+        }
+    }
+
+
+    private void selectScout() {
         for(Workers scv: resourceManager.getWorkers()) {
             if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
-                scv.getUnit().move(baseInfo.getStartingBases().iterator().next().getCenter());
+                scout = scv;
                 scv.setWorkerStatus(WorkerStatus.SCOUTING);
                 break;
             }
@@ -37,8 +57,7 @@ public class Scouting {
     }
 
     public void onFrame() {
-        if(player.supplyUsed() / 2 >= 10 && !isScouting) {
-            isScouting = true;
+        if(player.supplyUsed() / 2 >= 10) {
             sendScout();
         }
     }

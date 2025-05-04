@@ -69,6 +69,14 @@ public class BaseInfo {
         }
     }
 
+    public boolean isExplored(Base base) {
+        if(game.isExplored(base.getLocation())) {
+            return true;
+        }
+
+        return false;
+    }
+
     private void setStartingMineralPatches() {
         for(Mineral mineral : startingBase.getMinerals()) {
             startingMinerals.add(mineral);
