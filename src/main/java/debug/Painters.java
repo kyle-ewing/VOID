@@ -160,6 +160,14 @@ public class Painters {
 
     }
 
+    public void paintScoutPath(Unit unit) {
+        game.drawLineMap(unit.getPosition(), unit.getTargetPosition(), Color.Cyan);
+    }
+
+    public void paintScoutPoints(int x, int y) {
+        game.drawCircleMap(x, y, 25, Color.Orange, true);
+    }
+
     public void onFrame() {
         paintWorker();
         paintWorkerText();

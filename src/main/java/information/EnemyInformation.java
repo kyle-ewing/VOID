@@ -83,4 +83,8 @@ public class EnemyInformation {
     public HashSet<EnemyUnits> getEnemyUnits() {
         return enemyUnits;
     }
+
+    public Unit getStartingEnemyBase() {
+        return startingEnemyBase;
+    }
 }
