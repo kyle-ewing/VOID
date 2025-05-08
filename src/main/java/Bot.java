@@ -104,6 +104,8 @@ public class Bot extends DefaultBWListener {
 
             productionManager.onUnitDestroy(unit);
         }
+
+        scouting.onEnemyDestroy(unit);
     }
 
     @Override

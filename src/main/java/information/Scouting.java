@@ -3,6 +3,7 @@ package information;
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Unit;
 import bwem.BWEM;
 import bwem.Base;
 import debug.Painters;
@@ -20,8 +21,7 @@ public class Scouting {
     private EnemyInformation enemyInformation;
 
     private Workers scout;
-    private int updateFrame = 24;
-    private int scoutRadius = 320;
+    private int scoutRadius = 200;
     private int positionCount = 8;
     private int currentPositionIndex = 0;
 
@@ -64,9 +64,14 @@ public class Scouting {
     }
 
     public void scoutEnemyPerimeter() {
-        if(game.getFrameCount() % updateFrame != 0) {
+        if(scout == null) {
             return;
         }
+
+        if (scout.getUnit().isAttacking()) {
+            scout.getUnit().stop();
+        }
+
 
         Position enemyBasePos = enemyInformation.getStartingEnemyBase().getPosition();
         double angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
@@ -74,8 +79,17 @@ public class Scouting {
         int x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
         int y = (int) (enemyBasePos.getY() + scoutRadius * Math.sin(angle));
 
-        scout.getUnit().rightClick(new Position(x, y));
-        currentPositionIndex = (currentPositionIndex + 1) % positionCount;
+        Position targetPosition = new Position(x, y);
+
+        if (scout.getUnit().getDistance(targetPosition) < 32) {
+            currentPositionIndex = (currentPositionIndex + 1) % positionCount;
+            angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
+            x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
+            y = (int) (enemyBasePos.getY() + scoutRadius * Math.sin(angle));
+            targetPosition = new Position(x, y);
+        }
+
+        scout.getUnit().rightClick(targetPosition);
     }
 
     public void onFrame() {
@@ -89,6 +103,16 @@ public class Scouting {
 
         if(scout != null) {
             painters.paintScoutPath(scout.getUnit());
+        }
+    }
+
+    public void onEnemyDestroy(Unit unit) {
+        if(scout == null) {
+            return;
+        }
+
+        if(unit.getID() == scout.getUnit().getID()) {
+            scout = null;
         }
     }
 }
