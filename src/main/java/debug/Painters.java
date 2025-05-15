@@ -112,7 +112,7 @@ public class Painters {
 
     public void paintAllChokes() {
         for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
-            game.drawCircleMap(chokePoint.getCenter().toPosition(), 25, Color.Grey);
+            game.drawCircleMap(chokePoint.getCenter().toPosition(), 25, Color.White);
         }
     }
 
@@ -166,6 +166,50 @@ public class Painters {
 
     public void paintScoutPoints(int x, int y) {
         game.drawCircleMap(x, y, 25, Color.Orange, true);
+    }
+
+    public void paintLargeBuildTiles(List<TilePosition> buildTiles) {
+        for (TilePosition tilePosition : buildTiles) {
+            game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
+            // Draw box for Barracks (4x3 tiles)
+            Position start = tilePosition.toPosition();
+            Position end = new Position(
+                start.getX() + UnitType.Terran_Barracks.tileWidth() * 32,
+                start.getY() + UnitType.Terran_Barracks.tileHeight() * 32
+            );
+            game.drawBoxMap(start, end, Color.Green);
+
+             //Draw box for Supply Depots (2x2 tiles)
+//            Position depotStart = tilePosition.toPosition();
+//            Position depotEnd = new Position(
+//                depotStart.getX() + UnitType.Terran_Supply_Depot.tileWidth() * 32,
+//                depotStart.getY() + UnitType.Terran_Supply_Depot.tileHeight() * 32
+//            );
+//            game.drawBoxMap(depotStart, depotEnd, Color.Blue);
+        }
+    }
+
+    public void paintMediumBuildTiles(List<TilePosition> buildTiles) {
+        for (TilePosition tilePosition : buildTiles) {
+            game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
+            //Draw box for Supply Depots (2x2 tiles)
+            Position depotStart = tilePosition.toPosition();
+            Position depotEnd = new Position(
+                depotStart.getX() + UnitType.Terran_Supply_Depot.tileWidth() * 32,
+                depotStart.getY() + UnitType.Terran_Supply_Depot.tileHeight() * 32
+            );
+            game.drawBoxMap(depotStart, depotEnd, Color.Blue);
+        }
+    }
+
+    public void paintTiles(List<TilePosition> tiles) {
+        for(TilePosition tile : tiles) {
+            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Red);
+        }
+    }
+
+    public void paintAvailableBuildTiles(List<TilePosition> buildTiles, int offset, String tileType) {
+        game.drawTextScreen(5,30 + offset,   tileType +" Tiles Available: " + buildTiles.size());
     }
 
     public void onFrame() {

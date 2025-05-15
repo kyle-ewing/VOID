@@ -7,6 +7,7 @@ import macro.ResourceManager;
 import bwapi.*;
 import bwem.BWEM;
 import macro.UnitManager;
+import map.BuildTiles;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
@@ -19,6 +20,7 @@ public class Bot extends DefaultBWListener {
     private ProductionManager productionManager;
     private UnitManager unitManager;
     private Scouting scouting;
+    private BuildTiles buildTiles;
 
     //Debug painters
     private Painters painters;
@@ -36,9 +38,10 @@ public class Bot extends DefaultBWListener {
         baseInfo = new BaseInfo(bwem, game);
         enemyInformation = new EnemyInformation(baseInfo, game);
         resourceManager = new ResourceManager(baseInfo, player);
-        productionManager = new ProductionManager(game, player, resourceManager, baseInfo);
+        productionManager = new ProductionManager(game, player, resourceManager, baseInfo, bwem);
         unitManager = new UnitManager(enemyInformation, baseInfo, game);
         scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, enemyInformation);
+        buildTiles = new BuildTiles(game, bwem, baseInfo);
 
         //Debug painters
         painters = new Painters(game, bwem, resourceManager);
@@ -56,6 +59,7 @@ public class Bot extends DefaultBWListener {
         scouting.onFrame();
         painters.onFrame();
         baseInfo.onFrame();
+        buildTiles.onFrame();
     }
 
 

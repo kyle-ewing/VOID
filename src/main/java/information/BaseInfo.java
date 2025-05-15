@@ -1,10 +1,7 @@
 package information;
 
 import bwapi.*;
-import bwem.BWEM;
-import bwem.Base;
-import bwem.ChokePoint;
-import bwem.Mineral;
+import bwem.*;
 import debug.Painters;
 import map.PathFinding;
 
@@ -23,7 +20,7 @@ public class BaseInfo {
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
-    //List<Position> pathTest = new ArrayList<>();
+    private ArrayList<TilePosition> baseTiles = new ArrayList<>();
 
     private Painters painters;
 
@@ -50,6 +47,7 @@ public class BaseInfo {
         addStartingBases();
         setStartingMineralPatches();
         setNaturalBase();
+        setStartingBaseTiles();
     }
 
     private void addAllBases() {
@@ -75,6 +73,30 @@ public class BaseInfo {
         }
 
         return false;
+    }
+
+    public ArrayList<TilePosition> getTilesForBase(Base base) {
+        ArrayList<TilePosition> tiles = new ArrayList<>();
+        Area baseArea = base.getArea();
+
+        int mapWidth = game.mapWidth();
+        int mapHeight = game.mapHeight();
+
+        for (int x = 0; x < mapWidth; x++) {
+            for (int y = 0; y < mapHeight; y++) {
+                TilePosition tile = new TilePosition(x, y);
+                Area tileArea = bwem.getMap().getArea(tile);
+                if (tileArea != null && tileArea.getId() == baseArea.getId()) {
+                    tiles.add(tile);
+                }
+            }
+        }
+
+        return tiles;
+    }
+
+    private void setStartingBaseTiles() {
+       baseTiles = getTilesForBase(startingBase);
     }
 
     private void setStartingMineralPatches() {
@@ -159,11 +181,16 @@ public class BaseInfo {
         return naturalBase;
     }
 
+    public ArrayList<TilePosition> getBaseTiles() {
+        return baseTiles;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
         painters.paintNatural(naturalBase);
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
+        //painters.paintTiles(baseTiles);
     }
 }

@@ -32,7 +32,7 @@ public class TilePositionValidator {
                 int walkX = startWalkX + dx;
                 int walkY = startWalkY + dy;
                 if (!game.isWalkable(walkX, walkY)) {
-                    return false; // Early exit if any subtile is unwalkable
+                    return false;
                 }
             }
         }
@@ -51,7 +51,6 @@ public class TilePositionValidator {
             return false;
         }
 
-        // Check all tiles needed for the building
         for (int x = 0; x < buildingType.tileWidth(); x++) {
             for (int y = 0; y < buildingType.tileHeight(); y++) {
                 TilePosition buildTile = new TilePosition(tp.getX() + x, tp.getY() + y);
