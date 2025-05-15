@@ -9,10 +9,6 @@ import debug.Painters;
 import information.BaseInfo;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BuildTiles {
     private Game game;
@@ -88,19 +84,11 @@ public class BuildTiles {
                 return false;
             }
 
-            //TilePosition nextTile = new TilePosition(currentTile.getX(), currentTile.getY() + unitType.tileHeight());
             currentTile = new TilePosition(currentTile.getX(), currentTile.getY() + unitType.tileHeight());;
-//            if (i < 2) {
-//                if (!tilePositionValidator.isWithinMap(nextTile)) {
-//                    return false;
-//                }
-//                currentTile = nextTile;
-//            }
         }
         return true;
     }
 
-    // Check if there are 5 tiles buildable in a line for production buildings
     private boolean verifyTileLine(TilePosition startTile, UnitType unitType) {
         TilePosition currentTile = startTile;
 
@@ -120,40 +108,6 @@ public class BuildTiles {
         }
         return true;
     }
-
-//    private boolean intersectsExistingBuildTiles(TilePosition newTilePosition, UnitType unitType) {
-//        int newX = newTilePosition.getX();
-//        int newY = newTilePosition.getY();
-//        int typeWidth = unitType.tileWidth();
-//        int typeHeight = unitType.tileHeight() * 4;
-//
-//        // Include 2 tiles on each side for spacing
-//        int expandedX = newX - 2;
-//        int expandedWidth = typeWidth + 4;
-//
-//        List<TilePosition> allBuildTileLists = Stream.of(largeBuildTiles, mediumBuildTiles)
-//                .flatMap(Collection::stream)
-//                .collect(Collectors.toList());
-//
-//        for (TilePosition existingTile : allBuildTileLists) {
-//            int existingX = existingTile.getX();
-//            int existingY = existingTile.getY();
-//            int existingHeight = unitType.tileHeight() * 4;
-//            int existingWidth = unitType.tileWidth();
-//
-//            boolean xOverlap = (expandedX < existingX + existingWidth) &&
-//                    (existingX < expandedX + expandedWidth);
-//            boolean yOverlap = (newY < existingY + existingHeight) &&
-//                    (existingY < newY + typeHeight);
-//
-//            if (xOverlap && yOverlap) {
-//                return true;
-//            }
-//        }
-//
-//        return !tilePositionValidator.isWithinMap(new TilePosition(expandedX, newY)) ||
-//                !tilePositionValidator.isWithinMap(new TilePosition(expandedX + expandedWidth - 1, newY));
-//    }
 
     private boolean intersectsExistingBuildTiles(TilePosition newTilePosition, UnitType unitType) {
         int newX = newTilePosition.getX();
@@ -200,8 +154,7 @@ public class BuildTiles {
                 return true;
             }
         }
-
-        // Check medium tiles
+        
         for (TilePosition existingTile : mediumBuildTiles) {
             int existingX = existingTile.getX();
             int existingY = existingTile.getY();
@@ -219,6 +172,14 @@ public class BuildTiles {
         }
 
         return false;
+    }
+
+    public ArrayList<TilePosition> getMediumBuildTiles() {
+        return mediumBuildTiles;
+    }
+
+    public ArrayList<TilePosition> getLargeBuildTiles() {
+        return largeBuildTiles;
     }
 
     public void onFrame() {
