@@ -135,7 +135,7 @@ public class UnitManager {
 
     //TODO: make this dynamic
     private void setRallyPoint(CombatUnits combatUnit) {
-        combatUnit.setRallyPoint(baseInfo.getNaturalChoke().getCenter().toTilePosition());
+        combatUnit.setRallyPoint(baseInfo.getMainChoke().getCenter().toTilePosition());
     }
 
 

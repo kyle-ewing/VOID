@@ -150,6 +150,20 @@ public class BaseInfo {
                 naturalBase = closestBase;
     }
 
+    public ChokePoint getMainChoke() {
+        ChokePoint closestChokePoint = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
+            int distance = startingBase.getLocation().getApproxDistance(chokePoint.getCenter().toTilePosition());
+            if (distance < closestDistance) {
+                closestChokePoint = chokePoint;
+                closestDistance = distance;
+            }
+        }
+        return closestChokePoint;
+    }
+
     public ChokePoint getNaturalChoke() {
         ChokePoint closestChokePoint = null;
         int closestDistance = Integer.MAX_VALUE;
