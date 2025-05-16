@@ -1,11 +1,13 @@
 package macro;
 
 import bwapi.*;
+import bwem.BWEM;
 import debug.Painters;
 import information.BaseInfo;
 import macro.buildorders.*;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
+import map.BuildTiles;
 import map.TilePositionValidator;
 import planner.BuildComparator;
 import planner.PlannedItem;
@@ -24,8 +26,10 @@ public class ProductionManager {
     private Race enemyRace;
     private ResourceManager resourceManager;
     private BaseInfo baseInfo;
+    private BWEM bwem;
     private Painters painters;
     private TilePositionValidator tilePositionValidator;
+    private BuildTiles buildTiles;
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
     private HashSet<Unit> allBuildings = new HashSet<>();
@@ -42,13 +46,14 @@ public class ProductionManager {
 
 
 
-    public ProductionManager(Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo) {
+    public ProductionManager(Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, BWEM bwem) {
         this.game = game;
         this.player = player;
         this.resourceManager = resourceManager;
         this.baseInfo = baseInfo;
 
         tilePositionValidator = new TilePositionValidator(game);
+        buildTiles = new BuildTiles(game, bwem, baseInfo);
 
         painters = new Painters(game);
 
@@ -98,7 +103,7 @@ public class ProductionManager {
 
             // Debug painter for build position
             if (pi.getBuildPosition() != null) {
-                painters.paintBuildTile(pi.getBuildPosition(), pi.getUnitType(), Color.White);
+//                painters.paintBuildTile(pi.getBuildPosition(), pi.getUnitType(), Color.White);
             }
 
             switch (pi.getPlannedItemStatus()) {
@@ -142,8 +147,14 @@ public class ProductionManager {
                                             }
 
                                             setBuildingPosition(pi);
+
+                                            if(pi.getBuildPosition() == null) {
+                                                continue;
+                                            }
+                                            buildTiles.updateRemainingTiles(pi.getBuildPosition());
                                         }
                                         resourceManager.reserveResources(pi.getUnitType());
+                                        worker.getUnit().move(pi.getBuildPosition().toPosition());
                                         worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                                         pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
 
@@ -157,15 +168,20 @@ public class ProductionManager {
                     break;
 
                 case SCV_ASSIGNED:
-                    //Reset if counter is hit
                     for(Workers worker : resourceManager.getWorkers()) {
-                        if (worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD && worker.getUnit().getID() == pi.getAssignedBuilder().getID() && worker.getBuildFrameCount() > 190) {
-                            worker.getUnit().stop();
-                            worker.setWorkerStatus(WorkerStatus.IDLE);
-                            pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
-                            pi.setBuildPosition(null);
-                            resourceManager.unreserveResources(pi.getUnitType());
-                            break;
+                        if(worker.getUnit().getID() == pi.getAssignedBuilder().getID() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                            if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 96) {
+                                worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
+                                break;
+                            }
+
+                            if(worker.getBuildFrameCount() > 300) {
+                                worker.setWorkerStatus(WorkerStatus.IDLE);
+                                worker.getUnit().stop();
+                                resourceManager.unreserveResources(pi.getUnitType());
+                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                                break;
+                            }
                         }
                     }
 
@@ -198,6 +214,7 @@ public class ProductionManager {
                                 }
                             }
                         }
+
                     }
 
                     if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
@@ -310,19 +327,46 @@ public class ProductionManager {
             pi.setBuildPosition(baseInfo.getStartingBase().getGeysers().get(0).getUnit().getTilePosition());
         }
 
-        if(baseInfo.getNaturalBase().getGeysers().get(0).getUnit().getType() == UnitType.Resource_Vespene_Geyser) {
-            pi.setBuildPosition(baseInfo.getNaturalBase().getGeysers().get(0).getUnit().getTilePosition());
-        }
+//        if(baseInfo.getNaturalBase().getGeysers().get(0).getUnit().getType() == UnitType.Resource_Vespene_Geyser) {
+//            pi.setBuildPosition(baseInfo.getNaturalBase().getGeysers().get(0).getUnit().getTilePosition());
+//        }
     }
 
     private void setBuildingPosition(PlannedItem pi) {
-        TilePosition buildPosition = game.getBuildLocation(pi.getUnitType(), pi.getAssignedBuilder().getTilePosition());
+        if(pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4) {
+            if(buildTiles.getLargeBuildTiles().isEmpty()) {
+                return;
+            }
 
-        if(tilePositionValidator.isValid(buildPosition)) {
-            pi.setBuildPosition(buildPosition);
-            return;
+            for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
+                pi.setBuildPosition(tilePosition);
+                break;
+            }
+
         }
-        setBuildingPosition(pi);
+        else if(pi.getUnitType().tileHeight() == 2 && pi.getUnitType().tileWidth() == 3) {
+            if(buildTiles.getMediumBuildTiles().isEmpty()) {
+                return;
+            }
+
+            for(TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
+                pi.setBuildPosition(tilePosition);
+                break;
+            }
+        }
+        else {
+            //turrets and addons
+        }
+            buildTiles.updateRemainingTiles(pi.getBuildPosition());
+
+//
+//        TilePosition buildPosition = game.getBuildLocation(pi.getUnitType(), pi.getAssignedBuilder().getTilePosition());
+//
+//        if(tilePositionValidator.isValid(buildPosition)) {
+//            pi.setBuildPosition(buildPosition);
+//            return;
+//        }
+//        setBuildingPosition(pi);
     }
 
     //Track number of buildings to check for building requirements

@@ -70,7 +70,6 @@ public class BuildTiles {
                 for (int i = 0; i < 2; i++) {
                     mediumBuildTiles.add(currentTile);
                     currentTile = new TilePosition(currentTile.getX(), currentTile.getY() + UnitType.Terran_Supply_Depot.tileHeight());
-                    System.out.println(UnitType.Terran_Supply_Depot.tileHeight());
                 }
             }
         }
@@ -154,7 +153,7 @@ public class BuildTiles {
                 return true;
             }
         }
-        
+
         for (TilePosition existingTile : mediumBuildTiles) {
             int existingX = existingTile.getX();
             int existingY = existingTile.getY();
@@ -174,6 +173,11 @@ public class BuildTiles {
         return false;
     }
 
+    public void updateRemainingTiles(TilePosition tilePosition) {
+        largeBuildTiles.removeIf(tile -> tile.equals(tilePosition));
+        mediumBuildTiles.removeIf(tile -> tile.equals(tilePosition));
+    }
+
     public ArrayList<TilePosition> getMediumBuildTiles() {
         return mediumBuildTiles;
     }
@@ -187,5 +191,6 @@ public class BuildTiles {
         painters.paintMediumBuildTiles(mediumBuildTiles);
         painters.paintAvailableBuildTiles(largeBuildTiles, 0, "Production");
         painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
+
     }
 }
