@@ -2,6 +2,7 @@ package map;
 
 import bwapi.Game;
 import bwapi.TilePosition;
+import bwapi.UnitType;
 
 public class TilePositionValidator {
     private final Game game;
@@ -31,7 +32,7 @@ public class TilePositionValidator {
                 int walkX = startWalkX + dx;
                 int walkY = startWalkY + dy;
                 if (!game.isWalkable(walkX, walkY)) {
-                    return false; // Early exit if any subtile is unwalkable
+                    return false;
                 }
             }
         }
@@ -43,6 +44,22 @@ public class TilePositionValidator {
             return false;
         }
         return game.isBuildable(tp);
+    }
+
+    public boolean isBuildable(TilePosition tp, UnitType buildingType) {
+        if (!isWithinMap(tp)) {
+            return false;
+        }
+
+        for (int x = 0; x < buildingType.tileWidth(); x++) {
+            for (int y = 0; y < buildingType.tileHeight(); y++) {
+                TilePosition buildTile = new TilePosition(tp.getX() + x, tp.getY() + y);
+                if (!isWithinMap(buildTile) || !game.isBuildable(buildTile, true)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public boolean isValid(TilePosition tp) {
