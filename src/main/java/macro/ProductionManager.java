@@ -35,13 +35,9 @@ public class ProductionManager {
     private HashSet<Unit> allBuildings = new HashSet<>();
     private ArrayList<BuildOrder> openerNames = new ArrayList<>();
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
-    private PriorityQueue<PlannedItem> unitProductionQueue = new PriorityQueue<>(new BuildComparator());
     private BuildOrder startingOpener;
-
-    private Unit newestBuilding = null;
     private Unit newestCompletedBuilding = null;
     //move scv production into a queue
-    private boolean scvProduction = true;
     private boolean allIn;
 
 
@@ -358,15 +354,6 @@ public class ProductionManager {
             //turrets and addons
         }
             buildTiles.updateRemainingTiles(pi.getBuildPosition());
-
-//
-//        TilePosition buildPosition = game.getBuildLocation(pi.getUnitType(), pi.getAssignedBuilder().getTilePosition());
-//
-//        if(tilePositionValidator.isValid(buildPosition)) {
-//            pi.setBuildPosition(buildPosition);
-//            return;
-//        }
-//        setBuildingPosition(pi);
     }
 
     //Track number of buildings to check for building requirements
@@ -455,9 +442,6 @@ public class ProductionManager {
     }
 
     public void onUnitCreate(Unit unit) {
-
-
-        //newestBuilding = unit;
         if(unit.getType().isBuilding()) {
             allBuildings.add(unit);
         }
