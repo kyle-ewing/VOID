@@ -18,6 +18,7 @@ public class BuildTiles {
     private Painters painters;
     private ArrayList<TilePosition> mediumBuildTiles = new ArrayList<>();
     private ArrayList<TilePosition> largeBuildTiles = new ArrayList<>();
+    private TilePosition bunkerTile;
 
     public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
         this.game = game;
@@ -31,29 +32,36 @@ public class BuildTiles {
     }
 
     private void generateBuildTiles() {
-        generateLargeTiles();
+        generateBunkerTiles();
         generateMediumTiles();
+        generateLargeTiles();
+
     }
 
     private void generateLargeTiles() {
         for (TilePosition tilePosition : baseInfo.getBaseTiles()) {
-            //Cap large build size at 12
-            if (largeBuildTiles.size() >= 10) {
+            if (largeBuildTiles.size() >= 12) {
                 break;
             }
 
-            if (verifyTileLine(tilePosition, UnitType.Terran_Engineering_Bay) && !intersectsExistingBuildTiles(tilePosition, UnitType.Terran_Engineering_Bay)) {
-                TilePosition currentTile = tilePosition;
-                for (int i = 0; i < 5; i++) {
+            if (verifyTileLine(tilePosition, UnitType.Terran_Engineering_Bay)) {
+                for (int line = 0; line < 3; line++) {
+                    TilePosition currentTile = new TilePosition(tilePosition.getX(), tilePosition.getY() + (line * UnitType.Terran_Engineering_Bay.tileHeight()));
+
                     largeBuildTiles.add(currentTile);
-                    currentTile = new TilePosition(currentTile.getX(), currentTile.getY() + UnitType.Terran_Engineering_Bay.tileHeight());
                 }
             }
         }
     }
 
     private void generateMediumTiles() {
+
+
         for (TilePosition tilePosition : baseInfo.getBaseTiles()) {
+            if(mediumBuildTiles.size() >= 24) {
+                break;
+            }
+
             TilePosition currentTile = tilePosition;
             boolean validTileLine = true;
 
@@ -75,11 +83,64 @@ public class BuildTiles {
         }
     }
 
+    private void generateBunkerTiles() {
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (TilePosition tilePosition : baseInfo.getBaseTiles()) {
+            if(!tilePositionValidator.isBuildable(tilePosition, UnitType.Terran_Bunker)) {
+                continue;
+            }
+            int distance = baseInfo.getMainChoke().getCenter().getApproxDistance(tilePosition.toWalkPosition());
+            if(distance < closestDistance) {
+                closestDistance = distance;
+                bunkerTile = tilePosition;
+            }
+        }
+    }
+
+    private boolean verifyTileLine(TilePosition startTile, UnitType unitType) {
+        int buildingWidth = unitType.tileWidth();
+        int buildingHeight = unitType.tileHeight();
+
+        for (int line = 0; line < 3; line++) {
+            TilePosition currentTile = new TilePosition(startTile.getX(), startTile.getY() + (line * buildingHeight));
+
+            for (int x = 0; x < buildingWidth; x++) {
+                for (int y = 0; y < buildingHeight; y++) {
+                    TilePosition checkTile = new TilePosition(currentTile.getX() + x, currentTile.getY() + y);
+
+                    if (!tilePositionValidator.isBuildable(checkTile) ||
+                            intersectsExistingBuildTiles(checkTile, unitType)) {
+                        return false;
+                    }
+                }
+            }
+
+            for (int bufferX = 0; bufferX < 3; bufferX++) {
+                for (int y = 0; y < buildingHeight; y++) {
+                    TilePosition bufferTile = new TilePosition(currentTile.getX() + buildingWidth + bufferX, currentTile.getY() + y);
+
+                    if (!tilePositionValidator.isWithinMap(bufferTile) ||
+                            intersectsExistingBuildTiles(bufferTile, unitType)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     private boolean verifyMediumGrid(TilePosition startTile, UnitType unitType) {
         TilePosition currentTile = startTile;
+        TilePosition edgeCaseTile1 = new TilePosition(currentTile.getX() -1, currentTile.getY() + unitType.tileHeight());
+        TilePosition edgeCaseTile2 = new TilePosition(currentTile.getX() + unitType.tileWidth() +1, currentTile.getY() + unitType.tileHeight());
 
         for (int i = 0; i < 2; i++) {
             if (!tilePositionValidator.isBuildable(currentTile, unitType)) {
+                return false;
+            }
+
+            if(!tilePositionValidator.isBuildable(edgeCaseTile1) && !tilePositionValidator.isBuildable(edgeCaseTile2)) {
                 return false;
             }
 
@@ -88,33 +149,12 @@ public class BuildTiles {
         return true;
     }
 
-    private boolean verifyTileLine(TilePosition startTile, UnitType unitType) {
-        TilePosition currentTile = startTile;
-
-        for (int i = 0; i < 5; i++) {
-            if (!tilePositionValidator.isBuildable(currentTile, unitType)) {
-                return false;
-            }
-
-            TilePosition nextTile = new TilePosition(currentTile.getX(), currentTile.getY() + unitType.tileHeight());
-
-            if (i < 4) {
-                if (!tilePositionValidator.isWithinMap(nextTile)) {
-                    return false;
-                }
-                currentTile = nextTile;
-            }
-        }
-        return true;
-    }
-
     private boolean intersectsExistingBuildTiles(TilePosition newTilePosition, UnitType unitType) {
         int newX = newTilePosition.getX();
         int newY = newTilePosition.getY();
         int typeWidth = unitType.tileWidth();
-        int typeHeight = unitType.tileHeight() * 4;
+        int typeHeight = unitType.tileHeight();
 
-        // No build buffer around starting CC
         TilePosition ccPosition = baseInfo.getStartingBase().getLocation();
         int ccX = ccPosition.getX();
         int ccY = ccPosition.getY();
@@ -127,7 +167,6 @@ public class BuildTiles {
             return true;
         }
 
-        // No build buffer around mineral patches
         for (Mineral mineral : baseInfo.getStartingMinerals()) {
             TilePosition mineralPos = mineral.getUnit().getTilePosition();
             int mineralX = mineralPos.getX();
@@ -139,37 +178,63 @@ public class BuildTiles {
             }
         }
 
+        if (bunkerTile != null) {
+            int bunkerXStart = bunkerTile.getX();
+            int bunkerYStart = bunkerTile.getY();
+            int bunkerXEnd = bunkerTile.getX() + UnitType.Terran_Bunker.tileWidth();
+            int bunkerYEnd = bunkerTile.getY() + UnitType.Terran_Bunker.tileHeight();
+
+            for (int x = newX; x < newX + typeWidth; x++) {
+                for (int y = newY; y < newY + typeHeight; y++) {
+                    if (x >= bunkerXStart && x < bunkerXEnd && y >= bunkerYStart && y < bunkerYEnd) {
+                        return true;
+                    }
+                }
+            }
+        }
+
         for (TilePosition existingTile : largeBuildTiles) {
-            int existingX = existingTile.getX();
-            int existingY = existingTile.getY();
+            int existingXStart = existingTile.getX();
+            int existingYStart = existingTile.getY();
+            int existingXEnd = existingXStart + UnitType.Terran_Engineering_Bay.tileWidth();
+            int existingYEnd = existingYStart + UnitType.Terran_Engineering_Bay.tileHeight();
 
-            int expandedNewX = newX - 3;
-            int expandedWidth = typeWidth + 4;
+            for (int x = newX; x < newX + typeWidth; x++) {
+                for (int y = newY; y < newY + typeHeight; y++) {
+                    if (x >= existingXStart && x < existingXEnd && y >= existingYStart && y < existingYEnd) {
+                        return true;
+                    }
+                }
+            }
 
-            boolean xOverlap = (expandedNewX < existingX + typeWidth) && (existingX < expandedNewX + expandedWidth);
-            boolean yOverlap = (newY < existingY + typeHeight) && (existingY < newY + typeHeight);
+            int bufferXStart = existingXEnd;
+            int bufferXEnd = existingXEnd + 3;
+            int bufferYStart = existingYStart;
+            int bufferYEnd = existingYEnd;
 
-            if (xOverlap && yOverlap) {
-                return true;
+            for (int x = newX; x < newX + typeWidth; x++) {
+                for (int y = newY; y < newY + typeHeight; y++) {
+                    if (x >= bufferXStart && x < bufferXEnd && y >= bufferYStart && y < bufferYEnd) {
+                        return true;
+                    }
+                }
             }
         }
 
         for (TilePosition existingTile : mediumBuildTiles) {
-            int existingX = existingTile.getX();
-            int existingY = existingTile.getY();
+            int existingXStart = existingTile.getX();
+            int existingYStart = existingTile.getY();
+            int existingXEnd = existingTile.getX() + UnitType.Terran_Supply_Depot.tileWidth();
+            int existingYEnd = existingTile.getY() + UnitType.Terran_Supply_Depot.tileHeight();
 
-            boolean xOverlap = (newX < existingX + typeWidth) && (existingX < newX + typeWidth);
-            boolean yOverlap = (newY < existingY + typeHeight) && (existingY < newY + typeHeight);
-
-            if (xOverlap && yOverlap) {
-                return true;
+            for (int x = newX; x < newX + typeWidth; x++) {
+                for (int y = newY; y < newY + typeHeight; y++) {
+                    if (x >= existingXStart && x < existingXEnd && y >= existingYStart && y < existingYEnd) {
+                        return true;
+                    }
+                }
             }
         }
-
-        if (unitType == UnitType.Terran_Engineering_Bay) {
-            return !tilePositionValidator.isWithinMap(new TilePosition(newX - 2, newY)) || !tilePositionValidator.isWithinMap(new TilePosition(newX + typeWidth + 1, newY));
-        }
-
         return false;
     }
 
@@ -187,6 +252,7 @@ public class BuildTiles {
     }
 
     public void onFrame() {
+        painters.paintPaintBunkerTile(bunkerTile);
         painters.paintLargeBuildTiles(largeBuildTiles);
         painters.paintMediumBuildTiles(mediumBuildTiles);
         painters.paintAvailableBuildTiles(largeBuildTiles, 0, "Production");

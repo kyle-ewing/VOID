@@ -4,6 +4,7 @@ import bwapi.*;
 import bwem.BWEM;
 import bwem.Base;
 import bwem.ChokePoint;
+import bwem.Tile;
 import macro.ResourceManager;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.Workers;
@@ -200,6 +201,16 @@ public class Painters {
             );
             game.drawBoxMap(depotStart, depotEnd, Color.Blue);
         }
+    }
+
+    public void paintPaintBunkerTile(TilePosition tilePosition) {
+        game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
+        Position start = tilePosition.toPosition();
+        Position end = new Position(
+            start.getX() + UnitType.Terran_Bunker.tileWidth() * 32,
+            start.getY() + UnitType.Terran_Bunker.tileHeight() * 32
+        );
+        game.drawBoxMap(start, end, Color.Red);
     }
 
     public void paintTiles(List<TilePosition> tiles) {
