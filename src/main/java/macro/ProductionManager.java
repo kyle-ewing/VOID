@@ -329,26 +329,40 @@ public class ProductionManager {
     }
 
     private void setBuildingPosition(PlannedItem pi) {
+        TilePosition cloestBuildTile = null;
+        int distanceFromSCV = Integer.MAX_VALUE;
+
         if(pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4) {
             if(buildTiles.getLargeBuildTiles().isEmpty()) {
                 return;
             }
 
             for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
-                pi.setBuildPosition(tilePosition);
-                break;
+                int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
+                System.out.println(distance);
+
+                if(distance < distanceFromSCV) {
+                    distanceFromSCV = distance;
+                    cloestBuildTile = tilePosition;
+                }
             }
+            pi.setBuildPosition(cloestBuildTile);
 
         }
         else if(pi.getUnitType().tileHeight() == 2 && pi.getUnitType().tileWidth() == 3) {
-            if(buildTiles.getMediumBuildTiles().isEmpty()) {
+            if(buildTiles.getLargeBuildTiles().isEmpty()) {
                 return;
             }
 
             for(TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
-                pi.setBuildPosition(tilePosition);
-                break;
+                int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
+
+                if(distance < distanceFromSCV) {
+                    distanceFromSCV = distance;
+                    cloestBuildTile = tilePosition;
+                }
             }
+            pi.setBuildPosition(cloestBuildTile);
         }
         else {
             //turrets and addons
