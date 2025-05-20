@@ -169,7 +169,7 @@ public class Painters {
         game.drawCircleMap(x, y, 25, Color.Orange, true);
     }
 
-    public void paintLargeBuildTiles(List<TilePosition> buildTiles) {
+    public void paintLargeBuildTiles(HashSet<TilePosition> buildTiles) {
         for (TilePosition tilePosition : buildTiles) {
             game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
             // Draw box for Barracks (4x3 tiles)
@@ -179,18 +179,10 @@ public class Painters {
                 start.getY() + UnitType.Terran_Barracks.tileHeight() * 32
             );
             game.drawBoxMap(start, end, Color.Green);
-
-             //Draw box for Supply Depots (2x2 tiles)
-//            Position depotStart = tilePosition.toPosition();
-//            Position depotEnd = new Position(
-//                depotStart.getX() + UnitType.Terran_Supply_Depot.tileWidth() * 32,
-//                depotStart.getY() + UnitType.Terran_Supply_Depot.tileHeight() * 32
-//            );
-//            game.drawBoxMap(depotStart, depotEnd, Color.Blue);
         }
     }
 
-    public void paintMediumBuildTiles(List<TilePosition> buildTiles) {
+    public void paintMediumBuildTiles(HashSet<TilePosition> buildTiles) {
         for (TilePosition tilePosition : buildTiles) {
             game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
             //Draw box for Supply Depots (2x2 tiles)
@@ -219,7 +211,7 @@ public class Painters {
         }
     }
 
-    public void paintAvailableBuildTiles(List<TilePosition> buildTiles, int offset, String tileType) {
+    public void paintAvailableBuildTiles(HashSet<TilePosition> buildTiles, int offset, String tileType) {
         game.drawTextScreen(5,30 + offset,   tileType +" Tiles Available: " + buildTiles.size());
     }
 

@@ -147,7 +147,6 @@ public class ProductionManager {
                                             if(pi.getBuildPosition() == null) {
                                                 continue;
                                             }
-                                            buildTiles.updateRemainingTiles(pi.getBuildPosition());
                                         }
                                         resourceManager.reserveResources(pi.getUnitType());
                                         worker.getUnit().move(pi.getBuildPosition().toPosition());
@@ -339,7 +338,6 @@ public class ProductionManager {
 
             for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
                 int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
-                System.out.println(distance);
 
                 if(distance < distanceFromSCV) {
                     distanceFromSCV = distance;

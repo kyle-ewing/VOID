@@ -9,6 +9,7 @@ import debug.Painters;
 import information.BaseInfo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class BuildTiles {
     private Game game;
@@ -16,8 +17,8 @@ public class BuildTiles {
     private BaseInfo baseInfo;
     private TilePositionValidator tilePositionValidator;
     private Painters painters;
-    private ArrayList<TilePosition> mediumBuildTiles = new ArrayList<>();
-    private ArrayList<TilePosition> largeBuildTiles = new ArrayList<>();
+    private HashSet<TilePosition> mediumBuildTiles = new HashSet<>();
+    private HashSet<TilePosition> largeBuildTiles = new HashSet<>();
     private TilePosition bunkerTile;
 
     public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
@@ -243,11 +244,11 @@ public class BuildTiles {
         mediumBuildTiles.removeIf(tile -> tile.equals(tilePosition));
     }
 
-    public ArrayList<TilePosition> getMediumBuildTiles() {
+    public HashSet<TilePosition> getMediumBuildTiles() {
         return mediumBuildTiles;
     }
 
-    public ArrayList<TilePosition> getLargeBuildTiles() {
+    public HashSet<TilePosition> getLargeBuildTiles() {
         return largeBuildTiles;
     }
 
