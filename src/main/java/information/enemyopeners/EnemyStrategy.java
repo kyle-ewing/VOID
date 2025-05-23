@@ -12,4 +12,8 @@ public abstract class EnemyStrategy {
     }
 
     public abstract boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, int frameCount);
+
+    public String getStrategyName() {
+        return strategyName;
+    }
 }
