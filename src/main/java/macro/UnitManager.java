@@ -146,6 +146,10 @@ public class UnitManager {
         while (iterator.hasNext()) {
             CombatUnits combatUnit = iterator.next();
             if (combatUnit.getUnitID() == unit.getID()) {
+                if(combatUnit.isInBunker()) {
+                    bunkerLoad--;
+                }
+
                 iterator.remove();
                 break;
             }
