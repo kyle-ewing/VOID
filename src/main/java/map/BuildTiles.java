@@ -252,6 +252,10 @@ public class BuildTiles {
         return largeBuildTiles;
     }
 
+    public TilePosition getBunkerTile() {
+        return bunkerTile;
+    }
+
     public void onFrame() {
         painters.paintPaintBunkerTile(bunkerTile);
         painters.paintLargeBuildTiles(largeBuildTiles);

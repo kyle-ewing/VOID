@@ -8,6 +8,8 @@ import java.util.HashSet;
 public class FourPool extends EnemyStrategy {
     public FourPool() {
         super("Four Pool");
+
+        buildingResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, int frameCount) {
@@ -24,5 +26,9 @@ public class FourPool extends EnemyStrategy {
             }
         }
         return false;
+    }
+
+    public void buildingResponse() {
+        getBuildingResponse().add(UnitType.Terran_Bunker);
     }
 }

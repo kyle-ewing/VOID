@@ -105,4 +105,8 @@ public class EnemyInformation {
     public Unit getStartingEnemyBase() {
         return startingEnemyBase;
     }
+
+    public EnemyStrategy getEnemyOpener() {
+        return enemyOpener;
+    }
 }
