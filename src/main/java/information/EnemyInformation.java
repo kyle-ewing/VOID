@@ -3,6 +3,7 @@ package information;
 import bwapi.Game;
 import bwapi.Unit;
 import bwem.Base;
+import information.enemyopeners.EnemyStrategy;
 
 import java.util.HashSet;
 
@@ -12,10 +13,13 @@ public class EnemyInformation {
     private Game game;
     private Unit startingEnemyBase = null;
     private Base enemyNatural = null;
+    private EnemyStrategyManager enemyStrategyManager;
+    private EnemyStrategy enemyOpener;
 
     public EnemyInformation(BaseInfo baseInfo, Game game) {
         this.baseInfo = baseInfo;
         this.game = game;
+        enemyStrategyManager = new EnemyStrategyManager();
     }
 
     private boolean previouslyDiscovered(Unit unit) {
@@ -35,6 +39,20 @@ public class EnemyInformation {
                 }
                 enemyUnit.setEnemyPosition(enemyUnit.getEnemyUnit().getPosition());
             }
+        }
+
+        for(EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
+            if(enemyStrategy.isEnemyStrategy(enemyUnits, game.getFrameCount())) {
+                enemyOpener = enemyStrategy;
+                break;
+            }
+        }
+
+        if(enemyOpener != null) {
+            game.drawTextScreen(5, 60, "Enemy Opener: " + enemyOpener.getStrategyName());
+        }
+        else {
+            game.drawTextScreen(5, 60, "Enemy Opener: Unknown");
         }
     }
 
@@ -86,5 +104,9 @@ public class EnemyInformation {
 
     public Unit getStartingEnemyBase() {
         return startingEnemyBase;
+    }
+
+    public EnemyStrategy getEnemyOpener() {
+        return enemyOpener;
     }
 }

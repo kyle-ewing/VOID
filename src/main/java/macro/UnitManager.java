@@ -23,6 +23,8 @@ public class UnitManager {
     private Painters painters;
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashMap<UnitType, Integer> unitCount = new HashMap<>();
+    private int bunkerLoad = 0;
+    private Unit bunker = null;
 
     public UnitManager(EnemyInformation enemyInformation, BaseInfo baseInfo, Game game) {
         this.enemyInformation = enemyInformation;
@@ -50,12 +52,23 @@ public class UnitManager {
                 setRallyPoint(combatUnit);
             }
 
+            if(bunker == null) {
+                combatUnit.setUnitStatus(UnitStatus.RALLY);
+            }
+
+
             updateClosetEnemy(combatUnit);
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-            if(unitCount.get(UnitType.Terran_Marine) > 14 && unitStatus == UnitStatus.RALLY) {
+            if(unitCount.get(UnitType.Terran_Marine) > 14 && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
+                unLoadBunker();
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
+            }
+
+            if(unitStatus == UnitStatus.RALLY && bunker != null && bunkerLoad < 4) {
+                combatUnit.setUnitStatus(UnitStatus.LOAD);
+                bunkerLoad++;
             }
 
             switch(unitStatus) {
@@ -65,27 +78,11 @@ public class UnitManager {
                 case RALLY:
                     combatUnit.rally();
                     break;
+                case LOAD:
+                    loadBunker(combatUnit);
+                    break;
             }
         }
-    }
-
-    public void onUnitComplete(Unit unit) {
-        combatUnits.add(new CombatUnits(unit));
-        unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
-    }
-
-    public void onUnitDestroy(Unit unit) {
-
-        Iterator<CombatUnits> iterator = combatUnits.iterator();
-        while (iterator.hasNext()) {
-            CombatUnits combatUnit = iterator.next();
-            if (combatUnit.getUnitID() == unit.getID()) {
-                iterator.remove();
-                break;
-            }
-        }
-
-        unitCount.put(unit.getType(), unitCount.get(unit.getType()) - 1);
     }
 
     public void updateClosetEnemy(CombatUnits combatUnit) {
@@ -120,6 +117,50 @@ public class UnitManager {
         if (closestEnemy != null) {
             combatUnit.setEnemyUnit(closestEnemy);
         }
+    }
+
+    public void loadBunker(CombatUnits combatUnit) {
+        if(!combatUnit.isInBunker() && combatUnit.getUnit().getType() == UnitType.Terran_Marine) {
+            combatUnit.getUnit().load(bunker);
+            combatUnit.setInBunker(true);
+        }
+    }
+
+    public void unLoadBunker() {
+        bunker.unloadAll();
+        bunkerLoad = 0;
+    }
+
+    public void onUnitComplete(Unit unit) {
+        if(unit.getType() == UnitType.Terran_Bunker) {
+            bunker = unit;
+            return;
+        }
+
+        combatUnits.add(new CombatUnits(unit));
+        unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
+    }
+
+    public void onUnitDestroy(Unit unit) {
+        if(unit.getType() == UnitType.Terran_Bunker) {
+            bunker = null;
+            return;
+        }
+
+        Iterator<CombatUnits> iterator = combatUnits.iterator();
+        while (iterator.hasNext()) {
+            CombatUnits combatUnit = iterator.next();
+            if (combatUnit.getUnitID() == unit.getID()) {
+                if(combatUnit.isInBunker()) {
+                    bunkerLoad--;
+                }
+
+                iterator.remove();
+                break;
+            }
+        }
+
+        unitCount.put(unit.getType(), unitCount.get(unit.getType()) - 1);
     }
 
     //Debug painters

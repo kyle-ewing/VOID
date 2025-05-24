@@ -4,6 +4,7 @@ import bwapi.*;
 import bwem.BWEM;
 import debug.Painters;
 import information.BaseInfo;
+import information.EnemyInformation;
 import macro.buildorders.*;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
@@ -30,6 +31,7 @@ public class ProductionManager {
     private Painters painters;
     private TilePositionValidator tilePositionValidator;
     private BuildTiles buildTiles;
+    private EnemyInformation enemyInformation;
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
     private HashSet<Unit> allBuildings = new HashSet<>();
@@ -37,16 +39,17 @@ public class ProductionManager {
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
     private BuildOrder startingOpener;
     private Unit newestCompletedBuilding = null;
-    //move scv production into a queue
-    private boolean allIn;
+    private boolean openerResponse = false;
+    private boolean priorityStop = false;
 
 
 
-    public ProductionManager(Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, BWEM bwem) {
+    public ProductionManager(Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, BWEM bwem, EnemyInformation enemyInformation) {
         this.game = game;
         this.player = player;
         this.resourceManager = resourceManager;
         this.baseInfo = baseInfo;
+        this.enemyInformation = enemyInformation;
 
         tilePositionValidator = new TilePositionValidator(game);
         buildTiles = new BuildTiles(game, bwem, baseInfo);
@@ -96,10 +99,12 @@ public class ProductionManager {
 
     private void buildingProduction() {
         for (PlannedItem pi : productionQueue) {
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                priorityStop = true;
+            }
 
-            // Debug painter for build position
-            if (pi.getBuildPosition() != null) {
-//                painters.paintBuildTile(pi.getBuildPosition(), pi.getUnitType(), Color.White);
+            if(priorityStop && pi.getPriority() != 1 && pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                continue;
             }
 
             switch (pi.getPlannedItemStatus()) {
@@ -133,9 +138,9 @@ public class ProductionManager {
                                     if (worker.getUnit() == pi.getAssignedBuilder()) {
                                         continue;
                                     }
-                                    pi.setAssignedBuilder(worker.getUnit());
 
                                     if (worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
+                                        pi.setAssignedBuilder(worker.getUnit());
                                         if (pi.getBuildPosition() == null) {
 
                                             if (pi.getUnitType() == UnitType.Terran_Refinery) {
@@ -160,6 +165,11 @@ public class ProductionManager {
                             }
                         }
                     }
+
+                    if(pi.getPriority() == 1 && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED) {
+                        priorityStop = false;
+                    }
+
                     break;
 
                 case SCV_ASSIGNED:
@@ -266,16 +276,16 @@ public class ProductionManager {
                 for(Unit productionBuilding : productionBuildings) {
                     if (isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
                         if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic) && unitTypeCount.get(UnitType.Terran_Medic) < 3) {
-                                addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,1);
+                                addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
                         }
                         else if(isRecruitable(UnitType.Terran_Marine)) {
-                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,2);
+                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
                         }
                     }
                 }
 
                 if(resourceManager.getAvailableMinerals() > 400) {
-                    addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 1);
+                    addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
                 }
         }
     }
@@ -302,7 +312,7 @@ public class ProductionManager {
                     .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_SCV);
 
             if (!scvInQueue) {
-                addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT,2);
+                addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT,3);
             }
         }
     }
@@ -352,6 +362,15 @@ public class ProductionManager {
                 return;
             }
 
+            if(pi.getUnitType() == UnitType.Terran_Bunker) {
+                if(buildTiles.getBunkerTile() == null) {
+                    return;
+                }
+                pi.setBuildPosition(buildTiles.getBunkerTile());
+                buildTiles.updateRemainingTiles(pi.getBuildPosition());
+                return;
+            }
+
             for(TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
                 int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
 
@@ -366,6 +385,14 @@ public class ProductionManager {
             //turrets and addons
         }
             buildTiles.updateRemainingTiles(pi.getBuildPosition());
+    }
+
+    private void openerResponse() {
+        openerResponse = true;
+        for(UnitType building : enemyInformation.getEnemyOpener().getBuildingResponse()) {
+            System.out.println("Adding building to queue: " + building);
+            addToQueue(building, PlannedItemType.BUILDING, 1);
+        }
     }
 
     //Track number of buildings to check for building requirements
@@ -451,6 +478,10 @@ public class ProductionManager {
         buildingProduction();
         addSupplyDepot();
         addUnitProduction();
+
+        if(enemyInformation.getEnemyOpener() != null && !openerResponse) {
+            openerResponse();
+        }
     }
 
     public void onUnitCreate(Unit unit) {

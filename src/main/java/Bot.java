@@ -38,7 +38,7 @@ public class Bot extends DefaultBWListener {
         baseInfo = new BaseInfo(bwem, game);
         enemyInformation = new EnemyInformation(baseInfo, game);
         resourceManager = new ResourceManager(baseInfo, player);
-        productionManager = new ProductionManager(game, player, resourceManager, baseInfo, bwem);
+        productionManager = new ProductionManager(game, player, resourceManager, baseInfo, bwem, enemyInformation);
         unitManager = new UnitManager(enemyInformation, baseInfo, game);
         scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, enemyInformation);
         buildTiles = new BuildTiles(game, bwem, baseInfo);
@@ -85,6 +85,9 @@ public class Bot extends DefaultBWListener {
         productionManager.onUnitComplete(unit);
 
         if(unit.getType() != UnitType.Terran_SCV && !unit.getType().isBuilding()) {
+            unitManager.onUnitComplete(unit);
+        }
+        else if(unit.getType() == UnitType.Terran_Bunker) {
             unitManager.onUnitComplete(unit);
         }
 

@@ -85,16 +85,31 @@ public class BuildTiles {
     }
 
     private void generateBunkerTiles() {
+        TilePosition chokePos = baseInfo.getMainChoke().getCenter().toTilePosition();
+        TilePosition basePos = baseInfo.getStartingBase().getLocation();
+
+        int firstMidX = (chokePos.getX() + basePos.getX()) / 2;
+        int firstMidY = (chokePos.getY() + basePos.getY()) / 2;
+        int finalMidX = (firstMidX + basePos.getX()) / 2;
+        int finalMidY = (firstMidY + basePos.getY()) / 2;
+        TilePosition finalMidPoint = new TilePosition(finalMidX, finalMidY);
+
+        int searchRadius = 4;
         int closestDistance = Integer.MAX_VALUE;
 
-        for (TilePosition tilePosition : baseInfo.getBaseTiles()) {
-            if(!tilePositionValidator.isBuildable(tilePosition, UnitType.Terran_Bunker)) {
-                continue;
-            }
-            int distance = baseInfo.getMainChoke().getCenter().getApproxDistance(tilePosition.toWalkPosition());
-            if(distance < closestDistance) {
-                closestDistance = distance;
-                bunkerTile = tilePosition;
+        for (int x = finalMidX - searchRadius; x <= finalMidX + searchRadius; x++) {
+            for (int y = finalMidY - searchRadius; y <= finalMidY + searchRadius; y++) {
+                TilePosition testPos = new TilePosition(x, y);
+
+                if (!tilePositionValidator.isBuildable(testPos, UnitType.Terran_Bunker)) {
+                    continue;
+                }
+
+                int distToMid = testPos.getApproxDistance(finalMidPoint);
+                if (distToMid < closestDistance) {
+                    closestDistance = distToMid;
+                    bunkerTile = testPos;
+                }
             }
         }
     }
@@ -250,6 +265,10 @@ public class BuildTiles {
 
     public HashSet<TilePosition> getLargeBuildTiles() {
         return largeBuildTiles;
+    }
+
+    public TilePosition getBunkerTile() {
+        return bunkerTile;
     }
 
     public void onFrame() {

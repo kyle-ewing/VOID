@@ -16,6 +16,7 @@ public class CombatUnits {
     private TilePosition rallyPoint;
 
     private int unitID;
+    private boolean inBunker;
 
     public CombatUnits(Unit unit) {
         this.unit = unit;
@@ -23,6 +24,7 @@ public class CombatUnits {
         this.unitID = unit.getID();
         this.rallyPoint = null;
         this.unitStatus = UnitStatus.RALLY;
+        this.inBunker = false;
     }
 
 
@@ -88,5 +90,13 @@ public class CombatUnits {
 
     public void setRallyPoint(TilePosition rallyPoint) {
         this.rallyPoint = rallyPoint;
+    }
+
+    public boolean isInBunker() {
+        return inBunker;
+    }
+
+    public void setInBunker(boolean inBunker) {
+        this.inBunker = inBunker;
     }
 }
