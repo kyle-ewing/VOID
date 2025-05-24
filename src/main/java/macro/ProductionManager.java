@@ -138,9 +138,9 @@ public class ProductionManager {
                                     if (worker.getUnit() == pi.getAssignedBuilder()) {
                                         continue;
                                     }
-                                    pi.setAssignedBuilder(worker.getUnit());
 
                                     if (worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
+                                        pi.setAssignedBuilder(worker.getUnit());
                                         if (pi.getBuildPosition() == null) {
 
                                             if (pi.getUnitType() == UnitType.Terran_Refinery) {
