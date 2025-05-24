@@ -39,8 +39,8 @@ public class ProductionManager {
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
     private BuildOrder startingOpener;
     private Unit newestCompletedBuilding = null;
-    //move scv production into a queue
     private boolean openerResponse = false;
+    private boolean priorityStop = false;
 
 
 
@@ -99,10 +99,12 @@ public class ProductionManager {
 
     private void buildingProduction() {
         for (PlannedItem pi : productionQueue) {
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                priorityStop = true;
+            }
 
-            // Debug painter for build position
-            if (pi.getBuildPosition() != null) {
-//                painters.paintBuildTile(pi.getBuildPosition(), pi.getUnitType(), Color.White);
+            if(priorityStop && pi.getPriority() != 1 && pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                continue;
             }
 
             switch (pi.getPlannedItemStatus()) {
@@ -163,6 +165,11 @@ public class ProductionManager {
                             }
                         }
                     }
+
+                    if(pi.getPriority() == 1 && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED) {
+                        priorityStop = false;
+                    }
+
                     break;
 
                 case SCV_ASSIGNED:

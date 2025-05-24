@@ -52,6 +52,11 @@ public class UnitManager {
                 setRallyPoint(combatUnit);
             }
 
+            if(bunker == null) {
+                combatUnit.setUnitStatus(UnitStatus.RALLY);
+            }
+
+
             updateClosetEnemy(combatUnit);
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
