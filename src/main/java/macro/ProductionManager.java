@@ -2,6 +2,7 @@ package macro;
 
 import bwapi.*;
 import bwem.BWEM;
+import bwem.Base;
 import debug.Painters;
 import information.BaseInfo;
 import information.EnemyInformation;
@@ -16,10 +17,7 @@ import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class ProductionManager {
     private Game game;
@@ -138,24 +136,24 @@ public class ProductionManager {
                                     }
                                 }
                             }
-                            else if (pi.getPlannedItemType() == PlannedItemType.BUILDING) {
-                                for (Workers worker : resourceManager.getWorkers()) {
-                                    if (worker.getUnit() == pi.getAssignedBuilder()) {
+                            else if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                                for(Workers worker : resourceManager.getWorkers()) {
+                                    if(worker.getUnit() == pi.getAssignedBuilder()) {
                                         continue;
                                     }
 
-                                    if (worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
+                                    if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
                                         pi.setAssignedBuilder(worker.getUnit());
-                                        if (pi.getBuildPosition() == null) {
+                                        if(pi.getBuildPosition() == null) {
 
                                             if (pi.getUnitType() == UnitType.Terran_Refinery) {
                                                 setRefineryPosition(pi);
                                             }
-
-                                            setBuildingPosition(pi);
-
-                                            if(pi.getBuildPosition() == null) {
-                                                continue;
+                                            else if(pi.getUnitType() == UnitType.Terran_Command_Center) {
+                                                setCommandCenterPosition(pi);
+                                            }
+                                            else {
+                                                setBuildingPosition(pi);
                                             }
                                         }
                                         resourceManager.reserveResources(pi.getUnitType());
@@ -287,11 +285,20 @@ public class ProductionManager {
                             addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
                         }
                     }
+                    if(resourceManager.getAvailableMinerals() > 400) {
+                        //addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
+                    }
+                }
+            case ONERAXFE:
+                for(Unit productionBuilding : productionBuildings) {
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
+                        if (isRecruitable(UnitType.Terran_Marine)) {
+                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT, 3);
+                        }
+                    }
                 }
 
-                if(resourceManager.getAvailableMinerals() > 400) {
-                    addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
-                }
+
         }
     }
 
@@ -299,6 +306,7 @@ public class ProductionManager {
     private void addSupplyDepot() {
 
         if (!isDepotInQueue()) {
+
             int usedSupply = game.self().supplyUsed() / 2;
             int totalSupply = game.self().supplyTotal() / 2;
             int freeSupply = totalSupply - usedSupply;
@@ -325,6 +333,10 @@ public class ProductionManager {
     private boolean isDepotInQueue() {
         for(PlannedItem pi : productionQueue) {
             if(pi.getUnitType() == UnitType.Terran_Supply_Depot) {
+                return true;
+            }
+
+            if(pi.getUnitType() == UnitType.Terran_Command_Center) {
                 return true;
             }
         }
@@ -392,10 +404,25 @@ public class ProductionManager {
             buildTiles.updateRemainingTiles(pi.getBuildPosition());
     }
 
+    private void setCommandCenterPosition(PlannedItem pi) {
+        for(Base base : baseInfo.getOrderedExpansions()) {
+            if(!tilePositionValidator.isBuildable(base.getLocation(), UnitType.Terran_Command_Center)) {
+                continue;
+            }
+
+
+            TilePosition tilePosition = base.getLocation();
+
+            pi.setBuildPosition(tilePosition);
+            baseInfo.getOrderedExpansions().removeIf(base1 -> base1.getLocation() == tilePosition);
+            break;
+        }
+
+    }
+
     private void openerResponse() {
         openerResponse = true;
         for(UnitType building : enemyInformation.getEnemyOpener().getBuildingResponse()) {
-            System.out.println("Adding building to queue: " + building);
             addToQueue(building, PlannedItemType.BUILDING, 1);
         }
     }
@@ -476,6 +503,7 @@ public class ProductionManager {
         openerNames.add(new EightRax());
         openerNames.add(new TwoRax());
         openerNames.add(new TwoRaxAcademy());
+        openerNames.add(new OneRaxFE());
     }
 
     public void onFrame() {

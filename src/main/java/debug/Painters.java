@@ -218,6 +218,13 @@ public class Painters {
         game.drawTextScreen(5,30 + offset,   tileType +" Tiles Available: " + buildTiles.size());
     }
 
+    public void paintExpansionOrdering(List<Base> orderedExpansions) {
+        for(int i = 0; i < orderedExpansions.size(); i++) {
+            game.drawTextMap(orderedExpansions.get(i).getCenter(), "Expansion: " + i);
+            game.drawCircleMap(orderedExpansions.get(i).getCenter(), 40, Color.Purple);
+        }
+    }
+
     public void onFrame() {
         paintWorker();
         paintWorkerText();
