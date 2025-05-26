@@ -21,6 +21,7 @@ public class BaseInfo {
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
     private ArrayList<TilePosition> baseTiles = new ArrayList<>();
+    private ArrayList<Base> orderedExpansions = new ArrayList<>();
 
     private Painters painters;
 
@@ -48,6 +49,7 @@ public class BaseInfo {
         setStartingMineralPatches();
         setNaturalBase();
         setStartingBaseTiles();
+        setOrderedExpansions();
     }
 
     private void addAllBases() {
@@ -130,12 +132,10 @@ public class BaseInfo {
                 List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), base.getLocation().toPosition());
                 int distance = path.size();
 
-                //Exclude islands
                 if(distance == 0) {
                     continue;
                 }
 
-                //Exclude bases with no geysers
                 if(base.getGeysers().isEmpty()) {
                     continue;
                 }
@@ -148,6 +148,42 @@ public class BaseInfo {
             }
         }
                 naturalBase = closestBase;
+    }
+
+    private void setOrderedExpansions() {
+        for(Base base : mapBases) {
+            List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), base.getLocation().toPosition());
+            int distance = path.size();
+
+            if(distance == 0 || base.getGeysers().isEmpty() || base == startingBase) {
+                continue;
+            }
+
+            if(orderedExpansions.isEmpty()) {
+                orderedExpansions.add(base);
+            }
+            else {
+                for(int i = 0; i < orderedExpansions.size(); i++) {
+                    Base currentBase = orderedExpansions.get(i);
+                    List<Position> currentPath = pathFinding.findPath(startingBase.getLocation().toPosition(), currentBase.getLocation().toPosition());
+                    int currentDistance = currentPath.size();
+
+                    if(currentDistance > distance) {
+                        orderedExpansions.add(i, base);
+                        break;
+                    }
+
+                    if(i == orderedExpansions.size() - 1) {
+                        orderedExpansions.add(base);
+                        break;
+                    }
+                }
+            }
+
+
+
+        }
+
     }
 
     public ChokePoint getMainChoke() {
@@ -203,12 +239,17 @@ public class BaseInfo {
         return mapBases;
     }
 
+    public ArrayList<Base> getOrderedExpansions() {
+        return orderedExpansions;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
-        painters.paintNatural(naturalBase);
+        //painters.paintNatural(naturalBase);
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
+        painters.paintExpansionOrdering(orderedExpansions);
     }
 }
