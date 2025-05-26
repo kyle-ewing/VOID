@@ -199,6 +199,10 @@ public class BaseInfo {
         return baseTiles;
     }
 
+    public HashSet<Base> getMapBases() {
+        return mapBases;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
