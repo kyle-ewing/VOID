@@ -92,7 +92,12 @@ public class ProductionManager {
             }
         }
         else {
-            //no random build order
+            for(BuildOrder buildOrder : openerNames) {
+                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
+                    productionQueue.addAll(buildOrder.getBuildOrder());
+                    startingOpener = buildOrder;
+                }
+            }
         }
         return productionQueue;
     }
