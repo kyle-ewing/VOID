@@ -244,6 +244,10 @@ public class BaseInfo {
         return orderedExpansions;
     }
 
+    public HashSet<Base> getOwnedBases() {
+        return ownedBases;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
