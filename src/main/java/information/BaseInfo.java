@@ -22,6 +22,7 @@ public class BaseInfo {
     private HashSet<Mineral> startingMinerals = new HashSet<>();
     private ArrayList<TilePosition> baseTiles = new ArrayList<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
+    private HashSet<Base> ownedBases = new HashSet<>();
 
     private Painters painters;
 
@@ -243,6 +244,10 @@ public class BaseInfo {
         return orderedExpansions;
     }
 
+    public HashSet<Base> getOwnedBases() {
+        return ownedBases;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
@@ -251,5 +256,23 @@ public class BaseInfo {
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
         painters.paintExpansionOrdering(orderedExpansions);
+    }
+
+    public void onUnitComplete(Unit unit) {
+        for(Base base : mapBases) {
+            if(unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
+                ownedBases.add(base);
+                break;
+            }
+        }
+    }
+
+    public void onUnitDestroy(Unit unit) {
+        for(Base base : ownedBases) {
+            if(unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
+                ownedBases.remove(base);
+                break;
+            }
+        }
     }
 }

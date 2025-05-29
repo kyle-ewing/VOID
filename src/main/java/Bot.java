@@ -91,6 +91,10 @@ public class Bot extends DefaultBWListener {
             unitManager.onUnitComplete(unit);
         }
 
+        if(unit.getType() == UnitType.Terran_Command_Center) {
+            baseInfo.onUnitComplete(unit);
+        }
+
 
     }
 
@@ -110,6 +114,10 @@ public class Bot extends DefaultBWListener {
             }
 
             productionManager.onUnitDestroy(unit);
+        }
+
+        if(unit.getType() == UnitType.Terran_Command_Center) {
+            baseInfo.onUnitDestroy(unit);
         }
 
         scouting.onEnemyDestroy(unit);
