@@ -6,7 +6,7 @@
 
     <groupId>org.github.void</groupId>
     <artifactId>VOID</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 
     <repositories>
         <repository>

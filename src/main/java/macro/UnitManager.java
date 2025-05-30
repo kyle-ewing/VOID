@@ -62,7 +62,10 @@ public class UnitManager {
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
             if(unitCount.get(UnitType.Terran_Marine) > 14 && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
-                unLoadBunker();
+                if(bunker != null) {
+                    unLoadBunker();
+                }
+
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
             }
 
@@ -70,6 +73,8 @@ public class UnitManager {
                 combatUnit.setUnitStatus(UnitStatus.LOAD);
                 bunkerLoad++;
             }
+
+            unitStatus = combatUnit.getUnitStatus();
 
             switch(unitStatus) {
                 case ATTACK:
