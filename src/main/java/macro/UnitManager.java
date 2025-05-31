@@ -52,11 +52,6 @@ public class UnitManager {
                 setRallyPoint(combatUnit);
             }
 
-            if(bunker == null) {
-                combatUnit.setUnitStatus(UnitStatus.RALLY);
-            }
-
-
             updateClosetEnemy(combatUnit);
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
@@ -74,7 +69,7 @@ public class UnitManager {
                 bunkerLoad++;
             }
 
-            unitStatus = combatUnit.getUnitStatus();
+//            unitStatus = combatUnit.getUnitStatus();
 
             switch(unitStatus) {
                 case ATTACK:
@@ -99,7 +94,7 @@ public class UnitManager {
             Position unitPosition = combatUnit.getUnit().getPosition();
 
             //Stop units from getting stuck on outdated position info
-            if(combatUnit.getUnit().getDistance(enemyPosition) < 150 && !enemyUnit.getEnemyUnit().isVisible()) {
+            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().isVisible()) {
                 continue;
             }
 

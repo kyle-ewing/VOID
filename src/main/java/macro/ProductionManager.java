@@ -286,7 +286,7 @@ public class ProductionManager {
                         }
                     }
                     if(resourceManager.getAvailableMinerals() > 400) {
-                        //addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
+                        addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
                     }
                 }
             case ONERAXFE:
