@@ -26,4 +26,5 @@ $ java -jar target/VOID-{version}-jar-with-dependencies.jar
 ## Intellij (Preferred)
 
 1. Open up this project in INtelliJ IDEA.
-2. Set the Java SDK to Java 1.8. 
+2. Set the Java SDK to Java 1.8.
+3. Sync Project with Maven
