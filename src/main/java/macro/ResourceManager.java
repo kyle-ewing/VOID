@@ -44,13 +44,17 @@ public class ResourceManager {
     //TODO: make generic for all bases, remove from hashmap if workers are removed
     public void gatherGas() {
         if(baseInfo.getStartingBase().getGeysers().get(0).getUnit().getType() == UnitType.Terran_Refinery && baseInfo.getStartingBase().getGeysers().get(0).getUnit().isCompleted()) {
+
+            refinerySaturation.computeIfAbsent(baseInfo.getStartingBase(), workerCount -> new HashSet<Workers>());
+
             for(Workers scv : workers) {
                 if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
-                    if(refinerySaturation.containsKey(baseInfo.getStartingBase()) && refinerySaturation.get(baseInfo.getStartingBase()).size() <= 3) {
+                    if(refinerySaturation.containsKey(baseInfo.getStartingBase()) && refinerySaturation.get(baseInfo.getStartingBase()).size() < 3) {
                         scv.getUnit().gather(baseInfo.getStartingBase().getGeysers().get(0).getUnit());
+                        refinerySaturation.get(baseInfo.getStartingBase()).add(scv);
                         scv.setWorkerStatus(WorkerStatus.GAS);
                     }
-                    refinerySaturation.computeIfAbsent(baseInfo.getStartingBase(), workerCount -> new HashSet<Workers>()).add(scv);
+
                 }
             }
         }
@@ -101,6 +105,13 @@ public class ResourceManager {
         for(Workers worker : workers) {
             if(worker.getUnit() == scv) {
                 workers.remove(worker);
+
+                if(worker.getWorkerStatus() == WorkerStatus.GAS) {
+                    if(refinerySaturation.containsKey(baseInfo.getStartingBase())) {
+                        refinerySaturation.get(baseInfo.getStartingBase()).remove(worker);
+                    }
+                }
+
                 break;
             }
         }
