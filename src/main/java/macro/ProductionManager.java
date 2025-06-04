@@ -155,6 +155,11 @@ public class ProductionManager {
                                             else {
                                                 setBuildingPosition(pi);
                                             }
+
+                                            //Skip over if out of tiles
+                                            if(pi.getBuildPosition() == null) {
+                                                continue;
+                                            }
                                         }
                                         resourceManager.reserveResources(pi.getUnitType());
                                         worker.getUnit().move(pi.getBuildPosition().toPosition());
