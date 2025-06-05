@@ -579,6 +579,10 @@ public class ProductionManager {
     public void onUnitDestroy(Unit unit) {
         removeUnitTypeCount(unit);
         removeBuilding(unit);
+
+        if(unit.getType().isBuilding()) {
+            addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
+        }
     }
 
     public void onUnitMorph(Unit unit) {
