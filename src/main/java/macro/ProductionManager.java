@@ -541,6 +541,24 @@ public class ProductionManager {
         allBuildings.remove(unit);
     }
 
+    private void resetBuilding(Unit unit) {
+        for(PlannedItem pi : productionQueue) {
+            if(pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getUnitType() == unit.getType()) {
+                for(Workers worker : resourceManager.getWorkers()) {
+                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getID()) {
+                        worker.setWorkerStatus(WorkerStatus.IDLE);
+                        break;
+                    }
+                }
+                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                pi.setAssignedBuilder(null);
+                pi.setBuildPosition(null);
+                pi.setPriority(1);
+                break;
+            }
+        }
+    }
+
     private void getOpenerNames() {
         openerNames.add(new EightRax());
         openerNames.add(new TwoRax());
@@ -581,8 +599,14 @@ public class ProductionManager {
         removeBuilding(unit);
 
         if(unit.getType().isBuilding()) {
-            addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
+            if(!unit.isCompleted()) {
+                resetBuilding(unit);
+            }
+            else {
+                addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
+            }
         }
+
     }
 
     public void onUnitMorph(Unit unit) {
