@@ -212,23 +212,60 @@ public class ProductionManager {
                     break;
 
                 case IN_PROGRESS:
-                    if (pi.getUnitType() == newestCompletedBuilding.getType()) {
-                        if (newestCompletedBuilding.getInitialTilePosition().getX() == pi.getBuildPosition().getX() &&
-                                newestCompletedBuilding.getInitialTilePosition().getY() == pi.getBuildPosition().getY()) {
-                            pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                    if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                        if (pi.getUnitType() == newestCompletedBuilding.getType()) {
+                            if (newestCompletedBuilding.getInitialTilePosition().getX() == pi.getBuildPosition().getX() &&
+                                    newestCompletedBuilding.getInitialTilePosition().getY() == pi.getBuildPosition().getY()) {
+                                pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
 
-                            if (newestCompletedBuilding.canTrain()) {
-                                productionBuildings.add(newestCompletedBuilding);
+                                if (newestCompletedBuilding.canTrain()) {
+                                    productionBuildings.add(newestCompletedBuilding);
+                                }
+
+                                for (Workers worker : resourceManager.getWorkers()) {
+                                    if (worker.getWorkerStatus() == WorkerStatus.BUILDING && pi.getAssignedBuilder() == worker.getUnit()) {
+                                        worker.setWorkerStatus(WorkerStatus.IDLE);
+                                    }
+                                }
                             }
 
-                            for (Workers worker : resourceManager.getWorkers()) {
-                                if (worker.getWorkerStatus() == WorkerStatus.BUILDING && pi.getAssignedBuilder() == worker.getUnit()) {
-                                    worker.setWorkerStatus(WorkerStatus.IDLE);
+                        }
+
+                        boolean builderHasDied = true;
+                        for(Workers workers : resourceManager.getWorkers()) {
+                            if(workers.getUnit().getID() == pi.getAssignedBuilder().getID()) {
+                                builderHasDied = false;
+                                break;
+                            }
+                        }
+
+                        if(builderHasDied) {
+                            for(Workers worker : resourceManager.getWorkers()) {
+                                if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                                    pi.setAssignedBuilder(worker.getUnit());
+                                    worker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
+                                    break;
                                 }
                             }
                         }
 
+                        for(Unit building : player.getUnits()) {
+                            if(!building.isCompleted() && building.getType() == pi.getUnitType() && !building.isBeingConstructed()) {
+                                pi.getAssignedBuilder().rightClick(building);
+                                break;
+                            }
+
+                            if(building.isBeingConstructed() && pi.getAssignedBuilder().isConstructing()) {
+                                for(Workers worker : resourceManager.getWorkers()) {
+                                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getID()) {
+                                        worker.setWorkerStatus(WorkerStatus.BUILDING);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
+
 
                     if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
                         if(game.self().hasResearched(pi.getTechUpgrade())) {
