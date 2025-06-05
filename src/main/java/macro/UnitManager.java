@@ -44,15 +44,10 @@ public class UnitManager {
         }
 
         for(CombatUnits combatUnit : combatUnits) {
-            if (combatUnit.getEnemyUnit() == null) {
-                updateClosetEnemy(combatUnit);
-            }
-
             if(combatUnit.getRallyPoint() == null) {
                 setRallyPoint(combatUnit);
             }
 
-            updateClosetEnemy(combatUnit);
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
@@ -64,7 +59,7 @@ public class UnitManager {
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
             }
 
-            if(unitStatus == UnitStatus.RALLY && bunker != null && bunkerLoad < 4) {
+            if((unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.DEFEND) && bunker != null && bunkerLoad < 4) {
                 combatUnit.setUnitStatus(UnitStatus.LOAD);
                 bunkerLoad++;
             }
@@ -73,20 +68,26 @@ public class UnitManager {
 
             switch(unitStatus) {
                 case ATTACK:
+                    updateClosetEnemy(combatUnit, Integer.MAX_VALUE);
                     combatUnit.attack();
                     break;
                 case RALLY:
+                    updateClosetEnemy(combatUnit, 500);
                     combatUnit.rally();
                     break;
                 case LOAD:
                     loadBunker(combatUnit);
                     break;
+                case DEFEND:
+                    updateClosetEnemy(combatUnit, 500);
+                    combatUnit.defend();
+                    break;
             }
         }
     }
 
-    public void updateClosetEnemy(CombatUnits combatUnit) {
-        int closestDistance = Integer.MAX_VALUE;
+    public void updateClosetEnemy(CombatUnits combatUnit, int range) {
+        int closestDistance = range;
         EnemyUnits closestEnemy = null;
 
         for (EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
@@ -116,6 +117,10 @@ public class UnitManager {
 
         if (closestEnemy != null) {
             combatUnit.setEnemyUnit(closestEnemy);
+        }
+
+        if(closestEnemy == null) {
+            combatUnit.setEnemyUnit(null);
         }
     }
 

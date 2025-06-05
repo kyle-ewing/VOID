@@ -48,8 +48,30 @@ public class CombatUnits {
             return;
         }
 
+        if(enemyUnit != null) {
+            setUnitStatus(UnitStatus.DEFEND);
+        }
+
         unit.attack(rallyPoint.toPosition());
+
     }
+
+    public void defend() {
+        if(enemyUnit == null) {
+            setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
+
+        if(!unit.isStimmed() && unit.isAttacking()) {
+            unit.useTech(TechType.Stim_Packs);
+        }
+
+        if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+            unit.attack(enemyUnit.getEnemyPosition());
+        }
+
+    }
+
 
     public Unit getUnit() {
         return unit;

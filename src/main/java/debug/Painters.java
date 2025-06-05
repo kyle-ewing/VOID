@@ -145,6 +145,9 @@ public class Painters {
             case LOAD:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Blue, true);
                 break;
+            case DEFEND:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Purple, true);
+                break;
         }
     }
 
