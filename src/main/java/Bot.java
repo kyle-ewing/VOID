@@ -33,12 +33,12 @@ public class Bot extends DefaultBWListener {
         bwem = new BWEM(game);
         bwem.initialize();
 
-        game.setLocalSpeed(5);
-        game.enableFlag(Flag.UserInput);
+//        game.setLocalSpeed(5);
+//        game.enableFlag(Flag.UserInput);
 
         baseInfo = new BaseInfo(bwem, game);
         enemyInformation = new EnemyInformation(baseInfo, game);
-        resourceManager = new ResourceManager(baseInfo, player);
+        resourceManager = new ResourceManager(baseInfo, player, game, enemyInformation);
         productionManager = new ProductionManager(game, player, resourceManager, baseInfo, bwem, enemyInformation);
         unitManager = new UnitManager(enemyInformation, baseInfo, game);
         scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, enemyInformation);
