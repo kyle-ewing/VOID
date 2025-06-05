@@ -79,6 +79,9 @@ public class Painters {
                     continue;
                 case REPAIRING:
                     paintCircle(worker.getUnit(), 8, Color.Grey);
+                    continue;
+                case DEFEND:
+                    paintCircle(worker.getUnit(), 8, Color.Teal);
             }
         }
     }

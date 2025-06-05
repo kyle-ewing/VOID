@@ -1,17 +1,32 @@
 package macro.unitgroups;
 
 import bwapi.Unit;
+import information.EnemyUnits;
 
 public class Workers {
     private Unit unit;
     private WorkerStatus workerStatus;
     private int buildFrameCount;
+    private int attackClock;
+    private EnemyUnits enemyUnit;
 
     public Workers(Unit unit, WorkerStatus workerStatus) {
         this.unit = unit;
         this.workerStatus = workerStatus;
         this.buildFrameCount = 0;
+        this.attackClock = 0;
     }
+
+    public void selfDefense() {
+        if (enemyUnit == null) {
+            return;
+        }
+
+        if (!unit.isAttackFrame()) {
+            unit.attack(enemyUnit.getEnemyPosition());
+        }
+    }
+
 
     public Unit getUnit() {
         return unit;
@@ -36,4 +51,22 @@ public class Workers {
     public void setBuildFrameCount(int buildFrameCount) {
         this.buildFrameCount = buildFrameCount;
     }
+
+    public int getAttackClock() {
+        return attackClock;
+    }
+
+    public void setAttackClock(int attackClock) {
+        this.attackClock = attackClock;
+    }
+
+    public EnemyUnits getEnemyUnit() {
+        return enemyUnit;
+    }
+
+    public void setEnemyUnit(EnemyUnits enemyUnit) {
+        this.enemyUnit = enemyUnit;
+    }
+
+
 }

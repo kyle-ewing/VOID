@@ -1,11 +1,13 @@
 package macro;
 
-import bwapi.Player;
-import bwapi.Unit;
-import bwapi.UnitType;
+import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
+import debug.Painters;
 import information.BaseInfo;
+import information.EnemyInformation;
+import information.EnemyUnits;
+import macro.unitgroups.CombatUnits;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
 
@@ -15,13 +17,10 @@ import java.util.HashSet;
 import java.util.List;
 
 public class ResourceManager {
-    public ResourceManager(BaseInfo baseInfo, Player player) {
-        this.baseInfo = baseInfo;
-        this.player = player;
-    }
-
     private BaseInfo baseInfo;
     private Player player;
+    private Game game;
+    private EnemyInformation enemyInformation;
     private HashSet<Workers> workers = new HashSet<>();
     private HashMap<Base, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private int reservedMinerals = 0;
@@ -29,6 +28,53 @@ public class ResourceManager {
     private int availableMinerals = 0;
     private int availableGas = 0;
     private boolean isReserved = false;
+    private HashSet<Workers> defenseForce = new HashSet<>();
+
+    public ResourceManager(BaseInfo baseInfo, Player player, Game game, EnemyInformation enemyInformation) {
+        this.baseInfo = baseInfo;
+        this.player = player;
+        this.enemyInformation = enemyInformation;
+        this.game = game;
+    }
+
+    //TODO: refactor all of this and organize with switch cases
+    public void onFrame() {
+        setAvailableMinerals(availableMinerals);
+        setAvailableGas(availableGas);
+        gatherMinerals();
+        gatherGas();
+        workerBuildClock();
+
+        int frameCount = game.getFrameCount();
+
+        for(Workers worker : workers) {
+            if(worker.getUnit().isUnderAttack() && worker.getWorkerStatus() != WorkerStatus.SCOUTING) {
+                createDefenseForce();
+            }
+
+
+            if(worker.getWorkerStatus() == WorkerStatus.DEFEND) {
+                updateClosetEnemy(worker);
+                workerAttackClock(worker);
+
+                if(frameCount % 12 != 0) {
+                    return;
+                }
+
+                if(worker.getEnemyUnit() != null) {
+                    worker.selfDefense();
+                }
+
+                if(worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) {
+                    worker.setWorkerStatus(WorkerStatus.IDLE);
+                    worker.setAttackClock(0);
+                    removeDefenseForce();
+                }
+
+            }
+
+        }
+    }
 
     public void gatherMinerals() {
         //TODO: Assign workers to empty patches
@@ -89,16 +135,61 @@ public class ResourceManager {
         }
     }
 
-    public void onUnitComplete(Unit scv) {
-        workers.add(new Workers(scv, WorkerStatus.IDLE));
+    private void createDefenseForce() {
+        for(Workers worker : workers) {
+            if(worker.getWorkerStatus() == WorkerStatus.MINERALS && defenseForce.size() < 7) {
+                defenseForce.add(worker);
+                worker.setWorkerStatus(WorkerStatus.DEFEND);
+            }
+        }
     }
 
-    public void onFrame() {
-        setAvailableMinerals(availableMinerals);
-        setAvailableGas(availableGas);
-        gatherMinerals();
-        gatherGas();
-        workerBuildClock();
+    private void removeDefenseForce() {
+        for(Workers worker : defenseForce) {
+            worker.setWorkerStatus(WorkerStatus.IDLE);
+        }
+        defenseForce.clear();
+    }
+
+    public void updateClosetEnemy(Workers worker) {
+        int closestDistance = 1000;
+        EnemyUnits closestEnemy = null;
+
+        for (EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            Position enemyPosition = enemyUnit.getEnemyPosition();
+            Position unitPosition = worker.getUnit().getPosition();
+
+            //Stop units from getting stuck on outdated position info
+            if(worker.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().isVisible()) {
+                continue;
+            }
+
+            if(!worker.getUnit().hasPath(enemyPosition)) {
+                continue;
+            }
+
+            int distance = unitPosition.getApproxDistance(enemyPosition);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestEnemy = enemyUnit;
+            }
+        }
+
+        if (closestEnemy != null) {
+            worker.setEnemyUnit(closestEnemy);
+        }
+        else {
+            worker.setEnemyUnit(null);
+        }
+    }
+
+    private void workerAttackClock(Workers worker) {
+        worker.setAttackClock(worker.getAttackClock() + 1);
+    }
+
+    public void onUnitComplete(Unit scv) {
+        workers.add(new Workers(scv, WorkerStatus.IDLE));
     }
 
     public void onUnitDestroy(Unit scv) {
@@ -161,4 +252,7 @@ public class ResourceManager {
         return workers;
     }
 
+    public HashSet<Workers> getDefenseForce() {
+        return defenseForce;
+    }
 }
