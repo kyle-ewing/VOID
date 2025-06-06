@@ -113,7 +113,6 @@ public class UnitManager {
             //Stop units from getting stuck on outdated position info
             if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists()) {
                 enemyUnit.setEnemyPosition(null);
-                System.out.println("Removing outdated enemy position for unit: " + enemyUnit.getEnemyUnit().getType());
                 continue;
             }
 

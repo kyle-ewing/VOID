@@ -34,7 +34,7 @@ public class EnemyInformation {
 
     private boolean checkForBuildings() {
         for (EnemyUnits enemyUnit : enemyUnits) {
-            if (enemyUnit.getEnemyUnit().getType().isBuilding() && enemyUnit.getEnemyUnit().exists()) {
+            if (enemyUnit.getEnemyType().isBuilding()) {
                 return true;
             }
         }
