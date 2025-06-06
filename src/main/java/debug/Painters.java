@@ -7,6 +7,7 @@ import bwem.ChokePoint;
 import bwem.Tile;
 import macro.ResourceManager;
 import macro.unitgroups.CombatUnits;
+import macro.unitgroups.UnitStatus;
 import macro.unitgroups.Workers;
 
 import java.util.HashSet;
@@ -148,6 +149,9 @@ public class Painters {
             case DEFEND:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Purple, true);
                 break;
+            case SCOUT:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Orange, true);
+                break;
         }
     }
 
@@ -228,6 +232,12 @@ public class Painters {
         for(int i = 0; i < orderedExpansions.size(); i++) {
             game.drawTextMap(orderedExpansions.get(i).getCenter(), "Expansion: " + i);
             game.drawCircleMap(orderedExpansions.get(i).getCenter(), 40, Color.Purple);
+        }
+    }
+
+    public void paintCombatScouts(CombatUnits unit) {
+        if(unit.getUnitStatus() == UnitStatus.SCOUT) {
+            game.drawLineMap(unit.getUnit().getPosition(), unit.getUnit().getTargetPosition(), Color.Purple);
         }
     }
 
