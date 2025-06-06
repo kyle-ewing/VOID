@@ -20,7 +20,7 @@ public class EnemyInformation {
     public EnemyInformation(BaseInfo baseInfo, Game game) {
         this.baseInfo = baseInfo;
         this.game = game;
-        enemyStrategyManager = new EnemyStrategyManager();
+        enemyStrategyManager = new EnemyStrategyManager(baseInfo);
     }
 
     private boolean previouslyDiscovered(Unit unit) {
@@ -52,8 +52,9 @@ public class EnemyInformation {
         }
 
         for(EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
-            if(enemyStrategy.isEnemyStrategy(enemyUnits, game.getFrameCount())) {
+            if(enemyStrategy.isEnemyStrategy(enemyUnits, game.getFrameCount()) && enemyOpener == null) {
                 enemyOpener = enemyStrategy;
+                game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
                 break;
             }
         }

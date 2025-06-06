@@ -23,12 +23,13 @@ public class ResourceManager {
     private EnemyInformation enemyInformation;
     private HashSet<Workers> workers = new HashSet<>();
     private HashMap<Base, HashSet<Workers>> refinerySaturation = new HashMap<>();
+    private HashSet<Workers> defenseForce = new HashSet<>();
     private int reservedMinerals = 0;
     private int reservedGas = 0;
     private int availableMinerals = 0;
     private int availableGas = 0;
     private boolean isReserved = false;
-    private HashSet<Workers> defenseForce = new HashSet<>();
+    private boolean openerResponse = false;
 
     public ResourceManager(BaseInfo baseInfo, Player player, Game game, EnemyInformation enemyInformation) {
         this.baseInfo = baseInfo;
@@ -47,9 +48,14 @@ public class ResourceManager {
 
         int frameCount = game.getFrameCount();
 
+        if(enemyInformation.getEnemyOpener() != null && !openerResponse) {
+            enemyStrategyResponse();
+            openerResponse = true;
+        }
+
         for(Workers worker : workers) {
             if(worker.getUnit().isUnderAttack() && worker.getWorkerStatus() != WorkerStatus.SCOUTING) {
-                createDefenseForce();
+                createDefenseForce(7);
             }
 
 
@@ -135,9 +141,9 @@ public class ResourceManager {
         }
     }
 
-    private void createDefenseForce() {
+    private void createDefenseForce(int defenseSize) {
         for(Workers worker : workers) {
-            if(worker.getWorkerStatus() == WorkerStatus.MINERALS && defenseForce.size() < 7) {
+            if(worker.getWorkerStatus() == WorkerStatus.MINERALS && defenseForce.size() < defenseSize) {
                 defenseForce.add(worker);
                 worker.setWorkerStatus(WorkerStatus.DEFEND);
             }
@@ -181,6 +187,14 @@ public class ResourceManager {
         }
         else {
             worker.setEnemyUnit(null);
+        }
+    }
+
+    private void enemyStrategyResponse() {
+        switch(enemyInformation.getEnemyOpener().getStrategyName()) {
+            case "Cannon Rush":
+                createDefenseForce(6);
+                break;
         }
     }
 
