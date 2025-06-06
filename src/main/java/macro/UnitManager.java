@@ -152,7 +152,7 @@ public class UnitManager {
         bunkerLoad = 0;
     }
 
-    public void assignScouts(CombatUnits combatUnit) {
+    private void assignScouts(CombatUnits combatUnit) {
         for(Base base : baseInfo.getMapBases()) {
 
             if(designatedScouts.containsKey(base)) {
@@ -162,6 +162,16 @@ public class UnitManager {
             designatedScouts.put(base, combatUnit);
             break;
 
+        }
+    }
+
+    private void unassignScout(CombatUnits combatUnit) {
+        for(Base base : designatedScouts.keySet()) {
+            if(designatedScouts.get(base).getUnitID() == combatUnit.getUnitID()) {
+                designatedScouts.remove(base);
+                scouts--;
+                break;
+            }
         }
     }
 
@@ -205,6 +215,10 @@ public class UnitManager {
             if (combatUnit.getUnitID() == unit.getID()) {
                 if(combatUnit.isInBunker()) {
                     bunkerLoad--;
+                }
+
+                if(combatUnit.getUnitStatus() == UnitStatus.SCOUT) {
+                    unassignScout(combatUnit);
                 }
 
                 iterator.remove();
