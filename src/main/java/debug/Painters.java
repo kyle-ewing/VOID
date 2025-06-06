@@ -168,7 +168,7 @@ public class Painters {
     }
 
     public void paintClosestEnemy(CombatUnits unit) {
-        if(unit.getEnemyUnit() != null) {
+        if(unit.getEnemyUnit() != null && unit.getEnemyUnit().getEnemyPosition() != null) {
             game.drawLineMap(unit.getUnit().getPosition(), unit.getEnemyUnit().getEnemyPosition(), Color.Yellow);
         }
 
