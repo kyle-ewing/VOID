@@ -4,10 +4,12 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwem.Base;
 import debug.Painters;
 import information.BaseInfo;
 import information.EnemyInformation;
 import information.EnemyUnits;
+import information.Scouting;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 
@@ -21,15 +23,20 @@ public class UnitManager {
     private BaseInfo baseInfo;
     private Game game;
     private Painters painters;
+    private Scouting scouting;
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashMap<UnitType, Integer> unitCount = new HashMap<>();
+    private HashMap<Base, CombatUnits> designatedScouts = new HashMap<>();
     private int bunkerLoad = 0;
     private Unit bunker = null;
+    private int scouts = 0;
 
-    public UnitManager(EnemyInformation enemyInformation, BaseInfo baseInfo, Game game) {
+
+    public UnitManager(EnemyInformation enemyInformation, BaseInfo baseInfo, Game game, Scouting scouting) {
         this.enemyInformation = enemyInformation;
         this.baseInfo = baseInfo;
         this.game = game;
+        this.scouting = scouting;
 
         painters = new Painters(game);
     }
@@ -64,6 +71,12 @@ public class UnitManager {
                 bunkerLoad++;
             }
 
+            if(scouting.isCompletedScout() && !enemyInformation.isEnemyBuildingDiscovered() && combatUnit.getUnitType() == UnitType.Terran_Marine && scouts < baseInfo.getMapBases().size()) {
+                combatUnit.setUnitStatus(UnitStatus.SCOUT);
+                assignScouts(combatUnit);
+                scouts++;
+            }
+
 //            unitStatus = combatUnit.getUnitStatus();
 
             switch(unitStatus) {
@@ -81,6 +94,9 @@ public class UnitManager {
                 case DEFEND:
                     updateClosetEnemy(combatUnit, 500);
                     combatUnit.defend();
+                    break;
+                case SCOUT:
+                    scoutBases();
                     break;
             }
         }
@@ -136,6 +152,37 @@ public class UnitManager {
         bunkerLoad = 0;
     }
 
+    public void assignScouts(CombatUnits combatUnit) {
+        for(Base base : baseInfo.getMapBases()) {
+
+            if(designatedScouts.containsKey(base)) {
+                continue;
+            }
+
+            designatedScouts.put(base, combatUnit);
+            break;
+
+        }
+    }
+
+    private void scoutBases() {
+        for(Base base : designatedScouts.keySet()) {
+            CombatUnits scout = designatedScouts.get(base);
+
+            scout.getUnit().attack(base.getCenter());
+
+            if(enemyInformation.isEnemyBuildingDiscovered()) {
+                scout.setUnitStatus(UnitStatus.RALLY);
+            }
+        }
+
+        if(enemyInformation.isEnemyBuildingDiscovered()) {
+            scouts = 0;
+            designatedScouts.clear();
+        }
+    }
+
+
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_Bunker) {
             bunker = unit;
@@ -175,6 +222,7 @@ public class UnitManager {
             painters.paintUnitStatus(combatUnit);
             painters.paintClosestEnemy(combatUnit);
             painters.paintStimStatus(combatUnit);
+            painters.paintCombatScouts(combatUnit);
         }
 
     }

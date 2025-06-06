@@ -24,6 +24,7 @@ public class Scouting {
     private int scoutRadius = 200;
     private int positionCount = 8;
     private int currentPositionIndex = 0;
+    private boolean completedScout = false;
 
     public Scouting(BWEM bwem, Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, EnemyInformation enemyInformation) {
         this.bwem = bwem;
@@ -99,6 +100,7 @@ public class Scouting {
 
         if(enemyInformation.getStartingEnemyBase() != null) {
             scoutEnemyPerimeter();
+            completedScout = true;
         }
 
         if(scout != null) {
@@ -114,5 +116,9 @@ public class Scouting {
         if(unit.getID() == scout.getUnit().getID()) {
             scout = null;
         }
+    }
+
+    public boolean isCompletedScout() {
+        return completedScout;
     }
 }

@@ -40,8 +40,9 @@ public class Bot extends DefaultBWListener {
         enemyInformation = new EnemyInformation(baseInfo, game);
         resourceManager = new ResourceManager(baseInfo, player, game, enemyInformation);
         productionManager = new ProductionManager(game, player, resourceManager, baseInfo, bwem, enemyInformation);
-        unitManager = new UnitManager(enemyInformation, baseInfo, game);
         scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, enemyInformation);
+        unitManager = new UnitManager(enemyInformation, baseInfo, game, scouting);
+
         buildTiles = new BuildTiles(game, bwem, baseInfo);
 
         //Debug painters

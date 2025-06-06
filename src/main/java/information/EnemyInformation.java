@@ -15,6 +15,7 @@ public class EnemyInformation {
     private Base enemyNatural = null;
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
+    private boolean enemyBuildingDiscovered = false;
 
     public EnemyInformation(BaseInfo baseInfo, Game game) {
         this.baseInfo = baseInfo;
@@ -25,6 +26,15 @@ public class EnemyInformation {
     private boolean previouslyDiscovered(Unit unit) {
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyID() == unit.getID()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkForBuildings() {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyUnit().getType().isBuilding() && enemyUnit.getEnemyUnit().exists()) {
                 return true;
             }
         }
@@ -65,6 +75,10 @@ public class EnemyInformation {
 
         if(!previouslyDiscovered(unit)) {
             addEnemyUnit(unit);
+
+            if(unit.getType().isBuilding()) {
+                enemyBuildingDiscovered = true;
+            }
         }
 
 
@@ -85,6 +99,10 @@ public class EnemyInformation {
                 enemyUnits.remove(enemyUnit);
                 break;
             }
+        }
+
+        if(!checkForBuildings() && unit.getType().isBuilding()) {
+            enemyBuildingDiscovered = false;
         }
     }
 
@@ -108,5 +126,9 @@ public class EnemyInformation {
 
     public EnemyStrategy getEnemyOpener() {
         return enemyOpener;
+    }
+
+    public boolean isEnemyBuildingDiscovered() {
+        return enemyBuildingDiscovered;
     }
 }
