@@ -34,8 +34,8 @@ public class BuildTiles {
 
     private void generateBuildTiles() {
         generateBunkerTiles();
-        generateMediumTiles();
         generateLargeTiles();
+        generateMediumTiles();
 
     }
 

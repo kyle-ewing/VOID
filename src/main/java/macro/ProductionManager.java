@@ -327,7 +327,7 @@ public class ProductionManager {
                             addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
                         }
                     }
-                    if(resourceManager.getAvailableMinerals() > 400) {
+                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty()) {
                         addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
                     }
                 }
