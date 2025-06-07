@@ -2,6 +2,7 @@ package information.enemyopeners;
 
 import bwapi.UnitType;
 import information.EnemyUnits;
+import util.Time;
 
 import java.util.HashSet;
 
@@ -12,15 +13,15 @@ public class FourPool extends EnemyStrategy {
         buildingResponse();
     }
 
-    public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, int frameCount) {
+    public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
-                if(frameCount < 2400) {
+                if(time.lessThanOrEqual(new Time(1,20))) {
                     return true;
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if(frameCount < 4200) {
+                if(time.lessThanOrEqual(new Time(2,30))) {
                     return true;
                 }
             }
