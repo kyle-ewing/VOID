@@ -2,6 +2,7 @@ package information;
 
 import bwapi.Game;
 import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.Base;
 import information.enemyopeners.EnemyStrategy;
 
@@ -104,6 +105,14 @@ public class EnemyInformation {
 
         if(!checkForBuildings() && unit.getType().isBuilding()) {
             enemyBuildingDiscovered = false;
+        }
+    }
+
+    public void onUnitRenegade(Unit unit) {
+        if(unit.getPlayer() != game.self() && game.enemy() ==  unit.getPlayer()) {
+            if(unit.getType() == UnitType.Zerg_Extractor || unit.getType() == UnitType.Terran_Refinery || unit.getType() == UnitType.Protoss_Assimilator) {
+                addEnemyUnit(unit);
+            }
         }
     }
 
