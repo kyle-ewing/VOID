@@ -5,6 +5,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
 import information.enemyopeners.EnemyStrategy;
+import util.Time;
 
 import java.util.HashSet;
 
@@ -43,6 +44,8 @@ public class EnemyInformation {
     }
 
     public void onFrame() {
+        Time currentTime = new Time(game.getFrameCount());
+
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyUnit().isVisible()) {
                 if(enemyUnit.getEnemyUnit().getType() != enemyUnit.getEnemyType()) {
@@ -53,7 +56,7 @@ public class EnemyInformation {
         }
 
         for(EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
-            if(enemyStrategy.isEnemyStrategy(enemyUnits, game.getFrameCount()) && enemyOpener == null) {
+            if(enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
                 enemyOpener = enemyStrategy;
                 game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
                 break;

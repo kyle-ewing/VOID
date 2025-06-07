@@ -4,6 +4,7 @@ import bwapi.UnitType;
 import bwem.Base;
 import information.BaseInfo;
 import information.EnemyUnits;
+import util.Time;
 
 import java.util.HashSet;
 
@@ -17,7 +18,7 @@ public class CannonRush extends EnemyStrategy {
         buildingResponse();
     }
 
-    public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, int frameCount) {
+    public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyPosition() == null ) {
                 continue;
@@ -28,17 +29,17 @@ public class CannonRush extends EnemyStrategy {
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
-                if(frameCount < 4320) {
+                if(new Time(3, 0).lessThanOrEqual(time)) {
                     return true;
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Protoss_Probe) {
-                if(frameCount < 2000) {
+                if(time.lessThanOrEqual(new Time(0, 50))) {
                     return true;
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
-                if(frameCount < 2500) {
+                if(time.lessThanOrEqual(new Time(2, 0))) {
                     return true;
                 }
             }

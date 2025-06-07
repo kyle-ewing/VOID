@@ -2,6 +2,7 @@ package information.enemyopeners;
 
 import bwapi.UnitType;
 import information.EnemyUnits;
+import util.Time;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,7 +15,7 @@ public abstract class EnemyStrategy {
         this.strategyName = strategyName;
     }
 
-    public abstract boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, int frameCount);
+    public abstract boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time);
     public abstract void buildingResponse();
 
     public String getStrategyName() {
