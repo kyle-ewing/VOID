@@ -109,7 +109,7 @@ public class EnemyInformation {
     }
 
     public void onUnitRenegade(Unit unit) {
-        if(unit.getPlayer() != game.self() && game.enemy() ==  unit.getPlayer()) {
+        if(unit.getPlayer() != game.self() && game.enemy() ==  unit.getPlayer() && !previouslyDiscovered(unit)) {
             if(unit.getType() == UnitType.Zerg_Extractor || unit.getType() == UnitType.Terran_Refinery || unit.getType() == UnitType.Protoss_Assimilator) {
                 addEnemyUnit(unit);
             }
