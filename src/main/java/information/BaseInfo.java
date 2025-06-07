@@ -20,6 +20,7 @@ public class BaseInfo {
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
+    private HashSet<Geyser> startingGeysers = new HashSet<>();
     private ArrayList<TilePosition> baseTiles = new ArrayList<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private HashSet<Base> ownedBases = new HashSet<>();
@@ -48,6 +49,7 @@ public class BaseInfo {
         setStartingBase();
         addStartingBases();
         setStartingMineralPatches();
+        setStartingGeysers();
         setNaturalBase();
         setStartingBaseTiles();
         setOrderedExpansions();
@@ -105,6 +107,12 @@ public class BaseInfo {
     private void setStartingMineralPatches() {
         for(Mineral mineral : startingBase.getMinerals()) {
             startingMinerals.add(mineral);
+        }
+    }
+
+    private void setStartingGeysers() {
+        for(Geyser geyser : startingBase.getGeysers()) {
+            startingGeysers.add(geyser);
         }
     }
 
@@ -222,6 +230,10 @@ public class BaseInfo {
 
     public HashSet<Mineral> getStartingMinerals() {
         return startingMinerals;
+    }
+
+    public HashSet<Geyser> getStartingGeysers() {
+        return startingGeysers;
     }
 
     public Base getStartingBase() {
