@@ -124,6 +124,10 @@ public class UnitManager {
                 continue;
             }
 
+            if(enemyPosition == null) {
+                continue;
+            }
+
             int distance = unitPosition.getApproxDistance(enemyPosition);
 
             if (distance < closestDistance) {
