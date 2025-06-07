@@ -103,7 +103,6 @@ public class Bot extends DefaultBWListener {
     @Override
     public void onUnitDestroy(Unit unit) {
 
-
         if(unit.getType() == UnitType.Terran_SCV) {
             resourceManager.onUnitDestroy(unit);
         }
@@ -145,6 +144,11 @@ public class Bot extends DefaultBWListener {
             return;
         }
         productionManager.onUnitMorph(unit);
+    }
+
+    @Override
+    public void onUnitRenegade(Unit unit) {
+        enemyInformation.onUnitRenegade(unit);
     }
 
     public static void main(String[] args) {
