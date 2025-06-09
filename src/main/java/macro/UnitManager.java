@@ -12,6 +12,7 @@ import information.EnemyUnits;
 import information.Scouting;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
+import util.Time;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,8 +29,12 @@ public class UnitManager {
     private HashMap<UnitType, Integer> unitCount = new HashMap<>();
     private HashMap<Base, CombatUnits> designatedScouts = new HashMap<>();
     private int bunkerLoad = 0;
-    private Unit bunker = null;
     private int scouts = 0;
+    private int rallyClock = 0;
+    private Unit bunker = null;
+    private String enemyOpener = "Unknown";
+    private boolean beingAllInned = false;
+    private boolean defendedAllIn = false;
 
 
     public UnitManager(EnemyInformation enemyInformation, BaseInfo baseInfo, Game game, Scouting scouting) {
@@ -43,8 +48,24 @@ public class UnitManager {
 
     public void onFrame() {
         paintRanges();
+        enemyOpenerResponse();
         //painters.paintNaturalChoke(baseInfo.getNaturalChoke());
         int frameCount = game.getFrameCount();
+
+        if(enemyInformation.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
+            rallyClock++;
+        }
+
+        if(new Time(rallyClock).greaterThan(new Time(1, 0))) {
+            if(!enemyInformation.enemysInMain()) {
+                defendedAllIn = true;
+                enemyOpener = "Defended";
+                rallyClock = 0;
+            }
+            else {
+                rallyClock = 0;
+            }
+        }
 
         if(frameCount % 12 != 0) {
             return;
@@ -197,6 +218,39 @@ public class UnitManager {
         }
     }
 
+    private void enemyOpenerResponse() {
+        if(enemyInformation.getEnemyOpener() == null) {
+            return;
+        }
+
+        switch(enemyInformation.getEnemyOpener().getStrategyName()) {
+            case "Cannon Rush":
+                this.beingAllInned = true;
+                break;
+            case "Four Pool":
+                this.beingAllInned = true;
+                break;
+        }
+    }
+
+    //Reorganize when more enemy openers are added to be more condensed
+    private void setRallyPoint(CombatUnits combatUnit) {
+        if(enemyInformation.getEnemyOpener() == null || defendedAllIn) {
+            if((baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase()))) {
+                combatUnit.setRallyPoint(baseInfo.getNaturalChoke().getCenter().toTilePosition());
+            }
+            else {
+                combatUnit.setRallyPoint(baseInfo.getMainChoke().getCenter().toTilePosition());
+            }
+        }
+        else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
+            combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
+        }
+        else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Cannon Rush")) {
+            combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
+        }
+    }
+
 
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_Bunker) {
@@ -245,12 +299,6 @@ public class UnitManager {
         }
 
     }
-
-    //TODO: make this dynamic
-    private void setRallyPoint(CombatUnits combatUnit) {
-        combatUnit.setRallyPoint(baseInfo.getMainChoke().getCenter().toTilePosition());
-    }
-
 
     public HashSet<CombatUnits> getCombatUnits() {
         return combatUnits;

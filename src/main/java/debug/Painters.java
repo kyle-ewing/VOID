@@ -241,6 +241,10 @@ public class Painters {
         }
     }
 
+    public void paintMainBufferZone(Base base) {
+            game.drawCircleMap(base.getCenter(), 500, Color.Yellow);
+    }
+
     public void onFrame() {
         paintWorker();
         paintWorkerText();

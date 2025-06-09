@@ -43,6 +43,15 @@ public class EnemyInformation {
         return false;
     }
 
+    public boolean enemysInMain() {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyUnit().getTilePosition().getDistance(baseInfo.getStartingBase().getLocation()) < 500) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
 
