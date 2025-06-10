@@ -37,6 +37,8 @@ public class ResourceManager {
         this.player = player;
         this.enemyInformation = enemyInformation;
         this.game = game;
+
+
     }
 
     //TODO: refactor all of this and organize with switch cases
@@ -99,12 +101,13 @@ public class ResourceManager {
     }
 
     public void gatherMinerals() {
-        //TODO: Assign workers to empty patches
-        Mineral mineralPatch = baseInfo.getStartingMinerals().iterator().next();
-        for(Workers scv : workers) {
-            if(scv.getWorkerStatus() == WorkerStatus.IDLE) {
-                scv.getUnit().gather(mineralPatch.getUnit());
-                scv.setWorkerStatus(WorkerStatus.MINERALS);
+        for(Mineral mineral : baseInfo.getStartingMinerals()) {
+            for(Workers worker : workers) {
+                if(worker.getWorkerStatus() == WorkerStatus.IDLE) {
+                    worker.getUnit().gather(mineral.getUnit());
+                    worker.setWorkerStatus(WorkerStatus.MINERALS);
+                    break;
+                }
             }
         }
     }
