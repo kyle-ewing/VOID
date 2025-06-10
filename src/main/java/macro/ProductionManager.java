@@ -598,7 +598,7 @@ public class ProductionManager {
         removeUnitTypeCount(unit);
         removeBuilding(unit);
 
-        if(unit.getType().isBuilding()) {
+        if(unit.getType().isBuilding() && unit.getType() != UnitType.Terran_Bunker) {
             if(!unit.isCompleted()) {
                 resetBuilding(unit);
             }

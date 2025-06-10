@@ -16,6 +16,7 @@ public class CombatUnits {
     private TilePosition rallyPoint;
 
     private int unitID;
+    private int resetClock = 0;
     private boolean inBunker;
 
     public CombatUnits(Unit unit) {
@@ -72,6 +73,13 @@ public class CombatUnits {
 
     }
 
+    public int getResetClock() {
+        return resetClock;
+    }
+
+    public void setResetClock(int resetClock) {
+        this.resetClock = resetClock;
+    }
 
     public Unit getUnit() {
         return unit;
