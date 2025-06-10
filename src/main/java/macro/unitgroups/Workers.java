@@ -9,6 +9,7 @@ public class Workers {
     private WorkerStatus workerStatus;
     private int buildFrameCount;
     private int attackClock;
+    private int idleClock = 0;
     private int unitID;
     private EnemyUnits enemyUnit;
 
@@ -96,5 +97,13 @@ public class Workers {
 
     public void setUnitID(int unitID) {
         this.unitID = unitID;
+    }
+
+    public int getIdleClock() {
+        return idleClock;
+    }
+
+    public void setIdleClock(int idleClock) {
+        this.idleClock = idleClock;
     }
 }
