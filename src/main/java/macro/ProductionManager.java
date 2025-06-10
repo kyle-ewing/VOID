@@ -171,6 +171,15 @@ public class ProductionManager {
                                     }
                                 }
                             }
+                            else if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
+                                for(Unit productionBuilding : productionBuildings) {
+                                    if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining()) {
+                                        productionBuilding.buildAddon(pi.getUnitType());
+                                        pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -275,6 +284,12 @@ public class ProductionManager {
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                         }
 
+                    }
+
+                    if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
+                        if(pi.getUnitType() == newestCompletedBuilding.getType()) {
+                            pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                        }
                     }
 
 

@@ -26,7 +26,7 @@ public class TwoRaxAcademy implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(TechType.Stim_Packs, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, 2));
         buildOrder.add(new PlannedItem(UpgradeType.U_238_Shells, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, 2));
-        //buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 28, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 28, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         return buildOrder;
     }
 }

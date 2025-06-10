@@ -89,7 +89,7 @@ public class Bot extends DefaultBWListener {
         if(unit.getType() != UnitType.Terran_SCV && !unit.getType().isBuilding()) {
             unitManager.onUnitComplete(unit);
         }
-        else if(unit.getType() == UnitType.Terran_Bunker) {
+        else if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Comsat_Station) {
             unitManager.onUnitComplete(unit);
         }
 
