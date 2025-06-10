@@ -102,7 +102,7 @@ public class ProductionManager {
 
     private void buildingProduction() {
         for (PlannedItem pi : productionQueue) {
-            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && meetsRequirements(pi.getUnitType())) {
                 priorityStop = true;
             }
 
@@ -557,6 +557,24 @@ public class ProductionManager {
                 break;
             }
         }
+    }
+
+    private boolean meetsRequirements(UnitType unitType) {
+        if(!unitType.isBuilding()) {
+            return false;
+        }
+
+        for(Workers worker: resourceManager.getWorkers()) {
+            if(worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+                continue;
+            }
+
+            if(worker.getUnit().canBuild(unitType)) {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     private void getOpenerNames() {
