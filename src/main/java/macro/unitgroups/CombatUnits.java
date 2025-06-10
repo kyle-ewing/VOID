@@ -28,6 +28,15 @@ public class CombatUnits {
         this.inBunker = false;
     }
 
+    public CombatUnits(Unit unit, UnitStatus unitStatus) {
+        this.unit = unit;
+        this.unitType = unit.getType();
+        this.unitID = unit.getID();
+        this.rallyPoint = null;
+        this.unitStatus = unitStatus;
+        this.inBunker = false;
+    }
+
 
 
     public void attack() {

@@ -1,9 +1,6 @@
 package macro;
 
-import bwapi.Game;
-import bwapi.Position;
-import bwapi.Unit;
-import bwapi.UnitType;
+import bwapi.*;
 import bwem.Base;
 import debug.Painters;
 import information.BaseInfo;
@@ -71,10 +68,13 @@ public class UnitManager {
         }
 
         for(CombatUnits combatUnit : combatUnits) {
-            if(combatUnit.getRallyPoint() == null) {
-                setRallyPoint(combatUnit);
+            if(combatUnit.getUnitType() == UnitType.Spell_Scanner_Sweep) {
+                continue;
             }
 
+            if(combatUnit.getRallyPoint() == null && (combatUnit.getUnitStatus() != UnitStatus.ADDON)) {
+                setRallyPoint(combatUnit);
+            }
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
@@ -128,6 +128,9 @@ public class UnitManager {
                     break;
                 case SCOUT:
                     scoutBases();
+                    break;
+                case ADDON:
+                    scanInvisibleUnits(combatUnit);
                     break;
             }
         }
@@ -262,10 +265,51 @@ public class UnitManager {
         }
     }
 
+    private void scanInvisibleUnits(CombatUnits combatUnit) {
+        if(combatUnit.getUnitType() != UnitType.Terran_Comsat_Station) {
+            return;
+        }
+
+        if(isActiveScanNearUnit()) {
+            return;
+        }
+
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
+                combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition());
+            }
+        }
+    }
+
+    private boolean isActiveScanNearUnit() {
+        for(CombatUnits scanUnit : combatUnits) {
+            if(scanUnit.getUnitStatus() == UnitStatus.SCAN) {
+                for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+                    if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
+                        int distance = scanUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition());
+                        if (distance <= 300) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_Bunker) {
             bunker = unit;
+            return;
+        }
+
+        if(unit.getType() == UnitType.Terran_Comsat_Station) {
+            combatUnits.add(new CombatUnits(unit, UnitStatus.ADDON));
+            return;
+        }
+        else if(unit.getType() == UnitType.Spell_Scanner_Sweep) {
+            combatUnits.add(new CombatUnits(unit, UnitStatus.SCAN));
             return;
         }
 
@@ -279,7 +323,7 @@ public class UnitManager {
             return;
         }
 
-        if(unit.getType().isBuilding()) {
+        if(unit.getType().isBuilding() && unit.getType() != UnitType.Terran_Comsat_Station) {
             return;
         }
 
@@ -300,7 +344,9 @@ public class UnitManager {
             }
         }
 
-        unitCount.put(unit.getType(), unitCount.get(unit.getType()) - 1);
+        if(unitCount.containsKey(unit.getType())) {
+            unitCount.put(unit.getType(), unitCount.get(unit.getType()) - 1);
+        }
     }
 
     //Debug painters
