@@ -110,7 +110,7 @@ public class Bot extends DefaultBWListener {
         enemyInformation.onUnitDestroy(unit);
 
         if(unit.getPlayer() == game.self()) {
-            if(unit.getType() != UnitType.Terran_SCV && !unit.getType().isBuilding()) {
+            if(unit.getType() != UnitType.Terran_SCV) {
                 unitManager.onUnitDestroy(unit);
             }
 

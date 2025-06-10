@@ -32,7 +32,7 @@ public class UnitManager {
     private int scouts = 0;
     private int rallyClock = 0;
     private Unit bunker = null;
-    private String enemyOpener = "Unknown";
+    private boolean bunkerunLoaded = false;
     private boolean beingAllInned = false;
     private boolean defendedAllIn = false;
 
@@ -59,7 +59,6 @@ public class UnitManager {
         if(new Time(rallyClock).greaterThan(new Time(1, 0))) {
             if(!enemyInformation.enemysInMain()) {
                 defendedAllIn = true;
-                enemyOpener = "Defended";
                 rallyClock = 0;
             }
             else {
@@ -87,10 +86,21 @@ public class UnitManager {
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
             }
 
-            if((unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.DEFEND) && bunker != null && bunkerLoad < 4) {
-                combatUnit.setUnitStatus(UnitStatus.LOAD);
-                bunkerLoad++;
+            if((unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.DEFEND)) {
+                combatUnit.setResetClock(combatUnit.getResetClock() + 12);
+
+                if(new Time(combatUnit.getResetClock()).greaterThan(new Time(0, 30))) {
+                    setRallyPoint(combatUnit);
+                    combatUnit.setResetClock(0);
+                }
+
+                if(combatUnit.getUnitType() == UnitType.Terran_Marine && (bunker != null && bunkerLoad < 4) && !bunkerunLoaded) {
+                    combatUnit.setUnitStatus(UnitStatus.LOAD);
+                    bunkerLoad++;
+                }
             }
+
+
 
             if(scouting.isCompletedScout() && !enemyInformation.isEnemyBuildingDiscovered() && combatUnit.getUnitType() == UnitType.Terran_Marine && scouts < baseInfo.getMapBases().size()) {
                 combatUnit.setUnitStatus(UnitStatus.SCOUT);
@@ -106,14 +116,14 @@ public class UnitManager {
                     combatUnit.attack();
                     break;
                 case RALLY:
-                    updateClosetEnemy(combatUnit, 500);
+                    updateClosetEnemy(combatUnit, 300);
                     combatUnit.rally();
                     break;
                 case LOAD:
                     loadBunker(combatUnit);
                     break;
                 case DEFEND:
-                    updateClosetEnemy(combatUnit, 500);
+                    updateClosetEnemy(combatUnit, 250);
                     combatUnit.defend();
                     break;
                 case SCOUT:
@@ -176,6 +186,7 @@ public class UnitManager {
     public void unLoadBunker() {
         bunker.unloadAll();
         bunkerLoad = 0;
+        bunkerunLoaded = true;
     }
 
     private void assignScouts(CombatUnits combatUnit) {
@@ -265,6 +276,10 @@ public class UnitManager {
     public void onUnitDestroy(Unit unit) {
         if(unit.getType() == UnitType.Terran_Bunker) {
             bunker = null;
+            return;
+        }
+
+        if(unit.getType().isBuilding()) {
             return;
         }
 
