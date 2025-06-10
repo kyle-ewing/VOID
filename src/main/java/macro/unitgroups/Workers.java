@@ -5,14 +5,17 @@ import information.EnemyUnits;
 
 public class Workers {
     private Unit unit;
+    private Unit repairTarget;
     private WorkerStatus workerStatus;
     private int buildFrameCount;
     private int attackClock;
+    private int unitID;
     private EnemyUnits enemyUnit;
 
     public Workers(Unit unit, WorkerStatus workerStatus) {
         this.unit = unit;
         this.workerStatus = workerStatus;
+        this.unitID = unit.getID();
         this.buildFrameCount = 0;
         this.attackClock = 0;
     }
@@ -24,6 +27,17 @@ public class Workers {
 
         if (!unit.isAttackFrame()) {
             unit.attack(enemyUnit.getEnemyPosition());
+        }
+    }
+
+    public void repair(Unit target) {
+        if (target != null && target.getHitPoints() < target.getType().maxHitPoints() && !unit.isRepairing()) {
+                unit.repair(target);
+        }
+
+        if(target == null || target.getHitPoints() >= target.getType().maxHitPoints()) {
+            workerStatus = WorkerStatus.IDLE;
+            repairTarget = null;
         }
     }
 
@@ -68,5 +82,19 @@ public class Workers {
         this.enemyUnit = enemyUnit;
     }
 
+    public Unit getRepairTarget() {
+        return repairTarget;
+    }
 
+    public void setRepairTarget(Unit repairTarget) {
+        this.repairTarget = repairTarget;
+    }
+
+    public int getUnitID() {
+        return unitID;
+    }
+
+    public void setUnitID(int unitID) {
+        this.unitID = unitID;
+    }
 }

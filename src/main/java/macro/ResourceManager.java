@@ -22,8 +22,9 @@ public class ResourceManager {
     private Game game;
     private EnemyInformation enemyInformation;
     private HashSet<Workers> workers = new HashSet<>();
-    private HashMap<Base, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private HashSet<Workers> defenseForce = new HashSet<>();
+    private HashMap<Base, HashSet<Workers>> refinerySaturation = new HashMap<>();
+    private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
     private int reservedMinerals = 0;
     private int reservedGas = 0;
     private int availableMinerals = 0;
@@ -45,6 +46,7 @@ public class ResourceManager {
         gatherMinerals();
         gatherGas();
         workerBuildClock();
+        buildingHealthCheck();
 
         int frameCount = game.getFrameCount();
 
@@ -77,6 +79,20 @@ public class ResourceManager {
                     removeDefenseForce();
                 }
 
+            }
+
+            if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                for(Unit building : buildingRepair.keySet()) {
+                    if(buildingRepair.get(building) == null) {
+                        buildingRepair.put(building, worker);
+                        worker.setRepairTarget(building);
+                        worker.setWorkerStatus(WorkerStatus.REPAIRING);
+                    }
+                }
+            }
+
+            if(worker.getWorkerStatus() == WorkerStatus.REPAIRING) {
+                worker.repair(worker.getRepairTarget());
             }
 
         }
@@ -198,6 +214,22 @@ public class ResourceManager {
         }
     }
 
+    private void buildingHealthCheck() {
+        for(Unit building : player.getUnits()) {
+            if(building.getType().isBuilding() && building.getHitPoints() < building.getType().maxHitPoints() && building.isCompleted()) {
+                if(!buildingRepair.containsKey(building)) {
+                    buildingRepair.put(building, null);
+                }
+            }
+
+            if(building.getType().isBuilding() && building.getHitPoints() >= building.getType().maxHitPoints() && building.isCompleted()) {
+                if(buildingRepair.containsKey(building)) {
+                    buildingRepair.remove(building);
+                }
+            }
+        }
+    }
+
     private void workerAttackClock(Workers worker) {
         worker.setAttackClock(worker.getAttackClock() + 1);
     }
@@ -209,13 +241,21 @@ public class ResourceManager {
     public void onUnitDestroy(Unit scv) {
         for(Workers worker : workers) {
             if(worker.getUnit() == scv) {
-                workers.remove(worker);
+
 
                 if(worker.getWorkerStatus() == WorkerStatus.GAS) {
                     if(refinerySaturation.containsKey(baseInfo.getStartingBase())) {
                         refinerySaturation.get(baseInfo.getStartingBase()).remove(worker);
                     }
                 }
+
+                for(Unit building : buildingRepair.keySet()) {
+                    if(buildingRepair.get(building) == worker) {
+                        buildingRepair.put(building, null);
+                    }
+                }
+
+                workers.remove(worker);
 
                 break;
             }
