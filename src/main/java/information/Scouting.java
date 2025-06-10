@@ -82,7 +82,7 @@ public class Scouting {
 
         Position targetPosition = new Position(x, y);
 
-        if (scout.getUnit().getDistance(targetPosition) < 32) {
+        if (scout.getUnit().getDistance(targetPosition) < 90) {
             currentPositionIndex = (currentPositionIndex + 1) % positionCount;
             angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
             x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));

@@ -97,6 +97,15 @@ public class ResourceManager {
                 worker.repair(worker.getRepairTarget());
             }
 
+            if((worker.getWorkerStatus() == WorkerStatus.BUILDING) && worker.getUnit().isIdle()) {
+                worker.setIdleClock(worker.getIdleClock() + 12);
+
+                if(worker.getIdleClock() > 300) {
+                    worker.setWorkerStatus(WorkerStatus.IDLE);
+                    worker.setIdleClock(0);
+                }
+            }
+
         }
     }
 
