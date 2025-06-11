@@ -101,6 +101,8 @@ public class ProductionManager {
     }
 
     private void buildingProduction() {
+        boolean hasHighPriorityBuilding = hasHigherPriorityBuilding();
+
         for (PlannedItem pi : productionQueue) {
             if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && meetsRequirements(pi.getUnitType())) {
                 priorityStop = true;
@@ -110,16 +112,35 @@ public class ProductionManager {
                 continue;
             }
 
+            if (hasHighPriorityBuilding && pi.getPlannedItemType() == PlannedItemType.UNIT && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                continue;
+            }
+
             switch (pi.getPlannedItemStatus()) {
                 case NOT_STARTED:
                     if (pi.getSupply() <= player.supplyUsed() / 2) {
 
                         if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
+                            if(!canBeResearched(pi.getTechBuilding()) || !isResearching(pi.getTechBuilding())) {
+                                continue;
+                            }
+
+
+
                             if(pi.getTechUpgrade() != null) {
+                                if(resourceManager.getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || resourceManager.getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
+                                    continue;
+                                }
+
                                 researchTech(pi.getTechUpgrade());
+                                pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                             }
                             else if(pi.getUpgradeType() != null) {
+                                if(resourceManager.getAvailableMinerals() < pi.getUpgradeType().mineralPrice() || resourceManager.getAvailableGas() < pi.getUpgradeType().gasPrice()) {
+                                    continue;
+                                }
                                 researchUpgrade(pi.getUpgradeType());
+                                pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                             }
                             continue;
                         }
@@ -277,13 +298,16 @@ public class ProductionManager {
 
 
                     if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
-                        if(game.self().hasResearched(pi.getTechUpgrade())) {
-                            pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                        if(pi.getUpgradeType() != null) {
+                            if(game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeType().maxRepeats()) {
+                                pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                            }
                         }
-                        else if(game.self().getUpgradeLevel(pi.getUpgradeType()) == 1) {
-                            pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                        else if(pi.getTechUpgrade() != null) {
+                            if(game.self().hasResearched(pi.getTechUpgrade())) {
+                                pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                            }
                         }
-
                     }
 
                     if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
@@ -317,6 +341,18 @@ public class ProductionManager {
         productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, priority));
     }
 
+    private boolean hasHigherPriorityBuilding() {
+        for (PlannedItem pi : productionQueue) {
+            if ((pi.getPlannedItemType() == PlannedItemType.BUILDING) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && meetsRequirements(pi.getUnitType())) {
+                return true;
+            }
+            else if(pi.getPlannedItemType() == PlannedItemType.UPGRADE && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     private void addUnitProduction() {
         switch(startingOpener.getBuildOrderName()) {
@@ -326,26 +362,30 @@ public class ProductionManager {
                         productionBuilding.train(UnitType.Terran_Marine);
                     }
                 }
+                break;
             case TWORAX:
                 for(Unit productionBuilding : productionBuildings) {
                     if(productionBuilding.getType() == UnitType.Terran_Barracks && !productionBuilding.isTraining() && resourceManager.getAvailableMinerals() >= 50) {
                         productionBuilding.train(UnitType.Terran_Marine);
                     }
                 }
+                break;
             case TWORAXACADEMY:
                 for(Unit productionBuilding : productionBuildings) {
                     if (isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
-                        if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic) && unitTypeCount.get(UnitType.Terran_Medic) < 3) {
+                        if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic) && unitTypeCount.get(UnitType.Terran_Medic) < 3 && !hasUnitInQueue(UnitType.Terran_Medic)) {
                                 addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
                         }
-                        else if(isRecruitable(UnitType.Terran_Marine)) {
+                        else if(isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
                             addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
                         }
                     }
-                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6) {
+                    //TODO: remove when transitions are added
+                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
                         addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
                     }
                 }
+                break;
             case ONERAXFE:
                 for(Unit productionBuilding : productionBuildings) {
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
@@ -354,6 +394,7 @@ public class ProductionManager {
                         }
                     }
                 }
+                break;
 
 
         }
@@ -382,7 +423,7 @@ public class ProductionManager {
                     .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_SCV);
 
             if (!scvInQueue) {
-                addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT,3);
+                addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT,4);
             }
         }
     }
@@ -517,8 +558,9 @@ public class ProductionManager {
     private void researchUpgrade(UpgradeType upgradeType) {
         if(resourceManager.getAvailableMinerals() >= upgradeType.mineralPrice() && resourceManager.getAvailableGas() >= upgradeType.gasPrice()) {
             for(Unit researchBuilding : allBuildings) {
-                if(researchBuilding.canUpgrade(upgradeType)) {
+                if(researchBuilding.canUpgrade(upgradeType) && !researchBuilding.isUpgrading()) {
                     researchBuilding.upgrade(upgradeType);
+                    break;
                 }
             }
         }
@@ -527,12 +569,22 @@ public class ProductionManager {
     private void researchTech(TechType techType) {
         if(resourceManager.getAvailableMinerals() >= techType.mineralPrice() && resourceManager.getAvailableGas() >= techType.gasPrice()) {
             for(Unit researchBuilding : allBuildings) {
-                if(researchBuilding.canResearch(techType)) {
+                if(researchBuilding.canResearch(techType) && !researchBuilding.isUpgrading()) {
                     researchBuilding.research(techType);
+                    break;
                 }
             }
         }
 
+    }
+
+    private boolean isResearching(UnitType unitType) {
+        for(Unit researchBuilding : allBuildings) {
+            if(researchBuilding.getType() == unitType && !(researchBuilding.isResearching() || researchBuilding.isUpgrading())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean buildingInProduction(TilePosition tilePosition, UnitType unitType) {
@@ -579,17 +631,34 @@ public class ProductionManager {
             return false;
         }
 
-        for(Workers worker: resourceManager.getWorkers()) {
-            if(worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+        Map<UnitType, Integer> requiredUnits = unitType.requiredUnits();
+        if(requiredUnits.isEmpty()) {
+            return true;
+        }
+
+        for(UnitType requiredUnit : requiredUnits.keySet()) {
+            if(!requiredUnit.isBuilding()) {
                 continue;
             }
 
-            if(worker.getUnit().canBuild(unitType)) {
+            if(unitTypeCount.get(requiredUnit) > 0) {
                 return true;
             }
-            return false;
         }
+
         return false;
+    }
+
+    private boolean canBeResearched(UnitType unitType) {
+        if(unitTypeCount.get(unitType) > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean hasUnitInQueue(UnitType unitType) {
+        return productionQueue.stream().anyMatch(pi -> pi.getUnitType() == unitType && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
     }
 
     private void getOpenerNames() {
