@@ -4,12 +4,12 @@ import bwapi.*;
 
 public class PlannedItem {
     private UnitType unitType;
+    private UnitType techBuilding;
     private Integer supply = 0;
     private PlannedItemStatus plannedItemStatus;
     private PlannedItemType plannedItemType;
     private TilePosition buildPosition;
     private Unit assignedBuilder;
-    private Unit techBuilding;
     private TechType techUpgrade;
     private UpgradeType upgradeType;
 
@@ -60,6 +60,23 @@ public class PlannedItem {
         this.techUpgrade = null;
     }
 
+    public PlannedItem(TechType techUpgrade, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
+        this.techUpgrade = techUpgrade;
+        this.supply = supply;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.techBuilding = techBuilding;
+        this.priority = priority;
+    }
+
+    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
+        this.upgradeType = upgradeType;
+        this.supply = supply;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.techBuilding = techBuilding;
+        this.priority = priority;
+    }
 
     public PlannedItemStatus getPlannedItemStatus() {
         return plannedItemStatus;
@@ -109,11 +126,11 @@ public class PlannedItem {
         this.assignedBuilder = assignedBuilder;
     }
 
-    public Unit getTechBuilding() {
+    public UnitType getTechBuilding() {
         return techBuilding;
     }
 
-    public void setTechBuilding(Unit techBuilding) {
+    public void setTechBuilding(UnitType techBuilding) {
         this.techBuilding = techBuilding;
     }
 
