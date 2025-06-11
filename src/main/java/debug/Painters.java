@@ -247,10 +247,15 @@ public class Painters {
 
     public void paintMineralExlusionZone(HashSet<TilePosition> buildTiles) {
         for(TilePosition tile : buildTiles) {
-            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Red);
+            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Cyan);
         }
     }
 
+    public void paintGeyserExclusionZone(HashSet<TilePosition> buildTiles) {
+        for(TilePosition tile : buildTiles) {
+            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Green);
+        }
+    }
     public void onFrame() {
         paintWorker();
         paintWorkerText();
