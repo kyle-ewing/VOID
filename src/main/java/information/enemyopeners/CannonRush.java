@@ -24,7 +24,7 @@ public class CannonRush extends EnemyStrategy {
                 continue;
             }
 
-            if(enemyUnit.getEnemyPosition().getApproxDistance(baseInfo.getStartingBase().getCenter()) > 1000) {
+            if(enemyUnit.getEnemyPosition().getApproxDistance(baseInfo.getStartingBase().getCenter()) > 1250) {
                 continue;
             }
 
@@ -34,7 +34,7 @@ public class CannonRush extends EnemyStrategy {
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Protoss_Probe) {
-                if(time.lessThanOrEqual(new Time(0, 50))) {
+                if(time.lessThanOrEqual(new Time(1, 20))) {
                     return true;
                 }
             }
