@@ -20,6 +20,7 @@ public class BuildTiles {
     private HashSet<TilePosition> mediumBuildTiles = new HashSet<>();
     private HashSet<TilePosition> largeBuildTiles = new HashSet<>();
     private HashSet<TilePosition> mineralExlusionTiles = new HashSet<>();
+    private HashSet<TilePosition> geyserExlusionTiles = new HashSet<>();
     private TilePosition bunkerTile;
 
     public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
@@ -35,6 +36,7 @@ public class BuildTiles {
 
     private void generateBuildTiles() {
         mineralExclusionZone();
+        geyserExclusionZone();
         generateBunkerTiles();
         generateLargeTiles();
         generateMediumTiles();
@@ -145,7 +147,7 @@ public class BuildTiles {
                 for(int y = 0; y < buildingHeight; y++) {
                     TilePosition checkTile = new TilePosition(currentTile.getX() + x, currentTile.getY() + y);
 
-                    if(intersectsMineralExclusionZone(checkTile)) {
+                    if(intersectsMineralExclusionZone(checkTile) || intersectsGeyserExclusionZone(checkTile)) {
                         return false;
                     }
 
@@ -179,7 +181,7 @@ public class BuildTiles {
                 return false;
             }
 
-            if(intersectsMineralExclusionZone(currentTile)) {
+            if(intersectsMineralExclusionZone(currentTile) || intersectsGeyserExclusionZone(currentTile)) {
                 return false;
             }
 
@@ -208,22 +210,6 @@ public class BuildTiles {
 
         if(inCCBuffer) {
             return true;
-        }
-
-        for(Geyser geyser : baseInfo.getStartingGeysers()) {
-            TilePosition geyserPos = geyser.getUnit().getTilePosition();
-            int geyserXStart = geyserPos.getX();
-            int geyserYStart = geyserPos.getY();
-            int geyserXEnd = geyserXStart + 4;
-            int geyserYEnd = geyserYStart + 2;
-
-            for(int x = newX; x < newX + typeWidth; x++) {
-                for(int y = newY; y < newY + typeHeight; y++) {
-                    if(x >= geyserXStart && x < geyserXEnd && y >= geyserYStart && y < geyserYEnd) {
-                        return true;
-                    }
-                }
-            }
         }
 
         if(bunkerTile != null) {
@@ -327,6 +313,28 @@ public class BuildTiles {
         return mineralExlusionTiles.contains(tilePosition);
     }
 
+    private void geyserExclusionZone() {
+        TilePosition geyserTile = baseInfo.getStartingGeysers().iterator().next().getUnit().getTilePosition();
+        int geyserX = geyserTile.getX();
+        int geyserY = geyserTile.getY();
+        TilePosition commandCenterTile = baseInfo.getStartingBase().getLocation();
+
+        int boxStartX = Math.min(geyserX, commandCenterTile.getX());
+        int boxEndX = Math.max(geyserX + 3, commandCenterTile.getX());
+        int boxStartY = Math.min(geyserY, commandCenterTile.getY());
+        int boxEndY = Math.max(geyserY + 2, commandCenterTile.getY());
+
+        for(int x = boxStartX; x <= boxEndX; x++) {
+            for(int y = boxStartY; y <= boxEndY; y++) {
+                geyserExlusionTiles.add(new TilePosition(x, y));
+            }
+        }
+    }
+
+    private boolean intersectsGeyserExclusionZone(TilePosition tilePosition) {
+        return geyserExlusionTiles.contains(tilePosition);
+    }
+
 
     public void updateRemainingTiles(TilePosition tilePosition) {
         largeBuildTiles.removeIf(tile -> tile.equals(tilePosition));
@@ -352,6 +360,7 @@ public class BuildTiles {
         painters.paintAvailableBuildTiles(largeBuildTiles, 0, "Production");
         painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
         //painters.paintMineralExlusionZone(mineralExlusionTiles);
+        //painters.paintGeyserExclusionZone(geyserExlusionTiles);
 
     }
 }
