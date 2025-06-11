@@ -9,7 +9,6 @@ import bwem.Mineral;
 import debug.Painters;
 import information.BaseInfo;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 public class BuildTiles {
@@ -20,6 +19,7 @@ public class BuildTiles {
     private Painters painters;
     private HashSet<TilePosition> mediumBuildTiles = new HashSet<>();
     private HashSet<TilePosition> largeBuildTiles = new HashSet<>();
+    private HashSet<TilePosition> mineralExlusionTiles = new HashSet<>();
     private TilePosition bunkerTile;
 
     public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
@@ -34,6 +34,7 @@ public class BuildTiles {
     }
 
     private void generateBuildTiles() {
+        mineralExclusionZone();
         generateBunkerTiles();
         generateLargeTiles();
         generateMediumTiles();
@@ -97,10 +98,28 @@ public class BuildTiles {
 
         int searchRadius = 4;
         int closestDistance = Integer.MAX_VALUE;
+        int bunkerWidth = UnitType.Terran_Bunker.tileWidth();
+        int bunkerHeight = UnitType.Terran_Bunker.tileHeight();
 
         for(int x = finalMidX - searchRadius; x <= finalMidX + searchRadius; x++) {
             for(int y = finalMidY - searchRadius; y <= finalMidY + searchRadius; y++) {
                 TilePosition testPos = new TilePosition(x, y);
+                boolean validLocation = true;
+
+                for(int bx = x; bx < x + bunkerWidth; bx++) {
+                    for(int by = y; by < y + bunkerHeight; by++) {
+                        TilePosition footprintTile = new TilePosition(bx, by);
+                        if(intersectsMineralExclusionZone(footprintTile)) {
+                            validLocation = false;
+                            break;
+                        }
+                    }
+                    if(!validLocation) {
+                        break;
+                    }
+                }
+
+                if(!validLocation) continue;
 
                 if(!tilePositionValidator.isBuildable(testPos, UnitType.Terran_Bunker)) {
                     continue;
@@ -119,15 +138,18 @@ public class BuildTiles {
         int buildingWidth = unitType.tileWidth();
         int buildingHeight = unitType.tileHeight();
 
-        for (int line = 0; line < 3; line++) {
+        for(int line = 0; line < 3; line++) {
             TilePosition currentTile = new TilePosition(startTile.getX(), startTile.getY() + (line * buildingHeight));
 
             for(int x = 0; x < buildingWidth; x++) {
                 for(int y = 0; y < buildingHeight; y++) {
                     TilePosition checkTile = new TilePosition(currentTile.getX() + x, currentTile.getY() + y);
 
-                    if(!tilePositionValidator.isBuildable(checkTile) ||
-                            intersectsExistingBuildTiles(checkTile, unitType)) {
+                    if(intersectsMineralExclusionZone(checkTile)) {
+                        return false;
+                    }
+
+                    if(!tilePositionValidator.isBuildable(checkTile) || intersectsExistingBuildTiles(checkTile, unitType)) {
                         return false;
                     }
                 }
@@ -157,6 +179,10 @@ public class BuildTiles {
                 return false;
             }
 
+            if(intersectsMineralExclusionZone(currentTile)) {
+                return false;
+            }
+
             if(!tilePositionValidator.isBuildable(edgeCaseTile1) && !tilePositionValidator.isBuildable(edgeCaseTile2)) {
                 return false;
             }
@@ -182,17 +208,6 @@ public class BuildTiles {
 
         if(inCCBuffer) {
             return true;
-        }
-
-        for(Mineral mineral : baseInfo.getStartingMinerals()) {
-            TilePosition mineralPos = mineral.getUnit().getTilePosition();
-            int mineralX = mineralPos.getX();
-            int mineralY = mineralPos.getY();
-
-            boolean inMineralBuffer = (newX >= mineralX - 2 && newX < mineralX + 1 + 2) && (newY >= mineralY - 2 && newY < mineralY + 1 + 2);
-            if(inMineralBuffer) {
-                return true;
-            }
         }
 
         for(Geyser geyser : baseInfo.getStartingGeysers()) {
@@ -271,6 +286,48 @@ public class BuildTiles {
         return false;
     }
 
+    private void mineralExclusionZone() {
+        TilePosition lowestXTile = null;
+        TilePosition highestXTile = null;
+        TilePosition lowestYTile = null;
+        TilePosition highestYTile = null;
+        TilePosition commandCenterTile = baseInfo.getStartingBase().getLocation();
+
+        for(Mineral mineral : baseInfo.getStartingMinerals()) {
+            TilePosition mineralTile = mineral.getUnit().getTilePosition();
+
+            if(lowestXTile == null || mineralTile.getX() < lowestXTile.getX()) {
+                lowestXTile = mineralTile;
+            }
+            if(highestXTile == null || mineralTile.getX() > highestXTile.getX()) {
+                highestXTile = mineralTile;
+            }
+            if(lowestYTile == null || mineralTile.getY() < lowestYTile.getY()) {
+                lowestYTile = mineralTile;
+            }
+            if(highestYTile == null || mineralTile.getY() > highestYTile.getY()) {
+                highestYTile = mineralTile;
+            }
+        }
+
+        int boxStartX = Math.min(lowestXTile.getX(), commandCenterTile.getX());
+        int boxEndX = Math.max(highestXTile.getX(), commandCenterTile.getX());
+        int boxStartY = Math.min(lowestYTile.getY(), commandCenterTile.getY());
+        int boxEndY = Math.max(highestYTile.getY(), commandCenterTile.getY());
+
+        for(int x = boxStartX; x <= boxEndX; x++) {
+            for(int y = boxStartY; y <= boxEndY; y++) {
+                mineralExlusionTiles.add(new TilePosition(x, y));
+            }
+        }
+
+    }
+
+    private boolean intersectsMineralExclusionZone(TilePosition tilePosition) {
+        return mineralExlusionTiles.contains(tilePosition);
+    }
+
+
     public void updateRemainingTiles(TilePosition tilePosition) {
         largeBuildTiles.removeIf(tile -> tile.equals(tilePosition));
         mediumBuildTiles.removeIf(tile -> tile.equals(tilePosition));
@@ -294,6 +351,7 @@ public class BuildTiles {
         painters.paintMediumBuildTiles(mediumBuildTiles);
         painters.paintAvailableBuildTiles(largeBuildTiles, 0, "Production");
         painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
+        //painters.paintMineralExlusionZone(mineralExlusionTiles);
 
     }
 }

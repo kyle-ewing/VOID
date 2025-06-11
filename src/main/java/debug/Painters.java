@@ -245,6 +245,12 @@ public class Painters {
             game.drawCircleMap(base.getCenter(), 500, Color.Yellow);
     }
 
+    public void paintMineralExlusionZone(HashSet<TilePosition> buildTiles) {
+        for(TilePosition tile : buildTiles) {
+            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Red);
+        }
+    }
+
     public void onFrame() {
         paintWorker();
         paintWorkerText();
