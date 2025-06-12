@@ -25,7 +25,7 @@ public class TwoFac implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 20, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 22, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 22, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
-        buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
+        buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,2));
         buildOrder.add(new PlannedItem(TechType.Spider_Mines, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
         return  buildOrder;
     }

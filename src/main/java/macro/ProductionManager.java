@@ -303,7 +303,7 @@ public class ProductionManager {
 
                     if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
                         if(pi.getUpgradeType() != null) {
-                            if(game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeType().maxRepeats()) {
+                            if(game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeLevel()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             }
                         }

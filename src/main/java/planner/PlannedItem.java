@@ -6,6 +6,7 @@ public class PlannedItem {
     private UnitType unitType;
     private UnitType techBuilding;
     private Integer supply = 0;
+    private Integer upgradeLevel;
     private PlannedItemStatus plannedItemStatus;
     private PlannedItemType plannedItemType;
     private TilePosition buildPosition;
@@ -69,12 +70,13 @@ public class PlannedItem {
         this.priority = priority;
     }
 
-    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
+    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, Integer upgradeLevel, int priority) {
         this.upgradeType = upgradeType;
         this.supply = supply;
         this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.techBuilding = techBuilding;
+        this.upgradeLevel = upgradeLevel;
         this.priority = priority;
     }
 
@@ -156,5 +158,13 @@ public class PlannedItem {
 
     public void setUpgradeType(UpgradeType upgradeType) {
         this.upgradeType = upgradeType;
+    }
+
+    public Integer getUpgradeLevel() {
+        return upgradeLevel;
+    }
+
+    public void setUpgradeLevel(Integer upgradeLevel) {
+        this.upgradeLevel = upgradeLevel;
     }
 }
