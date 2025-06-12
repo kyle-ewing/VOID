@@ -194,9 +194,13 @@ public class ProductionManager {
                             }
                             else if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
                                 for(Unit productionBuilding : productionBuildings) {
-                                    if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining()) {
+                                    if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
                                         productionBuilding.buildAddon(pi.getUnitType());
-                                        pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+
+                                        if(productionBuilding.getAddon() != null) {
+                                            pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+                                        }
+
                                         break;
                                     }
                                 }
@@ -395,7 +399,25 @@ public class ProductionManager {
                     }
                 }
                 break;
+            case TWOFAC:
+                for(Unit productionBuilding : productionBuildings) {
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks) && unitTypeCount.get(UnitType.Terran_Factory) < 1) {
+                        if (isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
+                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT, 3);
+                        }
+                    }
 
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
+                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 4 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                        }
+                        else if (isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
+                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 2);
+                        }
+
+                    }
+                }
+                break;
 
         }
     }
@@ -579,12 +601,13 @@ public class ProductionManager {
     }
 
     private boolean isResearching(UnitType unitType) {
+        int availableBuildings = 0;
         for(Unit researchBuilding : allBuildings) {
-            if(researchBuilding.getType() == unitType && !(researchBuilding.isResearching() || researchBuilding.isUpgrading())) {
-                return true;
+            if(researchBuilding.getType() == unitType && researchBuilding.isCompleted() && !(researchBuilding.isResearching() || researchBuilding.isUpgrading())) {
+                availableBuildings++;
             }
         }
-        return false;
+        return availableBuildings > 0;
     }
 
     private boolean buildingInProduction(TilePosition tilePosition, UnitType unitType) {
@@ -666,6 +689,7 @@ public class ProductionManager {
         openerNames.add(new TwoRax());
         openerNames.add(new TwoRaxAcademy());
         openerNames.add(new OneRaxFE());
+        openerNames.add(new TwoFac());
     }
 
     public void onFrame() {
@@ -679,6 +703,7 @@ public class ProductionManager {
         }
     }
 
+    //TODO: get rid of this why am i checking before it's done
     public void onUnitCreate(Unit unit) {
         if(unit.getType().isBuilding()) {
             allBuildings.add(unit);

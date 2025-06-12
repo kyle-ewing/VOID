@@ -41,6 +41,7 @@ public class UnitManager {
         this.scouting = scouting;
 
         painters = new Painters(game);
+        initUnitCounts();
     }
 
     public void onFrame() {
@@ -78,7 +79,7 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-            if(unitCount.get(UnitType.Terran_Marine) > 14 && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
+            if((unitCount.get(UnitType.Terran_Marine) > 14 || unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2) && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
                 if(bunker != null) {
                     unLoadBunker();
                 }
@@ -295,6 +296,14 @@ public class UnitManager {
             }
         }
         return false;
+    }
+
+    private void initUnitCounts()  {
+        for(UnitType unitType : UnitType.values()) {
+            if(unitType.getRace().toString().equals("Terran") && !unitType.isCritter() && !unitType.isHero() && !unitType.isBeacon() && !unitType.isSpecialBuilding()) {
+                unitCount.put(unitType, 0);
+            }
+        }
     }
 
 

@@ -1,5 +1,5 @@
 package macro.buildorders;
 
 public enum BuildOrderName {
-    EIGHTRAX, TWORAX, TWORAXACADEMY, ONERAXFE
+    EIGHTRAX, TWORAX, TWORAXACADEMY, ONERAXFE, TWOFAC
 }
