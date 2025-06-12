@@ -268,6 +268,7 @@ public class BaseInfo {
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
         painters.paintExpansionOrdering(orderedExpansions);
+        //painters.paintMainBufferZone(startingBase);
     }
 
     public void onUnitComplete(Unit unit) {
