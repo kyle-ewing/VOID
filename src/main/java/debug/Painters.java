@@ -242,7 +242,7 @@ public class Painters {
     }
 
     public void paintMainBufferZone(Base base) {
-            game.drawCircleMap(base.getCenter(), 500, Color.Yellow);
+            game.drawCircleMap(base.getCenter(), 800, Color.Yellow);
     }
 
     public void paintMineralExlusionZone(HashSet<TilePosition> buildTiles) {

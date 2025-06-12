@@ -117,14 +117,24 @@ public class UnitManager {
                     combatUnit.attack();
                     break;
                 case RALLY:
-                    updateClosetEnemy(combatUnit, 300);
+                    if(enemyInBase()) {
+                        updateClosetEnemy(combatUnit, 900);
+                    }
+                    else {
+                        updateClosetEnemy(combatUnit, 300);
+                    }
                     combatUnit.rally();
                     break;
                 case LOAD:
                     loadBunker(combatUnit);
                     break;
                 case DEFEND:
-                    updateClosetEnemy(combatUnit, 250);
+                    if(enemyInBase()) {
+                        updateClosetEnemy(combatUnit, 900);
+                    }
+                    else {
+                        updateClosetEnemy(combatUnit, 250);
+                    }
                     combatUnit.defend();
                     break;
                 case SCOUT:
@@ -178,6 +188,19 @@ public class UnitManager {
         if(closestEnemy == null) {
             combatUnit.setEnemyUnit(null);
         }
+    }
+
+    private boolean enemyInBase() {
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if(baseInfo.getStartingBase().getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 800) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void loadBunker(CombatUnits combatUnit) {
