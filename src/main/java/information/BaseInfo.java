@@ -21,7 +21,7 @@ public class BaseInfo {
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
     private HashSet<Geyser> startingGeysers = new HashSet<>();
-    private ArrayList<TilePosition> baseTiles = new ArrayList<>();
+    private HashSet<TilePosition> baseTiles = new HashSet<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private HashSet<Base> ownedBases = new HashSet<>();
 
@@ -80,8 +80,8 @@ public class BaseInfo {
         return false;
     }
 
-    public ArrayList<TilePosition> getTilesForBase(Base base) {
-        ArrayList<TilePosition> tiles = new ArrayList<>();
+    public HashSet<TilePosition> getTilesForBase(Base base) {
+        HashSet<TilePosition> tiles = new HashSet<>();
         Area baseArea = base.getArea();
 
         int mapWidth = game.mapWidth();
@@ -244,7 +244,7 @@ public class BaseInfo {
         return naturalBase;
     }
 
-    public ArrayList<TilePosition> getBaseTiles() {
+    public HashSet<TilePosition> getBaseTiles() {
         return baseTiles;
     }
 

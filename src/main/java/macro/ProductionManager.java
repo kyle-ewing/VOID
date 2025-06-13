@@ -495,7 +495,7 @@ public class ProductionManager {
 
         }
         else if(pi.getUnitType().tileHeight() == 2 && pi.getUnitType().tileWidth() == 3) {
-            if(buildTiles.getLargeBuildTiles().isEmpty()) {
+            if(buildTiles.getMediumBuildTiles().isEmpty()) {
                 return;
             }
 

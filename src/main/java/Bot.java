@@ -85,6 +85,7 @@ public class Bot extends DefaultBWListener {
             resourceManager.onUnitComplete(unit);
         }
         productionManager.onUnitComplete(unit);
+        buildTiles.onUnitComplete(unit);
 
         if(unit.getType() != UnitType.Terran_SCV && !unit.getType().isBuilding()) {
             unitManager.onUnitComplete(unit);

@@ -4,7 +4,6 @@ import bwapi.*;
 import bwem.BWEM;
 import bwem.Base;
 import bwem.ChokePoint;
-import bwem.Tile;
 import macro.ResourceManager;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
@@ -245,17 +244,14 @@ public class Painters {
             game.drawCircleMap(base.getCenter(), 800, Color.Yellow);
     }
 
-    public void paintMineralExlusionZone(HashSet<TilePosition> buildTiles) {
+    public void paintTileZone(HashSet<TilePosition> buildTiles, Color color) {
         for(TilePosition tile : buildTiles) {
-            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Cyan);
+            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
         }
     }
 
-    public void paintGeyserExclusionZone(HashSet<TilePosition> buildTiles) {
-        for(TilePosition tile : buildTiles) {
-            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Green);
-        }
-    }
+
+
     public void onFrame() {
         paintWorker();
         paintWorkerText();
