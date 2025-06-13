@@ -1,15 +1,15 @@
 package map;
 
-import bwapi.Game;
-import bwapi.TilePosition;
-import bwapi.UnitType;
+import bwapi.*;
 import bwem.BWEM;
-import bwem.Geyser;
 import bwem.Mineral;
 import debug.Painters;
 import information.BaseInfo;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 
 public class BuildTiles {
     private Game game;
@@ -21,6 +21,9 @@ public class BuildTiles {
     private HashSet<TilePosition> largeBuildTiles = new HashSet<>();
     private HashSet<TilePosition> mineralExlusionTiles = new HashSet<>();
     private HashSet<TilePosition> geyserExlusionTiles = new HashSet<>();
+    private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
+    private HashSet<TilePosition> frontBaseTiles = new HashSet<>();
+    private HashSet<TilePosition> backBaseTiles = new HashSet<>();
     private TilePosition bunkerTile;
 
     public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
@@ -37,6 +40,9 @@ public class BuildTiles {
     private void generateBuildTiles() {
         mineralExclusionZone();
         geyserExclusionZone();
+        ccExclusionZone();
+        generateFrontBaseTiles();
+        generateBackBaseTiles();
         generateBunkerTiles();
         generateLargeTiles();
         generateMediumTiles();
@@ -44,48 +50,278 @@ public class BuildTiles {
     }
 
     private void generateLargeTiles() {
-        for(TilePosition tilePosition : baseInfo.getBaseTiles()) {
-            if(largeBuildTiles.size() >= 12) {
-                break;
+        UnitType barracksType = UnitType.Terran_Barracks;
+        int barWidth = barracksType.tileWidth();
+        int barHeight = barracksType.tileHeight();
+        int gap = 3; // 3-tile gap on the right
+
+        // Sort frontBaseTiles based on primary axis
+        List<TilePosition> sortedFrontTiles = new ArrayList<>(frontBaseTiles);
+        TilePosition chokePos = baseInfo.getMainChoke().getCenter().toTilePosition();
+        TilePosition ccPos = baseInfo.getStartingBase().getLocation();
+        int xDiff = Math.abs(chokePos.getX() - ccPos.getX());
+        int yDiff = Math.abs(chokePos.getY() - ccPos.getY());
+
+        if (xDiff > yDiff) {
+            sortedFrontTiles.sort(Comparator.comparingInt(TilePosition::getX));
+        } else {
+            sortedFrontTiles.sort(Comparator.comparingInt(TilePosition::getY));
+        }
+
+        // First pass: Find adjacent pairs of vertically stacked Barracks
+        for (TilePosition tile : sortedFrontTiles) {
+            if (largeBuildTiles.size() >= 12) break;
+
+            // Skip if tile is in backBaseTiles
+            if (backBaseTiles.contains(tile)) continue;
+
+            // Check if we can place a stack at current position
+            if (isValidBarracksStack(tile, barracksType, gap)) {
+                int stackX = tile.getX();
+                int stackY = tile.getY();
+
+                // Check for adjacent stack position
+                int adjacentX = stackX + barWidth + gap;
+                TilePosition adjacentPos = new TilePosition(adjacentX, stackY);
+
+                // Verify adjacent stack is in frontBaseTiles
+                if (frontBaseTiles.contains(adjacentPos) &&
+                        isValidBarracksStack(adjacentPos, barracksType, gap)) {
+                    // Add both stacks (4 tiles)
+                    addBarracksStack(stackX, stackY, barracksType);
+                    addBarracksStack(adjacentX, stackY, barracksType);
+                }
             }
+        }
 
-            if(verifyTileLine(tilePosition, UnitType.Terran_Engineering_Bay)) {
-                for (int line = 0; line < 3; line++) {
-                    TilePosition currentTile = new TilePosition(tilePosition.getX(), tilePosition.getY() + (line * UnitType.Terran_Engineering_Bay.tileHeight()));
+        // Second pass: Add any valid single stacks if we didn't find adjacent pairs
+        if (largeBuildTiles.size() < 12) {
+            for (TilePosition tile : sortedFrontTiles) {
+                if (largeBuildTiles.size() >= 12) break;
 
-                    largeBuildTiles.add(currentTile);
+                // Skip if tile is in backBaseTiles
+                if (backBaseTiles.contains(tile)) continue;
+
+                if (isValidBarracksStack(tile, barracksType, gap) &&
+                        !largeBuildTiles.contains(tile)) {
+                    addBarracksStack(tile.getX(), tile.getY(), barracksType);
                 }
             }
         }
     }
 
-    private void generateMediumTiles() {
+    private boolean isValidBarracksStack(TilePosition topTile, UnitType barracksType, int gap) {
+        int barWidth = barracksType.tileWidth();
+        int barHeight = barracksType.tileHeight();
+        TilePosition bottomTile = new TilePosition(topTile.getX(), topTile.getY() + barHeight);
 
+        // Add one-tile buffer below the bottom barracks
+        TilePosition bufferRow = new TilePosition(topTile.getX(), topTile.getY() + 2 * barHeight);
 
-        for(TilePosition tilePosition : baseInfo.getBaseTiles()) {
-            if(mediumBuildTiles.size() >= 24) {
-                break;
+        return isValidBarracksPosition(topTile, barracksType, gap) &&
+                isValidBarracksPosition(bottomTile, barracksType, gap) &&
+                isValidBufferRow(bufferRow, barWidth);
+    }
+
+    private boolean isValidBufferRow(TilePosition start, int width) {
+        // Check each tile in the buffer row
+        for (int i = 0; i < width; i++) {
+            TilePosition bufferTile = new TilePosition(start.getX() + i, start.getY());
+
+            if (!tilePositionValidator.isWithinMap(bufferTile) ||
+                    intersectsMineralExclusionZone(bufferTile) ||
+                    intersectsGeyserExclusionZone(bufferTile) ||
+                    intersectsCCExclusionZone(bufferTile) ||
+                    !tilePositionValidator.isWalkable(bufferTile)) {
+                return false;
             }
+        }
+        return true;
+    }
 
-            TilePosition currentTile = tilePosition;
-            boolean validTileLine = true;
+    private boolean isValidBarracksPosition(TilePosition tile, UnitType barracksType, int gap) {
+        int barWidth = barracksType.tileWidth();
+        int barHeight = barracksType.tileHeight();
 
-            for(int i = 0; i < 2; i++) {
-                if(!verifyMediumGrid(currentTile, UnitType.Terran_Supply_Depot) || intersectsExistingBuildTiles(currentTile, UnitType.Terran_Supply_Depot)) {
-                    validTileLine = false;
-                    break;
-                }
-                currentTile = new TilePosition(currentTile.getX(), currentTile.getY() + UnitType.Terran_Supply_Depot.tileHeight());
-            }
+        // Check building footprint
+        for (int x = 0; x < barWidth; x++) {
+            for (int y = 0; y < barHeight; y++) {
+                TilePosition checkTile = new TilePosition(tile.getX() + x, tile.getY() + y);
 
-            if(validTileLine) {
-                currentTile = tilePosition;
-                for(int i = 0; i < 2; i++) {
-                    mediumBuildTiles.add(currentTile);
-                    currentTile = new TilePosition(currentTile.getX(), currentTile.getY() + UnitType.Terran_Supply_Depot.tileHeight());
+                // Avoid exclusion zones and ensure buildable
+                if (intersectsMineralExclusionZone(checkTile) ||
+                        intersectsGeyserExclusionZone(checkTile) ||
+                        intersectsCCExclusionZone(checkTile) ||
+                        !tilePositionValidator.isBuildable(checkTile) ||
+                        intersectsExistingBuildTiles(checkTile, barracksType)) {
+                    return false;
                 }
             }
         }
+
+        // Check 3-tile gap on right
+        for (int bufferX = 0; bufferX < gap; bufferX++) {
+            for (int y = 0; y < barHeight; y++) {
+                TilePosition bufferTile = new TilePosition(tile.getX() + barWidth + bufferX, tile.getY() + y);
+
+                if (!tilePositionValidator.isWithinMap(bufferTile) ||
+                        intersectsMineralExclusionZone(bufferTile) ||
+                        intersectsGeyserExclusionZone(bufferTile) ||
+                        intersectsCCExclusionZone(bufferTile) ||
+                        !tilePositionValidator.isWalkable(bufferTile)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void addBarracksStack(int x, int y, UnitType barracksType) {
+        int barHeight = barracksType.tileHeight();
+        largeBuildTiles.add(new TilePosition(x, y));
+        largeBuildTiles.add(new TilePosition(x, y + barHeight));
+    }
+
+    private boolean intersectsCCExclusionZone(TilePosition tile) {
+        return ccExclusionTiles.contains(tile);
+    }
+
+    private void generateMediumTiles() {
+        UnitType depotType = UnitType.Terran_Supply_Depot;
+        int depotWidth = depotType.tileWidth();
+        int depotHeight = depotType.tileHeight();
+        int gap = 1; // 1-tile gap on the right
+
+        // Create sorted list of backBaseTiles for consistent processing
+        List<TilePosition> sortedBackTiles = new ArrayList<>(backBaseTiles);
+        sortedBackTiles.sort(Comparator.comparingInt(TilePosition::getY).thenComparingInt(TilePosition::getX));
+
+        // Temporary set to track used tiles
+        HashSet<TilePosition> usedTiles = new HashSet<>();
+
+        for (TilePosition tile : sortedBackTiles) {
+            if (mediumBuildTiles.size() >= 24) break;
+
+            // Skip if tile is already used
+            if (usedTiles.contains(tile)) continue;
+
+            TilePosition bottomTile = new TilePosition(tile.getX(), tile.getY() + depotHeight);
+
+            // Check if bottomTile is available
+            if (usedTiles.contains(bottomTile) || !backBaseTiles.contains(bottomTile)) {
+                continue;
+            }
+
+            if (isValidSupplyDepotStack(tile, depotType, gap)) {
+                // Add both depots
+                mediumBuildTiles.add(tile);
+                mediumBuildTiles.add(bottomTile);
+
+                // Mark tiles as used
+                usedTiles.add(tile);
+                usedTiles.add(bottomTile);
+
+                // Mark gap tiles as used to prevent overlap
+                for (int y = 0; y < 2 * depotHeight; y++) {
+                    usedTiles.add(new TilePosition(tile.getX() + depotWidth, tile.getY() + y));
+                }
+            }
+        }
+    }
+
+    private boolean isValidSupplyDepotStack(TilePosition topTile, UnitType depotType, int gap) {
+        int depotHeight = depotType.tileHeight();
+        TilePosition bottomTile = new TilePosition(topTile.getX(), topTile.getY() + depotHeight);
+
+        return isValidSupplyDepotPosition(topTile, depotType, gap) &&
+                isValidSupplyDepotPosition(bottomTile, depotType, gap);
+    }
+
+    private boolean isValidSupplyDepotPosition(TilePosition tile, UnitType depotType, int gap) {
+        int depotWidth = depotType.tileWidth();
+        int depotHeight = depotType.tileHeight();
+
+        // Check building footprint
+        for (int x = 0; x < depotWidth; x++) {
+            for (int y = 0; y < depotHeight; y++) {
+                TilePosition checkTile = new TilePosition(tile.getX() + x, tile.getY() + y);
+
+                // Avoid exclusion zones and ensure buildable
+                if (intersectsMineralExclusionZone(checkTile) ||
+                        intersectsGeyserExclusionZone(checkTile) ||
+                        intersectsCCExclusionZone(checkTile) ||
+                        !tilePositionValidator.isBuildable(checkTile) ||
+                        intersectsExistingBuildTiles(checkTile, depotType)) {
+                    return false;
+                }
+            }
+        }
+
+        // Check 1-tile gap on right
+        for (int y = 0; y < depotHeight; y++) {
+            TilePosition gapTile = new TilePosition(tile.getX() + depotWidth, tile.getY() + y);
+
+            if (!tilePositionValidator.isWithinMap(gapTile) ||
+                    intersectsMineralExclusionZone(gapTile) ||
+                    intersectsGeyserExclusionZone(gapTile) ||
+                    intersectsCCExclusionZone(gapTile) ||
+                    !tilePositionValidator.isWalkable(gapTile) ||
+                    isTileInPlannedBuildingFootprint(gapTile)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean isTileInPlannedBuildingFootprint(TilePosition tile) {
+        // Check against CC
+        TilePosition ccPos = baseInfo.getStartingBase().getLocation();
+        int ccX = ccPos.getX();
+        int ccY = ccPos.getY();
+        int ccWidth = UnitType.Terran_Command_Center.tileWidth();
+        int ccHeight = UnitType.Terran_Command_Center.tileHeight();
+
+        if (tile.getX() >= ccX && tile.getX() < ccX + ccWidth &&
+                tile.getY() >= ccY && tile.getY() < ccY + ccHeight) {
+            return true;
+        }
+
+        // Check against bunker
+        if (bunkerTile != null) {
+            int bunkerX = bunkerTile.getX();
+            int bunkerY = bunkerTile.getY();
+            int bunkerWidth = UnitType.Terran_Bunker.tileWidth();
+            int bunkerHeight = UnitType.Terran_Bunker.tileHeight();
+
+            if (tile.getX() >= bunkerX && tile.getX() < bunkerX + bunkerWidth &&
+                    tile.getY() >= bunkerY && tile.getY() < bunkerY + bunkerHeight) {
+                return true;
+            }
+        }
+
+        // Check against largeBuildTiles (barracks)
+        for (TilePosition largeTile : largeBuildTiles) {
+            int buildingWidth = UnitType.Terran_Barracks.tileWidth();
+            int buildingHeight = UnitType.Terran_Barracks.tileHeight();
+            if (tile.getX() >= largeTile.getX() && tile.getX() < largeTile.getX() + buildingWidth &&
+                    tile.getY() >= largeTile.getY() && tile.getY() < largeTile.getY() + buildingHeight) {
+                return true;
+            }
+        }
+
+        // Check against mediumBuildTiles (other depots)
+        for (TilePosition mediumTile : mediumBuildTiles) {
+            int buildingWidth = UnitType.Terran_Supply_Depot.tileWidth();
+            int buildingHeight = UnitType.Terran_Supply_Depot.tileHeight();
+            if (tile.getX() >= mediumTile.getX() && tile.getX() < mediumTile.getX() + buildingWidth &&
+                    tile.getY() >= mediumTile.getY() && tile.getY() < mediumTile.getY() + buildingHeight) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void generateBunkerTiles() {
@@ -111,7 +347,7 @@ public class BuildTiles {
                 for(int bx = x; bx < x + bunkerWidth; bx++) {
                     for(int by = y; by < y + bunkerHeight; by++) {
                         TilePosition footprintTile = new TilePosition(bx, by);
-                        if(intersectsMineralExclusionZone(footprintTile)) {
+                        if(intersectsMineralExclusionZone(footprintTile) || intersectsCCExclusionZone(footprintTile) || intersectsGeyserExclusionZone(footprintTile)) {
                             validLocation = false;
                             break;
                         }
@@ -140,7 +376,7 @@ public class BuildTiles {
         int buildingWidth = unitType.tileWidth();
         int buildingHeight = unitType.tileHeight();
 
-        for(int line = 0; line < 3; line++) {
+        for(int line = 0; line < 2; line++) {
             TilePosition currentTile = new TilePosition(startTile.getX(), startTile.getY() + (line * buildingHeight));
 
             for(int x = 0; x < buildingWidth; x++) {
@@ -157,7 +393,7 @@ public class BuildTiles {
                 }
             }
 
-            for(int bufferX = 0; bufferX < 3; bufferX++) {
+            for(int bufferX = 0; bufferX < 2; bufferX++) {
                 for(int y = 0; y < buildingHeight; y++) {
                     TilePosition bufferTile = new TilePosition(currentTile.getX() + buildingWidth + bufferX, currentTile.getY() + y);
 
@@ -335,6 +571,62 @@ public class BuildTiles {
         return geyserExlusionTiles.contains(tilePosition);
     }
 
+    private void ccExclusionZone() {
+        TilePosition commandCenterTile = baseInfo.getStartingBase().getLocation();
+        int ccX = commandCenterTile.getX();
+        int ccY = commandCenterTile.getY();
+        int ccX_end = ccX + UnitType.Terran_Command_Center.tileWidth();
+        int ccHeight = UnitType.Terran_Command_Center.tileHeight();
+
+        for(int x = ccX_end; x < ccX_end + 3; x++) {
+            for(int y = ccY; y < ccY + ccHeight; y++) {
+                ccExclusionTiles.add(new TilePosition(x, y));
+            }
+        }
+    }
+
+    private void generateFrontBaseTiles() {
+        HashSet<TilePosition> baseTiles = new HashSet(baseInfo.getBaseTiles());
+        TilePosition chokePos = baseInfo.getMainChoke().getCenter().toTilePosition();
+        TilePosition ccPos = baseInfo.getStartingBase().getLocation();
+
+        int xDiff = Math.abs(chokePos.getX() - ccPos.getX());
+        int yDiff = Math.abs(chokePos.getY() - ccPos.getY());
+
+        for(TilePosition tilePosition : baseTiles) {
+            if(geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition)) {
+                continue;
+            }
+
+            if(xDiff > yDiff) {
+                if (chokePos.getX() < ccPos.getX() && tilePosition.getX() < ccPos.getX()) {
+                    frontBaseTiles.add(tilePosition);
+                } else if (chokePos.getX() > ccPos.getX() && tilePosition.getX() > ccPos.getX()) {
+                    frontBaseTiles.add(tilePosition);
+                }
+            }
+            else {
+                if(chokePos.getY() < ccPos.getY() && tilePosition.getY() < ccPos.getY()) {
+                    frontBaseTiles.add(tilePosition);
+                }
+                else if(chokePos.getY() > ccPos.getY() && tilePosition.getY() > ccPos.getY()) {
+                    frontBaseTiles.add(tilePosition);
+                }
+            }
+        }
+    }
+
+    private void generateBackBaseTiles() {
+        HashSet<TilePosition> baseTiles = new HashSet(baseInfo.getBaseTiles());
+
+        for(TilePosition tilePosition : baseTiles) {
+            if(geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition) || frontBaseTiles.contains(tilePosition)) {
+                continue;
+            }
+            backBaseTiles.add(tilePosition);
+        }
+    }
+
 
     public void updateRemainingTiles(TilePosition tilePosition) {
         largeBuildTiles.removeIf(tile -> tile.equals(tilePosition));
@@ -355,12 +647,35 @@ public class BuildTiles {
 
     public void onFrame() {
         painters.paintPaintBunkerTile(bunkerTile);
-        painters.paintLargeBuildTiles(largeBuildTiles);
-        painters.paintMediumBuildTiles(mediumBuildTiles);
         painters.paintAvailableBuildTiles(largeBuildTiles, 0, "Production");
         painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
-        //painters.paintMineralExlusionZone(mineralExlusionTiles);
-        //painters.paintGeyserExclusionZone(geyserExlusionTiles);
+        painters.paintTileZone(mineralExlusionTiles, Color.Cyan);
+//        painters.paintTileZone(geyserExlusionTiles, Color.Green);
+//        painters.paintTileZone(frontBaseTiles, Color.Purple);
+//        painters.paintTileZone(backBaseTiles, Color.Orange);
+        painters.paintTileZone(ccExclusionTiles, Color.Red);
+        painters.paintLargeBuildTiles(largeBuildTiles);
+        painters.paintMediumBuildTiles(mediumBuildTiles);
 
+    }
+
+    public void onUnitComplete(Unit unit) {
+        if(!unit.getType().isBuilding()) {
+            return;
+        }
+
+        for(TilePosition tilePosition : largeBuildTiles) {
+            if(unit.getTilePosition().equals(tilePosition)) {
+                largeBuildTiles.remove(tilePosition);
+                break;
+            }
+        }
+
+        for(TilePosition tilePosition : mediumBuildTiles) {
+            if(unit.getTilePosition().equals(tilePosition)) {
+                mediumBuildTiles.remove(tilePosition);
+                break;
+            }
+        }
     }
 }
