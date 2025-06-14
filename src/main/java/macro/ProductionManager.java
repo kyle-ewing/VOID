@@ -16,7 +16,6 @@ import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
 public class ProductionManager {
@@ -500,10 +499,10 @@ public class ProductionManager {
             }
 
             if(pi.getUnitType() == UnitType.Terran_Bunker) {
-                if(buildTiles.getBunkerTile() == null) {
+                if(buildTiles.getCloseBunkerTile() == null) {
                     return;
                 }
-                pi.setBuildPosition(buildTiles.getBunkerTile());
+                pi.setBuildPosition(buildTiles.getCloseBunkerTile());
                 buildTiles.updateRemainingTiles(pi.getBuildPosition());
                 return;
             }
