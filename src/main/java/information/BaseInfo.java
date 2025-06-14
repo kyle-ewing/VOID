@@ -199,9 +199,10 @@ public class BaseInfo {
         ChokePoint closestChokePoint = null;
         int closestDistance = Integer.MAX_VALUE;
 
-        for (ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
+        for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
             int distance = startingBase.getLocation().getApproxDistance(chokePoint.getCenter().toTilePosition());
-            if (distance < closestDistance) {
+
+            if(distance < closestDistance) {
                 closestChokePoint = chokePoint;
                 closestDistance = distance;
             }
@@ -213,9 +214,14 @@ public class BaseInfo {
         ChokePoint closestChokePoint = null;
         int closestDistance = Integer.MAX_VALUE;
 
-        for (ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
+        for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
+            if(chokePoint == getMainChoke()) {
+                continue;
+            }
+
             int distance = naturalBase.getLocation().getApproxDistance(chokePoint.getCenter().toTilePosition());
-            if (distance < closestDistance) {
+
+            if(distance < closestDistance) {
                 closestChokePoint = chokePoint;
                 closestDistance = distance;
             }
@@ -263,11 +269,11 @@ public class BaseInfo {
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
-        //painters.paintNatural(naturalBase);
+        painters.paintNatural(naturalBase);
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
-        painters.paintExpansionOrdering(orderedExpansions);
+        //painters.paintExpansionOrdering(orderedExpansions);
         //painters.paintMainBufferZone(startingBase);
     }
 
