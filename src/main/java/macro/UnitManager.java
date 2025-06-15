@@ -95,9 +95,8 @@ public class UnitManager {
                     combatUnit.setResetClock(0);
                 }
 
-                if(combatUnit.getUnitType() == UnitType.Terran_Marine && (bunker != null && bunkerLoad < 4) && !bunkerunLoaded) {
+                if(combatUnit.getUnitType() == UnitType.Terran_Marine && !combatUnit.isInBunker() && (bunker != null && bunkerLoad < 4)) {
                     combatUnit.setUnitStatus(UnitStatus.LOAD);
-                    bunkerLoad++;
                 }
             }
 
@@ -208,10 +207,9 @@ public class UnitManager {
     }
 
     public void loadBunker(CombatUnits combatUnit) {
-        if(!combatUnit.isInBunker() && combatUnit.getUnit().getType() == UnitType.Terran_Marine) {
-            combatUnit.getUnit().load(bunker);
-            combatUnit.setInBunker(true);
-        }
+        combatUnit.getUnit().load(bunker);
+        combatUnit.setInBunker(true);
+        bunkerLoad++;
     }
 
     public void unLoadBunker() {
@@ -303,6 +301,10 @@ public class UnitManager {
         }
 
         for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyType() == UnitType.Protoss_Observer) {
+                continue;
+            }
+
             if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
                 combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition());
             }
