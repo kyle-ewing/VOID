@@ -25,7 +25,8 @@ public class BuildTiles {
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
     private HashSet<TilePosition> frontBaseTiles = new HashSet<>();
     private HashSet<TilePosition> backBaseTiles = new HashSet<>();
-    private HashSet<TilePosition> bunkerChokeTiles = new HashSet<>();
+    private TilePosition mainChokeBunker;
+    private TilePosition naturalChokeBunker;
     private TilePosition closeBunkerTile;
 
     public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
@@ -335,7 +336,7 @@ public class BuildTiles {
             }
 
             if(mainBunker != null && frontBaseTiles.contains(mainBunker)) {
-                bunkerChokeTiles.add(mainBunker);
+                mainChokeBunker = mainBunker;
             }
         }
 
@@ -348,7 +349,7 @@ public class BuildTiles {
             TilePosition naturalBunker = findValidBunkerTileNear(closerNatural);
 
             if (naturalBunker != null) {
-                bunkerChokeTiles.add(naturalBunker);
+                naturalChokeBunker = naturalBunker;
             }
         }
     }
@@ -411,20 +412,20 @@ public class BuildTiles {
             }
         }
 
-        for(TilePosition existingTile : bunkerChokeTiles) {
-            int existingXStart = existingTile.getX();
-            int existingYStart = existingTile.getY();
-            int existingXEnd = existingXStart + UnitType.Terran_Bunker.tileWidth();
-            int existingYEnd = existingYStart + UnitType.Terran_Bunker.tileHeight();
 
-            for(int x = newX; x < newX + typeWidth; x++) {
-                for(int y = newY; y < newY + typeHeight; y++) {
-                    if(x >= existingXStart && x < existingXEnd && y >= existingYStart && y < existingYEnd) {
-                        return true;
-                    }
+        int mainChokeBunkerX = mainChokeBunker.getX();
+        int mainChokeBunkerY = mainChokeBunker.getY();
+        int mainChokeXEnd = mainChokeBunkerX + UnitType.Terran_Bunker.tileWidth();
+        int mainChokeYEnd = mainChokeBunkerY + UnitType.Terran_Bunker.tileHeight();
+
+        for(int x = newX; x < newX + typeWidth; x++) {
+            for(int y = newY; y < newY + typeHeight; y++) {
+                if(x >= mainChokeBunkerX && x < mainChokeXEnd && y >= mainChokeBunkerY && y < mainChokeYEnd) {
+                    return true;
                 }
             }
         }
+
 
         for(TilePosition existingTile : largeBuildTiles) {
             int existingXStart = existingTile.getX();
@@ -541,7 +542,7 @@ public class BuildTiles {
     }
 
     private boolean intesectsExclustionZones(TilePosition tilePosition) {
-        if(geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition) || ccExclusionTiles.contains(tilePosition) || bunkerChokeTiles.contains(tilePosition)) {
+        if(geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition) || ccExclusionTiles.contains(tilePosition)) {
             return true;
         }
         return false;
@@ -607,16 +608,25 @@ public class BuildTiles {
         return closeBunkerTile;
     }
 
+    public TilePosition getNaturalChokeBunker() {
+        return naturalChokeBunker;
+    }
+
+    public TilePosition getMainChokeBunker() {
+        return mainChokeBunker;
+    }
+
     public void onFrame() {
         painters.paintPaintBunkerTile(closeBunkerTile);
-        painters.paintMediumBuildTiles(bunkerChokeTiles, Color.Red);
+        painters.paintPaintBunkerTile(mainChokeBunker);
+        painters.paintPaintBunkerTile(naturalChokeBunker);
         painters.paintAvailableBuildTiles(largeBuildTiles, 0, "Production");
         painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
-        painters.paintTileZone(mineralExlusionTiles, Color.Cyan);
+//        painters.paintTileZone(mineralExlusionTiles, Color.Cyan);
 //        painters.paintTileZone(geyserExlusionTiles, Color.Green);
 //        painters.paintTileZone(frontBaseTiles, Color.Purple);
 //        painters.paintTileZone(backBaseTiles, Color.Orange);
-        painters.paintTileZone(ccExclusionTiles, Color.Red);
+//        painters.paintTileZone(ccExclusionTiles, Color.Red);
         painters.paintLargeBuildTiles(largeBuildTiles);
         painters.paintMediumBuildTiles(mediumBuildTiles, Color.Blue);
 
