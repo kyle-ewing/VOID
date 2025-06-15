@@ -196,15 +196,29 @@ public class BaseInfo {
     }
 
     public ChokePoint getMainChoke() {
+        if(startingBase == null || naturalBase == null) {
+            return null;
+        }
+
+        List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), naturalBase.getLocation().toPosition()
+        );
+
+        if(path.isEmpty()) {
+            return null;
+        }
+
         ChokePoint closestChokePoint = null;
-        int closestDistance = Integer.MAX_VALUE;
+        int minDistance = Integer.MAX_VALUE;
 
         for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
-            int distance = startingBase.getLocation().getApproxDistance(chokePoint.getCenter().toTilePosition());
+            Position chokePos = chokePoint.getCenter().toPosition();
 
-            if(distance < closestDistance) {
-                closestChokePoint = chokePoint;
-                closestDistance = distance;
+            for(Position pathPos : path) {
+                int distance = chokePos.getApproxDistance(pathPos);
+                if(distance < minDistance) {
+                    minDistance = distance;
+                    closestChokePoint = chokePoint;
+                }
             }
         }
         return closestChokePoint;
