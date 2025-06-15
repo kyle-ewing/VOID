@@ -6,6 +6,7 @@ import bwem.Base;
 import debug.Painters;
 import information.BaseInfo;
 import information.EnemyInformation;
+import information.enemyopeners.EnemyStrategy;
 import macro.buildorders.*;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
@@ -383,10 +384,11 @@ public class ProductionManager {
                             addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
                         }
                     }
-                    //TODO: remove when transitions are added
-                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
-                        addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
-                    }
+
+                }
+                //TODO: remove when transitions are added
+                if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
+                    addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
                 }
                 break;
             case ONERAXFE:
@@ -502,8 +504,20 @@ public class ProductionManager {
                 if(buildTiles.getCloseBunkerTile() == null) {
                     return;
                 }
-                pi.setBuildPosition(buildTiles.getCloseBunkerTile());
-                buildTiles.updateRemainingTiles(pi.getBuildPosition());
+
+                if(enemyInformation.getEnemyOpener() != null) {
+                    if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
+                        pi.setBuildPosition(buildTiles.getCloseBunkerTile());
+                        return;
+                    }
+                }
+
+                if(baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
+                    pi.setBuildPosition(buildTiles.getNaturalChokeBunker());
+                }
+                else {
+                    pi.setBuildPosition(buildTiles.getMainChokeBunker());
+                }
                 return;
             }
 
@@ -520,7 +534,7 @@ public class ProductionManager {
         else {
             //turrets and addons
         }
-            buildTiles.updateRemainingTiles(pi.getBuildPosition());
+        buildTiles.updateRemainingTiles(pi.getBuildPosition());
     }
 
     private void setCommandCenterPosition(PlannedItem pi) {
@@ -541,7 +555,9 @@ public class ProductionManager {
 
     private void openerResponse() {
         openerResponse = true;
+
         for(UnitType building : enemyInformation.getEnemyOpener().getBuildingResponse()) {
+            productionQueue.removeIf(pi -> pi.getUnitType() == building);
             addToQueue(building, PlannedItemType.BUILDING, 1);
         }
     }
