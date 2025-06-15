@@ -9,6 +9,7 @@ import information.EnemyUnits;
 import information.Scouting;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
+import util.PositionInterpolator;
 import util.Time;
 
 import java.util.HashMap;
@@ -81,7 +82,7 @@ public class UnitManager {
 
             if((unitCount.get(UnitType.Terran_Marine) > 18 || unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2) && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
                 if(bunker != null) {
-                    unLoadBunker();
+                    unLoadBunker(combatUnit);
                 }
 
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
@@ -208,14 +209,18 @@ public class UnitManager {
 
     public void loadBunker(CombatUnits combatUnit) {
         combatUnit.getUnit().load(bunker);
+
+        if(!combatUnit.isInBunker()) {
+            bunkerLoad++;
+        }
+
         combatUnit.setInBunker(true);
-        bunkerLoad++;
     }
 
-    public void unLoadBunker() {
+    public void unLoadBunker(CombatUnits combatUnit) {
         bunker.unloadAll();
         bunkerLoad = 0;
-        bunkerunLoaded = true;
+        combatUnit.setInBunker(false);
     }
 
     private void assignScouts(CombatUnits combatUnit) {
@@ -277,10 +282,10 @@ public class UnitManager {
     private void setRallyPoint(CombatUnits combatUnit) {
         if(enemyInformation.getEnemyOpener() == null || defendedAllIn) {
             if((baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase()))) {
-                combatUnit.setRallyPoint(baseInfo.getNaturalChoke().getCenter().toTilePosition());
+                combatUnit.setRallyPoint(PositionInterpolator.interpolate(baseInfo.getNaturalBase().getLocation(), baseInfo.getNaturalChoke().getCenter().toTilePosition(), 0.8));
             }
             else {
-                combatUnit.setRallyPoint(baseInfo.getMainChoke().getCenter().toTilePosition());
+                combatUnit.setRallyPoint(PositionInterpolator.interpolate(baseInfo.getStartingBase().getLocation(), baseInfo.getMainChoke().getCenter().toTilePosition(), 0.8));
             }
         }
         else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
@@ -369,7 +374,7 @@ public class UnitManager {
         while (iterator.hasNext()) {
             CombatUnits combatUnit = iterator.next();
             if (combatUnit.getUnitID() == unit.getID()) {
-                if(combatUnit.isInBunker()) {
+                if(combatUnit.getUnitStatus() == UnitStatus.LOAD) {
                     bunkerLoad--;
                 }
 
