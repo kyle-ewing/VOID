@@ -67,7 +67,7 @@ public class ProductionManager {
     private PriorityQueue<PlannedItem> appendBuildOrder(Race enemyRace) {
         if(enemyRace.toString().equals("Zerg")) {
             for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
+                if(buildOrder.getBuildOrderName() == BuildOrderName.ONERAXFE) {
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }
@@ -466,13 +466,18 @@ public class ProductionManager {
 
     //this might break if a natural has no geyser
     private void setRefineryPosition(PlannedItem pi) {
-        if(baseInfo.getStartingBase().getGeysers().get(0).getUnit().getType() == UnitType.Resource_Vespene_Geyser) {
-            pi.setBuildPosition(baseInfo.getStartingBase().getGeysers().get(0).getUnit().getTilePosition());
-        }
+        for(Base base : baseInfo.getOwnedBases()) {
+            if(!baseInfo.getGeyserTiles().containsKey(base)) {
+                continue;
+            }
 
-//        if(baseInfo.getNaturalBase().getGeysers().get(0).getUnit().getType() == UnitType.Resource_Vespene_Geyser) {
-//            pi.setBuildPosition(baseInfo.getNaturalBase().getGeysers().get(0).getUnit().getTilePosition());
-//        }
+            if(baseInfo.getUsedGeysers().contains(baseInfo.getGeyserTiles().get(base))) {
+                continue;
+            }
+
+            baseInfo.getUsedGeysers().add(baseInfo.getGeyserTiles().get(base));
+            pi.setBuildPosition(baseInfo.getGeyserTiles().get(base));
+        }
     }
 
     private void setBuildingPosition(PlannedItem pi) {

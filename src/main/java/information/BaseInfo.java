@@ -6,6 +6,7 @@ import debug.Painters;
 import map.PathFinding;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -22,8 +23,11 @@ public class BaseInfo {
     private HashSet<Mineral> startingMinerals = new HashSet<>();
     private HashSet<Geyser> startingGeysers = new HashSet<>();
     private HashSet<TilePosition> baseTiles = new HashSet<>();
-    private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private HashSet<Base> ownedBases = new HashSet<>();
+    private HashSet<TilePosition> usedGeysers = new HashSet<>();
+    private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
+    private ArrayList<Base> orderedExpansions = new ArrayList<>();
+
 
     private Painters painters;
 
@@ -53,6 +57,7 @@ public class BaseInfo {
         setNaturalBase();
         setStartingBaseTiles();
         setOrderedExpansions();
+        setGeyserTiles();
     }
 
     private void addAllBases() {
@@ -78,6 +83,18 @@ public class BaseInfo {
         }
 
         return false;
+    }
+
+    private void setGeyserTiles() {
+        for(Base base : mapBases) {
+            if(base.getGeysers().isEmpty()) {
+                continue;
+            }
+
+            for(Geyser geyser : base.getGeysers()) {
+                geyserTiles.put(base, geyser.getUnit().getTilePosition());
+            }
+        }
     }
 
     public HashSet<TilePosition> getTilesForBase(Base base) {
@@ -280,6 +297,13 @@ public class BaseInfo {
         return ownedBases;
     }
 
+    public HashMap<Base, TilePosition> getGeyserTiles() {
+        return geyserTiles;
+    }
+
+    public HashSet<TilePosition> getUsedGeysers() {
+        return usedGeysers;
+    }
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
