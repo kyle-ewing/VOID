@@ -202,6 +202,10 @@ public class ResourceManager {
                 continue;
             }
 
+            if(enemyUnit.getEnemyUnit().getType().isFlyer()) {
+                continue;
+            }
+
             int distance = unitPosition.getApproxDistance(enemyPosition);
 
             if (distance < closestDistance) {
