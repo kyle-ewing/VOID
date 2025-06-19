@@ -67,7 +67,7 @@ public class ProductionManager {
     private PriorityQueue<PlannedItem> appendBuildOrder(Race enemyRace) {
         if(enemyRace.toString().equals("Zerg")) {
             for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.ONERAXFE) {
+                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }

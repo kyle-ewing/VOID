@@ -81,10 +81,8 @@ public class Bot extends DefaultBWListener {
             return;
         }
 
-        if(unit.getType() == UnitType.Terran_SCV) {
-            resourceManager.onUnitComplete(unit);
-        }
         productionManager.onUnitComplete(unit);
+        resourceManager.onUnitComplete(unit);
         buildTiles.onUnitComplete(unit);
 
         if(unit.getType() != UnitType.Terran_SCV && !unit.getType().isBuilding()) {
@@ -104,10 +102,7 @@ public class Bot extends DefaultBWListener {
     @Override
     public void onUnitDestroy(Unit unit) {
 
-        if(unit.getType() == UnitType.Terran_SCV) {
-            resourceManager.onUnitDestroy(unit);
-        }
-
+        resourceManager.onUnitDestroy(unit);
         enemyInformation.onUnitDestroy(unit);
 
         if(unit.getPlayer() == game.self()) {
