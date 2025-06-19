@@ -23,7 +23,7 @@ public class ResourceManager {
     private EnemyInformation enemyInformation;
     private HashSet<Workers> workers = new HashSet<>();
     private HashSet<Workers> defenseForce = new HashSet<>();
-    private HashMap<Base, HashSet<Workers>> refinerySaturation = new HashMap<>();
+    private HashMap<Unit, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
     private int reservedMinerals = 0;
     private int reservedGas = 0;
@@ -117,24 +117,24 @@ public class ResourceManager {
                     worker.setWorkerStatus(WorkerStatus.MINERALS);
                     break;
                 }
+
+                if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().isIdle()) {
+                    worker.getUnit().gather(mineral.getUnit());
+                    break;
+                }
             }
         }
     }
 
-    //TODO: make generic for all bases, remove from hashmap if workers are removed
     public void gatherGas() {
-        if(baseInfo.getStartingBase().getGeysers().get(0).getUnit().getType() == UnitType.Terran_Refinery && baseInfo.getStartingBase().getGeysers().get(0).getUnit().isCompleted()) {
-
-            refinerySaturation.computeIfAbsent(baseInfo.getStartingBase(), workerCount -> new HashSet<Workers>());
-
-            for(Workers scv : workers) {
-                if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
-                    if(refinerySaturation.containsKey(baseInfo.getStartingBase()) && refinerySaturation.get(baseInfo.getStartingBase()).size() < 3) {
-                        scv.getUnit().gather(baseInfo.getStartingBase().getGeysers().get(0).getUnit());
-                        refinerySaturation.get(baseInfo.getStartingBase()).add(scv);
+        for(Workers scv : workers) {
+            if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
+                for(Unit geyser : refinerySaturation.keySet()) {
+                    if(refinerySaturation.get(geyser).size() < 3) {
+                        refinerySaturation.get(geyser).add(scv);
                         scv.setWorkerStatus(WorkerStatus.GAS);
+                        scv.getUnit().gather(geyser);
                     }
-
                 }
             }
         }
@@ -250,20 +250,37 @@ public class ResourceManager {
         worker.setAttackClock(worker.getAttackClock() + 1);
     }
 
-    public void onUnitComplete(Unit scv) {
-        workers.add(new Workers(scv, WorkerStatus.IDLE));
+    public void onUnitComplete(Unit unit) {
+        if(unit.getType() == UnitType.Terran_SCV) {
+            workers.add(new Workers(unit, WorkerStatus.IDLE));
+        }
+
+        if(unit.getType() == UnitType.Terran_Refinery) {
+            refinerySaturation.put(unit, new HashSet<>());
+        }
+
     }
 
-    public void onUnitDestroy(Unit scv) {
+    public void onUnitDestroy(Unit unit) {
+        if(unit.getPlayer() != player) {
+            return;
+        }
+
+        if(unit.getType() != UnitType.Terran_SCV && unit.getType() != UnitType.Terran_Refinery) {
+            return;
+        }
+
+        if(unit.getType() == UnitType.Terran_Refinery) {
+            for(Workers worker : refinerySaturation.get(unit)) {
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+            }
+
+            refinerySaturation.remove(unit);
+            return;
+        }
+
         for(Workers worker : workers) {
-            if(worker.getUnit() == scv) {
-
-
-                if(worker.getWorkerStatus() == WorkerStatus.GAS) {
-                    if(refinerySaturation.containsKey(baseInfo.getStartingBase())) {
-                        refinerySaturation.get(baseInfo.getStartingBase()).remove(worker);
-                    }
-                }
+            if(worker.getUnit() == unit) {
 
                 for(Unit building : buildingRepair.keySet()) {
                     if(buildingRepair.get(building) == worker) {
