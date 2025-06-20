@@ -36,9 +36,9 @@ public class CombatUnitCreator {
             case Terran_Science_Vessel:
                 return new ScienceVessel(game, unit);
             case Terran_Comsat_Station:
-                return new Comsat(game, unit);
+                return new Comsat(game, unit, unitStatus);
             case Spell_Scanner_Sweep:
-                return new Scan(game, unit);
+                return new Scan(game, unit, unitStatus);
             default:
                 return new CombatUnits(game, unit);
         }

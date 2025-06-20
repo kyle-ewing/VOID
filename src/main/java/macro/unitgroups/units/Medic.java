@@ -3,8 +3,7 @@ package macro.unitgroups.units;
 import bwapi.Game;
 import bwapi.Unit;
 import macro.unitgroups.CombatUnits;
-
-import java.util.HashSet;
+import macro.unitgroups.UnitStatus;
 
 public class Medic extends CombatUnits {
     public Medic(Game game, Unit unit) {
@@ -14,10 +13,11 @@ public class Medic extends CombatUnits {
     @Override
     public void attack() {
         if(friendlyUnit == null) {
-            super.rally();
+            super.setUnitStatus(UnitStatus.RALLY);
+            return;
         }
 
-        unit.attack(friendlyUnit);
+        unit.attack(friendlyUnit.getPosition());
     }
 
     @Override
@@ -26,7 +26,7 @@ public class Medic extends CombatUnits {
             return;
         }
 
-        unit.move(rallyPoint.toPosition());
+        unit.attack(rallyPoint.toPosition());
     }
 
 
