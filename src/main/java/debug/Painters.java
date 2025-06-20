@@ -248,6 +248,17 @@ public class Painters {
         }
     }
 
+    public void paintMedicTarget(CombatUnits unit) {
+        if(unit.getUnitType() != UnitType.Terran_Medic) {
+            return;
+        }
+
+        if(unit.getFriendlyUnit() != null) {
+            game.drawLineMap(unit.getUnit().getPosition(), unit.getFriendlyUnit().getPosition(), Color.Green);
+        }
+        //game.drawCircleMap(unit.getUnit().getPosition(), 200, Color.Green);
+    }
+
 
 
     public void onFrame() {

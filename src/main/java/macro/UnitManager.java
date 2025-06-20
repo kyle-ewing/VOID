@@ -7,6 +7,7 @@ import information.BaseInfo;
 import information.EnemyInformation;
 import information.EnemyUnits;
 import information.Scouting;
+import macro.unitgroups.CombatUnitCreator;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 import util.PositionInterpolator;
@@ -21,6 +22,7 @@ public class UnitManager {
     private EnemyInformation enemyInformation;
     private BaseInfo baseInfo;
     private Game game;
+    private CombatUnitCreator combatUnitCreator;
     private Painters painters;
     private Scouting scouting;
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
@@ -40,6 +42,7 @@ public class UnitManager {
         this.baseInfo = baseInfo;
         this.game = game;
         this.scouting = scouting;
+        this.combatUnitCreator = new CombatUnitCreator(game);
 
         painters = new Painters(game);
         initUnitCounts();
@@ -76,6 +79,14 @@ public class UnitManager {
 
             if(combatUnit.getRallyPoint() == null && (combatUnit.getUnitStatus() != UnitStatus.ADDON)) {
                 setRallyPoint(combatUnit);
+            }
+
+            switch (combatUnit.getUnitType()) {
+                case Terran_Marine:
+                    break;
+                case Terran_Medic:
+                    updateFriendlyUnit(combatUnit);
+                    break;
             }
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
@@ -150,6 +161,10 @@ public class UnitManager {
     public void updateClosetEnemy(CombatUnits combatUnit, int range) {
         int closestDistance = range;
         EnemyUnits closestEnemy = null;
+
+        if(combatUnit.getUnitType() == UnitType.Terran_Medic) {
+            return;
+        }
 
         for (EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
             Position enemyPosition = enemyUnit.getEnemyPosition();
@@ -296,6 +311,40 @@ public class UnitManager {
         }
     }
 
+    private void updateFriendlyUnit(CombatUnits combatUnit) {
+        Unit closestUnit = null;
+        double closestDistance = 200;
+
+        if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().exists()) {
+            return;
+        }
+
+        for(CombatUnits friendlyUnit : combatUnits) {
+            if(friendlyUnit.getUnitID() == combatUnit.getUnitID()) {
+                continue;
+            }
+
+            if(friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
+                continue;
+            }
+
+            if(!friendlyUnit.getUnitType().isMechanical()) {
+                double distance = combatUnit.getUnit().getDistance(friendlyUnit.getUnit());
+                if(distance < closestDistance) {
+                    closestUnit = friendlyUnit.getUnit();
+                    closestDistance = distance;
+                }
+            }
+        }
+
+        if(closestUnit != null) {
+            combatUnit.setFriendlyUnit(closestUnit);
+        }
+        else {
+            combatUnit.setFriendlyUnit(null);
+        }
+    }
+
     private void scanInvisibleUnits(CombatUnits combatUnit) {
         if(combatUnit.getUnitType() != UnitType.Terran_Comsat_Station) {
             return;
@@ -348,15 +397,20 @@ public class UnitManager {
         }
 
         if(unit.getType() == UnitType.Terran_Comsat_Station) {
-            combatUnits.add(new CombatUnits(unit, UnitStatus.ADDON));
+            CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.ADDON);
+            combatUnits.add(combatUnit);
+            unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
             return;
         }
         else if(unit.getType() == UnitType.Spell_Scanner_Sweep) {
-            combatUnits.add(new CombatUnits(unit, UnitStatus.SCAN));
+            CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.SCAN);
+            combatUnits.add(combatUnit);
+            unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
             return;
         }
 
-        combatUnits.add(new CombatUnits(unit));
+        CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.RALLY);
+        combatUnits.add(combatUnit);
         unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
     }
 
@@ -400,6 +454,7 @@ public class UnitManager {
             painters.paintClosestEnemy(combatUnit);
             painters.paintStimStatus(combatUnit);
             painters.paintCombatScouts(combatUnit);
+            painters.paintMedicTarget(combatUnit);
         }
 
     }

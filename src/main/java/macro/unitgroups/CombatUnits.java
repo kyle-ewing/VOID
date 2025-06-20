@@ -1,25 +1,25 @@
 package macro.unitgroups;
 
-import bwapi.TechType;
-import bwapi.TilePosition;
-import bwapi.Unit;
-import bwapi.UnitType;
+import bwapi.*;
 import debug.Painters;
 import information.EnemyUnits;
 
 public class CombatUnits {
-    private Unit unit;
-    private UnitType unitType;
-    private UnitStatus unitStatus;
-    private EnemyUnits enemyUnit;
-    private EnemyUnits closestEnemyBuilding;
-    private TilePosition rallyPoint;
+    protected Game game;
+    protected Unit unit;
+    protected Unit friendlyUnit;
+    protected UnitType unitType;
+    protected UnitStatus unitStatus;
+    protected EnemyUnits enemyUnit;
+    protected EnemyUnits closestEnemyBuilding;
+    protected TilePosition rallyPoint;
 
-    private int unitID;
-    private int resetClock = 0;
-    private boolean inBunker;
+    protected int unitID;
+    protected int resetClock = 0;
+    protected boolean inBunker;
 
-    public CombatUnits(Unit unit) {
+    public CombatUnits(Game game, Unit unit) {
+        this.game = game;
         this.unit = unit;
         this.unitType = unit.getType();
         this.unitID = unit.getID();
@@ -29,6 +29,16 @@ public class CombatUnits {
     }
 
     public CombatUnits(Unit unit, UnitStatus unitStatus) {
+        this.unit = unit;
+        this.unitType = unit.getType();
+        this.unitID = unit.getID();
+        this.rallyPoint = null;
+        this.unitStatus = unitStatus;
+        this.inBunker = false;
+    }
+
+    public CombatUnits(Game game, Unit unit, UnitStatus unitStatus) {
+        this.game = game;
         this.unit = unit;
         this.unitType = unit.getType();
         this.unitID = unit.getID();
@@ -137,5 +147,13 @@ public class CombatUnits {
 
     public void setInBunker(boolean inBunker) {
         this.inBunker = inBunker;
+    }
+
+    public Unit getFriendlyUnit() {
+        return friendlyUnit;
+    }
+
+    public void setFriendlyUnit(Unit friendlyUnit) {
+        this.friendlyUnit = friendlyUnit;
     }
 }
