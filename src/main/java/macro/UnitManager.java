@@ -68,7 +68,7 @@ public class UnitManager {
             }
         }
 
-        if(frameCount % 12 != 0) {
+        if(frameCount % 8 != 0) {
             return;
         }
 
