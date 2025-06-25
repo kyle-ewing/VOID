@@ -91,7 +91,7 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-            if((unitCount.get(UnitType.Terran_Marine) > 18 || unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2) && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
+            if((unitCount.get(UnitType.Terran_Marine) > 14 || unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2) && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
                 if(bunker != null) {
                     unLoadBunker(combatUnit);
                 }
