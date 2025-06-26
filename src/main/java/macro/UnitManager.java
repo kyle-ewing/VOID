@@ -335,6 +335,24 @@ public class UnitManager {
                 continue;
             }
 
+            if(friendlyUnit.isInBunker()) {
+                continue;
+            }
+
+            boolean alreadyAssigned = false;
+            for(CombatUnits assignedUnit : combatUnits) {
+                if(assignedUnit.getUnitType() == UnitType.Terran_Medic && assignedUnit.getUnitID() != combatUnit.getUnitID()) {
+                    if(assignedUnit.getFriendlyUnit() != null && assignedUnit.getFriendlyUnit().getID() == friendlyUnit.getUnitID()) {
+                        alreadyAssigned = true;
+                        break;
+                    }
+                }
+            }
+
+            if(alreadyAssigned) {
+                continue;
+            }
+
             if(!friendlyUnit.getUnitType().isMechanical()) {
                 int distance = combatUnit.getUnit().getDistance(friendlyUnit.getUnit());
                 if(distance < closestDistance) {
