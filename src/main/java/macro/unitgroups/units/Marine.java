@@ -17,6 +17,10 @@ public class Marine extends CombatUnits {
             return;
         }
 
+        if(super.isInBunker()) {
+            inBunker = false;
+        }
+
         kite();
 
         if(minimnumThreshold()) {
