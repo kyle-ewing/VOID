@@ -77,10 +77,10 @@ public class ResourceManager {
                     worker.selfDefense();
                 }
 
-                if(worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) {
+                if((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()) {
                     worker.setWorkerStatus(WorkerStatus.IDLE);
                     worker.setAttackClock(0);
-                    removeDefenseForce();
+                    removeDefenseForce(worker);
                 }
 
             }
@@ -177,14 +177,16 @@ public class ResourceManager {
                 defenseForce.add(worker);
                 worker.setWorkerStatus(WorkerStatus.DEFEND);
             }
+
+            if(defenseForce.size() >= defenseSize) {
+                return;
+            }
         }
     }
 
-    private void removeDefenseForce() {
-        for(Workers worker : defenseForce) {
-            worker.setWorkerStatus(WorkerStatus.IDLE);
-        }
-        defenseForce.clear();
+    private void removeDefenseForce(Workers worker) {
+        worker.setWorkerStatus(WorkerStatus.IDLE);
+        defenseForce.remove(workers);
     }
 
     public void updateClosetEnemy(Workers worker) {
@@ -222,6 +224,20 @@ public class ResourceManager {
         else {
             worker.setEnemyUnit(null);
         }
+    }
+
+    private boolean enemyInBase() {
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
+            if (baseInfo.getBaseTiles().contains(enemyTile)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void enemyStrategyResponse() {
