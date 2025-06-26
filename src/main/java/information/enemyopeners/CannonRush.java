@@ -34,12 +34,12 @@ public class CannonRush extends EnemyStrategy {
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Protoss_Probe) {
-                if(time.lessThanOrEqual(new Time(1, 20))) {
+                if(time.lessThanOrEqual(new Time(1, 40))) {
                     return true;
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
-                if(time.lessThanOrEqual(new Time(2, 0))) {
+                if(time.lessThanOrEqual(new Time(2, 30))) {
                     return true;
                 }
             }
