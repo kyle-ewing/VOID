@@ -13,8 +13,13 @@ public class Medic extends CombatUnits {
     @Override
     public void attack() {
         if(friendlyUnit == null) {
-            super.setUnitStatus(UnitStatus.RALLY);
+            super.setTargetRange(200);
+            super.setUnitStatus(UnitStatus.RETREAT);
             return;
+        }
+
+        if(super.getTargetRange() > 200) {
+            super.setTargetRange(200);
         }
 
         unit.attack(friendlyUnit.getPosition());
@@ -23,6 +28,36 @@ public class Medic extends CombatUnits {
     @Override
     public void rally() {
         if(rallyPoint == null) {
+            return;
+        }
+
+        if(enemyInBase) {
+            super.setTargetRange(800);
+            super.setUnitStatus(UnitStatus.DEFEND);
+        }
+
+        unit.attack(rallyPoint.toPosition());
+    }
+
+    @Override
+    public void defend() {
+        if(friendlyUnit == null || !enemyInBase) {
+            super.setTargetRange(200);
+            super.setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
+
+        unit.attack(friendlyUnit.getPosition());
+    }
+
+    @Override
+    public void retreat() {
+        if(rallyPoint == null) {
+            return;
+        }
+
+        if(friendlyUnit != null) {
+            super.setUnitStatus(UnitStatus.ATTACK);
             return;
         }
 
