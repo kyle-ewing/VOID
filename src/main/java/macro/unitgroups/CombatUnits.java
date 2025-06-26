@@ -1,7 +1,6 @@
 package macro.unitgroups;
 
 import bwapi.*;
-import debug.Painters;
 import information.EnemyUnits;
 
 public class CombatUnits {
@@ -16,7 +15,9 @@ public class CombatUnits {
 
     protected int unitID;
     protected int resetClock = 0;
+    protected int targetRange = 200;
     protected boolean inBunker;
+    protected boolean enemyInBase = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -92,6 +93,10 @@ public class CombatUnits {
 
     }
 
+    public void retreat() {
+        // Default implementation does nothing, can be overridden by subclasses
+    }
+
     public int getResetClock() {
         return resetClock;
     }
@@ -155,5 +160,21 @@ public class CombatUnits {
 
     public void setFriendlyUnit(Unit friendlyUnit) {
         this.friendlyUnit = friendlyUnit;
+    }
+
+    public int getTargetRange() {
+        return targetRange;
+    }
+
+    public void setTargetRange(int targetRange) {
+        this.targetRange = targetRange;
+    }
+
+    public boolean isEnemyInBase() {
+        return enemyInBase;
+    }
+
+    public void setEnemyInBase(boolean enemyInBase) {
+        this.enemyInBase = enemyInBase;
     }
 }

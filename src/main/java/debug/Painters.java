@@ -151,6 +151,9 @@ public class Painters {
             case SCOUT:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Orange, true);
                 break;
+            case RETREAT:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Teal, true);
+                break;
         }
     }
 
@@ -215,9 +218,9 @@ public class Painters {
         game.drawBoxMap(start, end, Color.Red);
     }
 
-    public void paintTiles(List<TilePosition> tiles) {
+    public void paintTiles(HashSet<TilePosition> tiles) {
         for(TilePosition tile : tiles) {
-            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.Red);
+            game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.White);
         }
     }
 

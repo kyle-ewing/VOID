@@ -129,10 +129,12 @@ public class UnitManager {
                     break;
                 case RALLY:
                     if(enemyInBase()) {
+                        combatUnit.setEnemyInBase(true);
                         updateClosetEnemy(combatUnit, 900);
                     }
                     else {
-                        updateClosetEnemy(combatUnit, 300);
+                        combatUnit.setEnemyInBase(false);
+                        updateClosetEnemy(combatUnit, 150);
                     }
                     combatUnit.rally();
                     break;
@@ -141,13 +143,17 @@ public class UnitManager {
                     break;
                 case DEFEND:
                     if(enemyInBase()) {
+                        combatUnit.setEnemyInBase(true);
                         updateClosetEnemy(combatUnit, 900);
                     }
                     else {
-                        updateClosetEnemy(combatUnit, 250);
+                        combatUnit.setEnemyInBase(false);
+                        updateClosetEnemy(combatUnit, 150);
                     }
                     combatUnit.defend();
                     break;
+                case RETREAT:
+                    combatUnit.retreat();
                 case SCOUT:
                     scoutBases();
                     break;
@@ -215,7 +221,8 @@ public class UnitManager {
                 continue;
             }
 
-            if(baseInfo.getStartingBase().getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 800) {
+            TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
+            if (baseInfo.getBaseTiles().contains(enemyTile)) {
                 return true;
             }
         }
@@ -313,7 +320,7 @@ public class UnitManager {
 
     private void updateFriendlyUnit(CombatUnits combatUnit) {
         Unit closestUnit = null;
-        double closestDistance = 200;
+        int closestDistance = combatUnit.getTargetRange();
 
         if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().exists()) {
             return;
@@ -329,7 +336,7 @@ public class UnitManager {
             }
 
             if(!friendlyUnit.getUnitType().isMechanical()) {
-                double distance = combatUnit.getUnit().getDistance(friendlyUnit.getUnit());
+                int distance = combatUnit.getUnit().getDistance(friendlyUnit.getUnit());
                 if(distance < closestDistance) {
                     closestUnit = friendlyUnit.getUnit();
                     closestDistance = distance;
