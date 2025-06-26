@@ -12,6 +12,7 @@ public class Workers {
     private int idleClock = 0;
     private int unitID;
     private EnemyUnits enemyUnit;
+    private boolean preemptiveRepair = false;
 
     public Workers(Unit unit, WorkerStatus workerStatus) {
         this.unit = unit;
@@ -33,10 +34,16 @@ public class Workers {
 
     public void repair(Unit target) {
         if (target != null && target.getHitPoints() < target.getType().maxHitPoints() && !unit.isRepairing()) {
-                unit.repair(target);
+            unit.repair(target);
+            return;
         }
 
-        if(target == null || target.getHitPoints() >= target.getType().maxHitPoints()) {
+        if(target != null && preemptiveRepair && target.getHitPoints() == target.getType().maxHitPoints()) {
+            unit.move(target.getPosition());
+            return;
+        }
+
+        if(target == null || target.getHitPoints() >= target.getType().maxHitPoints()  && !preemptiveRepair) {
             workerStatus = WorkerStatus.IDLE;
             repairTarget = null;
         }
@@ -105,5 +112,13 @@ public class Workers {
 
     public void setIdleClock(int idleClock) {
         this.idleClock = idleClock;
+    }
+
+    public boolean isPreemptiveRepair() {
+        return preemptiveRepair;
+    }
+
+    public void setPreemptiveRepair(boolean preemptiveRepair) {
+        this.preemptiveRepair = preemptiveRepair;
     }
 }
