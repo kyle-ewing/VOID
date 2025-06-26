@@ -23,6 +23,7 @@ public class ResourceManager {
     private EnemyInformation enemyInformation;
     private HashSet<Workers> workers = new HashSet<>();
     private HashSet<Workers> defenseForce = new HashSet<>();
+    private HashSet<Workers> repairForce = new HashSet<>();
     private HashMap<Unit, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
     private int reservedMinerals = 0;
@@ -49,6 +50,7 @@ public class ResourceManager {
         gatherGas();
         workerBuildClock();
         buildingHealthCheck();
+        preemptiveBunkerRepair();
 
         int frameCount = game.getFrameCount();
 
@@ -244,6 +246,65 @@ public class ResourceManager {
                 }
             }
         }
+    }
+
+    private void preemptiveBunkerRepair() {
+        for(Unit bunker : player.getUnits()) {
+            if(bunker.getType() == UnitType.Terran_Bunker && bunker.isCompleted()) {
+                if(enemyInRange()) {
+                    for(Workers worker : workers) {
+                        if(worker.getWorkerStatus() == WorkerStatus.MINERALS && repairForce.size() < 3) {
+                            worker.setWorkerStatus(WorkerStatus.REPAIRING);
+                            worker.setRepairTarget(bunker);
+                            worker.setPreemptiveRepair(true);
+                            repairForce.add(worker);
+                        }
+                        else if(repairForce.size() > 2) {
+                            break;
+                        }
+                    }
+                }
+                else if(!enemyInRange()) {
+                    for(Workers worker : repairForce) {
+                        worker.setWorkerStatus(WorkerStatus.IDLE);
+                        worker.setRepairTarget(null);
+                        worker.setPreemptiveRepair(false);
+                    }
+                    repairForce.clear();
+
+                }
+            }
+        }
+    }
+
+    private boolean enemyInRange() {
+        Unit mainBunker = null;
+        for(Unit bunker : player.getUnits()) {
+            if(bunker.getType() == UnitType.Terran_Bunker && bunker.isCompleted()) {
+                mainBunker = bunker;
+                break;
+            }
+        }
+
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Overlord) {
+                continue;
+            }
+
+            if(mainBunker == null) {
+                return false;
+            }
+
+            if(enemyUnit.getEnemyPosition().getApproxDistance(mainBunker.getPosition()) < 400) {
+                return true;
+            }
+
+        }
+        return false;
     }
 
     private void workerAttackClock(Workers worker) {
