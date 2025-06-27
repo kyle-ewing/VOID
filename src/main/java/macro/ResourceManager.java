@@ -311,6 +311,10 @@ public class ResourceManager {
                 continue;
             }
 
+            if(!enemyUnit.getEnemyUnit().exists()) {
+                continue;
+            }
+
             if(mainBunker == null) {
                 return false;
             }
