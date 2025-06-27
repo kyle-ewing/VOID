@@ -154,6 +154,9 @@ public class Painters {
             case RETREAT:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Teal, true);
                 break;
+            case OBSTRUCTING:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Grey, true);
+                break;
         }
     }
 
