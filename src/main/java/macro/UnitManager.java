@@ -107,12 +107,19 @@ public class UnitManager {
                     combatUnit.setResetClock(0);
                 }
 
+                if(obstructingBuild(combatUnit)) {
+                    combatUnit.setUnitStatus(UnitStatus.OBSTRUCTING);
+                    continue;
+                }
+
                 if(combatUnit.getUnitType() == UnitType.Terran_Marine && !combatUnit.isInBunker() && (bunker != null && bunkerLoad < 4)) {
                     combatUnit.setUnitStatus(UnitStatus.LOAD);
                 }
             }
 
-
+            if(unitStatus == UnitStatus.OBSTRUCTING && !obstructingBuild(combatUnit)) {
+                combatUnit.setUnitStatus(UnitStatus.RALLY);
+            }
 
             if(scouting.isCompletedScout() && !enemyInformation.isEnemyBuildingDiscovered() && combatUnit.getUnitType() == UnitType.Terran_Marine && scouts < baseInfo.getMapBases().size()) {
                 combatUnit.setUnitStatus(UnitStatus.SCOUT);
@@ -159,6 +166,9 @@ public class UnitManager {
                     break;
                 case ADDON:
                     scanInvisibleUnits(combatUnit);
+                    break;
+                case OBSTRUCTING:
+                    moveFromObstruction(combatUnit);
                     break;
             }
         }
@@ -404,6 +414,56 @@ public class UnitManager {
             }
         }
         return false;
+    }
+
+    private boolean obstructingBuild(CombatUnits combatUnit) {
+        for(Unit unit : game.self().getUnits()) {
+            if(!unit.getType().isWorker()) {
+                continue;
+            }
+
+            if(combatUnit.getRallyPoint() == null) {
+                continue;
+            }
+
+            if(!unit.isMoving() && !unit.isConstructing() && unit.getPosition().getApproxDistance(combatUnit.getUnit().getPosition()) < 100 && combatUnit.getUnit().getPosition().getApproxDistance(combatUnit.getRallyPoint().toPosition()) < 100) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void moveFromObstruction(CombatUnits combatUnit) {
+        Unit worker = null;
+        for(Unit unit : game.self().getUnits()) {
+            if(!unit.getType().isWorker()) {
+                continue;
+            }
+
+            if(!unit.isMoving() && !unit.isConstructing() &&
+                    unit.getPosition().getApproxDistance(combatUnit.getUnit().getPosition()) < 100) {
+                worker = unit;
+                break;
+            }
+        }
+
+        if(worker == null) {
+            return;
+        }
+
+        Position workerPos = worker.getPosition();
+        Position unitPos = combatUnit.getUnit().getPosition();
+        int dx = unitPos.getX() - workerPos.getX();
+        int dy = unitPos.getY() - workerPos.getY();
+
+        int moveX = unitPos.getX() + (dx * 100 / Math.max(1, unitPos.getApproxDistance(workerPos)));
+        int moveY = unitPos.getY() + (dy * 100 / Math.max(1, unitPos.getApproxDistance(workerPos)));
+
+        moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
+        moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
+
+        Position movePos = new Position(moveX, moveY);
+        combatUnit.getUnit().attack(movePos);
     }
 
     private void initUnitCounts()  {
