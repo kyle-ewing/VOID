@@ -1,20 +1,15 @@
 package macro;
 
 import bwapi.*;
-import bwem.Base;
 import bwem.Mineral;
-import debug.Painters;
 import information.BaseInfo;
 import information.EnemyInformation;
 import information.EnemyUnits;
-import macro.unitgroups.CombatUnits;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 public class ResourceManager {
     private BaseInfo baseInfo;
@@ -264,6 +259,25 @@ public class ResourceManager {
         }
     }
 
+    private void repairTargetDestroyed(Unit building) {
+        if(buildingRepair.containsKey(building)) {
+            if(buildingRepair.get(building) != null) {
+                Workers worker = buildingRepair.get(building);
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                worker.setRepairTarget(null);
+            }
+        }
+
+        if(building.getType() == UnitType.Terran_Bunker) {
+            for(Workers worker : repairForce) {
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                worker.setRepairTarget(null);
+                worker.setPreemptiveRepair(false);
+            }
+            repairForce.clear();
+        }
+    }
+
     private void preemptiveBunkerRepair() {
         for(Unit bunker : player.getUnits()) {
             if(bunker.getType() == UnitType.Terran_Bunker && bunker.isCompleted()) {
@@ -345,6 +359,10 @@ public class ResourceManager {
     public void onUnitDestroy(Unit unit) {
         if(unit.getPlayer() != player) {
             return;
+        }
+
+        if(unit.getType().isBuilding()) {
+            repairTargetDestroyed(unit);
         }
 
         if(unit.getType() != UnitType.Terran_SCV && unit.getType() != UnitType.Terran_Refinery) {
