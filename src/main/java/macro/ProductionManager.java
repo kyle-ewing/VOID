@@ -83,7 +83,7 @@ public class ProductionManager {
         }
         else if(enemyRace.toString().equals("Protoss")) {
             for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
+                if(buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC) {
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }
@@ -416,6 +416,10 @@ public class ProductionManager {
                             addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 2);
                         }
 
+                    }
+
+                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
+                        addToQueue(UnitType.Terran_Factory, PlannedItemType.BUILDING, 3);
                     }
                 }
                 break;
