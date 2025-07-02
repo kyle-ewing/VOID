@@ -651,6 +651,10 @@ public class ProductionManager {
             unitTypeCount.put(unit.getType(), unitTypeCount.get(unit.getType()) - 1);
     }
 
+    private void removeUnitTypeCount(UnitType unit) {
+        unitTypeCount.put(unit, unitTypeCount.get(unit) - 1);
+    }
+
     private void removeBuilding(Unit unit) {
         allBuildings.remove(unit);
     }
@@ -763,6 +767,13 @@ public class ProductionManager {
     public void onUnitMorph(Unit unit) {
         if(unit.getType().isBuilding()) {
             allBuildings.add(unit);
+        }
+
+        if(unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+            removeUnitTypeCount(UnitType.Terran_Siege_Tank_Tank_Mode);
+        }
+        else if(unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+            removeUnitTypeCount(UnitType.Terran_Siege_Tank_Siege_Mode);
         }
     }
 
