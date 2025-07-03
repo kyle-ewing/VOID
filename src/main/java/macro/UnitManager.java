@@ -474,6 +474,14 @@ public class UnitManager {
         }
     }
 
+    private boolean isExistingUnit(Unit unit) {
+        for(CombatUnits combatUnit : combatUnits) {
+            if(combatUnit.getUnitID() == unit.getID()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_Bunker) {
@@ -491,6 +499,10 @@ public class UnitManager {
             CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.SCAN);
             combatUnits.add(combatUnit);
             unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
+            return;
+        }
+
+        if(isExistingUnit(unit)) {
             return;
         }
 
