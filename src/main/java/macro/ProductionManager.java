@@ -418,7 +418,7 @@ public class ProductionManager {
 
                     }
 
-                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
+                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Factory) < 3 && !hasUnitInQueue(UnitType.Terran_Factory)) {
                         addToQueue(UnitType.Terran_Factory, PlannedItemType.BUILDING, 3);
                     }
                 }
