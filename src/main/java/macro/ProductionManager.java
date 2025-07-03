@@ -197,9 +197,8 @@ public class ProductionManager {
                                     if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
                                         productionBuilding.buildAddon(pi.getUnitType());
 
-                                        if(productionBuilding.getAddon() != null) {
-                                            pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
-                                        }
+                                        pi.setAddOnParent(productionBuilding);
+                                        pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
 
                                         break;
                                     }
@@ -315,7 +314,13 @@ public class ProductionManager {
                     }
 
                     if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
-                        if(pi.getUnitType() == newestCompletedBuilding.getType()) {
+                        if(pi.getAddOnParent() == null || pi.getAddOnParent().getAddon() == null) {
+                            continue;
+                        }
+                        System.out.println("Addon parent: " + pi.getAddOnParent().getType() + " - " + pi.getAddOnParent().getAddon());
+
+                        if(pi.getAddOnParent() != null && pi.getAddOnParent().getAddon().isCompleted()) {
+                            System.out.println("Addon completed: " + pi.getAddOnParent().getAddon().getType());
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                         }
                     }

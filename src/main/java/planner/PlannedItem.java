@@ -13,6 +13,7 @@ public class PlannedItem {
     private Unit assignedBuilder;
     private TechType techUpgrade;
     private UpgradeType upgradeType;
+    private Unit addOnParent = null;
 
     //priority 1-5, 1 being the highest
     private int priority;
@@ -166,5 +167,13 @@ public class PlannedItem {
 
     public void setUpgradeLevel(Integer upgradeLevel) {
         this.upgradeLevel = upgradeLevel;
+    }
+
+    public Unit getAddOnParent() {
+        return addOnParent;
+    }
+
+    public void setAddOnParent(Unit addOnParent) {
+        this.addOnParent = addOnParent;
     }
 }
