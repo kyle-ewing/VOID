@@ -104,7 +104,7 @@ public class ProductionManager {
         boolean hasHighPriorityBuilding = hasHigherPriorityBuilding();
 
         for (PlannedItem pi : productionQueue) {
-            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && meetsRequirements(pi.getUnitType())) {
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
 
