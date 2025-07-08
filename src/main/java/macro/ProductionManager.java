@@ -104,7 +104,7 @@ public class ProductionManager {
         boolean hasHighPriorityBuilding = hasHigherPriorityBuilding();
 
         for (PlannedItem pi : productionQueue) {
-            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && meetsRequirements(pi.getUnitType())) {
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
 
@@ -221,13 +221,13 @@ public class ProductionManager {
                                 break;
                             }
 
-                            if(worker.getBuildFrameCount() > 300) {
-                                worker.setWorkerStatus(WorkerStatus.IDLE);
-                                worker.getUnit().stop();
-                                resourceManager.unreserveResources(pi.getUnitType());
-                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
-                                break;
-                            }
+//                            if(worker.getBuildFrameCount() > 300) {
+//                                worker.setWorkerStatus(WorkerStatus.IDLE);
+//                                worker.getUnit().stop();
+//                                resourceManager.unreserveResources(pi.getUnitType());
+//                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+//                                break;
+//                            }
                         }
                     }
 
@@ -317,10 +317,8 @@ public class ProductionManager {
                         if(pi.getAddOnParent() == null || pi.getAddOnParent().getAddon() == null) {
                             continue;
                         }
-                        System.out.println("Addon parent: " + pi.getAddOnParent().getType() + " - " + pi.getAddOnParent().getAddon());
 
                         if(pi.getAddOnParent() != null && pi.getAddOnParent().getAddon().isCompleted()) {
-                            System.out.println("Addon completed: " + pi.getAddOnParent().getAddon().getType());
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                         }
                     }

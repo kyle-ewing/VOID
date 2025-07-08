@@ -24,6 +24,7 @@ public class BaseInfo {
     private HashSet<Geyser> startingGeysers = new HashSet<>();
     private HashSet<TilePosition> baseTiles = new HashSet<>();
     private HashSet<Base> ownedBases = new HashSet<>();
+    private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> usedGeysers = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
@@ -58,6 +59,7 @@ public class BaseInfo {
         setStartingBaseTiles();
         setOrderedExpansions();
         setGeyserTiles();
+        setChokePoints();
     }
 
     private void addAllBases() {
@@ -131,6 +133,10 @@ public class BaseInfo {
         for(Geyser geyser : startingBase.getGeysers()) {
             startingGeysers.add(geyser);
         }
+    }
+
+    private void setChokePoints() {
+        chokePoints.addAll(bwem.getMap().getChokePoints());
     }
 
     private void setStartingBase() {
