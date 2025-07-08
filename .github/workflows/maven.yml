@@ -18,3 +18,27 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn --batch-mode --update-snapshots verify
+
+  check-print-statements:
+    runs-on: ubuntu-latest
+      
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Set up Java 8
+          uses: actions/setup-java@v4
+          with:
+            distribution: 'corretto'
+            java-version: '8'
+  
+        - name: Search for print statements
+          run: |
+            echo "Checking for System.out.print statements..."
+            # Search for any System.out.print or System.out.println in .java files
+            if grep -rnw --include="*.java" . -e 'System\.out\.print'; then
+              echo "::error file=Print statement found::System.out.print is not allowed"
+              exit 1
+            else
+              echo "✅ No print statements found."
+            fi
