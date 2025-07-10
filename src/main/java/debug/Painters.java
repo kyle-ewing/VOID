@@ -221,6 +221,16 @@ public class Painters {
         game.drawBoxMap(start, end, Color.Red);
     }
 
+    public void paintMissileTile(TilePosition tilePosition) {
+        game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
+        Position start = tilePosition.toPosition();
+        Position end = new Position(
+            start.getX() + UnitType.Terran_Missile_Turret.tileWidth() * 32,
+            start.getY() + UnitType.Terran_Missile_Turret.tileHeight() * 32
+        );
+        game.drawBoxMap(start, end, Color.Teal);
+    }
+
     public void paintTiles(HashSet<TilePosition> tiles) {
         for(TilePosition tile : tiles) {
             game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), Color.White);
