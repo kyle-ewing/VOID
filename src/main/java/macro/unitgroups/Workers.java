@@ -13,6 +13,7 @@ public class Workers {
     private int unitID;
     private EnemyUnits enemyUnit;
     private boolean preemptiveRepair = false;
+    private boolean assignedToBase = false;
 
     public Workers(Unit unit, WorkerStatus workerStatus) {
         this.unit = unit;
@@ -120,5 +121,13 @@ public class Workers {
 
     public void setPreemptiveRepair(boolean preemptiveRepair) {
         this.preemptiveRepair = preemptiveRepair;
+    }
+
+    public boolean isAssignedToBase() {
+        return assignedToBase;
+    }
+
+    public void setAssignedToBase(boolean assignedToBase) {
+        this.assignedToBase = assignedToBase;
     }
 }

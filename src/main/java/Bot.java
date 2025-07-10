@@ -81,6 +81,10 @@ public class Bot extends DefaultBWListener {
             return;
         }
 
+        if(unit.getType() == UnitType.Terran_Command_Center) {
+            baseInfo.onUnitComplete(unit);
+        }
+
         productionManager.onUnitComplete(unit);
         resourceManager.onUnitComplete(unit);
         buildTiles.onUnitComplete(unit);
@@ -91,12 +95,6 @@ public class Bot extends DefaultBWListener {
         else if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Comsat_Station) {
             unitManager.onUnitComplete(unit);
         }
-
-        if(unit.getType() == UnitType.Terran_Command_Center) {
-            baseInfo.onUnitComplete(unit);
-        }
-
-
     }
 
     @Override

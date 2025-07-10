@@ -1,6 +1,7 @@
 package macro;
 
 import bwapi.*;
+import bwem.Base;
 import bwem.Mineral;
 import information.BaseInfo;
 import information.EnemyInformation;
@@ -20,6 +21,7 @@ public class ResourceManager {
     private HashSet<Workers> defenseForce = new HashSet<>();
     private HashSet<Workers> repairForce = new HashSet<>();
     private HashMap<Unit, HashSet<Workers>> refinerySaturation = new HashMap<>();
+    private HashMap<Base, HashSet<Workers>> mineralSaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
     private int reservedMinerals = 0;
     private int reservedGas = 0;
@@ -27,6 +29,7 @@ public class ResourceManager {
     private int availableGas = 0;
     private boolean isReserved = false;
     private boolean openerResponse = false;
+    private boolean startingMineralsAssigned = false;
 
     public ResourceManager(BaseInfo baseInfo, Player player, Game game, EnemyInformation enemyInformation) {
         this.baseInfo = baseInfo;
@@ -39,9 +42,9 @@ public class ResourceManager {
 
     //TODO: refactor all of this and organize with switch cases
     public void onFrame() {
+        startingMineralAssignment();
         setAvailableMinerals(availableMinerals);
         setAvailableGas(availableGas);
-        gatherMinerals();
         gatherGas();
         workerBuildClock();
         buildingHealthCheck();
@@ -57,6 +60,13 @@ public class ResourceManager {
         for(Workers worker : workers) {
             if(worker.getUnit().isUnderAttack() && worker.getWorkerStatus() != WorkerStatus.SCOUTING) {
                 createDefenseForce(7);
+            }
+
+            if(worker.getWorkerStatus() == WorkerStatus.IDLE) {
+                if(!worker.isAssignedToBase()) {
+                    assignMineralSaturation(worker);
+                }
+                worker.setWorkerStatus(WorkerStatus.MINERALS);
             }
 
 
@@ -86,7 +96,15 @@ public class ResourceManager {
                         buildingRepair.put(building, worker);
                         worker.setRepairTarget(building);
                         worker.setWorkerStatus(WorkerStatus.REPAIRING);
+                        continue;
                     }
+                }
+                if(worker.getUnit().isIdle()) {
+                    gatherMinerals(worker);
+                }
+
+                if(worker.getUnit().isGatheringGas()) {
+                    worker.getUnit().stop();
                 }
             }
 
@@ -106,24 +124,23 @@ public class ResourceManager {
         }
     }
 
-    public void gatherMinerals() {
-        for(Mineral mineral : baseInfo.getStartingMinerals()) {
-            for(Workers worker : workers) {
-                if(worker.getWorkerStatus() == WorkerStatus.IDLE) {
+    private void gatherMinerals(Workers worker) {
+        for(Base base : mineralSaturation.keySet()) {
+            if(mineralSaturation.get(base).contains(worker)) {
+                for(Mineral mineral : base.getMinerals()) {
                     worker.getUnit().gather(mineral.getUnit());
                     worker.setWorkerStatus(WorkerStatus.MINERALS);
                     break;
                 }
-
-                if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().isIdle()) {
-                    worker.getUnit().gather(mineral.getUnit());
-                    break;
-                }
             }
+        }
+
+        if(!worker.isAssignedToBase()) {
+            assignMineralSaturation(worker);
         }
     }
 
-    public void gatherGas() {
+    private void gatherGas() {
         for(Workers scv : workers) {
             if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
                 for(Unit geyser : refinerySaturation.keySet()) {
@@ -135,6 +152,46 @@ public class ResourceManager {
                 }
             }
         }
+    }
+
+    private void assignMineralSaturation(Workers worker) {
+        for(Base base : baseInfo.getOwnedBases()) {
+            if(mineralSaturation.get(base).size() < 24) {
+                mineralSaturation.get(base).add(worker);
+                worker.setAssignedToBase(true);
+                break;
+            }
+        }
+    }
+
+    private void removeMineralSaturation(Workers worker) {
+        for(Base base : mineralSaturation.keySet()) {
+            if(mineralSaturation.get(base).contains(worker)) {
+                mineralSaturation.get(base).remove(worker);
+                break;
+            }
+        }
+    }
+
+    private void startingMineralAssignment() {
+        if(startingMineralsAssigned) {
+            return;
+        }
+
+        Base mainBase = baseInfo.getStartingBase();
+
+        HashSet<Unit> minerals = new HashSet<>(mainBase.getMinerals().stream()
+                .map(Mineral::getUnit)
+                .collect(java.util.stream.Collectors.toList()));
+
+        for(Workers worker : workers) {
+            if(!minerals.isEmpty()) {
+                Unit mineralPatch = minerals.iterator().next();
+                worker.getUnit().gather(mineralPatch);
+                minerals.remove(mineralPatch);
+            }
+        }
+        startingMineralsAssigned = true;
     }
 
     public  void reserveResources(UnitType unitType) {
@@ -354,6 +411,14 @@ public class ResourceManager {
             refinerySaturation.put(unit, new HashSet<>());
         }
 
+        if(unit.getType() == UnitType.Terran_Command_Center) {
+            for(Base base : baseInfo.getOwnedBases()) {
+                if(unit.getPosition().getApproxDistance(base.getCenter()) < 100) {
+                    mineralSaturation.put(base, new HashSet<>());
+                }
+            }
+        }
+
     }
 
     public void onUnitDestroy(Unit unit) {
@@ -387,6 +452,7 @@ public class ResourceManager {
                     }
                 }
 
+                removeMineralSaturation(worker);
                 workers.remove(worker);
 
                 break;

@@ -221,13 +221,13 @@ public class ProductionManager {
                                 break;
                             }
 
-//                            if(worker.getBuildFrameCount() > 300) {
-//                                worker.setWorkerStatus(WorkerStatus.IDLE);
-//                                worker.getUnit().stop();
-//                                resourceManager.unreserveResources(pi.getUnitType());
-//                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
-//                                break;
-//                            }
+                            if(worker.getBuildFrameCount() > 600) {
+                                worker.setWorkerStatus(WorkerStatus.IDLE);
+                                worker.getUnit().stop();
+                                resourceManager.unreserveResources(pi.getUnitType());
+                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                                break;
+                            }
                         }
                     }
 
@@ -416,7 +416,7 @@ public class ProductionManager {
                             addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
                         }
                         else if (isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
-                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 2);
+                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 3);
                         }
 
                     }
@@ -448,12 +448,17 @@ public class ProductionManager {
 
     //TODO: scale max scvs based on base count
     private void scvProduction() {
-        if(unitTypeCount.get(UnitType.Terran_SCV) < 24) {
+        int ownedBases = baseInfo.getOwnedBases().size();
+        int workerCap = 24 * ownedBases;
+
+        if(unitTypeCount.get(UnitType.Terran_SCV) < workerCap) {
             boolean scvInQueue = productionQueue.stream()
                     .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_SCV);
 
             if (!scvInQueue) {
-                addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT,4);
+                for(int i = 0; i < ownedBases; i++) {
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 4);
+                }
             }
         }
     }
@@ -745,6 +750,7 @@ public class ProductionManager {
         addUnitTypeCount(unit);
 
         if(unit.canTrain()) {
+            System.out.println("Adding " + unit.getType() + " to production buildings");
             productionBuildings.add(unit);
         }
         if(unit.getType().isBuilding()) {
