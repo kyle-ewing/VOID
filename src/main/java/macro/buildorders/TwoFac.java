@@ -27,12 +27,13 @@ public class TwoFac implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(TechType.Spider_Mines, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 32, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 32, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 34, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 37, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 53, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 57, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 61, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
         return buildOrder;
     }
