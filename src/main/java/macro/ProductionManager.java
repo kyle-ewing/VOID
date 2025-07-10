@@ -750,7 +750,6 @@ public class ProductionManager {
         addUnitTypeCount(unit);
 
         if(unit.canTrain()) {
-            System.out.println("Adding " + unit.getType() + " to production buildings");
             productionBuildings.add(unit);
         }
         if(unit.getType().isBuilding()) {
