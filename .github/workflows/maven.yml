@@ -35,9 +35,7 @@ jobs:
         - name: Search for print statements
           run: |
             echo "Checking for System.out.print statements..."
-            found=$(grep -rnw --include="*.java" . -e 'System\.out\.print' || true)
-            if [ -n "$found" ]; then
-              echo "$found"
+            if grep -rnw --include="*.java" . -e 'System\.out\.print'; then
               echo "::error::System.out.print statements are not allowed"
               exit 1
             else
