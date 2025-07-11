@@ -123,7 +123,7 @@ public class UnitManager {
                 combatUnit.setUnitStatus(UnitStatus.RALLY);
             }
 
-            if(scouting.isCompletedScout() && !enemyInformation.isEnemyBuildingDiscovered() && combatUnit.getUnitType() == UnitType.Terran_Marine && scouts < baseInfo.getMapBases().size()) {
+            if((scouting.isCompletedScout() || scouting.isAttemptsMaxed()) && !enemyInformation.isEnemyBuildingDiscovered() && (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Vulture ) && scouts < baseInfo.getMapBases().size()) {
                 combatUnit.setUnitStatus(UnitStatus.SCOUT);
                 assignScouts(combatUnit);
                 scouts++;

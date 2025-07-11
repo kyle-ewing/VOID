@@ -24,7 +24,9 @@ public class Scouting {
     private int scoutRadius = 200;
     private int positionCount = 8;
     private int currentPositionIndex = 0;
+    private int scoutingAttempts = 0;
     private boolean completedScout = false;
+    private boolean attemptsMaxed = false;
 
     public Scouting(BWEM bwem, Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, EnemyInformation enemyInformation) {
         this.bwem = bwem;
@@ -38,6 +40,11 @@ public class Scouting {
     }
 
     public void sendScout() {
+        if(scoutingAttempts >= 3) {
+            attemptsMaxed = true;
+            return;
+        }
+
         if(scout == null) {
             selectScout();
         }
@@ -57,6 +64,7 @@ public class Scouting {
     private void selectScout() {
         for(Workers scv: resourceManager.getWorkers()) {
             if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
+                scoutingAttempts++;
                 scout = scv;
                 scv.setWorkerStatus(WorkerStatus.SCOUTING);
                 break;
@@ -120,5 +128,9 @@ public class Scouting {
 
     public boolean isCompletedScout() {
         return completedScout;
+    }
+
+    public boolean isAttemptsMaxed() {
+        return attemptsMaxed;
     }
 }
