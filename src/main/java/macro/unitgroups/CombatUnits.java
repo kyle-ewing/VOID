@@ -18,6 +18,7 @@ public class CombatUnits {
     protected int targetRange = 200;
     protected boolean inBunker;
     protected boolean enemyInBase = false;
+    protected boolean inRangeOfThreat = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -94,7 +95,13 @@ public class CombatUnits {
     }
 
     public void retreat() {
-        // Default implementation does nothing, can be overridden by subclasses
+        if(enemyUnit == null) {
+            return;
+        }
+
+        if(!inRangeOfThreat) {
+            setUnitStatus(UnitStatus.ATTACK);
+        }
     }
 
     public int getResetClock() {
@@ -176,5 +183,13 @@ public class CombatUnits {
 
     public void setEnemyInBase(boolean enemyInBase) {
         this.enemyInBase = enemyInBase;
+    }
+
+    public boolean isInRangeOfThreat() {
+        return inRangeOfThreat;
+    }
+
+    public void setInRangeOfThreat(boolean inRangeOfThreat) {
+        this.inRangeOfThreat = inRangeOfThreat;
     }
 }
