@@ -52,6 +52,15 @@ public class EnemyInformation {
         return false;
     }
 
+    public boolean hasType(UnitType unitType) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == unitType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
 
