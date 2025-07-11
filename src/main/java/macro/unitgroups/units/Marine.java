@@ -6,6 +6,7 @@ import macro.unitgroups.UnitStatus;
 
 public class Marine extends CombatUnits {
     private static final int UPGRADE_RANGE = 32;
+    private boolean hasTankSupport = false;
 
     public Marine(Game game, Unit unit) {
         super(game, unit);
@@ -59,6 +60,25 @@ public class Marine extends CombatUnits {
 
     }
 
+    @Override
+    public void retreat() {
+        if(enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
+            return;
+        }
+
+        if(!unit.isStimmed() && unit.isAttacking()) {
+            unit.useTech(TechType.Stim_Packs);
+        }
+
+        if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+            unit.attack(enemyUnit.getEnemyPosition());
+        }
+
+        if(!inRangeOfThreat) {
+            setUnitStatus(UnitStatus.ATTACK);
+        }
+    }
+
     private void kite() {
         if(enemyUnit.getEnemyType().isBuilding()) {
             return;
@@ -102,5 +122,13 @@ public class Marine extends CombatUnits {
         else {
             return weaponType.maxRange();
         }
+    }
+
+    public boolean hasTankSupport() {
+        return hasTankSupport;
+    }
+
+    public void setHasTankSupport(boolean hasTankSupport) {
+        this.hasTankSupport = hasTankSupport;
     }
 }

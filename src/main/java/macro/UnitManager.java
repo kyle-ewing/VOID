@@ -10,6 +10,7 @@ import information.Scouting;
 import macro.unitgroups.CombatUnitCreator;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
+import macro.unitgroups.units.Marine;
 import util.PositionInterpolator;
 import util.Time;
 
@@ -83,6 +84,7 @@ public class UnitManager {
 
             switch (combatUnit.getUnitType()) {
                 case Terran_Marine:
+                    hasTankSupport((Marine)combatUnit);
                     break;
                 case Terran_Medic:
                     updateFriendlyUnit(combatUnit);
@@ -129,9 +131,32 @@ public class UnitManager {
 
 //            unitStatus = combatUnit.getUnitStatus();
 
+            //TODO: clean this up
             switch(unitStatus) {
                 case ATTACK:
                     updateClosetEnemy(combatUnit, Integer.MAX_VALUE);
+
+                    if(combatUnit.getUnitType() == UnitType.Terran_Marine) {
+                        if(inRangeOfThreat(combatUnit) && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
+                            avoidThreat(combatUnit);
+                            combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                            continue;
+                        }
+                        else if(inRangeOfThreat(combatUnit) && ((Marine)combatUnit).hasTankSupport()) {
+                            avoidThreat(combatUnit);
+                            combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                            continue;
+                        }
+                        combatUnit.attack();
+                        break;
+                    }
+
+                    if(inRangeOfThreat(combatUnit)) {
+                        avoidThreat(combatUnit);
+                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                        continue;
+                    }
+
                     combatUnit.attack();
                     break;
                 case RALLY:
@@ -160,7 +185,12 @@ public class UnitManager {
                     combatUnit.defend();
                     break;
                 case RETREAT:
+                    if(!inRangeOfThreat(combatUnit)) {
+                        combatUnit.setInRangeOfThreat(false);
+                    }
+
                     combatUnit.retreat();
+                    avoidThreat(combatUnit);
                 case SCOUT:
                     scoutBases();
                     break;
@@ -464,6 +494,83 @@ public class UnitManager {
 
         Position movePos = new Position(moveX, moveY);
         combatUnit.getUnit().attack(movePos);
+    }
+
+    private void avoidThreat(CombatUnits combatUnit) {
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if(!((enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon && enemyUnit.getEnemyUnit().isPowered() && enemyUnit.getEnemyUnit().isCompleted()) || enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony || (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.getEnemyUnit().isBurrowed() && !enemyUnit.getEnemyUnit().isDetected()))) {
+                continue;
+            }
+
+            Position unitPos = combatUnit.getUnit().getPosition();
+            Position threatPos = enemyUnit.getEnemyPosition();
+
+            int dx = unitPos.getX() - threatPos.getX();
+            int dy = unitPos.getY() - threatPos.getY();
+
+            int moveX = unitPos.getX() + (dx * 200 / Math.max(1, unitPos.getApproxDistance(threatPos)));
+            int moveY = unitPos.getY() + (dy * 200 / Math.max(1, unitPos.getApproxDistance(threatPos)));
+
+            moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
+            moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
+
+            Position movePos = new Position(moveX, moveY);
+            combatUnit.getUnit().move(movePos);
+            break;
+        }
+    }
+
+    private boolean inRangeOfThreat(CombatUnits combatUnit) {
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            boolean isThreat = (enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon && enemyUnit.getEnemyUnit().isPowered() && enemyUnit.getEnemyUnit().isCompleted()) || enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony || (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.getEnemyUnit().isBurrowed() && !enemyUnit.getEnemyUnit().isDetected());
+
+            if(!isThreat) {
+                continue;
+            }
+
+             if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 125) {
+                combatUnit.setInRangeOfThreat(true);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private UnitType typeOfThreat(CombatUnits combatUnit) {
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            boolean isThreat = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.getEnemyUnit().isBurrowed() && !enemyUnit.getEnemyUnit().isDetected());
+
+            if(!isThreat) {
+                continue;
+            }
+
+            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 100) {
+                return enemyUnit.getEnemyType();
+            }
+        }
+        return null;
+    }
+
+    private boolean hasTankSupport(Marine marine) {
+        if(unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
+            marine.setHasTankSupport(true);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private void initUnitCounts()  {
