@@ -118,7 +118,7 @@ public class ProductionManager {
 
             switch (pi.getPlannedItemStatus()) {
                 case NOT_STARTED:
-                    if (pi.getSupply() <= player.supplyUsed() / 2) {
+                    if(pi.getSupply() <= player.supplyUsed() / 2) {
 
                         if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
                             if(!canBeResearched(pi.getTechBuilding()) || !isResearching(pi.getTechBuilding())) {
@@ -145,7 +145,7 @@ public class ProductionManager {
                             continue;
                         }
 
-                        if (resourceManager.getAvailableMinerals() >= pi.getUnitType().mineralPrice() && resourceManager.getAvailableGas() >= pi.getUnitType().gasPrice()) {
+                        if(resourceManager.getAvailableMinerals() >= pi.getUnitType().mineralPrice() && resourceManager.getAvailableGas() >= pi.getUnitType().gasPrice()) {
 
                             if(pi.getPlannedItemType() == PlannedItemType.UNIT) {
                                 for(Unit productionBuilding : productionBuildings) {
@@ -261,7 +261,7 @@ public class ProductionManager {
                                     }
                                 }
                             }
-
+                            break;
                         }
 
                         boolean builderHasDied = true;
@@ -320,6 +320,7 @@ public class ProductionManager {
 
                         if(pi.getAddOnParent() != null && pi.getAddOnParent().getAddon().isCompleted()) {
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                            break;
                         }
                     }
 
@@ -696,6 +697,10 @@ public class ProductionManager {
         }
 
         for(UnitType requiredUnit : requiredUnits.keySet()) {
+            if(requiredUnits.size() == 1 && requiredUnit == UnitType.Terran_SCV) {
+                return true;
+            }
+
             if(!requiredUnit.isBuilding()) {
                 continue;
             }
