@@ -416,13 +416,16 @@ public class ProductionManager {
                         if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 4 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
                             addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
                         }
-                        else if (isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
-                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 3);
+                        else if(isRecruitable(UnitType.Terran_Goliath) && !hasUnitInQueue(UnitType.Terran_Goliath) && (enemyInformation.hasType(UnitType.Protoss_Arbiter) || enemyInformation.hasType(UnitType.Protoss_Carrier) || enemyInformation.hasType(UnitType.Protoss_Scout))) {
+                            addToQueue(UnitType.Terran_Goliath, PlannedItemType.UNIT, 2);
                         }
+                        else if(isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
+                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 3);
 
+                        }
                     }
 
-                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Factory) < 3 && !hasUnitInQueue(UnitType.Terran_Factory)) {
+                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
                         addToQueue(UnitType.Terran_Factory, PlannedItemType.BUILDING, 3);
                     }
                 }
