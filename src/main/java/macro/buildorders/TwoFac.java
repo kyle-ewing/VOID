@@ -23,6 +23,7 @@ public class TwoFac implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 17, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 19, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 21, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Bunker, 22, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
@@ -35,6 +36,11 @@ public class TwoFac implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 53, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 57, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 61, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 61, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 61, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         return buildOrder;
     }
 }

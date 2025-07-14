@@ -708,6 +708,14 @@ public class BuildTiles {
         return mainChokeBunker;
     }
 
+    public TilePosition getMainChokeTurret() {
+        return mainChokeTurret;
+    }
+
+    public TilePosition getNaturalChokeTurret() {
+        return naturalChokeTurret;
+    }
+
     public void onFrame() {
         painters.paintPaintBunkerTile(closeBunkerTile);
         painters.paintPaintBunkerTile(mainChokeBunker);
