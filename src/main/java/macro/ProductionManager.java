@@ -33,6 +33,7 @@ public class ProductionManager {
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
     private HashSet<Unit> allBuildings = new HashSet<>();
+    private HashSet<TilePosition> reservedTurretPositions = new HashSet<>();
     private ArrayList<BuildOrder> openerNames = new ArrayList<>();
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
     private BuildOrder startingOpener;
@@ -553,7 +554,17 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
         }
         else {
-            //turrets and addons
+            if(buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+                reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
+                pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
+                return;
+            }
+
+            if(buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
+                reservedTurretPositions.add(buildTiles.getMainChokeTurret());
+                pi.setBuildPosition(buildTiles.getMainChokeTurret());
+                return;
+            }
         }
         buildTiles.updateRemainingTiles(pi.getBuildPosition());
     }
