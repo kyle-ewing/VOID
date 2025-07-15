@@ -469,6 +469,10 @@ public class ProductionManager {
     }
 
     private boolean isDepotInQueue() {
+        if(buildTiles.getMediumBuildTiles().size() < 2) {
+            return true;
+        }
+
         for(PlannedItem pi : productionQueue) {
             if(pi.getUnitType() == UnitType.Terran_Supply_Depot) {
                 return true;
@@ -507,6 +511,10 @@ public class ProductionManager {
             }
 
             for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
+                if(tileTaken(tilePosition)) {
+                    continue;
+                }
+
                 int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
 
                 if(distance < distanceFromSCV) {
@@ -544,6 +552,10 @@ public class ProductionManager {
             }
 
             for(TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
+                if(tileTaken(tilePosition)) {
+                    continue;
+                }
+
                 int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
 
                 if(distance < distanceFromSCV) {
@@ -566,7 +578,7 @@ public class ProductionManager {
                 return;
             }
         }
-        buildTiles.updateRemainingTiles(pi.getBuildPosition());
+        //buildTiles.updateRemainingTiles(pi.getBuildPosition());
     }
 
     private void setCommandCenterPosition(PlannedItem pi) {
@@ -727,6 +739,19 @@ public class ProductionManager {
         return false;
     }
 
+    private boolean tileTaken(TilePosition tilePosition) {
+        for(PlannedItem pi : productionQueue) {
+            if(pi.getBuildPosition() == null) {
+                continue;
+            }
+
+            if(pi.getBuildPosition() == tilePosition) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean canBeResearched(UnitType unitType) {
         if(unitTypeCount.get(unitType) > 0) {
             return true;
@@ -756,6 +781,8 @@ public class ProductionManager {
         if(enemyInformation.getEnemyOpener() != null && !openerResponse) {
             openerResponse();
         }
+
+        buildTiles.onFrame();
     }
 
     //TODO: get rid of this why am i checking before it's done
@@ -774,6 +801,7 @@ public class ProductionManager {
         if(unit.getType().isBuilding()) {
             newestCompletedBuilding = unit;
         }
+        buildTiles.onUnitComplete(unit);
     }
 
     public void onUnitDestroy(Unit unit) {

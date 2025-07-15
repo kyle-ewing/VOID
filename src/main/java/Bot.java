@@ -20,7 +20,6 @@ public class Bot extends DefaultBWListener {
     private ProductionManager productionManager;
     private UnitManager unitManager;
     private Scouting scouting;
-    private BuildTiles buildTiles;
 
     //Debug painters
     private Painters painters;
@@ -43,8 +42,6 @@ public class Bot extends DefaultBWListener {
         scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, enemyInformation);
         unitManager = new UnitManager(enemyInformation, baseInfo, game, scouting);
 
-        buildTiles = new BuildTiles(game, bwem, baseInfo);
-
         //Debug painters
         painters = new Painters(game, bwem, resourceManager);
 
@@ -61,7 +58,6 @@ public class Bot extends DefaultBWListener {
         scouting.onFrame();
         painters.onFrame();
         baseInfo.onFrame();
-        buildTiles.onFrame();
     }
 
 
@@ -87,7 +83,6 @@ public class Bot extends DefaultBWListener {
 
         productionManager.onUnitComplete(unit);
         resourceManager.onUnitComplete(unit);
-        buildTiles.onUnitComplete(unit);
 
         if(unit.getType() != UnitType.Terran_SCV && !unit.getType().isBuilding()) {
             unitManager.onUnitComplete(unit);
