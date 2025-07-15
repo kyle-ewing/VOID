@@ -23,6 +23,7 @@ public class BaseInfo {
     private HashSet<Mineral> startingMinerals = new HashSet<>();
     private HashSet<Geyser> startingGeysers = new HashSet<>();
     private HashSet<TilePosition> baseTiles = new HashSet<>();
+    private HashSet<TilePosition> naturalTiles = new HashSet<>();
     private HashSet<Base> ownedBases = new HashSet<>();
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> usedGeysers = new HashSet<>();
@@ -57,6 +58,7 @@ public class BaseInfo {
         setStartingGeysers();
         setNaturalBase();
         setStartingBaseTiles();
+        setNaturalBaseTiles();
         setOrderedExpansions();
         setGeyserTiles();
         setChokePoints();
@@ -121,6 +123,10 @@ public class BaseInfo {
 
     private void setStartingBaseTiles() {
        baseTiles = getTilesForBase(startingBase);
+    }
+
+    private void setNaturalBaseTiles() {
+        naturalTiles = getTilesForBase(naturalBase);
     }
 
     private void setStartingMineralPatches() {
@@ -289,6 +295,10 @@ public class BaseInfo {
 
     public HashSet<TilePosition> getBaseTiles() {
         return baseTiles;
+    }
+
+    public HashSet<TilePosition> getNaturalTiles() {
+        return naturalTiles;
     }
 
     public HashSet<Base> getMapBases() {
