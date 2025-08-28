@@ -98,25 +98,30 @@ public class SiegeTank extends CombatUnits {
 
                 if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 128) {
                     super.setUnitStatus(UnitStatus.RETREAT);
+                    super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
                 break;
             case DEFEND:
                 if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 128) {
+                    super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
+                break;
             case RETREAT:
                 if(isSieged()) {
+                    super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
+                break;
         }
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && enemyUnit.getEnemyUnit().getDistance(unit) > 128 && canSiege()) {
+        if(enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 128 && canSiege()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             unit.siege();
         }
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE) {
+        if(enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE && isSieged()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
             unit.unsiege();
         }
