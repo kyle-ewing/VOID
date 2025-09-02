@@ -5,6 +5,7 @@ import bwem.Base;
 import bwem.Mineral;
 import information.BaseInfo;
 import information.EnemyInformation;
+import information.EnemyScoutResponse;
 import information.EnemyUnits;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
@@ -17,6 +18,7 @@ public class ResourceManager {
     private Player player;
     private Game game;
     private EnemyInformation enemyInformation;
+    private EnemyScoutResponse enemyScoutResponse;
     private HashSet<Workers> workers = new HashSet<>();
     private HashSet<Workers> defenseForce = new HashSet<>();
     private HashSet<Workers> repairForce = new HashSet<>();
@@ -37,7 +39,7 @@ public class ResourceManager {
         this.enemyInformation = enemyInformation;
         this.game = game;
 
-
+        enemyScoutResponse = new EnemyScoutResponse(game, enemyInformation, this, baseInfo);
     }
 
     //TODO: refactor all of this and organize with switch cases
@@ -49,6 +51,7 @@ public class ResourceManager {
         workerBuildClock();
         buildingHealthCheck();
         preemptiveBunkerRepair();
+        enemyScoutResponse.onFrame();
 
         int frameCount = game.getFrameCount();
 
@@ -58,8 +61,10 @@ public class ResourceManager {
         }
 
         for(Workers worker : workers) {
-            if(worker.getUnit().isUnderAttack() && worker.getWorkerStatus() != WorkerStatus.SCOUTING) {
-                createDefenseForce(7);
+            if(worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
+                if(baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())) {
+                    createDefenseForce(7);
+                }
             }
 
             if(worker.getWorkerStatus() == WorkerStatus.IDLE) {
@@ -74,7 +79,7 @@ public class ResourceManager {
                 updateClosetEnemy(worker);
                 workerAttackClock(worker);
 
-                if(frameCount % 12 != 0) {
+                if(frameCount % 24 != 0) {
                     return;
                 }
 
@@ -96,7 +101,6 @@ public class ResourceManager {
                         buildingRepair.put(building, worker);
                         worker.setRepairTarget(building);
                         worker.setWorkerStatus(WorkerStatus.REPAIRING);
-                        continue;
                     }
                 }
                 if(worker.getUnit().isIdle()) {
