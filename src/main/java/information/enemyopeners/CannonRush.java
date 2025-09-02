@@ -24,22 +24,13 @@ public class CannonRush extends EnemyStrategy {
                 continue;
             }
 
-            if(enemyUnit.getEnemyPosition().getApproxDistance(baseInfo.getStartingBase().getCenter()) > 1250) {
-                continue;
-            }
-
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
-                if(new Time(3, 0).lessThanOrEqual(time)) {
+            if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
+                if(new Time(3, 30).greaterThan(time)) {
                     return true;
                 }
             }
-            else if(enemyUnit.getEnemyType() == UnitType.Protoss_Probe) {
-                if(time.lessThanOrEqual(new Time(1, 40))) {
-                    return true;
-                }
-            }
-            else if(enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
-                if(time.lessThanOrEqual(new Time(2, 30))) {
+            else if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
+                if(new Time(3, 30).greaterThan(time)) {
                     return true;
                 }
             }

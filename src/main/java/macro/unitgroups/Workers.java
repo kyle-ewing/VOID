@@ -29,6 +29,7 @@ public class Workers {
         }
 
         if (!unit.isAttackFrame()) {
+            attackClock = 0;
             unit.attack(enemyUnit.getEnemyPosition());
         }
     }

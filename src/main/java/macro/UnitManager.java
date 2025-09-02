@@ -354,7 +354,7 @@ public class UnitManager {
             combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
         }
         else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Cannon Rush")) {
-            combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
+            combatUnit.setRallyPoint(PositionInterpolator.interpolate(baseInfo.getNaturalBase().getLocation(), baseInfo.getNaturalChoke().getCenter().toTilePosition(), 0.65));
         }
     }
 
