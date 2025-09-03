@@ -451,7 +451,6 @@ public class ProductionManager {
         }
     }
 
-    //TODO: scale max scvs based on base count
     private void scvProduction() {
         int ownedBases = baseInfo.getOwnedBases().size();
         int workerCap = 24 * ownedBases;
@@ -783,6 +782,7 @@ public class ProductionManager {
         }
 
         buildTiles.onFrame();
+        painters.paintProductionQueueReadout(productionQueue);
     }
 
     //TODO: get rid of this why am i checking before it's done

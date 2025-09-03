@@ -8,9 +8,9 @@ import macro.ResourceManager;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 import macro.unitgroups.Workers;
+import planner.PlannedItem;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class Painters {
     Game game;
@@ -275,6 +275,32 @@ public class Painters {
         //game.drawCircleMap(unit.getUnit().getPosition(), 200, Color.Green);
     }
 
+    public void paintProductionQueueReadout(PriorityQueue<PlannedItem> productionQueue) {
+        List<PlannedItem> safeQueue = new ArrayList<>(productionQueue);
+        Collections.sort(safeQueue, Comparator.comparingInt(PlannedItem::getSupply));
+        int readoutAmount = 0;
+        game.setTextSize(Text.Size.Small);
+        for(PlannedItem pi : safeQueue) {
+            if(readoutAmount < 10) {
+
+                if(pi.getUnitType() != null) {
+                    game.drawTextScreen(350, 20 + (15 * readoutAmount), "\u0004 Supply: " + pi.getSupply() + " " + "Type: " + pi.getUnitType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
+                    readoutAmount++;
+                }
+                else if(pi.getUpgradeType() != null) {
+                    game.drawTextScreen(350, 20 + (15 * readoutAmount), "\u000E Supply: " + pi.getSupply() + " " + "Type: " + pi.getUpgradeType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
+                    readoutAmount++;
+                }
+                else if(pi.getTechUpgrade() != null) {
+                    game.drawTextScreen(350, 20 + (15 * readoutAmount), "\u000E Supply: " + pi.getSupply() + " " + "Type: " + pi.getTechUpgrade().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
+                    readoutAmount++;
+                }
+
+
+            }
+        }
+        game.setTextSize(Text.Size.Default);
+    }
 
 
     public void onFrame() {
