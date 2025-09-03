@@ -24,7 +24,7 @@ public class EnemyScoutResponse {
 
     private void initialScoutInBase() {
         for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
-            if(enemyUnit.getEnemyType().isWorker() && enemyInformation.enemysInMain()) {
+            if(enemyUnit.getEnemyType().isWorker() && enemyInformation.enemyInBase()) {
                 setEnemyScout(enemyUnit);
                 initiallyScouted = true;
             }

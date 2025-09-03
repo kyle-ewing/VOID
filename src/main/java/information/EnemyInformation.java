@@ -43,9 +43,12 @@ public class EnemyInformation {
         return false;
     }
 
-    public boolean enemysInMain() {
+    public boolean enemyInBase() {
         for (EnemyUnits enemyUnit : enemyUnits) {
-            if (enemyUnit.getEnemyUnit().getTilePosition().getDistance(baseInfo.getStartingBase().getLocation()) < 500) {
+            if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                return true;
+            }
+            else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 return true;
             }
         }
