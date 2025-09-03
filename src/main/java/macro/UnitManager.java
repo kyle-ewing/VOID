@@ -60,7 +60,7 @@ public class UnitManager {
         }
 
         if(new Time(rallyClock).greaterThan(new Time(1, 0))) {
-            if(!enemyInformation.enemysInMain()) {
+            if(!enemyInformation.enemyInBase()) {
                 defendedAllIn = true;
                 rallyClock = 0;
             }
