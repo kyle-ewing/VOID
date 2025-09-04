@@ -212,6 +212,10 @@ public class Painters {
     }
 
     public void paintPaintBunkerTile(TilePosition tilePosition) {
+        if(tilePosition == null) {
+            return;
+        }
+
         game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
         Position start = tilePosition.toPosition();
         Position end = new Position(
@@ -222,6 +226,10 @@ public class Painters {
     }
 
     public void paintMissileTile(TilePosition tilePosition) {
+        if(tilePosition == null) {
+            return;
+        }
+
         game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
         Position start = tilePosition.toPosition();
         Position end = new Position(

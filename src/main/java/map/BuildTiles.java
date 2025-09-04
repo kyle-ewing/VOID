@@ -508,32 +508,35 @@ public class BuildTiles {
         }
 
 
-        int mainChokeBunkerX = mainChokeBunker.getX();
-        int mainChokeBunkerY = mainChokeBunker.getY();
-        int mainChokeXEnd = mainChokeBunkerX + UnitType.Terran_Bunker.tileWidth();
-        int mainChokeYEnd = mainChokeBunkerY + UnitType.Terran_Bunker.tileHeight();
+        if(mainChokeBunker != null) {
+            int mainChokeBunkerX = mainChokeBunker.getX();
+            int mainChokeBunkerY = mainChokeBunker.getY();
+            int mainChokeXEnd = mainChokeBunkerX + UnitType.Terran_Bunker.tileWidth();
+            int mainChokeYEnd = mainChokeBunkerY + UnitType.Terran_Bunker.tileHeight();
 
-        for(int x = newX; x < newX + typeWidth; x++) {
-            for(int y = newY; y < newY + typeHeight; y++) {
-                if(x >= mainChokeBunkerX && x < mainChokeXEnd && y >= mainChokeBunkerY && y < mainChokeYEnd) {
-                    return true;
+            for(int x = newX; x < newX + typeWidth; x++) {
+                for(int y = newY; y < newY + typeHeight; y++) {
+                    if(x >= mainChokeBunkerX && x < mainChokeXEnd && y >= mainChokeBunkerY && y < mainChokeYEnd) {
+                        return true;
+                    }
                 }
             }
         }
 
-        int mainChokeTurretX = mainChokeTurret.getX();
-        int mainChokeTurretY = mainChokeTurret.getY();
-        int mainChokeTurretXEnd = mainChokeTurretX + UnitType.Terran_Missile_Turret.tileWidth();
-        int mainChokeTurretYEnd = mainChokeTurretY + UnitType.Terran_Missile_Turret.tileHeight();
+        if(mainChokeTurret != null) {
+            int mainChokeTurretX = mainChokeTurret.getX();
+            int mainChokeTurretY = mainChokeTurret.getY();
+            int mainChokeTurretXEnd = mainChokeTurretX + UnitType.Terran_Missile_Turret.tileWidth();
+            int mainChokeTurretYEnd = mainChokeTurretY + UnitType.Terran_Missile_Turret.tileHeight();
 
-        for(int x = newX; x < newX + typeWidth; x++) {
-            for(int y = newY; y < newY + typeHeight; y++) {
-                if(x >= mainChokeTurretX && x < mainChokeTurretXEnd && y >= mainChokeTurretY && y < mainChokeTurretYEnd) {
-                    return true;
+            for(int x = newX; x < newX + typeWidth; x++) {
+                for(int y = newY; y < newY + typeHeight; y++) {
+                    if(x >= mainChokeTurretX && x < mainChokeTurretXEnd && y >= mainChokeTurretY && y < mainChokeTurretYEnd) {
+                        return true;
+                    }
                 }
             }
         }
-
 
         for(TilePosition existingTile : largeBuildTiles) {
             int existingXStart = existingTile.getX();
