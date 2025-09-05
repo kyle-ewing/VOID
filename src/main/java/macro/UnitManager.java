@@ -43,7 +43,7 @@ public class UnitManager {
         this.baseInfo = baseInfo;
         this.game = game;
         this.scouting = scouting;
-        this.combatUnitCreator = new CombatUnitCreator(game);
+        this.combatUnitCreator = new CombatUnitCreator(game, enemyInformation);
 
         painters = new Painters(game);
         initUnitCounts();
@@ -77,6 +77,7 @@ public class UnitManager {
             if(combatUnit.getUnitType() == UnitType.Spell_Scanner_Sweep) {
                 continue;
             }
+            combatUnit.onFrame();
 
             if(combatUnit.getRallyPoint() == null && (combatUnit.getUnitStatus() != UnitStatus.ADDON)) {
                 setRallyPoint(combatUnit);

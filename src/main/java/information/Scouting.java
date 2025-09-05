@@ -82,7 +82,7 @@ public class Scouting {
         }
 
 
-        Position enemyBasePos = enemyInformation.getStartingEnemyBase().getPosition();
+        Position enemyBasePos = enemyInformation.getStartingEnemyBase().getEnemyPosition();
         double angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
 
         int x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));

@@ -4,7 +4,6 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwem.BWEM;
-import map.TilePositionValidator;
 
 import java.util.*;
 
@@ -90,6 +89,29 @@ public class PathFinding {
         return neighbors;
     }
 
+    public Position findNearestWalkable(Position position) {
+        TilePosition centerTile = position.toTilePosition();
+
+        if(tilePositionValidator.isWalkable(centerTile)) {
+            return centerTile.toPosition();
+        }
+
+        for(int radius = 1; radius <= 10; radius++) {
+            for(int dx = -radius; dx <= radius; dx++) {
+                for(int dy = -radius; dy <= radius; dy++) {
+                    if(Math.abs(dx) == radius || Math.abs(dy) == radius) {
+                        TilePosition checkTile = new TilePosition(centerTile.getX() + dx, centerTile.getY() + dy);
+                        if(tilePositionValidator.isValid(checkTile) && tilePositionValidator.isWalkable(checkTile)) {
+                            return checkTile.toPosition();
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     private static class Node {
         private Position position;
         private Node cameFrom;
@@ -136,5 +158,9 @@ public class PathFinding {
         public void setF(double f) {
             this.f = f;
         }
+    }
+
+    public TilePositionValidator getTilePositionValidator() {
+        return tilePositionValidator;
     }
 }
