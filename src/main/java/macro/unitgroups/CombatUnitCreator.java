@@ -2,13 +2,18 @@ package macro.unitgroups;
 
 import bwapi.Game;
 import bwapi.Unit;
+import information.BaseInfo;
+import information.EnemyInformation;
 import macro.unitgroups.units.*;
+import map.PathFinding;
 
 public class CombatUnitCreator {
     private Game game;
+    private EnemyInformation enemyInformation;
 
-    public CombatUnitCreator(Game game) {
+    public CombatUnitCreator(Game game, EnemyInformation enemyInformation) {
         this.game = game;
+        this.enemyInformation = enemyInformation;
     }
 
     public CombatUnits createCombatUnit(Unit unit, UnitStatus unitStatus) {
@@ -22,7 +27,7 @@ public class CombatUnitCreator {
             case Terran_Ghost:
                 return new Ghost(game, unit);
             case Terran_Vulture:
-                return new Vulture(game, unit);
+                return new Vulture(game, enemyInformation, unit);
             case Terran_Siege_Tank_Tank_Mode:
                 return new SiegeTank(game, unit);
             case Terran_Goliath:
@@ -39,6 +44,8 @@ public class CombatUnitCreator {
                 return new Comsat(game, unit, unitStatus);
             case Spell_Scanner_Sweep:
                 return new Scan(game, unit, unitStatus);
+            case Terran_Vulture_Spider_Mine:
+                return new SpiderMines(game, unit);
             default:
                 return new CombatUnits(game, unit);
         }

@@ -104,6 +104,10 @@ public class CombatUnits {
         }
     }
 
+    public void onFrame() {
+
+    }
+
     public int getResetClock() {
         return resetClock;
     }

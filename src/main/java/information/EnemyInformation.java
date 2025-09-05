@@ -13,7 +13,7 @@ public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits = new HashSet<>();
     private BaseInfo baseInfo;
     private Game game;
-    private Unit startingEnemyBase = null;
+    private EnemyUnits startingEnemyBase = null;
     private Base enemyNatural = null;
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
@@ -93,12 +93,6 @@ public class EnemyInformation {
     }
 
     public void onUnitDiscover(Unit unit) {
-        if (startingEnemyBase == null) {
-            if(unit.getType().isResourceDepot()) {
-                startingEnemyBase = unit;
-            }
-        }
-
         if(!previouslyDiscovered(unit)) {
             addEnemyUnit(unit);
 
@@ -107,7 +101,15 @@ public class EnemyInformation {
             }
         }
 
-
+        if (startingEnemyBase == null) {
+            if(unit.getType().isResourceDepot()) {
+                for(EnemyUnits enemyUnit : enemyUnits) {
+                    if(enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyID() == unit.getID()) {
+                        startingEnemyBase = enemyUnit;
+                    }
+                }
+            }
+        }
 
     }
 
@@ -154,7 +156,7 @@ public class EnemyInformation {
         return enemyUnits;
     }
 
-    public Unit getStartingEnemyBase() {
+    public EnemyUnits getStartingEnemyBase() {
         return startingEnemyBase;
     }
 
@@ -164,5 +166,9 @@ public class EnemyInformation {
 
     public boolean isEnemyBuildingDiscovered() {
         return enemyBuildingDiscovered;
+    }
+
+    public BaseInfo getBaseInfo() {
+        return baseInfo;
     }
 }

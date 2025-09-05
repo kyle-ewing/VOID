@@ -320,6 +320,15 @@ public class BaseInfo {
     public HashSet<TilePosition> getUsedGeysers() {
         return usedGeysers;
     }
+
+    public PathFinding getPathFinding() {
+        return pathFinding;
+    }
+
+    public HashSet<ChokePoint> getChokePoints() {
+        return chokePoints;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
@@ -327,7 +336,7 @@ public class BaseInfo {
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
-        //painters.paintExpansionOrdering(orderedExpansions);
+//        painters.paintExpansionOrdering(orderedExpansions);
         //painters.paintMainBufferZone(startingBase);
     }
 
