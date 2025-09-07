@@ -247,13 +247,12 @@ public class ProductionManager {
 
                 case IN_PROGRESS:
                     if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
-                        if (pi.getUnitType() == newestCompletedBuilding.getType()) {
-                            if (newestCompletedBuilding.getInitialTilePosition().getX() == pi.getBuildPosition().getX() &&
-                                    newestCompletedBuilding.getInitialTilePosition().getY() == pi.getBuildPosition().getY()) {
+                        for(Unit building : allBuildings) {
+                            if(building.getType() == pi.getUnitType() && building.getTilePosition().equals(pi.getBuildPosition()) && building.isCompleted()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
 
-                                if (newestCompletedBuilding.canTrain()) {
-                                    productionBuildings.add(newestCompletedBuilding);
+                                if(building.canTrain()) {
+                                    productionBuildings.add(building);
                                 }
 
                                 for (Workers worker : resourceManager.getWorkers()) {
@@ -261,8 +260,10 @@ public class ProductionManager {
                                         worker.setWorkerStatus(WorkerStatus.IDLE);
                                     }
                                 }
+                                System.out.println("Building complete: " + pi.getUnitType().toString());
+
+                                break;
                             }
-                            break;
                         }
 
                         boolean builderHasDied = true;
