@@ -260,7 +260,6 @@ public class ProductionManager {
                                         worker.setWorkerStatus(WorkerStatus.IDLE);
                                     }
                                 }
-                                System.out.println("Building complete: " + pi.getUnitType().toString());
 
                                 break;
                             }
@@ -427,8 +426,8 @@ public class ProductionManager {
                         }
                     }
 
-                    if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
-                        addToQueue(UnitType.Terran_Factory, PlannedItemType.BUILDING, 3);
+                    if(resourceManager.getAvailableMinerals() > 600 && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
+                        addProductionBuilding(UnitType.Terran_Factory, 3);
                     }
                 }
                 break;
@@ -450,6 +449,20 @@ public class ProductionManager {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
             }
         }
+    }
+
+    private void addProductionBuilding(UnitType unitType, int priority) {
+        if(buildTiles.getLargeBuildTiles().isEmpty()) {
+            return;
+        }
+
+        int currentlyBuilding = (int) productionQueue.stream().filter(pi -> pi.getUnitType() != null && pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4 && (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED || pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS)).count();
+
+        if(buildTiles.getLargeBuildTiles().size() == currentlyBuilding) {
+            return;
+        }
+
+        addToQueue(unitType, PlannedItemType.BUILDING, priority);
     }
 
     private void scvProduction() {
