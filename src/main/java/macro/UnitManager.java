@@ -11,6 +11,7 @@ import macro.unitgroups.CombatUnitCreator;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 import macro.unitgroups.units.Marine;
+import macro.unitgroups.units.SiegeTank;
 import util.PositionInterpolator;
 import util.Time;
 
@@ -94,9 +95,15 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-            if((unitCount.get(UnitType.Terran_Marine) > 14 || unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2) && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD)) {
+            if((unitCount.get(UnitType.Terran_Marine) > 14 || unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2) && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD || unitStatus == UnitStatus.SIEGEDEF)) {
                 if(bunker != null) {
                     unLoadBunker(combatUnit);
+                }
+
+                if(combatUnit instanceof SiegeTank) {
+                    if(((SiegeTank) combatUnit).isSieged()) {
+                        combatUnit.getUnit().unsiege();
+                    }
                 }
 
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
@@ -128,6 +135,10 @@ public class UnitManager {
                 combatUnit.setUnitStatus(UnitStatus.SCOUT);
                 assignScouts(combatUnit);
                 scouts++;
+            }
+
+            if(unitStatus == UnitStatus.SIEGEDEF) {
+                ((SiegeTank) combatUnit).siegeDef();
             }
 
 //            unitStatus = combatUnit.getUnitStatus();
@@ -201,6 +212,11 @@ public class UnitManager {
                 case OBSTRUCTING:
                     moveFromObstruction(combatUnit);
                     break;
+                case SIEGEDEF:
+                    if(enemyInBase()) {
+                        combatUnit.setEnemyInBase(true);
+                        updateClosetEnemy(combatUnit, 900);
+                    }
             }
         }
     }
