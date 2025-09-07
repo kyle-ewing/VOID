@@ -157,6 +157,9 @@ public class Painters {
             case OBSTRUCTING:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Grey, true);
                 break;
+            case SIEGEDEF:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Yellow, true);
+                break;
         }
     }
 
