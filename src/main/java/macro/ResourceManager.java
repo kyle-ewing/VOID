@@ -110,6 +110,8 @@ public class ResourceManager {
                 if(worker.getUnit().isGatheringGas()) {
                     worker.getUnit().stop();
                 }
+
+                worker.setIdleClock(0);
             }
 
             if(worker.getWorkerStatus() == WorkerStatus.REPAIRING) {

@@ -184,6 +184,7 @@ public class ProductionManager {
                                             }
                                         }
                                         resourceManager.reserveResources(pi.getUnitType());
+                                        worker.setBuildingPosition(pi.getBuildPosition().toPosition());
                                         worker.getUnit().move(pi.getBuildPosition().toPosition());
                                         worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                                         pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
@@ -217,6 +218,9 @@ public class ProductionManager {
                 case SCV_ASSIGNED:
                     for(Workers worker : resourceManager.getWorkers()) {
                         if(worker.getUnit().getID() == pi.getAssignedBuilder().getID() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+
+                            worker.pulseCheck();
+
                             if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 96) {
                                 worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                                 break;
@@ -822,7 +826,11 @@ public class ProductionManager {
         removeUnitTypeCount(unit);
         removeBuilding(unit);
 
-        if(unit.getType().isBuilding() && unit.getType() != UnitType.Terran_Bunker) {
+        if(unit.getType().isBuilding()) {
+            if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Missile_Turret) {
+                return;
+            }
+
             if(!unit.isCompleted()) {
                 resetBuilding(unit);
             }
