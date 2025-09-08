@@ -1,5 +1,6 @@
 package macro.unitgroups;
 
+import bwapi.Position;
 import bwapi.Unit;
 import information.EnemyUnits;
 
@@ -14,6 +15,7 @@ public class Workers {
     private EnemyUnits enemyUnit;
     private boolean preemptiveRepair = false;
     private boolean assignedToBase = false;
+    private Position buildingPosition;
 
     public Workers(Unit unit, WorkerStatus workerStatus) {
         this.unit = unit;
@@ -48,6 +50,21 @@ public class Workers {
         if(target == null || target.getHitPoints() >= target.getType().maxHitPoints()  && !preemptiveRepair) {
             workerStatus = WorkerStatus.IDLE;
             repairTarget = null;
+        }
+    }
+
+    public void pulseCheck() {
+        if(buildingPosition == null) {
+            return;
+        }
+
+        if(!unit.isMoving()) {
+            idleClock++;
+        }
+
+        if(idleClock > 48) {
+            unit.move(buildingPosition);
+            idleClock = 0;
         }
     }
 
@@ -130,5 +147,13 @@ public class Workers {
 
     public void setAssignedToBase(boolean assignedToBase) {
         this.assignedToBase = assignedToBase;
+    }
+
+    public Position getBuildingPosition() {
+        return buildingPosition;
+    }
+
+    public void setBuildingPosition(Position buildingPosition) {
+        this.buildingPosition = buildingPosition;
     }
 }
