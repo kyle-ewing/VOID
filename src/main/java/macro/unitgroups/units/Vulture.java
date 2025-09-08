@@ -3,6 +3,7 @@ package macro.unitgroups.units;
 import bwapi.*;
 import bwem.ChokePoint;
 import information.EnemyInformation;
+import information.EnemyUnits;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 import java.util.ArrayList;
@@ -95,6 +96,18 @@ public class Vulture extends CombatUnits {
 
         Position friendlyBasePos = enemyInformation.getBaseInfo().getStartingBase().getCenter();
         Position enemyBasePos = enemyInformation.getStartingEnemyBase().getEnemyPosition();
+
+
+        //Fallback for the extremely rare case that the enemy base is known but the position is null
+        if(enemyBasePos.toWalkPosition().toPosition() == null) {
+            for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+                if(enemyUnit.getEnemyPosition() != null && enemyUnit.getEnemyType().isBuilding()) {
+                    enemyBasePos = enemyUnit.getEnemyPosition();
+                    break;
+                }
+            }
+        }
+
         Position walkableEnemyBasePos = enemyInformation.getBaseInfo().getPathFinding().findNearestWalkable(enemyBasePos.toTilePosition().toPosition());
 
         List<Position> path = enemyInformation.getBaseInfo().getPathFinding().findPath(friendlyBasePos, walkableEnemyBasePos);

@@ -32,8 +32,6 @@ public class RallyPoint {
                 combatUnit.setRallyPoint(rallyPath(startingBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition()).toTilePosition());
             }
             else {
-                System.out.println(startingBase.getCenter() + " : " + baseInfo.getMainChoke().getCenter().toPosition());
-
                 combatUnit.setRallyPoint(rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition()).toTilePosition());
             }
         }
