@@ -12,6 +12,7 @@ import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 import macro.unitgroups.units.Marine;
 import macro.unitgroups.units.SiegeTank;
+import map.PathFinding;
 import util.PositionInterpolator;
 import util.Time;
 
@@ -27,6 +28,8 @@ public class UnitManager {
     private CombatUnitCreator combatUnitCreator;
     private Painters painters;
     private Scouting scouting;
+    private RallyPoint rallyPoint;
+    private PathFinding pathFinding;
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashMap<UnitType, Integer> unitCount = new HashMap<>();
     private HashMap<Base, CombatUnits> designatedScouts = new HashMap<>();
@@ -45,6 +48,8 @@ public class UnitManager {
         this.game = game;
         this.scouting = scouting;
         this.combatUnitCreator = new CombatUnitCreator(game, enemyInformation);
+        this.pathFinding = baseInfo.getPathFinding();
+        this.rallyPoint = new RallyPoint(pathFinding, enemyInformation, baseInfo);
 
         painters = new Painters(game);
         initUnitCounts();
@@ -53,6 +58,7 @@ public class UnitManager {
     public void onFrame() {
         paintRanges();
         enemyOpenerResponse();
+        rallyPoint.onFrame();
         //painters.paintNaturalChoke(baseInfo.getNaturalChoke());
         int frameCount = game.getFrameCount();
 
@@ -81,7 +87,7 @@ public class UnitManager {
             combatUnit.onFrame();
 
             if(combatUnit.getRallyPoint() == null && (combatUnit.getUnitStatus() != UnitStatus.ADDON)) {
-                setRallyPoint(combatUnit);
+                rallyPoint.setRallyPoint(combatUnit);
             }
 
             switch (combatUnit.getUnitType()) {
@@ -113,7 +119,7 @@ public class UnitManager {
                 combatUnit.setResetClock(combatUnit.getResetClock() + 12);
 
                 if(new Time(combatUnit.getResetClock()).greaterThan(new Time(0, 30))) {
-                    setRallyPoint(combatUnit);
+                    rallyPoint.setRallyPoint(combatUnit);
                     combatUnit.setResetClock(0);
                 }
 
@@ -354,24 +360,6 @@ public class UnitManager {
             case "Four Pool":
                 this.beingAllInned = true;
                 break;
-        }
-    }
-
-    //Reorganize when more enemy openers are added to be more condensed
-    private void setRallyPoint(CombatUnits combatUnit) {
-        if(enemyInformation.getEnemyOpener() == null || defendedAllIn) {
-            if((baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase()))) {
-                combatUnit.setRallyPoint(PositionInterpolator.interpolate(baseInfo.getNaturalBase().getLocation(), baseInfo.getNaturalChoke().getCenter().toTilePosition(), 0.8));
-            }
-            else {
-                combatUnit.setRallyPoint(PositionInterpolator.interpolate(baseInfo.getStartingBase().getLocation(), baseInfo.getMainChoke().getCenter().toTilePosition(), 0.8));
-            }
-        }
-        else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
-            combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
-        }
-        else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Cannon Rush")) {
-            combatUnit.setRallyPoint(PositionInterpolator.interpolate(baseInfo.getNaturalBase().getLocation(), baseInfo.getNaturalChoke().getCenter().toTilePosition(), 0.65));
         }
     }
 

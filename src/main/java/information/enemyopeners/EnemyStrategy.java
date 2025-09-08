@@ -10,6 +10,7 @@ import java.util.HashSet;
 public abstract class EnemyStrategy {
     private String strategyName;
     private ArrayList<UnitType> buildingResponse = new ArrayList<>();
+    private boolean defendedStrategy = false;
 
     public EnemyStrategy(String strategyName) {
         this.strategyName = strategyName;
@@ -24,5 +25,13 @@ public abstract class EnemyStrategy {
 
     public ArrayList<UnitType> getBuildingResponse() {
         return buildingResponse;
+    }
+
+    public boolean isStrategyDefended() {
+        return defendedStrategy;
+    }
+
+    public void setDefendedStrategy(boolean defendedStrategy) {
+        this.defendedStrategy = defendedStrategy;
     }
 }
