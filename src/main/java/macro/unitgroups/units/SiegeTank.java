@@ -84,7 +84,7 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
-        if(unit.getDistance(rallyPoint.toPosition()) < 75 && canSiege()) {
+        if(unit.getDistance(rallyPoint.toPosition()) < 400 && canSiege()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             super.setUnitStatus(UnitStatus.SIEGEDEF);
             unit.siege();
