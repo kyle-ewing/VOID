@@ -264,7 +264,7 @@ public class ResourceManager {
                 continue;
             }
 
-            if(enemyUnit.getEnemyUnit().getType().isFlyer()) {
+            if(enemyUnit.getEnemyUnit().getType().isFlyer() || !enemyUnit.getEnemyUnit().isDetected()) {
                 continue;
             }
 
