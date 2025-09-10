@@ -110,7 +110,7 @@ public class ProductionManager {
             }
 
             //TODO: ignore this if the item has already started
-            if(priorityStop && pi.getPriority() != 1 && pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+            if(priorityStop && pi.getPriority() != 1 && pi.getPlannedItemType() == PlannedItemType.BUILDING && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                 continue;
             }
 
