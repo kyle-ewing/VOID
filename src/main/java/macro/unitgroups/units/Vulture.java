@@ -1,17 +1,15 @@
 package macro.unitgroups.units;
 
 import bwapi.*;
-import bwem.ChokePoint;
+import bwem.Base;
 import information.EnemyInformation;
-import information.EnemyUnits;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Vulture extends CombatUnits {
     private EnemyInformation enemyInformation;
-    private List<Position> minePositions = new ArrayList<>();
+    private List<Position> minePositions;
     private Position currentMinePos = null;
     private int mineCount = 3;
     private int pulseCheck = 0;
@@ -94,34 +92,13 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        Position friendlyBasePos = enemyInformation.getBaseInfo().getStartingBase().getCenter();
-        Position enemyBasePos = enemyInformation.getStartingEnemyBase().getEnemyPosition();
-
-
-        //Fallback for the extremely rare case that the enemy base is known but the position is null
-        if(enemyBasePos.toWalkPosition().toPosition() == null) {
-            for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
-                if(enemyUnit.getEnemyPosition() != null && enemyUnit.getEnemyType().isBuilding()) {
-                    enemyBasePos = enemyUnit.getEnemyPosition();
-                    break;
-                }
-            }
+        if(enemyInformation.getStartingEnemyBase().getEnemyPosition() == null) {
+            return;
         }
 
-        Position walkableEnemyBasePos = enemyInformation.getBaseInfo().getPathFinding().findNearestWalkable(enemyBasePos.toTilePosition().toPosition());
-
-        List<Position> path = enemyInformation.getBaseInfo().getPathFinding().findPath(friendlyBasePos, walkableEnemyBasePos);
-
-        for(ChokePoint choke : enemyInformation.getBaseInfo().getChokePoints()) {
-            Position chokePos = choke.getCenter().toPosition();
-
-            for(Position pathPos : path) {
-                if(chokePos.getDistance(pathPos) < 100) {
-                    if(choke != enemyInformation.getBaseInfo().getMainChoke() && choke != enemyInformation.getBaseInfo().getNaturalChoke()) {
-                        minePositions.add(chokePos);
-                        break;
-                    }
-                }
+        for(Base base : enemyInformation.getBaseInfo().getPotentialMinePaths().getPathLists().keySet()) {
+            if(enemyInformation.getStartingEnemyBase().getEnemyPosition().equals(base.getCenter())) {
+               minePositions = enemyInformation.getBaseInfo().getPotentialMinePaths().getPathLists().get(base);
             }
         }
     }
