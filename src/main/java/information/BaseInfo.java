@@ -4,7 +4,7 @@ import bwapi.*;
 import bwem.*;
 import debug.Painters;
 import map.PathFinding;
-import map.PotentialMinePaths;
+import map.AllBasePaths;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ public class BaseInfo {
     private BWEM bwem;
     private Game game;
     private PathFinding pathFinding;
-    private PotentialMinePaths potentialMinePaths;
+    private AllBasePaths allBasePaths;
     private Base startingBase;
     private Base naturalBase;
     private ChokePoint chokePoint;
@@ -30,6 +30,7 @@ public class BaseInfo {
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> usedGeysers = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
+    private HashMap<Base, List<Position>> allPathsMap;
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
 
 
@@ -44,8 +45,6 @@ public class BaseInfo {
         painters = new Painters(game, bwem);
 
         init();
-
-        potentialMinePaths = new PotentialMinePaths(this);
     }
 
     public void init() {
@@ -61,12 +60,17 @@ public class BaseInfo {
         addStartingBases();
         setStartingMineralPatches();
         setStartingGeysers();
+        setChokePoints();
+
+        allBasePaths = new AllBasePaths(this);
+        allPathsMap = new HashMap<>(allBasePaths.getPathLists());
+
         setNaturalBase();
         setStartingBaseTiles();
         setNaturalBaseTiles();
         setOrderedExpansions();
         setGeyserTiles();
-        setChokePoints();
+
     }
 
     private void addAllBases() {
@@ -172,12 +176,15 @@ public class BaseInfo {
 
         for(Base base : mapBases) {
             if(base != startingBase) {
-                List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), base.getLocation().toPosition());
-                int distance = path.size();
+                List<Position> path = allPathsMap.get(base);
 
-                if(distance == 0) {
+                if(path == null || path.isEmpty()) {
                     continue;
                 }
+
+                int distance = path.size();
+
+
 
                 if(base.getGeysers().isEmpty()) {
                     continue;
@@ -195,10 +202,19 @@ public class BaseInfo {
 
     private void setOrderedExpansions() {
         for(Base base : mapBases) {
-            List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), base.getLocation().toPosition());
+            if(base == startingBase) {
+                continue;
+            }
+
+            List<Position> path = allPathsMap.get(base);
+
+            if(path == null || path.isEmpty()) {
+                continue;
+            }
+
             int distance = path.size();
 
-            if(distance == 0 || base.getGeysers().isEmpty() || base == startingBase) {
+            if(base.getGeysers().isEmpty()) {
                 continue;
             }
 
@@ -208,7 +224,7 @@ public class BaseInfo {
             else {
                 for(int i = 0; i < orderedExpansions.size(); i++) {
                     Base currentBase = orderedExpansions.get(i);
-                    List<Position> currentPath = pathFinding.findPath(startingBase.getLocation().toPosition(), currentBase.getLocation().toPosition());
+                    List<Position> currentPath = allPathsMap.get(currentBase);
                     int currentDistance = currentPath.size();
 
                     if(currentDistance > distance) {
@@ -334,8 +350,8 @@ public class BaseInfo {
         return chokePoints;
     }
 
-    public PotentialMinePaths getPotentialMinePaths() {
-        return potentialMinePaths;
+    public AllBasePaths getAllBasePaths() {
+        return allBasePaths;
     }
 
     //onFrame used for debug painters

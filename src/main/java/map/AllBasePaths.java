@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class PotentialMinePaths {
+public class AllBasePaths {
     private BaseInfo baseInfo;
     private HashMap<Base, List<Position>> pathLists = new HashMap<>();
 
-    public PotentialMinePaths(BaseInfo baseInfo) {
+    public AllBasePaths(BaseInfo baseInfo) {
         this.baseInfo = baseInfo;
 
         calculateAllPaths();
@@ -30,16 +30,18 @@ public class PotentialMinePaths {
             Position nearestWalkable = baseInfo.getPathFinding().findNearestWalkable(base.getCenter());
             List<Position> path = baseInfo.getPathFinding().findPath(startingBasePos, nearestWalkable);
 
+            if(path == null || path.isEmpty()) {
+                continue;
+            }
+
             for(ChokePoint choke : baseInfo.getChokePoints()) {
                 Position chokePos = choke.getCenter().toPosition();
                 for(Position pathPos : path) {
                     if(chokePos.getDistance(pathPos) < 175) {
-                        if(choke != baseInfo.getMainChoke() && choke != baseInfo.getNaturalChoke()) {
-                            if(!pathLists.containsKey(base)) {
-                                pathLists.put(base, new ArrayList<>());
-                            }
-                            pathLists.get(base).add(chokePos);
+                        if(!pathLists.containsKey(base)) {
+                            pathLists.put(base, new ArrayList<>());
                         }
+                        pathLists.get(base).add(chokePos);
                     }
                 }
             }
