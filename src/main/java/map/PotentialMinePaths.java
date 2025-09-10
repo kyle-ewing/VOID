@@ -32,9 +32,8 @@ public class PotentialMinePaths {
 
             for(ChokePoint choke : baseInfo.getChokePoints()) {
                 Position chokePos = choke.getCenter().toPosition();
-
                 for(Position pathPos : path) {
-                    if(chokePos.getDistance(pathPos) < 100) {
+                    if(chokePos.getDistance(pathPos) < 175) {
                         if(choke != baseInfo.getMainChoke() && choke != baseInfo.getNaturalChoke()) {
                             if(!pathLists.containsKey(base)) {
                                 pathLists.put(base, new ArrayList<>());

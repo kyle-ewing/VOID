@@ -35,6 +35,7 @@ public class BaseInfo {
 
     private Painters painters;
 
+    //TODO: save paths so operation only needs to be calculated once
     public BaseInfo(BWEM bwem, Game game) {
         this.bwem = bwem;
         this.game = game;

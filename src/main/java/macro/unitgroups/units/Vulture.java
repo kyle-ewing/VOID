@@ -5,6 +5,8 @@ import bwem.Base;
 import information.EnemyInformation;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
+import util.Time;
+
 import java.util.List;
 
 public class Vulture extends CombatUnits {
@@ -15,10 +17,15 @@ public class Vulture extends CombatUnits {
     private int pulseCheck = 0;
     private boolean layingMines = false;
 
+    private final int FULL_MINE_CYCLE = new Time(0,30).getFrames();
+    private final int ALLOWED_MINE_CYCLE = new Time(0,10).getFrames();
+    private int mineCycle;
+
     public Vulture(Game game, EnemyInformation enemyInformation, Unit unit) {
         super(game, unit);
         this.enemyInformation = enemyInformation;
         unitStatus = UnitStatus.ATTACK;
+        mineCycle = game.getFrameCount();
         calculateMinePositions();
     }
 
@@ -53,7 +60,7 @@ public class Vulture extends CombatUnits {
             unit.move(enemyUnit.getEnemyPosition());
         }
 
-        if(game.self().hasResearched(TechType.Spider_Mines) && unit.getSpiderMineCount() > 0 && !unit.isAttacking()) {
+        if(game.self().hasResearched(TechType.Spider_Mines) && unit.getSpiderMineCount() > 0 && allowMineLaying()) {
             layMinesAtChokepoints();
         }
     }
@@ -103,9 +110,9 @@ public class Vulture extends CombatUnits {
         }
     }
 
-    public void layMinesAtChokepoints() {
+    private void layMinesAtChokepoints() {
         for(Position pos : minePositions) {
-            if(unit.getDistance(pos) < 100) {
+            if(unit.getDistance(pos) < 250) {
 
                 for(int validMinePositionAttempt = 0; validMinePositionAttempt < 10; validMinePositionAttempt++) {
                     java.util.Random random = new java.util.Random();
@@ -128,5 +135,14 @@ public class Vulture extends CombatUnits {
                 }
             }
         }
+    }
+
+    private boolean allowMineLaying() {
+        int currentFrame = game.getFrameCount();
+        int idOffset = (10 + (unit.getID() % 21)) * 24;
+        if((currentFrame - mineCycle + idOffset) % FULL_MINE_CYCLE < ALLOWED_MINE_CYCLE) {
+            return true;
+        }
+        return false;
     }
 }
