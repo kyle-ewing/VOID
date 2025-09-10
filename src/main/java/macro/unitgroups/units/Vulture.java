@@ -2,15 +2,20 @@ package macro.unitgroups.units;
 
 import bwapi.*;
 import bwem.Base;
+import bwem.ChokePoint;
+import information.BaseInfo;
 import information.EnemyInformation;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 import util.Time;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Vulture extends CombatUnits {
     private EnemyInformation enemyInformation;
+    private BaseInfo baseInfo;
     private List<Position> minePositions;
     private Position currentMinePos = null;
     private int mineCount = 3;
@@ -24,6 +29,7 @@ public class Vulture extends CombatUnits {
     public Vulture(Game game, EnemyInformation enemyInformation, Unit unit) {
         super(game, unit);
         this.enemyInformation = enemyInformation;
+        baseInfo = enemyInformation.getBaseInfo();
         unitStatus = UnitStatus.ATTACK;
         mineCycle = game.getFrameCount();
         calculateMinePositions();
@@ -103,9 +109,26 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        for(Base base : enemyInformation.getBaseInfo().getPotentialMinePaths().getPathLists().keySet()) {
+        ChokePoint mainChoke = baseInfo.getMainChoke();
+        ChokePoint naturalChoke = baseInfo.getNaturalChoke();
+
+        if(mainChoke == null || naturalChoke == null) {
+            return;
+        }
+
+        for(Base base : baseInfo.getAllBasePaths().getPathLists().keySet()) {
             if(enemyInformation.getStartingEnemyBase().getEnemyPosition().equals(base.getCenter())) {
-               minePositions = enemyInformation.getBaseInfo().getPotentialMinePaths().getPathLists().get(base);
+                List<Position> allPositions = baseInfo.getAllBasePaths().getPathLists().get(base);
+                minePositions = new ArrayList<>();
+
+                for(Position position : allPositions) {
+                    boolean nearMainChoke = position.getDistance(mainChoke.getCenter().toPosition()) < 175;
+                    boolean nearNaturalChoke = position.getDistance(naturalChoke.getCenter().toPosition()) < 175;
+
+                    if(!nearMainChoke && !nearNaturalChoke) {
+                        minePositions.add(position);
+                    }
+                }
             }
         }
     }
@@ -113,14 +136,13 @@ public class Vulture extends CombatUnits {
     private void layMinesAtChokepoints() {
         for(Position pos : minePositions) {
             if(unit.getDistance(pos) < 250) {
-
                 for(int validMinePositionAttempt = 0; validMinePositionAttempt < 10; validMinePositionAttempt++) {
-                    java.util.Random random = new java.util.Random();
+                    Random random = new Random();
                     int randX = pos.getX() - 200 + random.nextInt(400);
                     int randY = pos.getY() - 200 + random.nextInt(400);
                     Position testPos = new Position(randX, randY);
 
-                    if(enemyInformation.getBaseInfo().getPathFinding().getTilePositionValidator().isWalkable(testPos.toTilePosition())) {
+                    if(baseInfo.getPathFinding().getTilePositionValidator().isWalkable(testPos.toTilePosition())) {
                         currentMinePos = testPos;
                         break;
                     }
