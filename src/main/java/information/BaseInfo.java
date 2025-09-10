@@ -4,6 +4,7 @@ import bwapi.*;
 import bwem.*;
 import debug.Painters;
 import map.PathFinding;
+import map.PotentialMinePaths;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ public class BaseInfo {
     private BWEM bwem;
     private Game game;
     private PathFinding pathFinding;
+    private PotentialMinePaths potentialMinePaths;
     private Base startingBase;
     private Base naturalBase;
     private ChokePoint chokePoint;
@@ -41,6 +43,8 @@ public class BaseInfo {
         painters = new Painters(game, bwem);
 
         init();
+
+        potentialMinePaths = new PotentialMinePaths(this);
     }
 
     public void init() {
@@ -327,6 +331,10 @@ public class BaseInfo {
 
     public HashSet<ChokePoint> getChokePoints() {
         return chokePoints;
+    }
+
+    public PotentialMinePaths getPotentialMinePaths() {
+        return potentialMinePaths;
     }
 
     //onFrame used for debug painters
