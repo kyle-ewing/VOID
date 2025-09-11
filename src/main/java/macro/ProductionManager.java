@@ -105,11 +105,10 @@ public class ProductionManager {
         boolean hasHighPriorityBuilding = hasHigherPriorityBuilding();
 
         for (PlannedItem pi : productionQueue) {
-            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
 
-            //TODO: ignore this if the item has already started
             if(priorityStop && pi.getPriority() != 1 && pi.getPlannedItemType() == PlannedItemType.BUILDING && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                 continue;
             }
@@ -834,6 +833,9 @@ public class ProductionManager {
 
             if(!unit.isCompleted()) {
                 resetBuilding(unit);
+            }
+            else if(unit.getType().isAddon()){
+                addToQueue(unit.getType(), PlannedItemType.ADDON, 1);
             }
             else {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
