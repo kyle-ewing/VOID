@@ -10,6 +10,7 @@ import information.Scouting;
 import macro.unitgroups.CombatUnitCreator;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
+import macro.unitgroups.units.Comsat;
 import macro.unitgroups.units.Marine;
 import macro.unitgroups.units.SiegeTank;
 import map.PathFinding;
@@ -110,6 +111,9 @@ public class UnitManager {
                     if(((SiegeTank) combatUnit).isSieged()) {
                         combatUnit.getUnit().unsiege();
                     }
+                }
+                else if(combatUnit instanceof Comsat) {
+                    continue;
                 }
 
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
@@ -602,13 +606,13 @@ public class UnitManager {
         }
 
         if(unit.getType() == UnitType.Terran_Comsat_Station) {
-            CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.ADDON);
+            CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
             combatUnits.add(combatUnit);
             unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
             return;
         }
         else if(unit.getType() == UnitType.Spell_Scanner_Sweep) {
-            CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.SCAN);
+            CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
             combatUnits.add(combatUnit);
             unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
             return;
@@ -618,7 +622,7 @@ public class UnitManager {
             return;
         }
 
-        CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.RALLY);
+        CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
         combatUnits.add(combatUnit);
         unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
     }
