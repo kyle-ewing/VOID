@@ -126,13 +126,10 @@ public class ProductionManager {
                                 continue;
                             }
 
-
-
                             if(pi.getTechUpgrade() != null) {
                                 if(resourceManager.getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || resourceManager.getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
                                     continue;
                                 }
-
                                 researchTech(pi.getTechUpgrade());
                                 pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                             }
@@ -310,10 +307,18 @@ public class ProductionManager {
                             if(game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeLevel()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             }
+
+                            if(!isUpgrading(pi.getUpgradeType()) && game.self().getUpgradeLevel(pi.getUpgradeType()) < pi.getUpgradeLevel()) {
+                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                            }
                         }
                         else if(pi.getTechUpgrade() != null) {
                             if(game.self().hasResearched(pi.getTechUpgrade())) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                            }
+
+                            if(!isResearching(pi.getTechUpgrade()) && !game.self().hasResearched(pi.getTechUpgrade())) {
+                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                             }
                         }
                     }
@@ -649,6 +654,32 @@ public class ProductionManager {
 
         if(resourceManager.getAvailableMinerals() >= unitType.mineralPrice() && resourceManager.getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
             return true;
+        }
+        return false;
+    }
+
+    private boolean isUpgrading(UpgradeType upgradeType) {
+        for(Unit researchBuilding : allBuildings) {
+            if(researchBuilding.getAddon() != null && researchBuilding.getAddon().getUpgrade() == upgradeType) {
+                return true;
+            }
+
+            if(researchBuilding.getUpgrade() == upgradeType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isResearching(TechType techType) {
+        for(Unit researchBuilding : allBuildings) {
+            if(researchBuilding.getAddon() != null && researchBuilding.getAddon().getTech() == techType) {
+                return true;
+            }
+
+            if(researchBuilding.getTech() == techType) {
+                return true;
+            }
         }
         return false;
     }
