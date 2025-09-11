@@ -6,7 +6,28 @@ import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 
 public class Scan extends CombatUnits {
-    public Scan(Game game, Unit unit, UnitStatus unitStatus) {
-        super(game, unit, unitStatus);
+    public Scan(Game game, Unit unit) {
+        super(game, unit);
+        unitStatus = UnitStatus.SCAN;
+    }
+
+    @Override
+    public void attack() {
+
+    }
+
+    @Override
+    public void retreat() {
+
+    }
+
+    @Override
+    public void defend() {
+
+    }
+
+    @Override
+    public void rally() {
+
     }
 }

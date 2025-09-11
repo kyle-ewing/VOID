@@ -16,7 +16,7 @@ public class CombatUnitCreator {
         this.enemyInformation = enemyInformation;
     }
 
-    public CombatUnits createCombatUnit(Unit unit, UnitStatus unitStatus) {
+    public CombatUnits createCombatUnit(Unit unit) {
         switch (unit.getType()) {
             case Terran_Marine:
                 return new Marine(game, unit);
@@ -41,9 +41,9 @@ public class CombatUnitCreator {
             case Terran_Science_Vessel:
                 return new ScienceVessel(game, unit);
             case Terran_Comsat_Station:
-                return new Comsat(game, unit, unitStatus);
+                return new Comsat(game, unit);
             case Spell_Scanner_Sweep:
-                return new Scan(game, unit, unitStatus);
+                return new Scan(game, unit);
             case Terran_Vulture_Spider_Mine:
                 return new SpiderMines(game, unit);
             default:
