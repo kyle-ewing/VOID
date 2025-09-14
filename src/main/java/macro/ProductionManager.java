@@ -65,6 +65,7 @@ public class ProductionManager {
         initUnitCounts();
     }
 
+    //TODO: move to it's own class
     private PriorityQueue<PlannedItem> appendBuildOrder(Race enemyRace) {
         if(enemyRace.toString().equals("Zerg")) {
             for(BuildOrder buildOrder : openerNames) {
@@ -194,11 +195,13 @@ public class ProductionManager {
                             else if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
                                 for(Unit productionBuilding : productionBuildings) {
                                     if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
-                                        productionBuilding.buildAddon(pi.getUnitType());
+                                        if(productionQueue.stream().anyMatch(plannedItem -> plannedItem.getAddOnParent() == productionBuilding)) {
+                                            continue;
+                                        }
 
+                                        productionBuilding.buildAddon(pi.getUnitType());
                                         pi.setAddOnParent(productionBuilding);
                                         pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
-
                                         break;
                                     }
                                 }
