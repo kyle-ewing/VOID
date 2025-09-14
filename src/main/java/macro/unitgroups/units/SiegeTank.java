@@ -1,14 +1,28 @@
 package macro.unitgroups.units;
 
 import bwapi.*;
+import information.BaseInfo;
+import information.EnemyInformation;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 
+import java.util.HashSet;
+import java.util.Random;
+
 public class SiegeTank extends CombatUnits {
+    private EnemyInformation enemyInformation;
+    private BaseInfo baseInfo;
+    private HashSet<TilePosition> mainEdgeTiles = new HashSet<>();
+    private TilePosition siegeTile = null;
+    private boolean foundSiegeTile = false;
+
     private static final int SIEGE_RANGE = 384;
 
-    public SiegeTank(Game game, Unit unit) {
+    public SiegeTank(Game game, EnemyInformation enemyInformation, Unit unit) {
         super(game, unit);
+        this.enemyInformation = enemyInformation;
+        baseInfo = enemyInformation.getBaseInfo();
+        mainEdgeTiles = baseInfo.getMainCliffEdge();
     }
 
     @Override
@@ -84,10 +98,9 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
-        if(unit.getDistance(rallyPoint.toPosition()) < 400 && canSiege()) {
+        if(!super.enemyInBase && canSiege()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             super.setUnitStatus(UnitStatus.SIEGEDEF);
-            unit.siege();
         }
 
         unit.attack(rallyPoint.toPosition());
@@ -95,12 +108,49 @@ public class SiegeTank extends CombatUnits {
     }
 
     public void siegeDef() {
-        if(enemyUnit != null) {
-            siegeLogic();
+        if(siegeTile == null) {
+            pickSiegeDefTile();
+        }
+
+        if(foundSiegeTile) {
+            if(unit.getDistance(siegeTile.toPosition()) > 32) {
+                unit.move(siegeTile.toPosition());
+            }
+            else {
+                if(!isSieged() && canSiege()) {
+                    super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
+                    unit.siege();
+                }
+            }
+        }
+
+        siegeLogic();
+    }
+
+    private void pickSiegeDefTile() {
+        if(!mainEdgeTiles.isEmpty()) {
+            Random rand = new Random(unitID);
+            int index = rand.nextInt(mainEdgeTiles.size());
+            TilePosition targetTile = null;
+            int i = 0;
+            for (TilePosition tile : mainEdgeTiles) {
+                if (i == index) {
+                    targetTile = tile;
+                    break;
+                }
+                i++;
+            }
+            if (targetTile != null) {
+                siegeTile = targetTile;
+                foundSiegeTile = true;
+            }
         }
     }
 
     private void siegeLogic() {
+        if(enemyUnit == null) {
+            return;
+        }
 
         switch(super.getUnitStatus()) {
             case ATTACK:

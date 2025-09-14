@@ -29,6 +29,7 @@ public class BaseInfo {
     private HashSet<Base> ownedBases = new HashSet<>();
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> usedGeysers = new HashSet<>();
+    private HashSet<TilePosition> mainCliffEdge = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private HashMap<Base, List<Position>> allPathsMap;
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
@@ -70,6 +71,7 @@ public class BaseInfo {
         setNaturalBaseTiles();
         setOrderedExpansions();
         setGeyserTiles();
+        setMainCliffEdge();
 
     }
 
@@ -245,6 +247,53 @@ public class BaseInfo {
 
     }
 
+    private void setMainCliffEdge() {
+        ChokePoint mainChoke = getMainChoke();
+        HashSet<TilePosition> actualCliffEdge = new HashSet<>();
+
+        if(mainChoke == null) {
+            return;
+        }
+
+        for(TilePosition tile : baseTiles) {
+            if(mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition()) < 156 || mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition()) > 256) {
+                continue;
+            }
+
+            boolean isCliffEdge = false;
+            for(int dx = -1; dx <= 1 && !isCliffEdge; dx++) {
+                for(int dy = -1; dy <= 1 && !isCliffEdge; dy++) {
+                    if(dx == 0 && dy == 0) {
+                        continue;
+                    }
+                    
+                    TilePosition adj = new TilePosition(tile.getX() + dx, tile.getY() + dy);
+                    if(!baseTiles.contains(adj)) {
+                        isCliffEdge = true;
+                    }
+                }
+            }
+
+            if(isCliffEdge) {
+                actualCliffEdge.add(tile);
+            }
+        }
+
+        for (TilePosition edgeTile : actualCliffEdge) {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    if (dx == 0 && dy == 0) continue;
+                    TilePosition adj = new TilePosition(edgeTile.getX() + dx, edgeTile.getY() + dy);
+                    if (baseTiles.contains(adj) && !mainCliffEdge.contains(adj)) {
+                        mainCliffEdge.add(adj);
+                    }
+                }
+            }
+        }
+
+    }
+
+    //TODO: set chokes onStart (why did i do it like this)
     public ChokePoint getMainChoke() {
         if(startingBase == null || naturalBase == null) {
             return null;
@@ -354,10 +403,15 @@ public class BaseInfo {
         return allBasePaths;
     }
 
+    public HashSet<TilePosition> getMainCliffEdge() {
+        return mainCliffEdge;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
         painters.paintNatural(naturalBase);
+//        painters.paintTiles(mainCliffEdge);
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
