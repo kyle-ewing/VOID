@@ -134,6 +134,11 @@ public class Vulture extends CombatUnits {
     }
 
     private void layMinesAtChokepoints() {
+        if(minePositions.isEmpty()) {
+            calculateMinePositions();
+            return;
+        }
+
         for(Position pos : minePositions) {
             if(unit.getDistance(pos) < 250) {
                 for(int validMinePositionAttempt = 0; validMinePositionAttempt < 10; validMinePositionAttempt++) {

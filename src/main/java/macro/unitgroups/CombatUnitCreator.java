@@ -29,7 +29,7 @@ public class CombatUnitCreator {
             case Terran_Vulture:
                 return new Vulture(game, enemyInformation, unit);
             case Terran_Siege_Tank_Tank_Mode:
-                return new SiegeTank(game, unit);
+                return new SiegeTank(game, enemyInformation, unit);
             case Terran_Goliath:
                 return new Goliath(game, unit);
             case Terran_Battlecruiser:
