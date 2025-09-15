@@ -29,10 +29,10 @@ public class RallyPoint {
     public void setRallyPoint(CombatUnits combatUnit) {
         if(enemyInformation.getEnemyOpener() == null || enemyStrategy.isStrategyDefended()) {
             if(baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
-                combatUnit.setRallyPoint(rallyPath(startingBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition()).toTilePosition());
+                combatUnit.setRallyPoint(rallyPath(baseInfo.getNaturalBase().getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.90).toTilePosition());
             }
             else {
-                combatUnit.setRallyPoint(rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition()).toTilePosition());
+                combatUnit.setRallyPoint(rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.75).toTilePosition());
             }
         }
         else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
@@ -40,7 +40,7 @@ public class RallyPoint {
         }
     }
 
-    private Position rallyPath(Position startingPos, Position endPoint) {
+    private Position rallyPath(Position startingPos, Position endPoint, double percentage) {
         Position nearestWalkable = pathFinding.findNearestWalkable(startingPos);
         Position nearestWalkableToEnd = pathFinding.findNearestWalkable(endPoint);
         List<Position> path;
@@ -57,7 +57,7 @@ public class RallyPoint {
             return endPoint;
         }
 
-        return PositionInterpolator.interpolate(path, 0.75);
+        return PositionInterpolator.interpolate(path, percentage);
     }
 
     public void onFrame() {

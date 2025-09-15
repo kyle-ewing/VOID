@@ -87,7 +87,11 @@ public class UnitManager {
             }
             combatUnit.onFrame();
 
-            if(combatUnit.getRallyPoint() == null && (combatUnit.getUnitStatus() != UnitStatus.ADDON)) {
+            if(combatUnit.getRallyPoint() == null || (baseInfo.getNaturalBase() != null && !combatUnit.isNaturalRallySet())) {
+                if(baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
+                    combatUnit.setNaturalRallySet(true);
+                }
+
                 rallyPoint.setRallyPoint(combatUnit);
             }
 
