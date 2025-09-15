@@ -19,6 +19,7 @@ public class CombatUnits {
     protected boolean inBunker;
     protected boolean enemyInBase = false;
     protected boolean inRangeOfThreat = false;
+    protected boolean naturalRallySet = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -195,5 +196,13 @@ public class CombatUnits {
 
     public void setInRangeOfThreat(boolean inRangeOfThreat) {
         this.inRangeOfThreat = inRangeOfThreat;
+    }
+
+    public boolean isNaturalRallySet() {
+        return naturalRallySet;
+    }
+
+    public void setNaturalRallySet(boolean naturalRallySet) {
+        this.naturalRallySet = naturalRallySet;
     }
 }
