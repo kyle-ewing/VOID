@@ -1,6 +1,8 @@
 package planner;
 
 import bwapi.*;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import macro.unitgroups.Workers;
 
 public class PlannedItem {
     private UnitType unitType;
@@ -10,10 +12,11 @@ public class PlannedItem {
     private PlannedItemStatus plannedItemStatus;
     private PlannedItemType plannedItemType;
     private TilePosition buildPosition;
-    private Unit assignedBuilder;
+    private Workers assignedBuilder;
     private TechType techUpgrade;
     private UpgradeType upgradeType;
     private Unit addOnParent = null;
+    private Unit productionBuilding;
 
     //priority 1-5, 1 being the highest
     private int priority;
@@ -121,11 +124,11 @@ public class PlannedItem {
         this.buildPosition = setBuildPosition;
     }
 
-    public Unit getAssignedBuilder() {
+    public Workers getAssignedBuilder() {
         return assignedBuilder;
     }
 
-    public void setAssignedBuilder(Unit assignedBuilder) {
+    public void setAssignedBuilder(Workers assignedBuilder) {
         this.assignedBuilder = assignedBuilder;
     }
 
@@ -175,5 +178,13 @@ public class PlannedItem {
 
     public void setAddOnParent(Unit addOnParent) {
         this.addOnParent = addOnParent;
+    }
+
+    public Unit getProductionBuilding() {
+        return productionBuilding;
+    }
+
+    public void setProductionBuilding(Unit productionBuilding) {
+        this.productionBuilding = productionBuilding;
     }
 }

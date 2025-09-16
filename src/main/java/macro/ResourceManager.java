@@ -412,6 +412,23 @@ public class ResourceManager {
         worker.setAttackClock(worker.getAttackClock() + 1);
     }
 
+    public Workers getClosestWorker(Position position) {
+        Workers closestWorker = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for(Workers worker : workers) {
+            if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                int distance = worker.getUnit().getPosition().getApproxDistance(position);
+                if(distance < closestDistance) {
+                    closestDistance = distance;
+                    closestWorker = worker;
+                }
+            }
+        }
+
+        return closestWorker;
+    }
+
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_SCV) {
             workers.add(new Workers(unit, WorkerStatus.IDLE));
