@@ -273,7 +273,8 @@ public class UnitManager {
                 continue;
             }
 
-            if(enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed() || enemyUnit.getEnemyUnit().isMorphing() || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord) {
+            if(enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed() || enemyUnit.getEnemyUnit().isMorphing()
+                    || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer) {
                 continue;
             }
 
@@ -301,6 +302,10 @@ public class UnitManager {
     private boolean enemyInBase() {
         for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
             if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if(!enemyUnit.getEnemyType().canAttack()) {
                 continue;
             }
 

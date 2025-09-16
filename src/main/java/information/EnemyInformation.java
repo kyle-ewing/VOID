@@ -44,7 +44,11 @@ public class EnemyInformation {
     }
 
     public boolean enemyInBase() {
-        for (EnemyUnits enemyUnit : enemyUnits) {
+        for(EnemyUnits enemyUnit : enemyUnits) {
+            if(!enemyUnit.getEnemyType().canAttack()) {
+                continue;
+            }
+
             if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 return true;
             }
