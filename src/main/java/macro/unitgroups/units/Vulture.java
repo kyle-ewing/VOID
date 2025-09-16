@@ -20,7 +20,9 @@ public class Vulture extends CombatUnits {
     private Position currentMinePos = null;
     private int mineCount = 3;
     private int pulseCheck = 0;
+    private int mineTimer = 0;
     private boolean layingMines = false;
+    private boolean recentlyMined = false;
 
     private final int FULL_MINE_CYCLE = new Time(0,30).getFrames();
     private final int ALLOWED_MINE_CYCLE = new Time(0,10).getFrames();
@@ -68,6 +70,7 @@ public class Vulture extends CombatUnits {
 
         if(mineCount > unit.getSpiderMineCount()) {
             mineCount = unit.getSpiderMineCount();
+            recentlyMined = true;
             layingMines = false;
         }
 
@@ -95,7 +98,13 @@ public class Vulture extends CombatUnits {
             unit.move(enemyUnit.getEnemyPosition());
         }
 
-        if(game.self().hasResearched(TechType.Spider_Mines) && unit.getSpiderMineCount() > 0 && allowMineLaying()) {
+        if(!game.self().hasResearched(TechType.Spider_Mines) || unit.getSpiderMineCount() == 0) {
+            return;
+        }
+
+        layMinesOnEnemy();
+
+        if(allowMineLaying()) {
             layMinesAtChokepoints();
         }
     }
@@ -202,6 +211,27 @@ public class Vulture extends CombatUnits {
                     currentMinePos = null;
                 }
             }
+        }
+    }
+
+    private void layMinesOnEnemy() {
+        if(enemyUnit.getEnemyType().isBuilding()) {
+            return;
+        }
+
+        if(mineTimer >= 92) {
+            mineTimer = 0;
+            recentlyMined = false;
+        }
+
+        if(recentlyMined) {
+            mineTimer += 12;
+            return;
+        }
+
+        if(unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
+            unit.useTech(TechType.Spider_Mines, unit.getPosition());
+            layingMines = true;
         }
     }
 
