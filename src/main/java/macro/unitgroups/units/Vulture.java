@@ -36,6 +36,31 @@ public class Vulture extends CombatUnits {
     }
 
     @Override
+    public void rally() {
+        if(rallyPoint == null) {
+            return;
+        }
+
+        unit.move(rallyPoint.toPosition());
+    }
+
+    @Override
+    public void retreat() {
+        if(enemyUnit == null || rallyPoint == null) {
+            return;
+        }
+
+        if(!inRangeOfThreat && isOutRanged()) {
+            unit.move(rallyPoint.toPosition());
+        }
+
+
+        if(!inRangeOfThreat && (!isOutRanged() || hasTankSupport)) {
+            setUnitStatus(UnitStatus.ATTACK);
+        }
+    }
+
+    @Override
     public void attack() {
         if(enemyUnit == null) {
             return;
@@ -54,6 +79,10 @@ public class Vulture extends CombatUnits {
         if(layingMines) {
             pulseCheck += 12;
             return;
+        }
+
+        if(isOutRanged() && !hasTankSupport) {
+            unitStatus = UnitStatus.RETREAT;
         }
 
         if(minimnumThreshold(1.05)) {
@@ -131,6 +160,18 @@ public class Vulture extends CombatUnits {
                 }
             }
         }
+    }
+
+    private boolean isOutRanged() {
+        if(enemyUnit != null) {
+            if(enemyUnit.getEnemyType().isBuilding()) {
+                return false;
+            }
+            if(enemyUnit.getEnemyType().groundWeapon().maxRange() + 32 >= weaponRange()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void layMinesAtChokepoints() {

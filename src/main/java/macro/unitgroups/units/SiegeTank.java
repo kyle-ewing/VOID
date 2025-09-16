@@ -12,6 +12,7 @@ import java.util.Random;
 public class SiegeTank extends CombatUnits {
     private EnemyInformation enemyInformation;
     private BaseInfo baseInfo;
+    private UnitType defaultMode = UnitType.Terran_Siege_Tank_Tank_Mode;
     private HashSet<TilePosition> mainEdgeTiles = new HashSet<>();
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
@@ -37,6 +38,10 @@ public class SiegeTank extends CombatUnits {
 
     @Override
     public void retreat() {
+        if(enemyUnit == null) {
+            return;
+        }
+
         if(enemyUnit.getEnemyUnit().getDistance(unit) > 128) {
             super.setUnitStatus(UnitStatus.ATTACK);
             return;
@@ -272,5 +277,9 @@ public class SiegeTank extends CombatUnits {
     private int weaponRange() {
         WeaponType weaponType = unit.getType().groundWeapon();
         return weaponType.maxRange();
+    }
+
+    public UnitType getDefaultMode() {
+        return defaultMode;
     }
 }

@@ -313,6 +313,13 @@ public class Painters {
         game.setTextSize(Text.Size.Default);
     }
 
+    public void paintRadiusAroundUnit(Unit unit, int radius, Color color) {
+        if(unit == null) {
+            return;
+        }
+        game.drawCircleMap(unit.getPosition(), radius, color);
+    }
+
 
     public void onFrame() {
         paintWorker();
