@@ -388,6 +388,10 @@ public class ResourceManager {
                 continue;
             }
 
+            if(enemyUnit.getEnemyUnit().getType().isFlyer() || !enemyUnit.getEnemyUnit().isDetected()) {
+                continue;
+            }
+
             if(!enemyUnit.getEnemyUnit().exists()) {
                 continue;
             }
