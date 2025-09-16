@@ -20,6 +20,7 @@ public class CombatUnits {
     protected boolean enemyInBase = false;
     protected boolean inRangeOfThreat = false;
     protected boolean naturalRallySet = false;
+    protected boolean hasTankSupport = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -204,5 +205,13 @@ public class CombatUnits {
 
     public void setNaturalRallySet(boolean naturalRallySet) {
         this.naturalRallySet = naturalRallySet;
+    }
+
+    public boolean hasTankSupport() {
+        return hasTankSupport;
+    }
+
+    public void setHasTankSupport(boolean hasTankSupport) {
+        this.hasTankSupport = hasTankSupport;
     }
 }

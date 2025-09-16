@@ -6,7 +6,6 @@ import macro.unitgroups.UnitStatus;
 
 public class Marine extends CombatUnits {
     private static final int UPGRADE_RANGE = 32;
-    private boolean hasTankSupport = false;
 
     public Marine(Game game, Unit unit) {
         super(game, unit);
@@ -122,13 +121,5 @@ public class Marine extends CombatUnits {
         else {
             return weaponType.maxRange();
         }
-    }
-
-    public boolean hasTankSupport() {
-        return hasTankSupport;
-    }
-
-    public void setHasTankSupport(boolean hasTankSupport) {
-        this.hasTankSupport = hasTankSupport;
     }
 }
