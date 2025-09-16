@@ -104,6 +104,7 @@ public class ProductionManager {
 
     private void buildingProduction() {
         boolean hasHighPriorityBuilding = hasHigherPriorityBuilding();
+        Workers worker = null;
 
         for (PlannedItem pi : productionQueue) {
             if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
@@ -150,37 +151,37 @@ public class ProductionManager {
                                 for(Unit productionBuilding : productionBuildings) {
                                     if(productionBuilding.canTrain(pi.getUnitType()) && !productionBuilding.isTraining()) {
                                         productionBuilding.train(pi.getUnitType());
-                                        pi.setAssignedBuilder(productionBuilding);
+                                        pi.setProductionBuilding(productionBuilding);
                                         pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                                         break;
                                     }
                                 }
                             }
                             else if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
-                                for(Workers worker : resourceManager.getWorkers()) {
-                                    if(worker.getUnit() == pi.getAssignedBuilder()) {
-                                        continue;
+                                if(pi.getBuildPosition() == null) {
+                                    if (pi.getUnitType() == UnitType.Terran_Refinery) {
+                                        setRefineryPosition(pi);
+                                    }
+                                    else if (pi.getUnitType() == UnitType.Terran_Command_Center) {
+                                        setCommandCenterPosition(pi);
+                                    }
+                                    else {
+                                        setBuildingPosition(pi);
                                     }
 
+                                    //Skip over if out of tiles
+                                    if(pi.getBuildPosition() == null) {
+                                        continue;
+                                    }
+                                }
+
+                                if(pi.getBuildPosition() != null) {
+                                    worker = resourceManager.getClosestWorker(pi.getBuildPosition().toPosition());
+                                    pi.setAssignedBuilder(worker);
+                                }
+
+                                if(pi.getAssignedBuilder() != null) {
                                     if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
-                                        pi.setAssignedBuilder(worker.getUnit());
-                                        if(pi.getBuildPosition() == null) {
-
-                                            if (pi.getUnitType() == UnitType.Terran_Refinery) {
-                                                setRefineryPosition(pi);
-                                            }
-                                            else if(pi.getUnitType() == UnitType.Terran_Command_Center) {
-                                                setCommandCenterPosition(pi);
-                                            }
-                                            else {
-                                                setBuildingPosition(pi);
-                                            }
-
-                                            //Skip over if out of tiles
-                                            if(pi.getBuildPosition() == null) {
-                                                continue;
-                                            }
-                                        }
                                         resourceManager.reserveResources(pi.getUnitType());
                                         worker.setBuildingPosition(pi.getBuildPosition().toPosition());
                                         worker.getUnit().move(pi.getBuildPosition().toPosition());
@@ -188,7 +189,6 @@ public class ProductionManager {
                                         pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
 
                                         worker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
-                                        break;
                                     }
                                 }
                             }
@@ -216,23 +216,20 @@ public class ProductionManager {
                     break;
 
                 case SCV_ASSIGNED:
-                    for(Workers worker : resourceManager.getWorkers()) {
-                        if(worker.getUnit().getID() == pi.getAssignedBuilder().getID() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                    worker = pi.getAssignedBuilder();
+                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
 
-                            worker.pulseCheck();
+                        worker.pulseCheck();
 
-                            if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 96) {
-                                worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
-                                break;
-                            }
+                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 96) {
+                            worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
+                        }
 
-                            if(worker.getBuildFrameCount() > 600) {
-                                worker.setWorkerStatus(WorkerStatus.IDLE);
-                                worker.getUnit().stop();
-                                resourceManager.unreserveResources(pi.getUnitType());
-                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
-                                break;
-                            }
+                        if(worker.getBuildFrameCount() > 600) {
+                            worker.setWorkerStatus(WorkerStatus.IDLE);
+                            worker.getUnit().stop();
+                            resourceManager.unreserveResources(pi.getUnitType());
+                            pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                         }
                     }
 
@@ -240,17 +237,18 @@ public class ProductionManager {
                         resourceManager.unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
 
-                        for(Workers worker : resourceManager.getWorkers()) {
-                            if(worker.getUnit().getID() == pi.getAssignedBuilder().getID()) {
-                                worker.setWorkerStatus(WorkerStatus.BUILDING);
-                                break;
-                            }
+                        if(worker.getUnitID() == pi.getAssignedBuilder().getUnitID() ) {
+                            worker.setWorkerStatus(WorkerStatus.BUILDING);
                         }
                     }
                     break;
 
                 case IN_PROGRESS:
                     if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                        if(pi.getAssignedBuilder() != null) {
+                            worker = pi.getAssignedBuilder();
+                        }
+
                         for(Unit building : allBuildings) {
                             if(building.getType() == pi.getUnitType() && building.getTilePosition().equals(pi.getBuildPosition()) && building.isCompleted()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
@@ -259,10 +257,8 @@ public class ProductionManager {
                                     productionBuildings.add(building);
                                 }
 
-                                for (Workers worker : resourceManager.getWorkers()) {
-                                    if (worker.getWorkerStatus() == WorkerStatus.BUILDING && pi.getAssignedBuilder() == worker.getUnit()) {
-                                        worker.setWorkerStatus(WorkerStatus.IDLE);
-                                    }
+                                if (worker.getWorkerStatus() == WorkerStatus.BUILDING) {
+                                    worker.setWorkerStatus(WorkerStatus.IDLE);
                                 }
 
                                 break;
@@ -271,16 +267,16 @@ public class ProductionManager {
 
                         boolean builderHasDied = true;
                         for(Workers workers : resourceManager.getWorkers()) {
-                            if(workers.getUnit().getID() == pi.getAssignedBuilder().getID()) {
+                            if(workers.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
                                 builderHasDied = false;
                                 break;
                             }
                         }
 
                         if(builderHasDied) {
-                            for(Workers worker : resourceManager.getWorkers()) {
+                            for(Workers newWorker : resourceManager.getWorkers()) {
                                 if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
-                                    pi.setAssignedBuilder(worker.getUnit());
+                                    pi.setAssignedBuilder(newWorker);
                                     worker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
                                     break;
                                 }
@@ -289,21 +285,19 @@ public class ProductionManager {
 
                         for(Unit building : player.getUnits()) {
                             if(!building.isCompleted() && building.getType() == pi.getUnitType() && !building.isBeingConstructed()) {
-                                pi.getAssignedBuilder().rightClick(building);
+                                pi.getAssignedBuilder().getUnit().rightClick(building);
                                 break;
                             }
 
-                            if(building.isBeingConstructed() && pi.getAssignedBuilder().isConstructing()) {
-                                for(Workers worker : resourceManager.getWorkers()) {
-                                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getID()) {
-                                        worker.setWorkerStatus(WorkerStatus.BUILDING);
-                                        break;
-                                    }
+                            if(building.isBeingConstructed() && pi.getAssignedBuilder().getUnit().isConstructing()) {
+                                if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
+                                    worker.setWorkerStatus(WorkerStatus.BUILDING);
+                                    break;
                                 }
+
                             }
                         }
                     }
-
 
                     if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
                         if(pi.getUpgradeType() != null) {
@@ -337,9 +331,8 @@ public class ProductionManager {
                         }
                     }
 
-
                     for(Unit productionBuilding : productionBuildings) {
-                        if(pi.getAssignedBuilder() == productionBuilding && !productionBuilding.isTraining()) {
+                        if(pi.getProductionBuilding() == productionBuilding && !productionBuilding.isTraining()) {
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             break;
                         }
@@ -540,7 +533,7 @@ public class ProductionManager {
                     continue;
                 }
 
-                int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
+                int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
 
                 if(distance < distanceFromSCV) {
                     distanceFromSCV = distance;
@@ -581,7 +574,7 @@ public class ProductionManager {
                     continue;
                 }
 
-                int distance = tilePosition.getApproxDistance(pi.getAssignedBuilder().getTilePosition());
+                int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
 
                 if(distance < distanceFromSCV) {
                     distanceFromSCV = distance;
@@ -749,7 +742,7 @@ public class ProductionManager {
         for(PlannedItem pi : productionQueue) {
             if(pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getUnitType() == unit.getType()) {
                 for(Workers worker : resourceManager.getWorkers()) {
-                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getID()) {
+                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         break;
                     }
