@@ -68,6 +68,7 @@ public class Bot extends DefaultBWListener {
         if(unit.getPlayer() != game.self()) {
             return;
         }
+        baseInfo.onUnitCreate(unit);
         productionManager.onUnitCreate(unit);
     }
 

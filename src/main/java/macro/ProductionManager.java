@@ -38,6 +38,7 @@ public class ProductionManager {
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
     private BuildOrder startingOpener;
     private Unit newestCompletedBuilding = null;
+    private TilePosition bunkerPosition = null;
     private boolean openerResponse = false;
     private boolean priorityStop = false;
 
@@ -70,6 +71,7 @@ public class ProductionManager {
         if(enemyRace.toString().equals("Zerg")) {
             for(BuildOrder buildOrder : openerNames) {
                 if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
+                    bunkerPosition = buildTiles.getMainChokeBunker();
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }
@@ -78,6 +80,7 @@ public class ProductionManager {
         else if(enemyRace.toString().equals("Terran")) {
             for(BuildOrder buildOrder : openerNames) {
                 if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
+                    bunkerPosition = buildTiles.getMainChokeBunker();
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }
@@ -86,6 +89,7 @@ public class ProductionManager {
         else if(enemyRace.toString().equals("Protoss")) {
             for(BuildOrder buildOrder : openerNames) {
                 if(buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC) {
+                    bunkerPosition = buildTiles.getMainChokeBunker();
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }
@@ -560,12 +564,10 @@ public class ProductionManager {
                     }
                 }
 
-                if(baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
-                    pi.setBuildPosition(buildTiles.getNaturalChokeBunker());
+                if(bunkerPosition != null) {
+                    pi.setBuildPosition(bunkerPosition);
                 }
-                else {
-                    pi.setBuildPosition(buildTiles.getMainChokeBunker());
-                }
+
                 return;
             }
 

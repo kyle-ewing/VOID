@@ -28,8 +28,8 @@ public class RallyPoint {
 
     public void setRallyPoint(CombatUnits combatUnit) {
         if(enemyInformation.getEnemyOpener() == null || enemyStrategy.isStrategyDefended()) {
-            if(baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
-                combatUnit.setRallyPoint(rallyPath(baseInfo.getNaturalBase().getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.90).toTilePosition());
+            if(baseInfo.isNaturalOwned()) {
+                combatUnit.setRallyPoint(rallyPath(baseInfo.getNaturalBase().getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.80).toTilePosition());
             }
             else {
                 combatUnit.setRallyPoint(rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.75).toTilePosition());
