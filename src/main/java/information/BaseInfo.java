@@ -33,6 +33,7 @@ public class BaseInfo {
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private HashMap<Base, List<Position>> allPathsMap;
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
+    private boolean naturalOwned = false;
 
 
     private Painters painters;
@@ -407,6 +408,10 @@ public class BaseInfo {
         return mainCliffEdge;
     }
 
+    public boolean isNaturalOwned() {
+        return naturalOwned;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
         painters.paintAllChokes();
@@ -417,6 +422,16 @@ public class BaseInfo {
         //painters.paintTiles(baseTiles);
 //        painters.paintExpansionOrdering(orderedExpansions);
         //painters.paintMainBufferZone(startingBase);
+    }
+
+    public void onUnitCreate(Unit unit) {
+        if(unit.getType() != UnitType.Terran_Command_Center) {
+            return;
+        }
+
+        if(unit.getDistance(naturalBase.getCenter()) < 100) {
+            naturalOwned = true;
+        }
     }
 
     public void onUnitComplete(Unit unit) {
@@ -435,5 +450,10 @@ public class BaseInfo {
                 break;
             }
         }
+
+        if(unit.getDistance(naturalBase.getCenter()) < 100) {
+            naturalOwned = false;
+        }
+
     }
 }
