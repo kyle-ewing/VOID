@@ -279,9 +279,9 @@ public class ProductionManager {
 
                         if(builderHasDied) {
                             for(Workers newWorker : resourceManager.getWorkers()) {
-                                if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                                if(newWorker.getWorkerStatus() == WorkerStatus.MINERALS) {
                                     pi.setAssignedBuilder(newWorker);
-                                    worker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
+                                    newWorker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
                                     break;
                                 }
                             }
