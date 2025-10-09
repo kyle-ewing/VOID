@@ -430,6 +430,7 @@ public class BaseInfo {
         }
 
         if(unit.getDistance(naturalBase.getCenter()) < 100) {
+            baseTiles.addAll(naturalTiles);
             naturalOwned = true;
         }
     }
@@ -452,6 +453,7 @@ public class BaseInfo {
         }
 
         if(unit.getDistance(naturalBase.getCenter()) < 100) {
+            baseTiles.removeAll(naturalTiles);
             naturalOwned = false;
         }
 
