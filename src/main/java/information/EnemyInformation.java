@@ -5,6 +5,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
 import information.enemyopeners.EnemyStrategy;
+import macro.unitgroups.CombatUnits;
 import util.Time;
 
 import java.util.HashSet;
@@ -63,6 +64,25 @@ public class EnemyInformation {
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyType() == unitType) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean outRangingUnitNearby(EnemyUnits enemyUnit, UnitType friendlyUnitType, int range) {
+        for(EnemyUnits outRangingUnit : enemyUnits) {
+            if(outRangingUnit.getEnemyID() == enemyUnit.getEnemyID()) {
+                continue;
+            }
+
+            if(!outRangingUnit.getEnemyType().canAttack() || outRangingUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+
+            if(outRangingUnit.getEnemyType().groundWeapon().maxRange() + 32 >= friendlyUnitType.groundWeapon().maxRange()) {
+                if(outRangingUnit.getEnemyUnit().getDistance(enemyUnit.getEnemyUnit().getPosition()) <= range) {
+                    return true;
+                }
             }
         }
         return false;

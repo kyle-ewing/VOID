@@ -117,7 +117,7 @@ public class SiegeTank extends CombatUnits {
             pickSiegeDefTile();
         }
 
-        if(baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
+        if(baseInfo.isNaturalOwned()) {
             foundSiegeTile = false;
 
             if(isSieged() && unit.getDistance(rallyPoint.toPosition()) > 128) {

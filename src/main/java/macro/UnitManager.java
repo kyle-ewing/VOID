@@ -13,6 +13,7 @@ import macro.unitgroups.UnitStatus;
 import macro.unitgroups.units.Comsat;
 import macro.unitgroups.units.Marine;
 import macro.unitgroups.units.SiegeTank;
+import macro.unitgroups.units.Vulture;
 import map.PathFinding;
 import util.PositionInterpolator;
 import util.Time;
@@ -81,6 +82,7 @@ public class UnitManager {
             return;
         }
 
+        //TODO: this is all horrible
         for(CombatUnits combatUnit : combatUnits) {
             if(combatUnit.getUnitType() == UnitType.Spell_Scanner_Sweep || combatUnit.getUnitType() == UnitType.Terran_Vulture_Spider_Mine) {
                 continue;
@@ -101,6 +103,13 @@ public class UnitManager {
                 case Terran_Medic:
                     updateFriendlyUnit(combatUnit, UnitType.Terran_Marine);
                     break;
+                case Terran_Vulture:
+                    if(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())) {
+                        ((Vulture) combatUnit).setInBase(true);
+                    }
+                    else {
+                        ((Vulture) combatUnit).setInBase(false);
+                    }
             }
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
@@ -117,8 +126,17 @@ public class UnitManager {
                     }
                 }
 
+                if(combatUnit.getUnitType() == UnitType.Terran_Vulture) {
+                    ((Vulture) combatUnit).setLobotomyOverride(true);
+                }
+
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
 
+            }
+            else {
+                if(combatUnit.getUnitType() == UnitType.Terran_Vulture) {
+                    ((Vulture) combatUnit).setLobotomyOverride(false);
+                }
             }
 
             if((unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.DEFEND)) {
@@ -162,7 +180,6 @@ public class UnitManager {
 
 //            unitStatus = combatUnit.getUnitStatus();
 
-            //TODO: clean this up
             switch(unitStatus) {
                 case ATTACK:
                     updateClosetEnemy(combatUnit, Integer.MAX_VALUE);
@@ -208,11 +225,11 @@ public class UnitManager {
                 case DEFEND:
                     if(enemyInBase()) {
                         combatUnit.setEnemyInBase(true);
-                        updateClosetEnemy(combatUnit, 900);
+                        updateClosetEnemy(combatUnit, 1000);
                     }
                     else {
                         combatUnit.setEnemyInBase(false);
-                        updateClosetEnemy(combatUnit, 150);
+                        updateClosetEnemy(combatUnit, 250);
                     }
                     combatUnit.defend();
                     break;
@@ -604,7 +621,7 @@ public class UnitManager {
     private boolean hasTankSupport(CombatUnits combatUnit) {
         if(unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
             updateFriendlyUnit(combatUnit, UnitType.Terran_Siege_Tank_Tank_Mode);
-            if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit()) < 300) {
+            if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit()) < 400) {
                 return true;
             }
         }
