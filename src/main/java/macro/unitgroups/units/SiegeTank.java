@@ -2,7 +2,7 @@ package macro.unitgroups.units;
 
 import bwapi.*;
 import information.BaseInfo;
-import information.EnemyInformation;
+import information.enemy.EnemyInformation;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 

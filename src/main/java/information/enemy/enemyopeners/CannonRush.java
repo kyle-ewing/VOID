@@ -1,9 +1,8 @@
-package information.enemyopeners;
+package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import bwem.Base;
 import information.BaseInfo;
-import information.EnemyUnits;
+import information.enemy.EnemyUnits;
 import util.Time;
 
 import java.util.HashSet;

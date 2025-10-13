@@ -1,7 +1,6 @@
-package information;
+package information.enemy;
 
 import bwapi.Position;
-import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 

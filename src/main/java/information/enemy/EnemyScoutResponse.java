@@ -1,6 +1,7 @@
-package information;
+package information.enemy;
 
 import bwapi.Game;
+import information.BaseInfo;
 import macro.ResourceManager;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;

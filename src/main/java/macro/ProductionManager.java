@@ -5,8 +5,8 @@ import bwem.BWEM;
 import bwem.Base;
 import debug.Painters;
 import information.BaseInfo;
-import information.EnemyInformation;
-import information.enemyopeners.EnemyStrategy;
+import information.enemy.EnemyInformation;
+import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.*;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
@@ -626,6 +626,44 @@ public class ProductionManager {
         }
     }
 
+    private void enemyTechResponse() {
+        if(enemyInformation.getEnemyTechUnits().isEmpty()) {
+            return;
+        }
+
+        for(EnemyTechUnits techUnit : enemyInformation.getEnemyTechUnits()) {
+            if(techUnit.getFriendlyBuildingResponse().isEmpty()) {
+                continue;
+            }
+
+
+            for(UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
+                boolean existingBuilding = false;
+                System.out.println("Tech building response: " + buildingResponse);
+                for(Unit building : allBuildings) {
+                    if(building.getType() == buildingResponse) {
+                        existingBuilding = true;
+                        break;
+                    }
+                }
+
+                for(PlannedItem pi : productionQueue) {
+                    if(pi.getUnitType() == buildingResponse) {
+                        existingBuilding = true;
+                        break;
+                    }
+                }
+
+                if(!existingBuilding) {
+                    game.sendText("Adding to queue: " + buildingResponse);
+                    addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                }
+
+            }
+
+        }
+    }
+
     //Track number of buildings to check for building requirements
     private void addUnitTypeCount(Unit unit) {
         unitTypeCount.put(unit.getType(), unitTypeCount.get(unit.getType()) + 1);
@@ -828,6 +866,7 @@ public class ProductionManager {
             openerResponse();
         }
 
+        enemyTechResponse();
         buildTiles.onFrame();
         painters.paintProductionQueueReadout(productionQueue);
     }

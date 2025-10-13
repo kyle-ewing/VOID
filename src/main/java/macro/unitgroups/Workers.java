@@ -2,7 +2,7 @@ package macro.unitgroups;
 
 import bwapi.Position;
 import bwapi.Unit;
-import information.EnemyUnits;
+import information.enemy.EnemyUnits;
 
 public class Workers {
     private Unit unit;

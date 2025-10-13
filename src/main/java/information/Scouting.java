@@ -7,6 +7,7 @@ import bwapi.Unit;
 import bwem.BWEM;
 import bwem.Base;
 import debug.Painters;
+import information.enemy.EnemyInformation;
 import macro.ResourceManager;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;

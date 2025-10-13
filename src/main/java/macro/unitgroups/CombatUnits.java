@@ -1,7 +1,7 @@
 package macro.unitgroups;
 
 import bwapi.*;
-import information.EnemyUnits;
+import information.enemy.EnemyUnits;
 
 public class CombatUnits {
     protected Game game;

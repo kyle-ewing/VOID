@@ -2,10 +2,8 @@ package macro.unitgroups;
 
 import bwapi.Game;
 import bwapi.Unit;
-import information.BaseInfo;
-import information.EnemyInformation;
+import information.enemy.EnemyInformation;
 import macro.unitgroups.units.*;
-import map.PathFinding;
 
 public class CombatUnitCreator {
     private Game game;
