@@ -1,7 +1,7 @@
-package information.enemyopeners;
+package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.EnemyUnits;
+import information.enemy.EnemyUnits;
 import util.Time;
 
 import java.util.ArrayList;

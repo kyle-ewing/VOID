@@ -1,13 +1,12 @@
 import debug.Painters;
 import information.BaseInfo;
-import information.EnemyInformation;
+import information.enemy.EnemyInformation;
 import information.Scouting;
 import macro.ProductionManager;
 import macro.ResourceManager;
 import bwapi.*;
 import bwem.BWEM;
 import macro.UnitManager;
-import map.BuildTiles;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;

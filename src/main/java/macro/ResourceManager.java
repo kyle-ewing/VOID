@@ -4,9 +4,9 @@ import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
 import information.BaseInfo;
-import information.EnemyInformation;
-import information.EnemyScoutResponse;
-import information.EnemyUnits;
+import information.enemy.EnemyInformation;
+import information.enemy.EnemyScoutResponse;
+import information.enemy.EnemyUnits;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
 

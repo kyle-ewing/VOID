@@ -1,17 +1,19 @@
-package information;
+package information.enemy;
 
 import bwapi.Game;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
-import information.enemyopeners.EnemyStrategy;
-import macro.unitgroups.CombatUnits;
+import information.BaseInfo;
+import information.enemy.enemyopeners.EnemyStrategy;
+import information.enemy.enemytechunits.EnemyTechUnits;
 import util.Time;
 
 import java.util.HashSet;
 
 public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits = new HashSet<>();
+    private HashSet<EnemyTechUnits> enemyTechUnits = new HashSet<>();
     private BaseInfo baseInfo;
     private Game game;
     private EnemyUnits startingEnemyBase = null;
@@ -88,6 +90,23 @@ public class EnemyInformation {
         return false;
     }
 
+    private void checkTechUnits() {
+        for(EnemyTechUnits enemyTechUnit : enemyStrategyManager.getEnemyTechUnits()) {
+            if(enemyTechUnit.isEnemyTechUnit(enemyUnits) && !enemyTechUnits.contains(enemyTechUnit)) {
+                if(!enemyTechUnit.hasTriggeredResponse()) {
+                    enemyTechUnit.techBuildingResponse();
+                    enemyTechUnit.setTriggeredResponse(true);
+                }
+
+                enemyTechUnits.add(enemyTechUnit);
+                game.sendText("Enemy Tech Detected: " + enemyTechUnit.getTechName());
+            }
+            else if(!enemyTechUnit.isEnemyTechUnit(enemyUnits) && enemyTechUnits.contains(enemyTechUnit)) {
+                enemyTechUnits.remove(enemyTechUnit);
+            }
+        }
+    }
+
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
 
@@ -107,6 +126,8 @@ public class EnemyInformation {
                 break;
             }
         }
+
+        checkTechUnits();
 
         if(enemyOpener != null) {
             game.drawTextScreen(5, 60, "Enemy Opener: " + enemyOpener.getStrategyName());
@@ -194,5 +215,9 @@ public class EnemyInformation {
 
     public BaseInfo getBaseInfo() {
         return baseInfo;
+    }
+
+    public HashSet<EnemyTechUnits> getEnemyTechUnits() {
+        return enemyTechUnits;
     }
 }
