@@ -373,6 +373,8 @@ public class ProductionManager {
 
 
     private void addUnitProduction() {
+
+
         switch(startingOpener.getBuildOrderName()) {
             case EIGHTRAX:
                 for(Unit productionBuilding : productionBuildings) {
@@ -416,6 +418,16 @@ public class ProductionManager {
                 break;
             case TWOFAC:
                 for(Unit productionBuilding : productionBuildings) {
+                    if(!enemyInformation.getTechUnitResponse().isEmpty()) {
+                        for(UnitType unitType: enemyInformation.getTechUnitResponse()) {
+                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
+                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
+                                    addToQueue(unitType, PlannedItemType.UNIT, 2);
+                                }
+                            }
+                        }
+                    }
+
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks) && unitTypeCount.get(UnitType.Terran_Factory) < 1) {
                         if (isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
                             addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT, 3);

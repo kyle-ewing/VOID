@@ -33,7 +33,7 @@ public class CombatUnitCreator {
             case Terran_Battlecruiser:
                 return new Battlecruiser(game, unit);
             case Terran_Wraith:
-                return new Wraith(game, unit);
+                return new Wraith(game, enemyInformation, unit);
             case Terran_Valkyrie:
                 return new Valkyrie(game, unit);
             case Terran_Science_Vessel:
