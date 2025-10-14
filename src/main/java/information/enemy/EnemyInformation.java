@@ -14,6 +14,7 @@ import java.util.HashSet;
 public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits = new HashSet<>();
     private HashSet<EnemyTechUnits> enemyTechUnits = new HashSet<>();
+    private HashSet<UnitType> enemyTechunitResponse = new HashSet<>();
     private BaseInfo baseInfo;
     private Game game;
     private EnemyUnits startingEnemyBase = null;
@@ -99,10 +100,12 @@ public class EnemyInformation {
                 }
 
                 enemyTechUnits.add(enemyTechUnit);
+                enemyTechunitResponse.add(enemyTechUnit.getResponseUnitType());
                 game.sendText("Enemy Tech Detected: " + enemyTechUnit.getTechName());
             }
             else if(!enemyTechUnit.isEnemyTechUnit(enemyUnits) && enemyTechUnits.contains(enemyTechUnit)) {
                 enemyTechUnits.remove(enemyTechUnit);
+                enemyTechunitResponse.remove(enemyTechUnit.getResponseUnitType());
             }
         }
     }
@@ -219,5 +222,9 @@ public class EnemyInformation {
 
     public HashSet<EnemyTechUnits> getEnemyTechUnits() {
         return enemyTechUnits;
+    }
+
+    public HashSet<UnitType> getTechUnitResponse() {
+        return enemyTechunitResponse;
     }
 }

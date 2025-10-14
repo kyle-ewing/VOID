@@ -8,25 +8,24 @@ import java.util.HashSet;
 
 public abstract class EnemyTechUnits {
     private String techName;
-    private UnitType unitType;
+    private UnitType responseUnitType;
     private ArrayList<UnitType> friendlyBuildingResponse = new ArrayList<>();
     private boolean triggeredResponse = false;
 
     public EnemyTechUnits(String techName, UnitType unitType) {
         this.techName = techName;
-        this.unitType = unitType;
+        this.responseUnitType = unitType;
     }
 
     public abstract boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits);
     public abstract void techBuildingResponse();
-    public abstract UnitType techUnitResponse();
 
     public String getTechName() {
         return techName;
     }
 
-    public UnitType getUnitType() {
-        return unitType;
+    public UnitType getResponseUnitType() {
+        return responseUnitType;
     }
 
     public ArrayList<UnitType> getFriendlyBuildingResponse() {
