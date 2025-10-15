@@ -504,9 +504,12 @@ public class UnitManager {
 
     private boolean hasTankSupport(CombatUnits combatUnit) {
         if(unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
-            //updateFriendlyUnit(combatUnit, UnitType.Terran_Siege_Tank_Tank_Mode);
             ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Tank_Mode);
-            if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit()) < 400) {
+            if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 400) {
+                return true;
+            }
+
+            if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().getUnitStatus() == UnitStatus.ATTACK) {
                 return true;
             }
         }

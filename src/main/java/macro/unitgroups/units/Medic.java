@@ -22,7 +22,7 @@ public class Medic extends CombatUnits {
             super.setTargetRange(200);
         }
 
-        unit.attack(friendlyUnit.getPosition());
+        unit.attack(friendlyUnit.getUnit().getPosition());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class Medic extends CombatUnits {
             return;
         }
 
-        unit.attack(friendlyUnit.getPosition());
+        unit.attack(friendlyUnit.getUnit().getPosition());
     }
 
     @Override

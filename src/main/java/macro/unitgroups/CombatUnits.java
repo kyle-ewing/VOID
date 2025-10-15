@@ -6,9 +6,9 @@ import information.enemy.EnemyUnits;
 public class CombatUnits {
     protected Game game;
     protected Unit unit;
-    protected Unit friendlyUnit;
     protected UnitType unitType;
     protected UnitStatus unitStatus;
+    protected CombatUnits friendlyUnit;
     protected EnemyUnits enemyUnit;
     protected EnemyUnits closestEnemyBuilding;
     protected TilePosition rallyPoint;
@@ -167,11 +167,11 @@ public class CombatUnits {
         this.inBunker = inBunker;
     }
 
-    public Unit getFriendlyUnit() {
+    public CombatUnits getFriendlyUnit() {
         return friendlyUnit;
     }
 
-    public void setFriendlyUnit(Unit friendlyUnit) {
+    public void setFriendlyUnit(CombatUnits friendlyUnit) {
         this.friendlyUnit = friendlyUnit;
     }
 

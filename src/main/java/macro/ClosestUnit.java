@@ -64,10 +64,10 @@ public class ClosestUnit {
     }
 
     public static void findClosestFriendlyUnit(CombatUnits combatUnit, HashSet<CombatUnits> friendlyUnits, UnitType unitType) {
-        Unit closestUnit = null;
+        CombatUnits closestUnit = null;
         int closestDistance = combatUnit.getTargetRange();
 
-        if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().exists()) {
+        if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().getUnit().exists()) {
             return;
         }
 
@@ -94,7 +94,7 @@ public class ClosestUnit {
                 boolean alreadyAssigned = false;
                 for(CombatUnits assignedUnit : friendlyUnits) {
                     if(assignedUnit.getUnitType() == UnitType.Terran_Medic && assignedUnit.getUnitID() != combatUnit.getUnitID()) {
-                        if(assignedUnit.getFriendlyUnit() != null && assignedUnit.getFriendlyUnit().getID() == friendlyUnit.getUnitID()) {
+                        if(assignedUnit.getFriendlyUnit() != null && assignedUnit.getFriendlyUnit().getUnit().getID() == friendlyUnit.getUnitID()) {
                             alreadyAssigned = true;
                             break;
                         }
@@ -109,7 +109,7 @@ public class ClosestUnit {
             if(!friendlyUnit.getUnitType().isMechanical() || unitType.isMechanical()) {
                 int distance = combatUnit.getUnit().getDistance(friendlyUnit.getUnit());
                 if(distance < closestDistance) {
-                    closestUnit = friendlyUnit.getUnit();
+                    closestUnit = friendlyUnit;
                     closestDistance = distance;
                 }
             }

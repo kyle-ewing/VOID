@@ -281,7 +281,7 @@ public class Painters {
         }
 
         if(unit.getFriendlyUnit() != null) {
-            game.drawLineMap(unit.getUnit().getPosition(), unit.getFriendlyUnit().getPosition(), Color.Green);
+            game.drawLineMap(unit.getUnit().getPosition(), unit.getFriendlyUnit().getUnit().getPosition(), Color.Green);
         }
         //game.drawCircleMap(unit.getUnit().getPosition(), 200, Color.Green);
     }
