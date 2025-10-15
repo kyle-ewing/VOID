@@ -98,7 +98,7 @@ public class UnitManager {
                 case Terran_Marine:
                     break;
                 case Terran_Medic:
-                    updateFriendlyUnit(combatUnit, UnitType.Terran_Marine);
+                    ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
                     break;
                 case Terran_Vulture:
                     if(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())) {
@@ -179,7 +179,7 @@ public class UnitManager {
 
             switch(unitStatus) {
                 case ATTACK:
-                    updateClosetEnemy(combatUnit, Integer.MAX_VALUE);
+                    ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), Integer.MAX_VALUE);
                     hasTankSupport(combatUnit);
 
                     if(combatUnit.getUnitType() == UnitType.Terran_Marine) {
@@ -208,11 +208,11 @@ public class UnitManager {
                 case RALLY:
                     if(enemyInBase()) {
                         combatUnit.setEnemyInBase(true);
-                        updateClosetEnemy(combatUnit, 900);
+                        ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), 900);
                     }
                     else {
                         combatUnit.setEnemyInBase(false);
-                        updateClosetEnemy(combatUnit, 150);
+                        ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), 150);
                     }
                     combatUnit.rally();
                     break;
@@ -222,18 +222,18 @@ public class UnitManager {
                 case DEFEND:
                     if(enemyInBase()) {
                         combatUnit.setEnemyInBase(true);
-                        updateClosetEnemy(combatUnit, 1000);
+                        ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), 1000);
                     }
                     else {
                         combatUnit.setEnemyInBase(false);
-                        updateClosetEnemy(combatUnit, 250);
+                        ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), 250);
                     }
                     combatUnit.defend();
                     break;
                 case RETREAT:
                     if(!inRangeOfThreat(combatUnit)) {
                         combatUnit.setInRangeOfThreat(false);
-                        updateClosetEnemy(combatUnit, Integer.MAX_VALUE);
+                        ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), Integer.MAX_VALUE);
                     }
 
                     if(inRangeOfThreat(combatUnit)) {
@@ -254,61 +254,9 @@ public class UnitManager {
                 case SIEGEDEF:
                     if(enemyInBase()) {
                         combatUnit.setEnemyInBase(true);
-                        updateClosetEnemy(combatUnit, 900);
+                        ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), 900);
                     }
             }
-        }
-    }
-
-    public void updateClosetEnemy(CombatUnits combatUnit, int range) {
-        int closestDistance = range;
-        EnemyUnits closestEnemy = null;
-
-        if(combatUnit.getUnitType() == UnitType.Terran_Medic) {
-            return;
-        }
-
-        for (EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
-            Position enemyPosition = enemyUnit.getEnemyPosition();
-            Position unitPosition = combatUnit.getUnit().getPosition();
-
-            //Stop units from getting stuck on outdated position info
-            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists()) {
-                enemyUnit.setEnemyPosition(null);
-                continue;
-            }
-
-            if(!combatUnit.getUnit().hasPath(enemyPosition)) {
-                continue;
-            }
-
-            if(!combatUnit.getUnit().getType().airWeapon().targetsAir() && enemyUnit.getEnemyUnit().getType().isFlyer()) {
-                continue;
-            }
-
-            if(enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed() || enemyUnit.getEnemyUnit().isMorphing()
-                    || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer) {
-                continue;
-            }
-
-            if(enemyPosition == null) {
-                continue;
-            }
-
-            int distance = unitPosition.getApproxDistance(enemyPosition);
-
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestEnemy = enemyUnit;
-            }
-        }
-
-        if (closestEnemy != null) {
-            combatUnit.setEnemyUnit(closestEnemy);
-        }
-
-        if(closestEnemy == null) {
-            combatUnit.setEnemyUnit(null);
         }
     }
 
@@ -398,67 +346,6 @@ public class UnitManager {
             case "Four Pool":
                 this.beingAllInned = true;
                 break;
-        }
-    }
-
-    //TODO: move this to its own class, overloaded method
-    private void updateFriendlyUnit(CombatUnits combatUnit, UnitType unitType) {
-        Unit closestUnit = null;
-        int closestDistance = combatUnit.getTargetRange();
-
-        if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().exists()) {
-            return;
-        }
-
-        for(CombatUnits friendlyUnit : combatUnits) {
-            if(friendlyUnit.getUnitID() == combatUnit.getUnitID()) {
-                continue;
-            }
-
-            if(friendlyUnit.getUnitType() != unitType) {
-                 if(!(friendlyUnit instanceof SiegeTank)) {
-                     continue;
-                 }
-            }
-
-            if(friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
-                continue;
-            }
-
-            if(friendlyUnit.isInBunker()) {
-                continue;
-            }
-
-            if(combatUnit.getUnitType() == UnitType.Terran_Medic) {
-                boolean alreadyAssigned = false;
-                for(CombatUnits assignedUnit : combatUnits) {
-                    if(assignedUnit.getUnitType() == UnitType.Terran_Medic && assignedUnit.getUnitID() != combatUnit.getUnitID()) {
-                        if(assignedUnit.getFriendlyUnit() != null && assignedUnit.getFriendlyUnit().getID() == friendlyUnit.getUnitID()) {
-                            alreadyAssigned = true;
-                            break;
-                        }
-                    }
-                }
-
-                if(alreadyAssigned) {
-                    continue;
-                }
-            }
-
-            if(!friendlyUnit.getUnitType().isMechanical() || unitType.isMechanical()) {
-                int distance = combatUnit.getUnit().getDistance(friendlyUnit.getUnit());
-                if(distance < closestDistance) {
-                    closestUnit = friendlyUnit.getUnit();
-                    closestDistance = distance;
-                }
-            }
-        }
-
-        if(closestUnit != null) {
-            combatUnit.setFriendlyUnit(closestUnit);
-        }
-        else {
-            combatUnit.setFriendlyUnit(null);
         }
     }
 
@@ -617,7 +504,8 @@ public class UnitManager {
 
     private boolean hasTankSupport(CombatUnits combatUnit) {
         if(unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
-            updateFriendlyUnit(combatUnit, UnitType.Terran_Siege_Tank_Tank_Mode);
+            //updateFriendlyUnit(combatUnit, UnitType.Terran_Siege_Tank_Tank_Mode);
+            ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Tank_Mode);
             if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit()) < 400) {
                 return true;
             }
