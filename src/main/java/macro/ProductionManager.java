@@ -610,7 +610,6 @@ public class ProductionManager {
                 return;
             }
         }
-        //buildTiles.updateRemainingTiles(pi.getBuildPosition());
     }
 
     private void setCommandCenterPosition(PlannedItem pi) {
@@ -651,7 +650,6 @@ public class ProductionManager {
 
             for(UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
                 boolean existingBuilding = false;
-                System.out.println("Tech building response: " + buildingResponse);
                 for(Unit building : allBuildings) {
                     if(building.getType() == buildingResponse) {
                         existingBuilding = true;
@@ -667,7 +665,6 @@ public class ProductionManager {
                 }
 
                 if(!existingBuilding) {
-                    game.sendText("Adding to queue: " + buildingResponse);
                     addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
                 }
 

@@ -90,14 +90,6 @@ public class Painters {
         game.drawBoxMap(tilePosition.toPosition(), tilePosition.toPosition().add(new Position(unitType.width() + 2, unitType.height() + 2)), color);
     }
 
-//    public void drawAttackLine(HashSet<CombatUnits> combatUnits) {
-//        for(CombatUnits unit : combatUnits) {
-//            if(unit.getUnit().getTarget() != null) {
-//                game.drawLineMap(unit.getUnit().getPosition(), unit.getUnit().getTarget().getPosition(), Color.Red);
-//            }
-//        }
-//    }
-
     public void drawAttackRange(Unit unit) {
         if(unit == null) {
             return;
@@ -283,7 +275,6 @@ public class Painters {
         if(unit.getFriendlyUnit() != null) {
             game.drawLineMap(unit.getUnit().getPosition(), unit.getFriendlyUnit().getUnit().getPosition(), Color.Green);
         }
-        //game.drawCircleMap(unit.getUnit().getPosition(), 200, Color.Green);
     }
 
     public void paintProductionQueueReadout(PriorityQueue<PlannedItem> productionQueue) {

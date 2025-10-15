@@ -128,10 +128,6 @@ public class UnitManager {
                     ((Vulture) combatUnit).setLobotomyOverride(true);
                 }
 
-                if(unitStatus == UnitStatus.ADDON) {
-                    System.out.println("asdasdasdasdsad");;
-                }
-
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
 
             }

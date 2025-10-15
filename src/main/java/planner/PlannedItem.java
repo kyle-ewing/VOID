@@ -1,7 +1,6 @@
 package planner;
 
 import bwapi.*;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import macro.unitgroups.Workers;
 
 public class PlannedItem {
@@ -20,15 +19,6 @@ public class PlannedItem {
 
     //priority 1-5, 1 being the highest
     private int priority;
-
-
-//    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, TilePosition buildPosition) {
-//        this.unitType = unitType;
-//        this.supply = supply;
-//        this.plannedItemStatus = plannedItemStatus;
-//        this.plannedItemType = plannedItemType;
-//        this.buildPosition = buildPosition;
-//    }
 
     public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
         this.unitType = unitType;
