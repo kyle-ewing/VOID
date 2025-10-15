@@ -132,7 +132,7 @@ public class Vulture extends CombatUnits {
         }
 
         if(enemyUnit == null) {
-//            setUnitStatus(UnitStatus.ATTACK);
+            setUnitStatus(UnitStatus.ATTACK);
             return;
         }
 
