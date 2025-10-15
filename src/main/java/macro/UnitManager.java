@@ -111,7 +111,8 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-            if(unitCount.get(UnitType.Terran_Marine) > 14 || (unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2 && (unitCount.get(UnitType.Terran_Vulture) > 4 || unitCount.get(UnitType.Terran_Goliath) > 4))
+            if((unitCount.get(UnitType.Terran_Marine) > 14 || (unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2
+                    && (unitCount.get(UnitType.Terran_Vulture) > 4 || unitCount.get(UnitType.Terran_Goliath) > 4)))
                     && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD || unitStatus == UnitStatus.SIEGEDEF)) {
                 if(bunker != null) {
                     unLoadBunker(combatUnit);
@@ -125,6 +126,10 @@ public class UnitManager {
 
                 if(combatUnit.getUnitType() == UnitType.Terran_Vulture) {
                     ((Vulture) combatUnit).setLobotomyOverride(true);
+                }
+
+                if(unitStatus == UnitStatus.ADDON) {
+                    System.out.println("asdasdasdasdsad");;
                 }
 
                 combatUnit.setUnitStatus(UnitStatus.ATTACK);
