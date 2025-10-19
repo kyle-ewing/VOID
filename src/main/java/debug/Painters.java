@@ -152,6 +152,9 @@ public class Painters {
             case SIEGEDEF:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Yellow, true);
                 break;
+            case HUNTING:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Green, true);
+                break;
         }
     }
 

@@ -3,6 +3,8 @@ package macro.unitgroups;
 import bwapi.*;
 import information.enemy.EnemyUnits;
 
+import java.util.HashSet;
+
 public class CombatUnits {
     protected Game game;
     protected Unit unit;
@@ -13,6 +15,8 @@ public class CombatUnits {
     protected EnemyUnits closestEnemyBuilding;
     protected TilePosition rallyPoint;
 
+    protected HashSet<UnitType> priorityTargets = new HashSet<>();
+
     protected int unitID;
     protected int resetClock = 0;
     protected int targetRange = 200;
@@ -21,6 +25,7 @@ public class CombatUnits {
     protected boolean inRangeOfThreat = false;
     protected boolean naturalRallySet = false;
     protected boolean hasTankSupport = false;
+    protected boolean priorityTargetExists = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -104,6 +109,10 @@ public class CombatUnits {
         if(!inRangeOfThreat) {
             setUnitStatus(UnitStatus.ATTACK);
         }
+    }
+
+    public void hunting() {
+
     }
 
     public void onFrame() {
@@ -213,5 +222,17 @@ public class CombatUnits {
 
     public void setHasTankSupport(boolean hasTankSupport) {
         this.hasTankSupport = hasTankSupport;
+    }
+
+    public HashSet<UnitType> getPriorityTargets() {
+        return priorityTargets;
+    }
+
+    public boolean isPriorityTargetExists() {
+        return priorityTargetExists;
+    }
+
+    public void setPriorityTargetExists(boolean priorityTargetExists) {
+        this.priorityTargetExists = priorityTargetExists;
     }
 }
