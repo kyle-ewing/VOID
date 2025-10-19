@@ -2,6 +2,7 @@ package macro.unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Unit;
+import bwapi.UnitType;
 import information.BaseInfo;
 import information.enemy.EnemyInformation;
 import macro.unitgroups.CombatUnits;
@@ -15,18 +16,34 @@ public class Wraith extends CombatUnits {
         super(game, unit);
         this.enemyInformation = enemyInformation;
         baseInfo = enemyInformation.getBaseInfo();
-        unitStatus = UnitStatus.ATTACK;
+        unitStatus = UnitStatus.HUNTING;
+        priorityTargets.add(UnitType.Protoss_Shuttle);
+        priorityTargets.add(UnitType.Protoss_Probe);
     }
 
+    @Override
     public void attack() {
         if(enemyUnit == null) {
             return;
         }
 
+        if(priorityTargetExists) {
+            setUnitStatus(UnitStatus.HUNTING);
+        }
+        else {
+            setUnitStatus(UnitStatus.ATTACK);
+        }
+
         unit.attack(enemyUnit.getEnemyPosition());
     }
 
-    public void retreat() {
-
+    @Override
+    public void hunting() {
+        if(enemyUnit != null) {
+            attack();
+        }
+        else {
+            setUnitStatus(UnitStatus.ATTACK);
+        }
     }
 }

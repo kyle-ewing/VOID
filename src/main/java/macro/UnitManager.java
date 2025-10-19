@@ -107,6 +107,7 @@ public class UnitManager {
                     else {
                         ((Vulture) combatUnit).setInBase(false);
                     }
+                    break;
             }
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
@@ -242,7 +243,7 @@ public class UnitManager {
                     }
 
                     combatUnit.retreat();
-
+                    break;
                 case SCOUT:
                     scoutBases();
                     break;
@@ -257,6 +258,10 @@ public class UnitManager {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), 900);
                     }
+                    break;
+                case HUNTING:
+                    ClosestUnit.priorityTargets(combatUnit, combatUnit.getPriorityTargets(), enemyInformation.getEnemyUnits(), Integer.MAX_VALUE);
+                    combatUnit.hunting();
             }
         }
     }
