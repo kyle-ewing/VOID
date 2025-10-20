@@ -237,6 +237,10 @@ public class ProductionManager {
                         }
                     }
 
+                    if(!worker.getUnit().exists()) {
+                        pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                    }
+
                     if(buildingInProduction(pi.getBuildPosition(), pi.getUnitType())) {
                         resourceManager.unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
