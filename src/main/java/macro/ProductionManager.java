@@ -795,6 +795,10 @@ public class ProductionManager {
         for(PlannedItem pi : productionQueue) {
             if(pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getUnitType() == unit.getType()) {
                 for(Workers worker : resourceManager.getWorkers()) {
+                    if(!worker.getUnit().exists()) {
+                        continue;
+                    }
+
                     if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         break;
@@ -920,6 +924,14 @@ public class ProductionManager {
             }
             else {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
+            }
+
+            if(unit.getType().tileHeight() == 3 && unit.getType().tileWidth() == 4) {
+                buildTiles.getLargeBuildTiles().add(unit.getTilePosition());
+
+            }
+            else if(unit.getType().tileHeight() == 2 && unit.getType().tileWidth() == 3) {
+                buildTiles.getMediumBuildTiles().add(unit.getTilePosition());
             }
         }
 
