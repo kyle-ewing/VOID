@@ -7,7 +7,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 
-public class EightRax implements BuildOrder {
+public class EightRax extends BuildOrder {
 
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.EIGHTRAX;
@@ -19,5 +19,8 @@ public class EightRax implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 14, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 22, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         return  buildOrder;
+    }
+
+    public void setLiftableBuildings() {
     }
 }

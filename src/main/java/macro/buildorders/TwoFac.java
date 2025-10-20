@@ -9,7 +9,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 
-public class TwoFac implements BuildOrder {
+public class TwoFac extends BuildOrder {
 
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.TWOFAC;
@@ -42,5 +42,10 @@ public class TwoFac implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         return buildOrder;
+    }
+
+    public void setLiftableBuildings() {
+        getLiftableBuildings().add(UnitType.Terran_Engineering_Bay);
+        getLiftableBuildings().add(UnitType.Terran_Barracks);
     }
 }

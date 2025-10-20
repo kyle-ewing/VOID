@@ -7,7 +7,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 
-public class OneRaxFE implements BuildOrder {
+public class OneRaxFE extends BuildOrder {
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.ONERAXFE;
     }
@@ -19,6 +19,9 @@ public class OneRaxFE implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 15, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
 
         return buildOrder;
+    }
+
+    public void setLiftableBuildings() {
     }
 
 }

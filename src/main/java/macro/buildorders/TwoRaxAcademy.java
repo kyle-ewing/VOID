@@ -10,7 +10,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 
-public class TwoRaxAcademy implements BuildOrder {
+public class TwoRaxAcademy extends BuildOrder {
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.TWORAXACADEMY;
     }
@@ -33,5 +33,8 @@ public class TwoRaxAcademy implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 38, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 3));
         return buildOrder;
+    }
+
+    public void setLiftableBuildings() {
     }
 }

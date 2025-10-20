@@ -7,7 +7,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 
-public class TwoRax implements BuildOrder {
+public class TwoRax extends BuildOrder {
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.TWORAX;
     }
@@ -20,5 +20,9 @@ public class TwoRax implements BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 14, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 21, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         return buildOrder;
+    }
+
+    public void setLiftableBuildings() {
+
     }
 }
