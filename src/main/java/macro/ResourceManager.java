@@ -442,7 +442,11 @@ public class ResourceManager {
                 }
             }
         }
-        closestWorker.setDistanceToBuildTarget(closestWorker.getUnit().getDistance(position));
+
+        if(closestWorker != null) {
+            closestWorker.setDistanceToBuildTarget(closestWorker.getUnit().getDistance(position));
+        }
+
 
         return closestWorker;
     }
