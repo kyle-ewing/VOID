@@ -64,6 +64,7 @@ public class BuildTiles {
         geyserExclusionZone(baseInfo.getNaturalBase());
         ccExclusionZone(baseInfo.getNaturalBase());
         generateMediumTiles(frontBaseTiles);
+        generateMediumTiles(baseInfo.getNaturalTiles());
     }
 
     private void generateLargeTiles() {
@@ -175,7 +176,7 @@ public class BuildTiles {
     }
 
     private void generateMediumTiles(HashSet<TilePosition> baseTiles) {
-        mediumBuildTiles.clear();
+        //mediumBuildTiles.clear();
         UnitType depotType = UnitType.Terran_Supply_Depot;
         int gap = 1;
 
@@ -754,7 +755,7 @@ public class BuildTiles {
     }
 
     public void onFrame() {
-        if(mediumBuildTiles.isEmpty()) {
+        if(mediumBuildTiles.isEmpty() || mediumBuildTiles.size() == 1) {
             regenerateBuildTiles();
         }
 
