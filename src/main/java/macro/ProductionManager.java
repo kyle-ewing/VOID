@@ -98,6 +98,7 @@ public class ProductionManager {
         else {
             for(BuildOrder buildOrder : openerNames) {
                 if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
+                    bunkerPosition = buildTiles.getMainChokeBunker();
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }
@@ -412,9 +413,15 @@ public class ProductionManager {
                         }
                     }
 
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
+                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                        }
+                    }
+
                 }
                 //TODO: remove when transitions are added
-                if(resourceManager.getAvailableMinerals() > 400 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
+                if(resourceManager.getAvailableMinerals() > 500 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
                     addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
                 }
                 break;
