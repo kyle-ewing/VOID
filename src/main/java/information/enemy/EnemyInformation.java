@@ -101,7 +101,6 @@ public class EnemyInformation {
 
                 enemyTechUnits.add(enemyTechUnit);
                 enemyTechunitResponse.add(enemyTechUnit.getResponseUnitType());
-                game.sendText("Enemy Tech Detected: " + enemyTechUnit.getTechName());
             }
             else if(!enemyTechUnit.isEnemyTechUnit(enemyUnits) && enemyTechUnits.contains(enemyTechUnit)) {
                 enemyTechUnits.remove(enemyTechUnit);

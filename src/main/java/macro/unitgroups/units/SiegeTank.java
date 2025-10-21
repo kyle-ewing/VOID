@@ -14,6 +14,8 @@ public class SiegeTank extends CombatUnits {
     private BaseInfo baseInfo;
     private UnitType defaultMode = UnitType.Terran_Siege_Tank_Tank_Mode;
     private HashSet<TilePosition> mainEdgeTiles = new HashSet<>();
+    private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
+    private HashSet<TilePosition> backupSiegeTiles = new HashSet<>();
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
 
@@ -24,6 +26,8 @@ public class SiegeTank extends CombatUnits {
         this.enemyInformation = enemyInformation;
         baseInfo = enemyInformation.getBaseInfo();
         mainEdgeTiles = baseInfo.getMainCliffEdge();
+        combinedTankTiles = baseInfo.getCombinedTankTiles();
+        backupSiegeTiles = baseInfo.getBackupMainSiegeTiles();
     }
 
     @Override
@@ -85,6 +89,7 @@ public class SiegeTank extends CombatUnits {
         }
 
         siegeLogic();
+        unit.attack(enemyUnit.getEnemyPosition());
     }
 
     @Override
@@ -113,34 +118,8 @@ public class SiegeTank extends CombatUnits {
     }
 
     public void siegeDef() {
-        if(siegeTile == null && !baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
-            pickSiegeDefTile();
-        }
-
-        if(baseInfo.isNaturalOwned()) {
-            foundSiegeTile = false;
-
-            if(isSieged() && unit.getDistance(rallyPoint.toPosition()) > 128) {
-                super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
-                unit.unsiege();
-            }
-            else {
-                if(unit.getDistance(rallyPoint.toPosition()) > 32) {
-                    unit.move(rallyPoint.toPosition());
-
-                    if(unit.isStuck() && unit.getDistance(rallyPoint.toPosition()) < 96 && canSiege()) {
-                        super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
-                        unit.siege();
-
-                    }
-                }
-                else {
-                    if(!isSieged() && canSiege()) {
-                        super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
-                        unit.siege();
-                    }
-                }
-            }
+        if(siegeTile == null) {
+            setSiegeTile();
         }
 
         if(foundSiegeTile) {
@@ -158,23 +137,35 @@ public class SiegeTank extends CombatUnits {
         siegeLogic();
     }
 
-    private void pickSiegeDefTile() {
-        if(!mainEdgeTiles.isEmpty()) {
-            Random rand = new Random(unitID);
-            int index = rand.nextInt(mainEdgeTiles.size());
-            TilePosition targetTile = null;
-            int i = 0;
-            for (TilePosition tile : mainEdgeTiles) {
-                if (i == index) {
-                    targetTile = tile;
-                    break;
-                }
-                i++;
+    private void setSiegeTile() {
+        if(!combinedTankTiles.isEmpty() && baseInfo.isNaturalOwned()) {
+            pickSiegeDefTile(combinedTankTiles);
+        }
+        else if(!mainEdgeTiles.isEmpty()) {
+            pickSiegeDefTile(mainEdgeTiles);
+        }
+        else {
+            pickSiegeDefTile(backupSiegeTiles);
+        }
+
+    }
+
+    private void pickSiegeDefTile(HashSet<TilePosition> tileSet) {
+        Random rand = new Random(unitID);
+
+        int index = rand.nextInt(tileSet.size());
+        TilePosition targetTile = null;
+        int i = 0;
+        for(TilePosition tile : tileSet) {
+            if (i == index) {
+                targetTile = tile;
+                break;
             }
-            if (targetTile != null) {
-                siegeTile = targetTile;
-                foundSiegeTile = true;
-            }
+            i++;
+        }
+        if(targetTile != null) {
+            siegeTile = targetTile;
+            foundSiegeTile = true;
         }
     }
 
