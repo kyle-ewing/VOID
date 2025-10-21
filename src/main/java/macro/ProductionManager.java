@@ -934,8 +934,12 @@ public class ProductionManager {
             }
 
             if(unit.getType().tileHeight() == 3 && unit.getType().tileWidth() == 4) {
-                buildTiles.getLargeBuildTiles().add(unit.getTilePosition());
+                if(unit.getType() == UnitType.Terran_Command_Center) {
+                    baseInfo.readdExpansion(unit);
+                    return;
+                }
 
+                buildTiles.getLargeBuildTiles().add(unit.getTilePosition());
             }
             else if(unit.getType().tileHeight() == 2 && unit.getType().tileWidth() == 3) {
                 buildTiles.getMediumBuildTiles().add(unit.getTilePosition());
