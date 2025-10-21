@@ -89,7 +89,7 @@ public class ProductionManager {
         else if(enemyRace.toString().equals("Protoss")) {
             for(BuildOrder buildOrder : openerNames) {
                 if(buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC) {
-                    bunkerPosition = buildTiles.getMainChokeBunker();
+                    bunkerPosition = buildTiles.getNaturalChokeBunker();
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }

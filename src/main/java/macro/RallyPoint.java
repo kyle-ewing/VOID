@@ -28,7 +28,7 @@ public class RallyPoint {
 
     public void setRallyPoint(CombatUnits combatUnit) {
         if(enemyInformation.getEnemyOpener() == null || enemyStrategy.isStrategyDefended()) {
-            if(baseInfo.isNaturalOwned()) {
+            if(baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) {
                 combatUnit.setRallyPoint(rallyPath(baseInfo.getNaturalBase().getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.80).toTilePosition());
             }
             else {

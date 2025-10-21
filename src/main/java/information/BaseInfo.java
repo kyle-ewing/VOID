@@ -38,7 +38,6 @@ public class BaseInfo {
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
-
     private Painters painters;
 
     //TODO: save paths so operation only needs to be calculated once
@@ -314,11 +313,10 @@ public class BaseInfo {
         int minDistance = 96;
         int maxDistance = 188;
 
-        // Filter naturalTiles by distance to choke
-        for (TilePosition tile : naturalTiles) {
+        for(TilePosition tile : naturalTiles) {
             int distanceToChoke = chokeCenter.getApproxDistance(tile.toPosition());
 
-            if (distanceToChoke >= minDistance && distanceToChoke <= maxDistance) {
+            if(distanceToChoke >= minDistance && distanceToChoke <= maxDistance) {
                 if(pathFinding.getTilePositionValidator().isWalkable(tile)) {
                     naturalChokeEdge.add(tile);
                 }
@@ -411,6 +409,19 @@ public class BaseInfo {
             }
         }
         return closestChokePoint;
+    }
+
+    public boolean hasBunkerInNatural() {
+        for(Unit building : game.self().getUnits()) {
+            if(!building.getType().isBuilding()) {
+                continue;
+            }
+
+            if(building.getType() == UnitType.Terran_Bunker && getNaturalTiles().contains(building.getTilePosition())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public ChokePoint getNaturalChoke() {
