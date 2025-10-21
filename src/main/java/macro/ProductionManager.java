@@ -462,15 +462,18 @@ public class ProductionManager {
 
     //Unplanned depot additions to the queue
     private void addSupplyDepot() {
-
-        if (!isDepotInQueue()) {
+        if(!isDepotInQueue()) {
 
             int usedSupply = game.self().supplyUsed() / 2;
             int totalSupply = game.self().supplyTotal() / 2;
             int freeSupply = totalSupply - usedSupply;
 
-            if (freeSupply <= 4) {
+            if(freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() >= 2) {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
+                addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
+            }
+
+            if(freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() == 1) {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
             }
         }
@@ -507,7 +510,7 @@ public class ProductionManager {
     }
 
     private boolean isDepotInQueue() {
-        if(buildTiles.getMediumBuildTiles().size() < 2) {
+        if(buildTiles.getMediumBuildTiles().isEmpty()) {
             return true;
         }
 
