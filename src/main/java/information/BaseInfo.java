@@ -30,6 +30,9 @@ public class BaseInfo {
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> usedGeysers = new HashSet<>();
     private HashSet<TilePosition> mainCliffEdge = new HashSet<>();
+    private HashSet<TilePosition> naturalChokeEdge = new HashSet<>();
+    private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
+    private HashSet<TilePosition> backupMainSiegeTiles = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private HashMap<Base, List<Position>> allPathsMap;
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
@@ -73,7 +76,9 @@ public class BaseInfo {
         setOrderedExpansions();
         setGeyserTiles();
         setMainCliffEdge();
-
+        setNaturalChokeEdge();
+        combineTankTiles();
+        backupMainSiegeTiles();
     }
 
     private void addAllBases() {
@@ -250,14 +255,18 @@ public class BaseInfo {
 
     private void setMainCliffEdge() {
         ChokePoint mainChoke = getMainChoke();
+        ChokePoint naturalChoke = getNaturalChoke();
         HashSet<TilePosition> actualCliffEdge = new HashSet<>();
 
-        if(mainChoke == null) {
+        if(mainChoke == null || naturalChoke == null) {
             return;
         }
 
         for(TilePosition tile : baseTiles) {
-            if(mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition()) < 156 || mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition()) > 256) {
+            int distanceToMainChoke = mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
+            int distanceToNaturalChoke = naturalChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
+
+            if(distanceToMainChoke < 160 || distanceToMainChoke > 256 || distanceToNaturalChoke > 400) {
                 continue;
             }
 
@@ -267,7 +276,7 @@ public class BaseInfo {
                     if(dx == 0 && dy == 0) {
                         continue;
                     }
-                    
+
                     TilePosition adj = new TilePosition(tile.getX() + dx, tile.getY() + dy);
                     if(!baseTiles.contains(adj)) {
                         isCliffEdge = true;
@@ -293,6 +302,86 @@ public class BaseInfo {
         }
 
     }
+
+    private void setNaturalChokeEdge() {
+        ChokePoint naturalChoke = getNaturalChoke();
+
+        if (naturalChoke == null || naturalTiles.isEmpty()) {
+            return;
+        }
+
+        Position chokeCenter = naturalChoke.getCenter().toPosition();
+        int minDistance = 96;
+        int maxDistance = 188;
+
+        // Filter naturalTiles by distance to choke
+        for (TilePosition tile : naturalTiles) {
+            int distanceToChoke = chokeCenter.getApproxDistance(tile.toPosition());
+
+            if (distanceToChoke >= minDistance && distanceToChoke <= maxDistance) {
+                if(pathFinding.getTilePositionValidator().isWalkable(tile)) {
+                    naturalChokeEdge.add(tile);
+                }
+            }
+        }
+    }
+
+    private void combineTankTiles() {
+        combinedTankTiles.addAll(mainCliffEdge);
+        combinedTankTiles.addAll(naturalChokeEdge);
+    }
+
+    //TODO: pull repeated code into own method
+    private void backupMainSiegeTiles() {
+        ChokePoint mainChoke = getMainChoke();
+        ChokePoint naturalChoke = getNaturalChoke();
+        HashSet<TilePosition> actualCliffEdge = new HashSet<>();
+
+        if(mainChoke == null || naturalChoke == null) {
+            return;
+        }
+
+        for(TilePosition tile : baseTiles) {
+            int distanceToMainChoke = mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
+            int distanceToNaturalChoke = naturalChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
+
+            if(distanceToMainChoke < 160 || distanceToMainChoke > 256) {
+                continue;
+            }
+
+            boolean isCliffEdge = false;
+            for(int dx = -1; dx <= 1 && !isCliffEdge; dx++) {
+                for(int dy = -1; dy <= 1 && !isCliffEdge; dy++) {
+                    if(dx == 0 && dy == 0) {
+                        continue;
+                    }
+
+                    TilePosition adj = new TilePosition(tile.getX() + dx, tile.getY() + dy);
+                    if(!baseTiles.contains(adj)) {
+                        isCliffEdge = true;
+                    }
+                }
+            }
+
+            if(isCliffEdge) {
+                actualCliffEdge.add(tile);
+            }
+        }
+
+        for (TilePosition edgeTile : actualCliffEdge) {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    if (dx == 0 && dy == 0) continue;
+                    TilePosition adj = new TilePosition(edgeTile.getX() + dx, edgeTile.getY() + dy);
+                    if (baseTiles.contains(adj) && !backupMainSiegeTiles.contains(adj)) {
+                        backupMainSiegeTiles.add(adj);
+                    }
+                }
+            }
+        }
+
+    }
+
 
     //TODO: set chokes onStart (why did i do it like this)
     public ChokePoint getMainChoke() {
@@ -408,6 +497,14 @@ public class BaseInfo {
         return mainCliffEdge;
     }
 
+    public HashSet<TilePosition> getCombinedTankTiles() {
+        return combinedTankTiles;
+    }
+
+    public HashSet<TilePosition> getBackupMainSiegeTiles() {
+        return backupMainSiegeTiles;
+    }
+
     public boolean isNaturalOwned() {
         return naturalOwned;
     }
@@ -416,7 +513,8 @@ public class BaseInfo {
     public void onFrame() {
         painters.paintAllChokes();
         painters.paintNatural(naturalBase);
-//        painters.paintTiles(mainCliffEdge);
+        painters.paintTiles(mainCliffEdge);
+        painters.paintTiles(naturalChokeEdge);
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);

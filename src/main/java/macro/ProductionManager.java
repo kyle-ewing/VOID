@@ -799,6 +799,10 @@ public class ProductionManager {
                         continue;
                     }
 
+                    if(worker.getUnit() == null) {
+                        continue;
+                    }
+
                     if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         break;
