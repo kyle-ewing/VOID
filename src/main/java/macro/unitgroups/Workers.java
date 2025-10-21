@@ -1,23 +1,28 @@
 package macro.unitgroups;
 
+import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 import information.enemy.EnemyUnits;
 
 public class Workers {
+    private Game game;
     private Unit unit;
     private Unit repairTarget;
     private WorkerStatus workerStatus;
     private int buildFrameCount;
     private int attackClock;
     private int idleClock = 0;
+    private int lastFrameChecked = 0;
     private int unitID;
+    private Integer distanceToBuildTarget = null;
     private EnemyUnits enemyUnit;
     private boolean preemptiveRepair = false;
     private boolean assignedToBase = false;
     private Position buildingPosition;
 
-    public Workers(Unit unit, WorkerStatus workerStatus) {
+    public Workers(Game game, Unit unit, WorkerStatus workerStatus) {
+        this.game = game;
         this.unit = unit;
         this.workerStatus = workerStatus;
         this.unitID = unit.getID();
@@ -67,6 +72,26 @@ public class Workers {
             idleClock = 0;
         }
     }
+
+    public void stuckCheck() {
+        lastFrameChecked++;
+
+        if(lastFrameChecked < 240) {
+            return;
+        }
+
+        if(distanceToBuildTarget == null || buildingPosition == null) {
+            return;
+        }
+
+        int currentDistance = unit.getDistance(buildingPosition);
+
+        if(Math.abs(distanceToBuildTarget - currentDistance) < 32 && distanceToBuildTarget > 96) {
+            setWorkerStatus(WorkerStatus.STUCK);
+        }
+
+    }
+
 
 
     public Unit getUnit() {
@@ -155,5 +180,21 @@ public class Workers {
 
     public void setBuildingPosition(Position buildingPosition) {
         this.buildingPosition = buildingPosition;
+    }
+
+    public int getDistanceToBuildTarget() {
+        return distanceToBuildTarget;
+    }
+
+    public void setDistanceToBuildTarget(int distanceToBuildTarget) {
+        this.distanceToBuildTarget = distanceToBuildTarget;
+    }
+
+    public int getLastFrameChecked() {
+        return lastFrameChecked;
+    }
+
+    public void setLastFrameChecked(int lastFrameChecked) {
+        this.lastFrameChecked = lastFrameChecked;
     }
 }

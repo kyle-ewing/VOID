@@ -229,12 +229,19 @@ public class ProductionManager {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
 
+
+
                         if(worker.getBuildFrameCount() > 600) {
                             worker.setWorkerStatus(WorkerStatus.IDLE);
                             worker.getUnit().stop();
                             resourceManager.unreserveResources(pi.getUnitType());
                             pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                         }
+                    }
+
+                    if(worker.getWorkerStatus() == WorkerStatus.STUCK) {
+                        resourceManager.unreserveResources(pi.getUnitType());
+                        pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                     }
 
                     if(!worker.getUnit().exists()) {

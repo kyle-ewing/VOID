@@ -58,30 +58,34 @@ public class Painters {
             switch (worker.getWorkerStatus()) {
                 case MINERALS:
                     paintCircle(worker.getUnit(), 8, Color.Blue);
-                    continue;
+                    break;
                 case SCOUTING:
                     paintCircle(worker.getUnit(), 8, Color.Orange);
-                    continue;
+                    break;
                 case IDLE:
                     paintCircle(worker.getUnit(), 8, Color.White);
-                    continue;
+                    break;
                 case MOVING_TO_BUILD:
                     paintCircle(worker.getUnit(), 8, Color.Purple);
-                    continue;
+                    break;
                 case BUILDING:
                     paintCircle(worker.getUnit(), 8, Color.Yellow);
-                    continue;
+                    break;
                 case GAS:
                     paintCircle(worker.getUnit(), 8, Color.Green);
-                    continue;
+                    break;
                 case ATTACKING:
                     paintCircle(worker.getUnit(), 8, Color.Red);
-                    continue;
+                    break;
                 case REPAIRING:
                     paintCircle(worker.getUnit(), 8, Color.Grey);
-                    continue;
+                    break;
                 case DEFEND:
                     paintCircle(worker.getUnit(), 8, Color.Teal);
+                    break;
+                case STUCK:
+                    paintCircle(worker.getUnit(), 8, Color.Black);
+                    break;
             }
         }
     }

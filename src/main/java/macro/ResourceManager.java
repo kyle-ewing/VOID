@@ -9,9 +9,11 @@ import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
+import map.PathFinding;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class ResourceManager {
     private BaseInfo baseInfo;
@@ -114,6 +116,20 @@ public class ResourceManager {
                 worker.setIdleClock(0);
             }
 
+            //TODO: this helps with false positives but still improperly tries to free up workers actually stuck
+            if(worker.getWorkerStatus() == WorkerStatus.STUCK) {
+                if(frameCount % 24 != 0) {
+                    return;
+                }
+
+                if(worker.getUnit().isGatheringMinerals()) {
+                    worker.setWorkerStatus(WorkerStatus.MINERALS);
+                }
+
+                gatherMinerals(worker);
+
+            }
+
             if(worker.getWorkerStatus() == WorkerStatus.REPAIRING) {
                 worker.repair(worker.getRepairTarget());
             }
@@ -135,7 +151,6 @@ public class ResourceManager {
             if(mineralSaturation.get(base).contains(worker)) {
                 for(Mineral mineral : base.getMinerals()) {
                     worker.getUnit().gather(mineral.getUnit());
-                    worker.setWorkerStatus(WorkerStatus.MINERALS);
                     break;
                 }
             }
@@ -220,9 +235,11 @@ public class ResourceManager {
     private void workerBuildClock() {
         for(Workers worker : workers) {
             if(worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                worker.stuckCheck();
                 worker.setBuildFrameCount(worker.getBuildFrameCount() + 1);
             }
             else {
+                worker.setLastFrameChecked(0);
                 worker.setBuildFrameCount(0);
             }
 
@@ -425,13 +442,14 @@ public class ResourceManager {
                 }
             }
         }
+        closestWorker.setDistanceToBuildTarget(closestWorker.getUnit().getDistance(position));
 
         return closestWorker;
     }
 
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_SCV) {
-            workers.add(new Workers(unit, WorkerStatus.IDLE));
+            workers.add(new Workers(game, unit, WorkerStatus.IDLE));
         }
 
         if(unit.getType() == UnitType.Terran_Refinery) {
