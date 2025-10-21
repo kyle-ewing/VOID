@@ -245,11 +245,28 @@ public class BaseInfo {
                     }
                 }
             }
+        }
+    }
 
+    public void readdExpansion(Unit unit) {
+        Base closestBase = null;
+        int closestDistance = Integer.MAX_VALUE;
 
-
+        for(Base base : mapBases) {
+            int distance = unit.getPosition().getApproxDistance(base.getLocation().toPosition());
+            if(distance < closestDistance) {
+                closestBase = base;
+                closestDistance = distance;
+            }
         }
 
+        if(closestBase == null) {
+            return;
+        }
+
+        if(!orderedExpansions.contains(closestBase)) {
+            orderedExpansions.add(0, closestBase);
+        }
     }
 
     private void setMainCliffEdge() {
@@ -524,12 +541,12 @@ public class BaseInfo {
     public void onFrame() {
         painters.paintAllChokes();
         painters.paintNatural(naturalBase);
-        painters.paintTiles(mainCliffEdge);
-        painters.paintTiles(naturalChokeEdge);
+//        painters.paintTiles(mainCliffEdge);
+//        painters.paintTiles(naturalChokeEdge);
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
-//        painters.paintExpansionOrdering(orderedExpansions);
+        painters.paintExpansionOrdering(orderedExpansions);
         //painters.paintMainBufferZone(startingBase);
     }
 
