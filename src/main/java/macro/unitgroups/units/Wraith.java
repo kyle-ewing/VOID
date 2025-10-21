@@ -23,6 +23,12 @@ public class Wraith extends CombatUnits {
 
     @Override
     public void attack() {
+        int frameCount = game.getFrameCount();
+
+        if(frameCount % 12 != 0) {
+            return;
+        }
+
         if(enemyUnit == null) {
             return;
         }
@@ -34,7 +40,14 @@ public class Wraith extends CombatUnits {
             setUnitStatus(UnitStatus.ATTACK);
         }
 
-        unit.attack(enemyUnit.getEnemyPosition());
+        if(unit.getDistance(enemyUnit.getEnemyPosition()) > 128) {
+            unit.move(enemyUnit.getEnemyPosition());
+        }
+        else {
+            unit.attack(enemyUnit.getEnemyUnit());
+        }
+
+
     }
 
     @Override
