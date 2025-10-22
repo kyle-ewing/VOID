@@ -933,7 +933,7 @@ public class ProductionManager {
         removeBuilding(unit);
 
         if(unit.getType().isBuilding()) {
-            if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Missile_Turret) {
+            if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Missile_Turret || unit.getType() == UnitType.Terran_Refinery) {
                 return;
             }
 
