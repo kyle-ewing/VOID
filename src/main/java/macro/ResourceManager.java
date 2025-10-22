@@ -405,6 +405,10 @@ public class ResourceManager {
                 continue;
             }
 
+            if(enemyUnit.getEnemyType().isWorker()) {
+                continue;
+            }
+
             if(enemyUnit.getEnemyUnit().getType().isFlyer() || !enemyUnit.getEnemyUnit().isDetected()) {
                 continue;
             }
