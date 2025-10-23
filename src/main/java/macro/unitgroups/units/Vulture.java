@@ -68,7 +68,6 @@ public class Vulture extends CombatUnits {
 
         if(layingMines) {
             if(unit.isStuck()) {
-                System.out.println("Vulture " + unit.getID() + " is stuck while laying mines.");
                 layingMines = false;
                 recentlyMined = true;
                 pulseCheck = 0;
