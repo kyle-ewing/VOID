@@ -61,13 +61,21 @@ public class Vulture extends CombatUnits {
             layingMines = false;
         }
 
-        if(pulseCheck > 72) {
+        if(pulseCheck > 64) {
             pulseCheck = 0;
             layingMines = false;
         }
 
         if(layingMines) {
-            pulseCheck += 12;
+            if(unit.isStuck()) {
+                System.out.println("Vulture " + unit.getID() + " is stuck while laying mines.");
+                layingMines = false;
+                recentlyMined = true;
+                pulseCheck = 0;
+                return;
+            }
+
+            pulseCheck += 8;
             return;
         }
 
@@ -159,15 +167,14 @@ public class Vulture extends CombatUnits {
         attackMove();
     }
 
-    private Position kiteTo() {
+    private Position kiteTo(int distance) {
         Position enemyPos = enemyUnit.getEnemyPosition();
         Position unitPos = unit.getPosition();
         int dx = unitPos.getX() - enemyPos.getX();
         int dy = unitPos.getY() - enemyPos.getY();
 
-        int patrolDistance = weaponRange();
-        double moveX = unitPos.getX() + (dx * patrolDistance / Math.max(1, unitPos.getDistance(enemyPos)));
-        double moveY = unitPos.getY() + (dy * patrolDistance / Math.max(1, unitPos.getDistance(enemyPos)));
+        double moveX = unitPos.getX() + (dx * distance / Math.max(1, unitPos.getDistance(enemyPos)));
+        double moveY = unitPos.getY() + (dy * distance / Math.max(1, unitPos.getDistance(enemyPos)));
 
         moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
         moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
@@ -185,10 +192,10 @@ public class Vulture extends CombatUnits {
 
     private void attackMove() {
         if(minimnumThreshold(1.05)) {
-            unit.patrol(kiteTo());
+            unit.patrol(kiteTo(weaponRange()));
         }
         else if(minimnumThreshold(0.5)) {
-            unit.move(kiteTo());
+            unit.move(kiteTo(weaponRange()));
         }
         else {
             unit.move(enemyUnit.getEnemyPosition());
@@ -280,23 +287,36 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if(mineTimer >= 92) {
+        if(mineTimer >= 192) {
             mineTimer = 0;
             recentlyMined = false;
         }
 
         if(recentlyMined) {
-            mineTimer += 12;
+            mineTimer += 8;
             return;
         }
 
         if(unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
-            unit.useTech(TechType.Spider_Mines, unit.getPosition());
-            layingMines = true;
+            if(enemyUnit.getEnemyType().groundWeapon().maxRange() <= 64) {
+                Position minePos = kiteTo(64);
+                unit.move(minePos);
+                unit.useTech(TechType.Spider_Mines, minePos);
+                layingMines = true;
+            }
+            else {
+                unit.useTech(TechType.Spider_Mines, unit.getPosition());
+                layingMines = true;
+            }
         }
+
     }
 
     private boolean allowMineLaying() {
+        if(recentlyMined) {
+            return false;
+        }
+
         int currentFrame = game.getFrameCount();
         int idOffset = (10 + (unit.getID() % 21)) * 24;
         if((currentFrame - mineCycle + idOffset) % FULL_MINE_CYCLE < ALLOWED_MINE_CYCLE) {
