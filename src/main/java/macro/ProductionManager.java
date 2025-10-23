@@ -214,7 +214,8 @@ public class ProductionManager {
                         }
                     }
 
-                    if(pi.getPriority() == 1 && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED) {
+                    //check requirements again in case tiles run out before building starts
+                    if((pi.getPriority() == 1 && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED) || (pi.getPlannedItemType() == PlannedItemType.BUILDING && !meetsRequirements(pi.getUnitType()))) {
                         priorityStop = false;
                     }
 
@@ -837,6 +838,19 @@ public class ProductionManager {
     private boolean meetsRequirements(UnitType unitType) {
         if(!unitType.isBuilding()) {
             return false;
+        }
+
+        if(unitType.tileHeight() == 3 && unitType.tileWidth() == 4) {
+            if(buildTiles.getLargeBuildTiles().isEmpty()) {
+                System.out.println("no large build tiles");
+                return false;
+            }
+        }
+
+        if(unitType.tileHeight() == 2 && unitType.tileWidth() == 3) {
+            if(buildTiles.getMediumBuildTiles().isEmpty()) {
+                return false;
+            }
         }
 
         Map<UnitType, Integer> requiredUnits = unitType.requiredUnits();
