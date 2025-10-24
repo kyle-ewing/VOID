@@ -692,6 +692,46 @@ public class ProductionManager {
 
             }
 
+            if(techUnit.getFriendlyUpgradeResponse().isEmpty()) {
+                continue;
+            }
+
+            for(PlannedItem upgradeResponse : techUnit.getFriendlyUpgradeResponse()) {
+                boolean existingUpgrade = false;
+
+                for(PlannedItem pi : productionQueue) {
+                    if(pi.getTechUpgrade() != null && upgradeResponse.getTechUpgrade() != null) {
+                        if(pi.getTechUpgrade() == upgradeResponse.getTechUpgrade()) {
+                            existingUpgrade = true;
+                            break;
+                        }
+                    }
+
+                    if(pi.getUpgradeType() != null && upgradeResponse.getUpgradeType() != null) {
+                        if(pi.getUpgradeType() == upgradeResponse.getUpgradeType()) {
+                            existingUpgrade = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(upgradeResponse.getTechUpgrade() != null) {
+                    if(game.self().hasResearched(upgradeResponse.getTechUpgrade())) {
+                        existingUpgrade = true;
+                    }
+                }
+
+                if(upgradeResponse.getUpgradeType() != null) {
+                    if(game.self().getUpgradeLevel(upgradeResponse.getUpgradeType()) >= upgradeResponse.getUpgradeLevel()) {
+                        existingUpgrade = true;
+                    }
+                }
+
+                if(!existingUpgrade) {
+                    productionQueue.add(upgradeResponse);
+                }
+            }
+
         }
     }
 
