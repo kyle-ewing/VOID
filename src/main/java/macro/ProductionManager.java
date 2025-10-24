@@ -842,7 +842,6 @@ public class ProductionManager {
 
         if(unitType.tileHeight() == 3 && unitType.tileWidth() == 4) {
             if(buildTiles.getLargeBuildTiles().isEmpty()) {
-                System.out.println("no large build tiles");
                 return false;
             }
         }
