@@ -23,7 +23,6 @@ public class Vulture extends CombatUnits {
     private int mineTimer = 0;
     private boolean layingMines = false;
     private boolean recentlyMined = false;
-    private boolean inBase = true;
     private boolean lobotomyOverride = false;
 
     private final int FULL_MINE_CYCLE = new Time(0,30).getFrames();
@@ -109,22 +108,18 @@ public class Vulture extends CombatUnits {
 
         if(unit.getDistance(rallyPoint.toPosition()) < 100) {
             setUnitStatus(UnitStatus.DEFEND);
-            return;
         }
 
         if(!inRangeOfThreat && isOutRanged()) {
             unit.move(rallyPoint.toPosition());
-            return;
         }
 
         if(inBase && isOutRanged()) {
             setUnitStatus(UnitStatus.DEFEND);
-            return;
         }
 
         if(enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() - 32) && !hasTankSupport) {
             unit.move(rallyPoint.toPosition());
-            return;
         }
 
         if(!inRangeOfThreat && (!isOutRanged() || hasTankSupport)) {
@@ -322,14 +317,6 @@ public class Vulture extends CombatUnits {
             return true;
         }
         return false;
-    }
-
-    public boolean isInBase() {
-        return inBase;
-    }
-
-    public void setInBase(boolean inBase) {
-        this.inBase = inBase;
     }
 
     public boolean isLobotomyOverride() {

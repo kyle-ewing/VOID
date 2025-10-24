@@ -26,6 +26,7 @@ public class CombatUnits {
     protected boolean naturalRallySet = false;
     protected boolean hasTankSupport = false;
     protected boolean priorityTargetExists = false;
+    protected boolean inBase = true;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -234,5 +235,13 @@ public class CombatUnits {
 
     public void setPriorityTargetExists(boolean priorityTargetExists) {
         this.priorityTargetExists = priorityTargetExists;
+    }
+
+    public boolean isInBase() {
+        return inBase;
+    }
+
+    public void setInBase(boolean inBase) {
+        this.inBase = inBase;
     }
 }

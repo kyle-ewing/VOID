@@ -100,15 +100,9 @@ public class UnitManager {
                 case Terran_Medic:
                     ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
                     break;
-                case Terran_Vulture:
-                    if(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())) {
-                        ((Vulture) combatUnit).setInBase(true);
-                    }
-                    else {
-                        ((Vulture) combatUnit).setInBase(false);
-                    }
-                    break;
             }
+
+            combatUnit.setInBase(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition()));
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
@@ -182,7 +176,6 @@ public class UnitManager {
             switch(unitStatus) {
                 case ATTACK:
                     ClosestUnit.findClosestUnit(combatUnit, enemyInformation.getEnemyUnits(), Integer.MAX_VALUE);
-                    hasTankSupport(combatUnit);
 
                     if(combatUnit.getUnitType() == UnitType.Terran_Marine) {
                         if(inRangeOfThreat(combatUnit) && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
@@ -515,8 +508,14 @@ public class UnitManager {
                 return true;
             }
 
-            if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().getUnitStatus() == UnitStatus.ATTACK) {
-                return true;
+            for(CombatUnits unit : combatUnits) {
+                if((unit.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode)
+                        && unit.getEnemyUnit() != null && !unit.isInBase()) {
+                    int distanceToEnemy = unit.getUnit().getDistance(unit.getEnemyUnit().getEnemyPosition());
+                    if(distanceToEnemy < 400) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
