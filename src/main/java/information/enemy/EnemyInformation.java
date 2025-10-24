@@ -96,6 +96,7 @@ public class EnemyInformation {
             if(enemyTechUnit.isEnemyTechUnit(enemyUnits) && !enemyTechUnits.contains(enemyTechUnit)) {
                 if(!enemyTechUnit.hasTriggeredResponse()) {
                     enemyTechUnit.techBuildingResponse();
+                    enemyTechUnit.techUpgradeResponse();
                     enemyTechUnit.setTriggeredResponse(true);
                 }
 

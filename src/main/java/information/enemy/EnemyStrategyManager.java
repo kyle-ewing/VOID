@@ -5,6 +5,7 @@ import information.enemy.enemyopeners.CannonRush;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners. FourPool;
 import information.enemy.enemytechunits.Arbiter;
+import information.enemy.enemytechunits.Carrier;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import information.enemy.enemytechunits.ShuttleReaver;
 
@@ -34,6 +35,7 @@ public class EnemyStrategyManager {
     private void addEnemyTechUnits() {
         enemyTechUnits.add(new ShuttleReaver());
         enemyTechUnits.add(new Arbiter());
+        enemyTechUnits.add(new Carrier());
     }
 
     public HashSet<EnemyStrategy> getEnemyStrategies() {
