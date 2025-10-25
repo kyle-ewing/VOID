@@ -546,7 +546,7 @@ public class BaseInfo {
         //painters.paintBasePosition(mapBases);
         //painters.paintTilePositions(pathTest);
         //painters.paintTiles(baseTiles);
-        painters.paintExpansionOrdering(orderedExpansions);
+//        painters.paintExpansionOrdering(orderedExpansions);
         //painters.paintMainBufferZone(startingBase);
     }
 

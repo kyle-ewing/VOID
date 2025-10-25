@@ -166,6 +166,11 @@ public class BuildTiles {
                 }
             }
         }
+
+        if(intersectsNeutralBuildings(tile, tile.x, tile.y)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -246,6 +251,11 @@ public class BuildTiles {
                 return false;
             }
         }
+
+        if(intersectsNeutralBuildings(tile, tile.x, tile.y)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -579,6 +589,30 @@ public class BuildTiles {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean intersectsNeutralBuildings(TilePosition tile, int width, int height) {
+        for(Unit neutralBuilding : game.getNeutralUnits()) {
+            if(!neutralBuilding.getType().isBuilding()) {
+                continue;
+            }
+
+            if(neutralBuilding.getType() == UnitType.Resource_Vespene_Geyser || neutralBuilding.getType() == UnitType.Resource_Mineral_Field) {
+                continue;
+            }
+
+            TilePosition buildingTile = neutralBuilding.getTilePosition();
+            int buildingWidth = neutralBuilding.getType().tileWidth();
+            int buildingHeight = neutralBuilding.getType().tileHeight();
+
+            if(tile.getX() < buildingTile.getX() + buildingWidth &&
+                    tile.getX() + width > buildingTile.getX() &&
+                    tile.getY() < buildingTile.getY() + buildingHeight &&
+                    tile.getY() + height > buildingTile.getY()) {
+                return true;
             }
         }
         return false;
