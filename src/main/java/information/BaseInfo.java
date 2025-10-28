@@ -18,7 +18,8 @@ public class BaseInfo {
     private AllBasePaths allBasePaths;
     private Base startingBase;
     private Base naturalBase;
-    private ChokePoint chokePoint;
+    private ChokePoint mainChokePoint;
+    private ChokePoint naturalChokePoint;
     private Unit initalCC = null;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
@@ -70,6 +71,8 @@ public class BaseInfo {
         allPathsMap = new HashMap<>(allBasePaths.getPathLists());
 
         setNaturalBase();
+        setMainChoke();
+        setNaturalChoke();
         setStartingBaseTiles();
         setNaturalBaseTiles();
         setOrderedExpansions();
@@ -397,21 +400,23 @@ public class BaseInfo {
 
     }
 
-
-    //TODO: set chokes onStart (why did i do it like this)
     public ChokePoint getMainChoke() {
+        return mainChokePoint;
+    }
+
+    private void setMainChoke() {
         if(startingBase == null || naturalBase == null) {
-            return null;
+            return;
         }
 
         List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), naturalBase.getLocation().toPosition()
         );
 
         if(path.isEmpty()) {
-            return null;
+            return;
         }
 
-        ChokePoint closestChokePoint = null;
+        mainChokePoint = null;
         int minDistance = Integer.MAX_VALUE;
 
         for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
@@ -421,11 +426,10 @@ public class BaseInfo {
                 int distance = chokePos.getApproxDistance(pathPos);
                 if(distance < minDistance) {
                     minDistance = distance;
-                    closestChokePoint = chokePoint;
+                    mainChokePoint = chokePoint;
                 }
             }
         }
-        return closestChokePoint;
     }
 
     public boolean hasBunkerInNatural() {
@@ -442,7 +446,11 @@ public class BaseInfo {
     }
 
     public ChokePoint getNaturalChoke() {
-        ChokePoint closestChokePoint = null;
+        return  naturalChokePoint;
+    }
+
+    public void setNaturalChoke() {
+        naturalChokePoint = null;
         int closestDistance = Integer.MAX_VALUE;
 
         for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
@@ -453,16 +461,14 @@ public class BaseInfo {
             int distance = naturalBase.getLocation().getApproxDistance(chokePoint.getCenter().toTilePosition());
 
             if(distance < closestDistance) {
-                closestChokePoint = chokePoint;
+                naturalChokePoint = chokePoint;
                 closestDistance = distance;
             }
         }
-        return closestChokePoint;
     }
 
-        public HashSet<Base> getStartingBases() {
+    public HashSet<Base> getStartingBases() {
         return startingBases;
-
     }
 
     public HashSet<Mineral> getStartingMinerals() {
