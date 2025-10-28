@@ -457,7 +457,7 @@ public class ResourceManager {
 
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_SCV) {
-            workers.add(new Workers(game, unit, WorkerStatus.IDLE));
+            workers.add(new Workers(game, unit));
         }
 
         if(unit.getType() == UnitType.Terran_Refinery) {
