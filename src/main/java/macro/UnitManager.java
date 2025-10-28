@@ -81,7 +81,7 @@ public class UnitManager {
 
         //TODO: this is all horrible
         for(CombatUnits combatUnit : combatUnits) {
-            if(combatUnit.getUnitType() == UnitType.Spell_Scanner_Sweep || combatUnit.getUnitType() == UnitType.Terran_Vulture_Spider_Mine) {
+            if(combatUnit.getUnitType() == UnitType.Spell_Scanner_Sweep || combatUnit.getUnitType() == UnitType.Terran_Vulture_Spider_Mine || combatUnit.getUnitStatus() == UnitStatus.WORKER) {
                 continue;
             }
             combatUnit.onFrame();

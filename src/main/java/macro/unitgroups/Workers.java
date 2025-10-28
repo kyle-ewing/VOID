@@ -5,9 +5,7 @@ import bwapi.Position;
 import bwapi.Unit;
 import information.enemy.EnemyUnits;
 
-public class Workers {
-    private Game game;
-    private Unit unit;
+public class Workers extends CombatUnits {
     private Unit repairTarget;
     private WorkerStatus workerStatus;
     private int buildFrameCount;
@@ -21,11 +19,10 @@ public class Workers {
     private boolean assignedToBase = false;
     private Position buildingPosition;
 
-    public Workers(Game game, Unit unit, WorkerStatus workerStatus) {
-        this.game = game;
-        this.unit = unit;
-        this.workerStatus = workerStatus;
-        this.unitID = unit.getID();
+    public Workers(Game game, Unit unit) {
+        super(game, unit);
+        this.workerStatus = WorkerStatus.IDLE;
+        this.unitStatus = UnitStatus.WORKER;
         this.buildFrameCount = 0;
         this.attackClock = 0;
     }
@@ -94,9 +91,9 @@ public class Workers {
 
 
 
-    public Unit getUnit() {
-        return unit;
-    }
+//    public Unit getUnit() {
+//        return unit;
+//    }
 
     public void setUnit(Unit unit) {
         this.unit = unit;
@@ -140,10 +137,6 @@ public class Workers {
 
     public void setRepairTarget(Unit repairTarget) {
         this.repairTarget = repairTarget;
-    }
-
-    public int getUnitID() {
-        return unitID;
     }
 
     public void setUnitID(int unitID) {

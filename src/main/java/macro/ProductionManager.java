@@ -223,7 +223,7 @@ public class ProductionManager {
 
                 case SCV_ASSIGNED:
                     worker = pi.getAssignedBuilder();
-                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                    if(worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
 
                         worker.pulseCheck();
 
@@ -284,7 +284,7 @@ public class ProductionManager {
 
                         boolean builderHasDied = true;
                         for(Workers workers : resourceManager.getWorkers()) {
-                            if(workers.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
+                            if(workers == pi.getAssignedBuilder()) {
                                 builderHasDied = false;
                                 break;
                             }

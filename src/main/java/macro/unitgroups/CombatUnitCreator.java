@@ -44,6 +44,8 @@ public class CombatUnitCreator {
                 return new Scan(game, unit);
             case Terran_Vulture_Spider_Mine:
                 return new SpiderMines(game, unit);
+            case Terran_SCV:
+                return new Workers(game, unit);
             default:
                 return new CombatUnits(game, unit);
         }
