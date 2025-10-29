@@ -270,10 +270,6 @@ public class ProductionManager {
                             if(building.getType() == pi.getUnitType() && building.getTilePosition().equals(pi.getBuildPosition()) && building.isCompleted()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
 
-                                if(building.canTrain()) {
-                                    productionBuildings.add(building);
-                                }
-
                                 if (worker.getWorkerStatus() == WorkerStatus.BUILDING) {
                                     worker.setWorkerStatus(WorkerStatus.IDLE);
                                 }
@@ -847,6 +843,7 @@ public class ProductionManager {
 
     private void removeBuilding(Unit unit) {
         allBuildings.remove(unit);
+        productionBuildings.remove(unit);
     }
 
     private void resetBuilding(Unit unit) {
