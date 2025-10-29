@@ -833,6 +833,15 @@ public class ProductionManager {
         return false;
     }
 
+    private void resetUnitInProduction(Unit destroyedBuilding) {
+        for(PlannedItem pi : productionQueue) {
+            if(pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getPlannedItemType() == PlannedItemType.UNIT && pi.getProductionBuilding() == destroyedBuilding) {
+                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                pi.setProductionBuilding(null);
+            }
+        }
+    }
+
     private void removeUnitTypeCount(Unit unit) {
             unitTypeCount.put(unit.getType(), unitTypeCount.get(unit.getType()) - 1);
     }
@@ -996,6 +1005,8 @@ public class ProductionManager {
             else {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
             }
+
+            resetUnitInProduction(unit);
 
             if(unit.getType().tileHeight() == 3 && unit.getType().tileWidth() == 4) {
                 if(unit.getType() == UnitType.Terran_Command_Center) {
