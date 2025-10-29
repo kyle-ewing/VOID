@@ -16,6 +16,8 @@ public class RallyPoint {
     private BaseInfo baseInfo;
     private EnemyStrategy enemyStrategy = null;
     private Base startingBase;
+    private Position mainRallyPoint;
+    private Position naturalRallyPoint;
 
     public RallyPoint(PathFinding pathFinding, EnemyInformation enemyInformation, BaseInfo baseInfo) {
         this.pathFinding = pathFinding;
@@ -23,16 +25,17 @@ public class RallyPoint {
         this.baseInfo = baseInfo;
 
         this.startingBase = baseInfo.getStartingBase();
+        setInitialRallyPoints();
 
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
         if(enemyInformation.getEnemyOpener() == null || enemyStrategy.isStrategyDefended()) {
             if(baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) {
-                combatUnit.setRallyPoint(rallyPath(baseInfo.getNaturalBase().getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.80).toTilePosition());
+                combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             }
             else {
-                combatUnit.setRallyPoint(rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.75).toTilePosition());
+                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
             }
         }
         else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
@@ -58,6 +61,11 @@ public class RallyPoint {
         }
 
         return PositionInterpolator.interpolate(path, percentage);
+    }
+
+    private void setInitialRallyPoints() {
+        mainRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.75);
+        naturalRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.75);
     }
 
     public void onFrame() {
