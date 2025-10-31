@@ -148,7 +148,6 @@ public class EnemyInformation {
                 enemyBuildingDiscovered = true;
             }
         }
-        System.out.println("Discovered enemy unit: " + unit.getType().toString() + " Frame: " + game.getFrameCount());
 
         if (startingEnemyBase == null) {
             if(unit.getType().isResourceDepot()) {

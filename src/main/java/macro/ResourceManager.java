@@ -64,7 +64,7 @@ public class ResourceManager {
 
         for(Workers worker : workers) {
             if(worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
-                if(baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())) {
+                if(baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened()) {
                     createDefenseForce(7);
                 }
             }
@@ -262,6 +262,27 @@ public class ResourceManager {
     private void removeDefenseForce(Workers worker) {
         worker.setWorkerStatus(WorkerStatus.IDLE);
         defenseForce.remove(workers);
+    }
+
+    //Avoid false positives from a single worker attacking a scv (Stone check)
+    private boolean actuallyThreatened() {
+        int enemyWorkerCount = 0;
+        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+            if(enemyUnit.getEnemyType().isWorker()) {
+                if(enemyUnit.getEnemyPosition() == null) {
+                    continue;
+                }
+
+                if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                    enemyWorkerCount++;
+                    continue;
+                }
+            }
+            if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                return true;
+            }
+        }
+        return enemyWorkerCount > 1;
     }
 
     public void updateClosetEnemy(Workers worker) {
