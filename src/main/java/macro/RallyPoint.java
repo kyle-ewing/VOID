@@ -38,9 +38,20 @@ public class RallyPoint {
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
             }
         }
-        else if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
-            combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
+
+        if(enemyInformation.getEnemyOpener() == null) {
+            return;
         }
+
+        switch(enemyStrategy.getStrategyName()) {
+            case "Four Pool":
+                combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
+            case "Gas Steal":
+                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+            case "Cannon RUsh":
+                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+        }
+
     }
 
     private Position rallyPath(Position startingPos, Position endPoint, double percentage) {

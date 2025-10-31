@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public abstract class EnemyStrategy {
-    private String strategyName;
-    private ArrayList<UnitType> buildingResponse = new ArrayList<>();
-    private boolean defendedStrategy = false;
+    protected String strategyName;
+    protected ArrayList<UnitType> buildingResponse = new ArrayList<>();
+    protected EnemyUnits priorityEnemyUnit = null;
+    protected boolean defendedStrategy = false;
 
     public EnemyStrategy(String strategyName) {
         this.strategyName = strategyName;
@@ -33,5 +34,13 @@ public abstract class EnemyStrategy {
 
     public void setDefendedStrategy(boolean defendedStrategy) {
         this.defendedStrategy = defendedStrategy;
+    }
+
+    public EnemyUnits getPriorityEnemyUnit() {
+        return priorityEnemyUnit;
+    }
+
+    public void setPriorityEnemyUnit(EnemyUnits priorityEnemyUnit) {
+        this.priorityEnemyUnit = priorityEnemyUnit;
     }
 }
