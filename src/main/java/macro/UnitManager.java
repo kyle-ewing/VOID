@@ -32,6 +32,7 @@ public class UnitManager {
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashMap<UnitType, Integer> unitCount = new HashMap<>();
     private HashMap<Base, CombatUnits> designatedScouts = new HashMap<>();
+    private EnemyUnits priorityTarget = null;
     private int bunkerLoad = 0;
     private int scouts = 0;
     private int rallyClock = 0;
@@ -106,6 +107,13 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
+            if(priorityTarget != null) {
+                combatUnit.setPriorityEnemyUnit(priorityTarget);
+            }
+            else {
+                combatUnit.setPriorityEnemyUnit(null);
+            }
+
             if((unitCount.get(UnitType.Terran_Marine) > 14 || (unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 2
                     && (unitCount.get(UnitType.Terran_Vulture) > 4 || unitCount.get(UnitType.Terran_Goliath) > 4)))
                     && (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD || unitStatus == UnitStatus.SIEGEDEF)) {
@@ -145,7 +153,7 @@ public class UnitManager {
                     continue;
                 }
 
-                if(combatUnit.getUnitType() == UnitType.Terran_Marine && !combatUnit.isInBunker() && (bunker != null && bunkerLoad < 4)) {
+                if(combatUnit.getUnitType() == UnitType.Terran_Marine && !combatUnit.isInBunker() && (bunker != null && bunkerLoad < 4 && priorityTarget == null)) {
                     combatUnit.setUnitStatus(UnitStatus.LOAD);
                 }
             }
@@ -265,7 +273,7 @@ public class UnitManager {
                 continue;
             }
 
-            if(!enemyUnit.getEnemyType().canAttack()) {
+            if(enemyUnit.getEnemyType().canAttack() && enemyUnit.getEnemyType().isFlyer()) {
                 continue;
             }
 
@@ -344,6 +352,11 @@ public class UnitManager {
                 break;
             case "Four Pool":
                 this.beingAllInned = true;
+                break;
+            case "Gas Steal":
+                //Not an all in but needs response
+                this.beingAllInned = true;
+                priorityTarget = enemyInformation.getEnemyOpener().getPriorityEnemyUnit();
                 break;
         }
     }

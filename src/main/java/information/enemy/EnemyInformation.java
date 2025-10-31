@@ -148,6 +148,7 @@ public class EnemyInformation {
                 enemyBuildingDiscovered = true;
             }
         }
+        System.out.println("Discovered enemy unit: " + unit.getType().toString() + " Frame: " + game.getFrameCount());
 
         if (startingEnemyBase == null) {
             if(unit.getType().isResourceDepot()) {
@@ -171,6 +172,12 @@ public class EnemyInformation {
 
     public void onUnitDestroy(Unit unit) {
         for (EnemyUnits enemyUnit : enemyUnits) {
+            if(enemyOpener != null && enemyOpener.getPriorityEnemyUnit() != null) {
+                if(enemyOpener.getPriorityEnemyUnit().getEnemyID() == unit.getID()) {
+                    enemyOpener.setPriorityEnemyUnit(null);
+                }
+            }
+
             if (enemyUnit.getEnemyID() == unit.getID()) {
                 enemyUnits.remove(enemyUnit);
                 break;

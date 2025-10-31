@@ -12,6 +12,7 @@ public class CombatUnits {
     protected UnitStatus unitStatus;
     protected CombatUnits friendlyUnit;
     protected EnemyUnits enemyUnit;
+    protected EnemyUnits priorityEnemyUnit;
     protected EnemyUnits closestEnemyBuilding;
     protected TilePosition rallyPoint;
 
@@ -76,6 +77,11 @@ public class CombatUnits {
     public void rally() {
         if(rallyPoint == null) {
             return;
+        }
+
+        if(priorityEnemyUnit != null) {
+            setEnemyUnit(priorityEnemyUnit);
+            setUnitStatus(UnitStatus.DEFEND);
         }
 
         if(enemyUnit != null) {
@@ -243,5 +249,13 @@ public class CombatUnits {
 
     public void setInBase(boolean inBase) {
         this.inBase = inBase;
+    }
+
+    public EnemyUnits getPriorityEnemyUnit() {
+        return priorityEnemyUnit;
+    }
+
+    public void setPriorityEnemyUnit(EnemyUnits priorityEnemyUnit) {
+        this.priorityEnemyUnit = priorityEnemyUnit;
     }
 }
