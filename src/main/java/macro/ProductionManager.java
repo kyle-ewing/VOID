@@ -88,8 +88,8 @@ public class ProductionManager {
         }
         else if(enemyRace.toString().equals("Protoss")) {
             for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC) {
-                    bunkerPosition = buildTiles.getNaturalChokeBunker();
+                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
+                    bunkerPosition = buildTiles.getMainChokeBunker();
                     productionQueue.addAll(buildOrder.getBuildOrder());
                     startingOpener = buildOrder;
                 }
@@ -113,6 +113,10 @@ public class ProductionManager {
 
         for (PlannedItem pi : productionQueue) {
             if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
+                priorityStop = true;
+            }
+
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.UNIT && meetsRequirements(pi.getUnitType()) && pi.getSupply() > player.supplyUsed() / 2) {
                 priorityStop = true;
             }
 
@@ -401,6 +405,23 @@ public class ProductionManager {
                 break;
             case TWORAXACADEMY:
                 for(Unit productionBuilding : productionBuildings) {
+                    if(!enemyInformation.getTechUnitResponse().isEmpty()) {
+                        for(UnitType unitType: enemyInformation.getTechUnitResponse()) {
+                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
+                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
+                                    if(unitType == UnitType.Terran_Science_Vessel) {
+                                        if(unitTypeCount.get(unitType) < 2) {
+                                            addToQueue(unitType, PlannedItemType.UNIT, 1);
+                                        }
+                                    }
+                                    else {
+                                        addToQueue(unitType, PlannedItemType.UNIT, 2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     if (isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
                         if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic) && unitTypeCount.get(UnitType.Terran_Medic) < 3 && !hasUnitInQueue(UnitType.Terran_Medic)) {
                                 addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
@@ -616,16 +637,15 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
         }
         else {
-            if(buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
-                reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
-                pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
-                return;
-            }
-
             if(buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
                 reservedTurretPositions.add(buildTiles.getMainChokeTurret());
                 pi.setBuildPosition(buildTiles.getMainChokeTurret());
                 return;
+            }
+
+            if(buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+                reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
+                pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
             }
         }
     }
@@ -649,9 +669,23 @@ public class ProductionManager {
     private void openerResponse() {
         openerResponse = true;
 
+        Map<UnitType, Integer> buildingCounts = new HashMap<>();
         for(UnitType building : enemyInformation.getEnemyOpener().getBuildingResponse()) {
-            productionQueue.removeIf(pi -> pi.getUnitType() == building);
-            addToQueue(building, PlannedItemType.BUILDING, 1);
+            buildingCounts.merge(building, 1, Integer::sum);
+        }
+
+        productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()));
+
+        for(UnitType building : enemyInformation.getEnemyOpener().getBuildingResponse()) {
+            if(unitTypeCount.get(building) == 0) {
+                if(building.isAddon()) {
+                    addToQueue(building, PlannedItemType.ADDON, 1);
+                }
+                else {
+                    addToQueue(building, PlannedItemType.BUILDING, 1);
+                }
+            }
+
         }
     }
 
@@ -882,7 +916,32 @@ public class ProductionManager {
     }
 
     private boolean meetsRequirements(UnitType unitType) {
+        Map<UnitType, Integer> requiredUnits = unitType.requiredUnits();
+
+        if(requiredUnits.isEmpty()) {
+            System.out.println("no requirements for " + unitType);
+            return true;
+        }
+
         if(!unitType.isBuilding()) {
+            System.out.println("checking non building requirements for " + unitType);
+            for(UnitType requiredUnit : requiredUnits.keySet()) {
+                if(requiredUnits.size() == 1 && requiredUnit == UnitType.Terran_SCV) {
+                    System.out.println("only requirement is scv for " + unitType);
+                    return true;
+                }
+
+                if(!requiredUnit.isBuilding()) {
+                    continue;
+                }
+
+                if(unitTypeCount.get(requiredUnit) > 0) {
+                    System.out.println("requirements met for " + unitType + " has " + requiredUnit);
+                    return true;
+                }
+            }
+
+            System.out.println("requirements not met for " + unitType);
             return false;
         }
 
@@ -898,9 +957,11 @@ public class ProductionManager {
             }
         }
 
-        Map<UnitType, Integer> requiredUnits = unitType.requiredUnits();
-        if(requiredUnits.isEmpty()) {
-            return true;
+        if(unitType.gasPrice() > 0 && unitTypeCount.get(UnitType.Terran_Refinery) == 0) {
+            return false;
+        }
+        else if(resourceManager.getAvailableGas() <= unitType.gasPrice()) {
+            return false;
         }
 
         for(UnitType requiredUnit : requiredUnits.keySet()) {

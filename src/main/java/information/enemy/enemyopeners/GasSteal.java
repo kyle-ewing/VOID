@@ -17,6 +17,10 @@ public class GasSteal extends EnemyStrategy{
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         for(EnemyUnits enemyUnit : enemyUnits) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
             if(enemyUnit.getEnemyType().isRefinery()) {
                 if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
                     priorityEnemyUnit = enemyUnit;

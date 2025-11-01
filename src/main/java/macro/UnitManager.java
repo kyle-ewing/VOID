@@ -101,6 +101,9 @@ public class UnitManager {
                 case Terran_Medic:
                     ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
                     break;
+                case Terran_Science_Vessel:
+                    ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
+                    break;
             }
 
             combatUnit.setInBase(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition()));

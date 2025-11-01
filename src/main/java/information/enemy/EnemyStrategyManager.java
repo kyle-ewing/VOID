@@ -1,14 +1,8 @@
 package information.enemy;
 
 import information.BaseInfo;
-import information.enemy.enemyopeners.CannonRush;
-import information.enemy.enemyopeners.EnemyStrategy;
-import information.enemy.enemyopeners. FourPool;
-import information.enemy.enemyopeners.GasSteal;
-import information.enemy.enemytechunits.Arbiter;
-import information.enemy.enemytechunits.Carrier;
-import information.enemy.enemytechunits.EnemyTechUnits;
-import information.enemy.enemytechunits.ShuttleReaver;
+import information.enemy.enemyopeners.*;
+import information.enemy.enemytechunits.*;
 
 import java.util.HashSet;
 
@@ -32,12 +26,14 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new FourPool());
         enemyStrategies.add(new CannonRush(baseInfo));
         enemyStrategies.add(new GasSteal(baseInfo));
+        enemyStrategies.add(new DTRush());
     }
 
     private void addEnemyTechUnits() {
         enemyTechUnits.add(new ShuttleReaver());
         enemyTechUnits.add(new Arbiter());
         enemyTechUnits.add(new Carrier());
+        enemyTechUnits.add(new DarkTemplar());
     }
 
     public HashSet<EnemyStrategy> getEnemyStrategies() {
