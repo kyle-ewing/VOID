@@ -1,20 +1,13 @@
 package information.enemy.enemytechunits;
 
 import bwapi.UnitType;
-import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
-import planner.PlannedItem;
-import planner.PlannedItemStatus;
-import planner.PlannedItemType;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
-public class ShuttleReaver extends EnemyTechUnits {
-    public ShuttleReaver() {
-        super("Shuttle Reaver", UnitType.Terran_Wraith);
-
-
+public class DarkTemplar extends EnemyTechUnits {
+    public DarkTemplar() {
+        super("Dark Templar", UnitType.Terran_Science_Vessel);
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
@@ -23,7 +16,7 @@ public class ShuttleReaver extends EnemyTechUnits {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Shuttle) {
+            if(enemyUnit.getEnemyType() == UnitType.Protoss_Dark_Templar) {
                 return true;
             }
         }
@@ -31,9 +24,12 @@ public class ShuttleReaver extends EnemyTechUnits {
     }
 
     public void techBuildingResponse() {
+        getFriendlyBuildingResponse().add(UnitType.Terran_Factory);
         getFriendlyBuildingResponse().add(UnitType.Terran_Starport);
+        getFriendlyBuildingResponse().add(UnitType.Terran_Control_Tower);
     }
 
     public void techUpgradeResponse() {
     }
+
 }

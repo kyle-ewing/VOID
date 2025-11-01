@@ -46,10 +46,16 @@ public class RallyPoint {
         switch(enemyStrategy.getStrategyName()) {
             case "Four Pool":
                 combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
+                break;
             case "Gas Steal":
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
-            case "Cannon RUsh":
+                break;
+            case "Cannon Rush":
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+                break;
+            case "Dark Templar":
+                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+                break;
         }
 
     }
