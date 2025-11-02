@@ -23,7 +23,7 @@ public class EnemyStrategyManager {
     }
 
     private void addEnemyStrategies() {
-        enemyStrategies.add(new FourPool());
+        enemyStrategies.add(new FourPool(baseInfo));
         enemyStrategies.add(new CannonRush(baseInfo));
         enemyStrategies.add(new GasSteal(baseInfo));
         enemyStrategies.add(new DTRush());

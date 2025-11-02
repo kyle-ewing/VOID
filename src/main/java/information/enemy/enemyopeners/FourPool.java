@@ -1,14 +1,18 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
+import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import util.Time;
 
 import java.util.HashSet;
 
 public class FourPool extends EnemyStrategy {
-    public FourPool() {
+    private BaseInfo baseInfo;
+
+    public FourPool(BaseInfo baseInfo) {
         super("Four Pool");
+        this.baseInfo = baseInfo;
 
         buildingResponse();
     }
@@ -22,6 +26,11 @@ public class FourPool extends EnemyStrategy {
             }
             else if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
                 if(time.lessThanOrEqual(new Time(2,30))) {
+                    return true;
+                }
+
+                if(baseInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1000
+                && time.lessThanOrEqual(new Time(3,0))) {
                     return true;
                 }
             }
