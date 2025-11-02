@@ -30,16 +30,21 @@ public class RallyPoint {
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
-        if(enemyInformation.getEnemyOpener() == null || enemyStrategy.isStrategyDefended()) {
+        if(enemyInformation.getEnemyOpener() == null || enemyStrategy.isStrategyDefended() || baseInfo.isNaturalOwned()) {
             if(baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) {
                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             }
             else {
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+
             }
         }
 
         if(enemyInformation.getEnemyOpener() == null) {
+            return;
+        }
+
+        if(enemyStrategy.isStrategyDefended()) {
             return;
         }
 
@@ -60,6 +65,7 @@ public class RallyPoint {
 
     }
 
+    //Percentage is how far along the path to go (0.0 = start, 1.0 = end)
     private Position rallyPath(Position startingPos, Position endPoint, double percentage) {
         Position nearestWalkable = pathFinding.findNearestWalkable(startingPos);
         Position nearestWalkableToEnd = pathFinding.findNearestWalkable(endPoint);
@@ -82,7 +88,7 @@ public class RallyPoint {
 
     private void setInitialRallyPoints() {
         mainRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.75);
-        naturalRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.75);
+        naturalRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.88);
     }
 
     public void onFrame() {

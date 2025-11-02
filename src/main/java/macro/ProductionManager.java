@@ -116,8 +116,18 @@ public class ProductionManager {
                 priorityStop = true;
             }
 
-            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.UNIT && meetsRequirements(pi.getUnitType()) && pi.getSupply() > player.supplyUsed() / 2) {
-                priorityStop = true;
+            //Throttle gas units but allow mineral only if enough is banked (Vessels very gas heavy and only unit worth prioritizing)
+            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
+                    && pi.getPlannedItemType() == PlannedItemType.UNIT && meetsRequirements(pi.getUnitType())
+                    && pi.getSupply() > player.supplyUsed() / 2) {
+                if(resourceManager.getAvailableMinerals() >= pi.getUnitType().mineralPrice() && resourceManager.getAvailableGas() < pi.getUnitType().gasPrice()) {
+                    System.out.println("Throttling gas unit production: " + pi.getUnitType());
+                    System.out.println("Minerals: " + resourceManager.getAvailableMinerals() + " / Gas: " + resourceManager.getAvailableGas());
+                    priorityStop = true;
+                }
+                else {
+                    System.out.println("ALLOWING Minerals: " + resourceManager.getAvailableMinerals() + " / Gas: " + resourceManager.getAvailableGas());
+                }
             }
 
             if(priorityStop && pi.getPriority() != 1 && pi.getPlannedItemType() == PlannedItemType.BUILDING && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
@@ -408,7 +418,7 @@ public class ProductionManager {
                     if(!enemyInformation.getTechUnitResponse().isEmpty()) {
                         for(UnitType unitType: enemyInformation.getTechUnitResponse()) {
                             if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
-                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
+                                if(isRecruitable(UnitType.Terran_Science_Vessel, 1) && !hasUnitInQueue(unitType)) {
                                     if(unitType == UnitType.Terran_Science_Vessel) {
                                         if(unitTypeCount.get(unitType) < 2) {
                                             addToQueue(unitType, PlannedItemType.UNIT, 1);
@@ -551,9 +561,9 @@ public class ProductionManager {
                 return true;
             }
 
-            if(pi.getUnitType() == UnitType.Terran_Command_Center) {
-                return true;
-            }
+//            if(pi.getUnitType() == UnitType.Terran_Command_Center) {
+//                return true;
+//            }
         }
         return false;
     }
@@ -717,7 +727,12 @@ public class ProductionManager {
                 }
 
                 if(!existingBuilding) {
-                    addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                    if(buildingResponse.isAddon()) {
+                        addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
+                    }
+                    else {
+                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                    }
                 }
 
             }
@@ -792,6 +807,22 @@ public class ProductionManager {
         if(resourceManager.getAvailableMinerals() >= unitType.mineralPrice() && resourceManager.getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
             return true;
         }
+        return false;
+    }
+
+    private boolean isRecruitable(UnitType unitType, int priority) {
+        int usedSupply = game.self().supplyUsed() / 2;
+        int totalSupply = game.self().supplyTotal() / 2;
+        int freeSupply = totalSupply - usedSupply;
+
+        if(resourceManager.getAvailableMinerals() >= unitType.mineralPrice() && resourceManager.getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
+            return true;
+        }
+
+        if(priority == 1 && freeSupply >= unitType.supplyRequired() / 2 && resourceManager.getAvailableGas() <= unitType.gasPrice()) {
+            return true;
+        }
+
         return false;
     }
 
@@ -919,40 +950,18 @@ public class ProductionManager {
         Map<UnitType, Integer> requiredUnits = unitType.requiredUnits();
 
         if(requiredUnits.isEmpty()) {
-            System.out.println("no requirements for " + unitType);
             return true;
         }
 
-        if(!unitType.isBuilding()) {
-            System.out.println("checking non building requirements for " + unitType);
-            for(UnitType requiredUnit : requiredUnits.keySet()) {
-                if(requiredUnits.size() == 1 && requiredUnit == UnitType.Terran_SCV) {
-                    System.out.println("only requirement is scv for " + unitType);
-                    return true;
-                }
-
-                if(!requiredUnit.isBuilding()) {
-                    continue;
-                }
-
-                if(unitTypeCount.get(requiredUnit) > 0) {
-                    System.out.println("requirements met for " + unitType + " has " + requiredUnit);
-                    return true;
-                }
-            }
-
-            System.out.println("requirements not met for " + unitType);
-            return false;
+        if(requiredUnits.size() == 1 && requiredUnits.containsKey(UnitType.Terran_SCV)) {
+            return true;
         }
 
-        if(unitType.tileHeight() == 3 && unitType.tileWidth() == 4) {
-            if(buildTiles.getLargeBuildTiles().isEmpty()) {
+        if(unitType.isBuilding()) {
+            if(unitType.tileHeight() == 3 && unitType.tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty()) {
                 return false;
             }
-        }
-
-        if(unitType.tileHeight() == 2 && unitType.tileWidth() == 3) {
-            if(buildTiles.getMediumBuildTiles().isEmpty()) {
+            if(unitType.tileHeight() == 2 && unitType.tileWidth() == 3 && buildTiles.getMediumBuildTiles().isEmpty()) {
                 return false;
             }
         }
@@ -960,25 +969,21 @@ public class ProductionManager {
         if(unitType.gasPrice() > 0 && unitTypeCount.get(UnitType.Terran_Refinery) == 0) {
             return false;
         }
-        else if(resourceManager.getAvailableGas() <= unitType.gasPrice()) {
-            return false;
-        }
 
-        for(UnitType requiredUnit : requiredUnits.keySet()) {
-            if(requiredUnits.size() == 1 && requiredUnit == UnitType.Terran_SCV) {
-                return true;
-            }
+        for(Map.Entry<UnitType, Integer> requirement : requiredUnits.entrySet()) {
+            UnitType requiredUnit = requirement.getKey();
+            int requiredCount = requirement.getValue();
 
             if(!requiredUnit.isBuilding()) {
                 continue;
             }
 
-            if(unitTypeCount.get(requiredUnit) > 0) {
-                return true;
+            if(unitTypeCount.get(requiredUnit) < requiredCount) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     private boolean tileTaken(TilePosition tilePosition) {
@@ -1053,8 +1058,12 @@ public class ProductionManager {
         removeBuilding(unit);
 
         if(unit.getType().isBuilding()) {
-            if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Missile_Turret || unit.getType() == UnitType.Terran_Refinery) {
+            if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Refinery) {
                 return;
+            }
+
+            if(unit.getType() == UnitType.Terran_Missile_Turret) {
+                reservedTurretPositions.remove(unit.getTilePosition());
             }
 
             if(!unit.isCompleted()) {

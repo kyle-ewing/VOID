@@ -21,6 +21,8 @@ public class EnemyInformation {
     private Base enemyNatural = null;
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
+    private int openerDefenseTimer = 0;
+    private static final int OPENER_DEFENSE_TIME = 6480;
     private boolean enemyBuildingDiscovered = false;
 
     public EnemyInformation(BaseInfo baseInfo, Game game) {
@@ -110,6 +112,35 @@ public class EnemyInformation {
         }
     }
 
+    //TODO: add time limit in enemy strategy to change check times depending on strategy
+    private void checkOpenerDefense(Time currentTime) {
+        if (enemyOpener != null && !enemyOpener.isStrategyDefended()) {
+            openerDefenseTimer++;
+
+            //add specific strategy checks later
+            if (openerDefenseTimer >= OPENER_DEFENSE_TIME) {
+                switch(enemyOpener.getStrategyName()) {
+                    case "Dark Templar":
+                        if(!hasType(UnitType.Protoss_Dark_Templar)) {
+                            enemyOpener.setDefendedStrategy(true);
+                            game.sendText("Defended against Dark Templar opener.");
+                            return;
+                        }
+                    default:
+                        if(!enemyInBase()) {
+                            enemyOpener.setDefendedStrategy(true);
+                            return;
+                        }
+                        break;
+                }
+                //Check again in 2 minutes
+                openerDefenseTimer = 1440;
+            }
+        }
+
+
+    }
+
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
 
@@ -130,6 +161,7 @@ public class EnemyInformation {
             }
         }
 
+        checkOpenerDefense(currentTime);
         checkTechUnits();
 
         if(enemyOpener != null) {
