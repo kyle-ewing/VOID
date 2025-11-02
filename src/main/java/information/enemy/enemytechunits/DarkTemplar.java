@@ -27,6 +27,7 @@ public class DarkTemplar extends EnemyTechUnits {
         getFriendlyBuildingResponse().add(UnitType.Terran_Factory);
         getFriendlyBuildingResponse().add(UnitType.Terran_Starport);
         getFriendlyBuildingResponse().add(UnitType.Terran_Control_Tower);
+        getFriendlyBuildingResponse().add(UnitType.Terran_Science_Facility);
     }
 
     public void techUpgradeResponse() {

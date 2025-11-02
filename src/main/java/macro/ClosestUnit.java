@@ -26,6 +26,7 @@ public class ClosestUnit {
         combatUnit.setEnemyUnit(closestEnemy);
     }
 
+    //UnitType looks for specific unit type to assign as friendly unit
     public static void findClosestFriendlyUnit(CombatUnits combatUnit, HashSet<CombatUnits> friendlyUnits, UnitType unitType) {
         CombatUnits closestUnit = null;
         int closestDistance = combatUnit.getTargetRange();
@@ -39,6 +40,14 @@ public class ClosestUnit {
                 continue;
             }
 
+            if(friendlyUnit.getUnitType().isMechanical() && combatUnit.getUnitType() == UnitType.Terran_Medic ) {
+                continue;
+            }
+
+            if(friendlyUnit.isInBunker()) {
+                continue;
+            }
+
             if(friendlyUnit.getUnitType() != unitType) {
                 if(!(friendlyUnit instanceof SiegeTank)) {
                     continue;
@@ -46,10 +55,6 @@ public class ClosestUnit {
             }
 
             if(friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
-                continue;
-            }
-
-            if(friendlyUnit.isInBunker()) {
                 continue;
             }
 
@@ -85,52 +90,6 @@ public class ClosestUnit {
             combatUnit.setFriendlyUnit(null);
         }
     }
-
-//    public static void priorityTargets(CombatUnits combatUnit, HashSet<UnitType> priorityUnit, HashSet<EnemyUnits> enemyUnits, int range) {
-//        int closestDistance = range;
-//        EnemyUnits closestEnemy = null;
-//
-//        for(EnemyUnits enemyUnit : enemyUnits) {
-//            if(!priorityUnit.contains(enemyUnit.getEnemyType())) {
-//                continue;
-//            }
-//
-//            Position enemyPosition = enemyUnit.getEnemyPosition();
-//            Position unitPosition = combatUnit.getUnit().getPosition();
-//
-//            //Stop units from getting stuck on outdated position info
-//            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists()) {
-//                enemyUnit.setEnemyPosition(null);
-//                continue;
-//            }
-//
-//            if(!combatUnit.getUnit().hasPath(enemyPosition)) {
-//                continue;
-//            }
-//
-//            if(!combatUnit.getUnit().getType().airWeapon().targetsAir() && enemyUnit.getEnemyUnit().getType().isFlyer()) {
-//                continue;
-//            }
-//
-//            if(enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed() || enemyUnit.getEnemyUnit().isMorphing()
-//                    || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer) {
-//                continue;
-//            }
-//
-//            if(enemyPosition == null) {
-//                continue;
-//            }
-//
-//            int distance = unitPosition.getApproxDistance(enemyPosition);
-//
-//            if (distance < closestDistance) {
-//                closestDistance = distance;
-//                closestEnemy = enemyUnit;
-//            }
-//
-//
-//        }
-//    }
 
     public static void priorityTargets(CombatUnits combatUnit, HashSet<UnitType> priorityUnit, HashSet<EnemyUnits> enemyUnits, int range) {
         HashSet<EnemyUnits> priorityEnemies = new HashSet<>();

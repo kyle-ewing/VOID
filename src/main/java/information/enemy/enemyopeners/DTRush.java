@@ -38,7 +38,8 @@ public class DTRush extends EnemyStrategy{
 
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Engineering_Bay);
-        getBuildingResponse().add(UnitType.Terran_Missile_Turret);
+        getBuildingResponse().add(UnitType.Terran_Academy);
+        getBuildingResponse().add(UnitType.Terran_Comsat_Station);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getBuildingResponse().add(UnitType.Terran_Factory);
         getBuildingResponse().add(UnitType.Terran_Starport);

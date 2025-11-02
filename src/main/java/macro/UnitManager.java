@@ -82,7 +82,8 @@ public class UnitManager {
 
         //TODO: this is all horrible
         for(CombatUnits combatUnit : combatUnits) {
-            if(combatUnit.getUnitType() == UnitType.Spell_Scanner_Sweep || combatUnit.getUnitType() == UnitType.Terran_Vulture_Spider_Mine || combatUnit.getUnitStatus() == UnitStatus.WORKER) {
+            if(combatUnit.getUnitType() == UnitType.Spell_Scanner_Sweep || combatUnit.getUnitType() == UnitType.Terran_Vulture_Spider_Mine
+                    || combatUnit.getUnitStatus() == UnitStatus.WORKER || combatUnit.getUnitStatus() == UnitStatus.BUILDING) {
                 continue;
             }
             combatUnit.onFrame();
@@ -361,9 +362,12 @@ public class UnitManager {
                 this.beingAllInned = true;
                 priorityTarget = enemyInformation.getEnemyOpener().getPriorityEnemyUnit();
                 break;
+            case "Dark Templar":
+                break;
         }
     }
 
+    //TODO: move to comsat class
     private void scanInvisibleUnits(CombatUnits combatUnit) {
         if(combatUnit.getUnitType() != UnitType.Terran_Comsat_Station) {
             return;
@@ -388,9 +392,20 @@ public class UnitManager {
         for(CombatUnits scanUnit : combatUnits) {
             if(scanUnit.getUnitStatus() == UnitStatus.SCAN) {
                 for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
-                    if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
+                    if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && !enemyUnit.getEnemyUnit().isDetected()) {
                         int distance = scanUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition());
                         if (distance <= 300) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            //Give a tolerance just outside of detection range to not waste scans
+            if(scanUnit.getUnitType().isDetector()) {
+                for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+                    if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
+                        if(enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= scanUnit.getUnitType().sightRange() + 96) {
                             return true;
                         }
                     }
@@ -577,6 +592,17 @@ public class UnitManager {
             return;
         }
 
+        if(unit.getType().isBuilding()) {
+            if(!unit.canLift() && unit.getType() != UnitType.Terran_Missile_Turret) {
+                return;
+            }
+
+            CombatUnits combatUnit = new CombatUnits(game, unit, UnitStatus.BUILDING);
+            combatUnits.add(combatUnit);
+            unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
+            return;
+        }
+
         CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
         combatUnits.add(combatUnit);
         unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
@@ -588,9 +614,9 @@ public class UnitManager {
             return;
         }
 
-        if(unit.getType().isBuilding() && unit.getType() != UnitType.Terran_Comsat_Station) {
-            return;
-        }
+//        if(unit.getType().isBuilding() && unit.getType() != UnitType.Terran_Comsat_Station) {
+//            return;
+//        }
 
         Iterator<CombatUnits> iterator = combatUnits.iterator();
         while (iterator.hasNext()) {

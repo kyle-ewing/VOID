@@ -15,7 +15,13 @@ public class ScienceVessel extends CombatUnits {
             return;
         }
 
-        unit.move(rallyPoint.toPosition());
+        if(friendlyUnit == null) {
+            unit.move(rallyPoint.toPosition());
+            return;
+        }
+
+        unit.move(friendlyUnit.getUnit().getPosition());
+
     }
 
     public void attack() {
