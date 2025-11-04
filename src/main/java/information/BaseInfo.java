@@ -18,6 +18,7 @@ public class BaseInfo {
     private AllBasePaths allBasePaths;
     private Base startingBase;
     private Base naturalBase;
+    private Base minOnlyBase;
     private ChokePoint mainChokePoint;
     private ChokePoint naturalChokePoint;
     private Unit initalCC = null;
@@ -27,6 +28,7 @@ public class BaseInfo {
     private HashSet<Geyser> startingGeysers = new HashSet<>();
     private HashSet<TilePosition> baseTiles = new HashSet<>();
     private HashSet<TilePosition> naturalTiles = new HashSet<>();
+    private HashSet<TilePosition> minBaseTiles = new HashSet<>();
     private HashSet<Base> ownedBases = new HashSet<>();
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> usedGeysers = new HashSet<>();
@@ -81,6 +83,9 @@ public class BaseInfo {
         setNaturalChokeEdge();
         combineTankTiles();
         backupMainSiegeTiles();
+
+        //Handle edge cases where bases are split into multiple areas
+        combineBaseAreas();
     }
 
     private void addAllBases() {
@@ -432,6 +437,7 @@ public class BaseInfo {
         }
     }
 
+
     public boolean hasBunkerInNatural() {
         for(Unit building : game.self().getUnits()) {
             if(!building.getType().isBuilding()) {
@@ -465,6 +471,35 @@ public class BaseInfo {
                 closestDistance = distance;
             }
         }
+    }
+
+    //WIP, hacky solution for Andromeda
+    private void combineBaseAreas() {
+        if(naturalBase == null || mainChokePoint == null || startingBase == null) {
+            return;
+        }
+
+        Area firstArea = mainChokePoint.getAreas().getFirst();
+        Area secondArea = mainChokePoint.getAreas().getSecond();
+
+        //If starting base is in either area of the main choke point ignore this (Andromeda edge case)
+        if(firstArea.getBases().contains(startingBase) || secondArea.getBases().contains(startingBase)) {
+            return;
+        }
+
+        if(firstArea.getBases().isEmpty() || !firstArea.getBases().get(0).equals(naturalBase)) {
+            minOnlyBase = firstArea.getBases().get(0);
+            HashSet<TilePosition> firstAreaTiles = getTilesForBase(firstArea.getBases().get(0));
+            minBaseTiles.addAll(firstAreaTiles);
+        }
+
+        if(secondArea.getBases().isEmpty() || !secondArea.getBases().get(0).equals(naturalBase)) {
+            minOnlyBase = secondArea.getBases().get(0);
+            HashSet<TilePosition> secondAreaTiles = getTilesForBase(secondArea.getBases().get(0));
+            minBaseTiles.addAll(secondAreaTiles);
+        }
+
+
     }
 
     public HashSet<Base> getStartingBases() {
@@ -543,9 +578,17 @@ public class BaseInfo {
         return naturalOwned;
     }
 
+    public Base getMinOnlyBase() {
+        return minOnlyBase;
+    }
+
+    public HashSet<TilePosition> getMinBaseTiles() {
+        return minBaseTiles;
+    }
+
     //onFrame used for debug painters
     public void onFrame() {
-        painters.paintAllChokes();
+        //painters.paintAllChokes();
         painters.paintNatural(naturalBase);
 //        painters.paintTiles(mainCliffEdge);
 //        painters.paintTiles(naturalChokeEdge);
@@ -554,6 +597,7 @@ public class BaseInfo {
         //painters.paintTiles(baseTiles);
 //        painters.paintExpansionOrdering(orderedExpansions);
         //painters.paintMainBufferZone(startingBase);
+        painters.paintNaturalChoke(mainChokePoint);
     }
 
     public void onUnitCreate(Unit unit) {

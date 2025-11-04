@@ -361,23 +361,69 @@ public class BuildTiles {
         if(mainChoke != null) {
             TilePosition chokeTile = mainChoke.getCenter().toTilePosition();
             TilePosition baseTile = baseInfo.getStartingBase().getLocation();
-            TilePosition closerMain = PositionInterpolator.interpolate(chokeTile, baseTile, 0.15);
+            double percent = 0.90;
+
+            //temp solution fix later
+            if(baseInfo.getMinOnlyBase() != null) {
+                ChokePoint otherChoke = null;
+
+                for(ChokePoint cp : baseInfo.getMinOnlyBase().getArea().getChokePoints()) {
+                    if(cp.equals(mainChoke)) {
+                        continue;
+                    }
+
+                    otherChoke = cp;
+                }
+
+                if(otherChoke != null) {
+                    TilePosition minOnlyLocation = baseInfo.getMinOnlyBase().getLocation();
+                    TilePosition otherChokePos = otherChoke.getCenter().toTilePosition();
+                    int midX = (minOnlyLocation.getX() + otherChokePos.getX()) / 2;
+                    int midY = (minOnlyLocation.getY() + otherChokePos.getY()) / 2;
+                    baseTile = new TilePosition(midX, midY);
+                } else {
+                    baseTile = baseInfo.getMinOnlyBase().getLocation();
+                }
+                percent = 0.80;
+            }
+
+            TilePosition closerMain = PositionInterpolator.interpolate(baseTile, chokeTile, percent);
             TilePosition mainBunker = findValidTileNear(closerMain, UnitType.Terran_Bunker);
+
+
 
             int minDist = Integer.MAX_VALUE;
 
-            for(TilePosition candidate : frontBaseTiles) {
-                if (tilePositionValidator.isBuildable(candidate, UnitType.Terran_Bunker) && !intersectsExclusionZones(candidate) && !isTileInPlannedBuildingFootprint(candidate)) {
-                    int dist = candidate.getApproxDistance(closerMain);
-                    if(dist < minDist) {
-                        minDist = dist;
-                        mainBunker = candidate;
+            if(!baseInfo.getMinBaseTiles().isEmpty()) {
+                for(TilePosition candidate : baseInfo.getMinBaseTiles()) {
+                    if (tilePositionValidator.isBuildable(candidate, UnitType.Terran_Bunker) && !intersectsExclusionZones(candidate) && !isTileInPlannedBuildingFootprint(candidate)) {
+                        int dist = candidate.getApproxDistance(closerMain);
+                        if(dist < minDist) {
+                            minDist = dist;
+                            mainBunker = candidate;
+                        }
                     }
                 }
-            }
 
-            if(mainBunker != null && frontBaseTiles.contains(mainBunker)) {
-                mainChokeBunker = mainBunker;
+                if(mainBunker != null && (baseInfo.getMinBaseTiles().contains(mainBunker))) {
+                    mainChokeBunker = mainBunker;
+                }
+
+            }
+            else {
+                for(TilePosition candidate : frontBaseTiles) {
+                    if (tilePositionValidator.isBuildable(candidate, UnitType.Terran_Bunker) && !intersectsExclusionZones(candidate) && !isTileInPlannedBuildingFootprint(candidate)) {
+                        int dist = candidate.getApproxDistance(closerMain);
+                        if(dist < minDist) {
+                            minDist = dist;
+                            mainBunker = candidate;
+                        }
+                    }
+                }
+
+                if(mainBunker != null && (frontBaseTiles.contains(mainBunker))) {
+                    mainChokeBunker = mainBunker;
+                }
             }
         }
 
@@ -420,7 +466,34 @@ public class BuildTiles {
         if(mainChoke != null) {
             TilePosition chokeTile = mainChoke.getCenter().toTilePosition();
             TilePosition baseTile = baseInfo.getStartingBase().getLocation();
-            TilePosition closerMain = PositionInterpolator.interpolate(chokeTile, baseTile, 0.25);
+            double percent = 0.80;
+
+            //temp solution fix later
+            if(baseInfo.getMinOnlyBase() != null) {
+                ChokePoint otherChoke = null;
+
+                for(ChokePoint cp : baseInfo.getMinOnlyBase().getArea().getChokePoints()) {
+                    if(cp.equals(mainChoke)) {
+                        continue;
+                    }
+
+                    otherChoke = cp;
+                }
+
+                if(otherChoke != null) {
+                    TilePosition minOnlyLocation = baseInfo.getMinOnlyBase().getLocation();
+                    TilePosition otherChokePos = otherChoke.getCenter().toTilePosition();
+                    int midX = (minOnlyLocation.getX() + otherChokePos.getX()) / 2;
+                    int midY = (minOnlyLocation.getY() + otherChokePos.getY()) / 2;
+                    baseTile = new TilePosition(midX, midY);
+                } else {
+                    baseTile = baseInfo.getMinOnlyBase().getLocation();
+                }
+                System.out.println("Adjusting turret position for min only base");
+                percent = 0.30;
+            }
+
+            TilePosition closerMain = PositionInterpolator.interpolate(baseTile, chokeTile, percent);
             TilePosition mainTurret = null;
 
             int minDist = Integer.MAX_VALUE;
@@ -445,7 +518,7 @@ public class BuildTiles {
                 }
             }
 
-            if(mainTurret != null && frontBaseTiles.contains(mainTurret)) {
+            if(mainTurret != null && (frontBaseTiles.contains(mainTurret) || baseInfo.getMinBaseTiles().contains(mainTurret))) {
                 mainChokeTurret = mainTurret;
             }
         }

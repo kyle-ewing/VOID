@@ -58,6 +58,9 @@ public class EnemyInformation {
             if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 return true;
             }
+            else if(baseInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                return true;
+            }
             else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 return true;
             }
