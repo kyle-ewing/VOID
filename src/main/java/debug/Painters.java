@@ -189,7 +189,7 @@ public class Painters {
         game.drawCircleMap(x, y, 25, Color.Orange, true);
     }
 
-    public void paintLargeBuildTiles(HashSet<TilePosition> buildTiles) {
+    public void paintLargeBuildTiles(HashSet<TilePosition> buildTiles, Color color) {
         for(TilePosition tilePosition : buildTiles) {
             game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
             Position start = tilePosition.toPosition();
@@ -197,7 +197,7 @@ public class Painters {
                 start.getX() + UnitType.Terran_Barracks.tileWidth() * 32,
                 start.getY() + UnitType.Terran_Barracks.tileHeight() * 32
             );
-            game.drawBoxMap(start, end, Color.Green);
+            game.drawBoxMap(start, end, color);
         }
     }
 
@@ -249,6 +249,11 @@ public class Painters {
 
     public void paintAvailableBuildTiles(HashSet<TilePosition> buildTiles, int offset, String tileType) {
         game.drawTextScreen(5,30 + offset,   tileType +" Tiles Available: " + buildTiles.size());
+    }
+
+    public void paintAvailableBuildTiles(HashSet<TilePosition> buildTiles, HashSet<TilePosition> buildTiles2, int offset, String tileType) {
+        int size = buildTiles.size() + buildTiles2.size();
+        game.drawTextScreen(5,30 + offset,   tileType +" Tiles Available: " + size);
     }
 
     public void paintExpansionOrdering(List<Base> orderedExpansions) {
