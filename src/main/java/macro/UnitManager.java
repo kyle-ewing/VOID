@@ -285,6 +285,9 @@ public class UnitManager {
             if (baseInfo.getBaseTiles().contains(enemyTile)) {
                 return true;
             }
+            else if(baseInfo.getMinBaseTiles().contains(enemyTile)) {
+                return true;
+            }
         }
         return false;
     }
