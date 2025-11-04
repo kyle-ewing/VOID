@@ -19,6 +19,10 @@ public class FourPool extends EnemyStrategy {
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         for(EnemyUnits enemyUnit : enemyUnits) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
                 if(time.lessThanOrEqual(new Time(1,20))) {
                     return true;
