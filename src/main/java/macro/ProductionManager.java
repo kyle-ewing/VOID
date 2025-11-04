@@ -121,12 +121,7 @@ public class ProductionManager {
                     && pi.getPlannedItemType() == PlannedItemType.UNIT && meetsRequirements(pi.getUnitType())
                     && pi.getSupply() > player.supplyUsed() / 2) {
                 if(resourceManager.getAvailableMinerals() >= pi.getUnitType().mineralPrice() && resourceManager.getAvailableGas() < pi.getUnitType().gasPrice()) {
-                    System.out.println("Throttling gas unit production: " + pi.getUnitType());
-                    System.out.println("Minerals: " + resourceManager.getAvailableMinerals() + " / Gas: " + resourceManager.getAvailableGas());
                     priorityStop = true;
-                }
-                else {
-                    System.out.println("ALLOWING Minerals: " + resourceManager.getAvailableMinerals() + " / Gas: " + resourceManager.getAvailableGas());
                 }
             }
 
@@ -589,20 +584,39 @@ public class ProductionManager {
         int distanceFromSCV = Integer.MAX_VALUE;
 
         if(pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4) {
-            if(buildTiles.getLargeBuildTiles().isEmpty()) {
+            if(buildTiles.getLargeBuildTiles().isEmpty() && pi.getUnitType().canBuildAddon()) {
+                return;
+            }
+            if(buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
                 return;
             }
 
-            for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
-                if(tileTaken(tilePosition)) {
-                    continue;
+            if(pi.getUnitType().canBuildAddon() || buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
+                for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
+                    if(tileTaken(tilePosition)) {
+                        continue;
+                    }
+
+                    int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
+
+                    if(distance < distanceFromSCV) {
+                        distanceFromSCV = distance;
+                        cloestBuildTile = tilePosition;
+                    }
                 }
+            }
+            else {
+                for(TilePosition tilePosition : buildTiles.getLargeBuildTilesNoGap()) {
+                    if(tileTaken(tilePosition)) {
+                        continue;
+                    }
 
-                int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
+                    int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
 
-                if(distance < distanceFromSCV) {
-                    distanceFromSCV = distance;
-                    cloestBuildTile = tilePosition;
+                    if(distance < distanceFromSCV) {
+                        distanceFromSCV = distance;
+                        cloestBuildTile = tilePosition;
+                    }
                 }
             }
             pi.setBuildPosition(cloestBuildTile);
