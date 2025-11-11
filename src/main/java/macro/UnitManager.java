@@ -385,7 +385,7 @@ public class UnitManager {
                 continue;
             }
 
-            if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
+            if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && friendlyUnitInRange()) {
                 combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition());
             }
         }
@@ -408,10 +408,42 @@ public class UnitManager {
             if(scanUnit.getUnitType().isDetector()) {
                 for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
                     if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
-                        if(enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= scanUnit.getUnitType().sightRange() + 96) {
+                        if(enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= scanUnit.getUnitType().sightRange()) {
+                            if(scanUnit.getUnitType() == UnitType.Terran_Missile_Turret && enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) > 224) {
+                                continue;
+                            }
+
                             return true;
                         }
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean friendlyUnitInRange() {
+        for(CombatUnits friendlyUnit : combatUnits) {
+            if(friendlyUnit.getUnitStatus() == UnitStatus.WORKER || friendlyUnit.getUnitStatus() == UnitStatus.BUILDING
+            || friendlyUnit.getUnitStatus() == UnitStatus.MINE || friendlyUnit.getUnitStatus() == UnitStatus.SCAN || friendlyUnit.getUnitStatus() == UnitStatus.ADDON) {
+                continue;
+            }
+
+            if(friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
+                continue;
+            }
+
+            if(friendlyUnit.getUnit().getPosition() == null) {
+                continue;
+            }
+
+            for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+                if(enemyUnit.getEnemyPosition() == null) {
+                    continue;
+                }
+
+                if(friendlyUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < friendlyUnit.getUnitType().groundWeapon().maxRange()) {
+                    return true;
                 }
             }
         }
