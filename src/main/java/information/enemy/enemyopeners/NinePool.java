@@ -7,11 +7,11 @@ import util.Time;
 
 import java.util.HashSet;
 
-public class FourPool extends EnemyStrategy {
+public class NinePool extends EnemyStrategy {
     private BaseInfo baseInfo;
 
-    public FourPool(BaseInfo baseInfo) {
-        super("Four Pool");
+    public NinePool(BaseInfo baseInfo) {
+        super("Nine Pool");
         this.baseInfo = baseInfo;
 
         buildingResponse();
@@ -24,17 +24,16 @@ public class FourPool extends EnemyStrategy {
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
-                if(time.lessThanOrEqual(new Time(2,0))) {
+                if(time.lessThanOrEqual(new Time(2,30))) {
                     if(enemyUnit.getEnemyUnit().isCompleted()) {
                         return true;
                     }
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if(time.lessThanOrEqual(new Time(2,30))) {
-                    if(enemyUnit.getEnemyPosition().getDistance(baseInfo.getStartingBase().getCenter()) < 2000) {
-                        return true;
-                    }
+                if(baseInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1000
+                && time.lessThanOrEqual(new Time(3,0))) {
+                    return true;
                 }
             }
         }
