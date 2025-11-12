@@ -188,6 +188,7 @@ public class SiegeTank extends CombatUnits {
                 break;
             case DEFEND:
                 if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 128) {
+                    super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
