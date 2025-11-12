@@ -126,7 +126,6 @@ public class EnemyInformation {
                     case "Dark Templar":
                         if(!hasType(UnitType.Protoss_Dark_Templar)) {
                             enemyOpener.setDefendedStrategy(true);
-                            game.sendText("Defended against Dark Templar opener.");
                             return;
                         }
                     default:
