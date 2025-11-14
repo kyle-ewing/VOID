@@ -110,11 +110,11 @@ public class Painters {
         game.drawCircleMap(chokePoint.getCenter().toPosition(), 40, Color.Yellow);
     }
 
-    public void paintAllChokes() {
-        for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
-            game.drawCircleMap(chokePoint.getCenter().toPosition(), 25, Color.White);
-        }
-    }
+//    public void paintAllChokes() {
+//        for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
+//            game.drawCircleMap(chokePoint.getCenter().toPosition(), 25, Color.White);
+//        }
+//    }
 
     public void paintTilePositions(List<Position> position) {
         for(Position pos : position) {

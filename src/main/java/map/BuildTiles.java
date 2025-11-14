@@ -39,7 +39,7 @@ public class BuildTiles {
         this.baseInfo = baseInfo;
 
         tilePositionValidator = new TilePositionValidator(game);
-        //painters = new Painters(game, bwem);
+        painters = new Painters(game);
 
         startingBase = baseInfo.getStartingBase();
         generateBuildTiles();
@@ -1042,21 +1042,21 @@ public class BuildTiles {
             regenerateBuildTiles();
         }
 
-//        painters.paintPaintBunkerTile(closeBunkerTile);
-//        painters.paintPaintBunkerTile(mainChokeBunker);
-//        painters.paintPaintBunkerTile(naturalChokeBunker);
-//        painters.paintMissileTile(mainChokeTurret);
-//        painters.paintMissileTile(naturalChokeTurret);
-//        painters.paintAvailableBuildTiles(largeBuildTiles, largeBuildTilesNoGap, 0, "Production");
-//        painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
+        painters.paintPaintBunkerTile(closeBunkerTile);
+        painters.paintPaintBunkerTile(mainChokeBunker);
+        painters.paintPaintBunkerTile(naturalChokeBunker);
+        painters.paintMissileTile(mainChokeTurret);
+        painters.paintMissileTile(naturalChokeTurret);
+        painters.paintAvailableBuildTiles(largeBuildTiles, largeBuildTilesNoGap, 0, "Production");
+        painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
 //        painters.paintTileZone(mineralExlusionTiles, Color.Cyan);
 //        painters.paintTileZone(geyserExlusionTiles, Color.Green);
 //        painters.paintTileZone(frontBaseTiles, Color.Purple);
 //        painters.paintTileZone(backBaseTiles, Color.Orange);
 //        painters.paintTileZone(ccExclusionTiles, Color.Red);
-//        painters.paintLargeBuildTiles(largeBuildTiles, Color.Green);
-//        painters.paintLargeBuildTiles(largeBuildTilesNoGap, Color.Yellow);
-//        painters.paintMediumBuildTiles(mediumBuildTiles, Color.Blue);
+        painters.paintLargeBuildTiles(largeBuildTiles, Color.Green);
+        painters.paintLargeBuildTiles(largeBuildTilesNoGap, Color.Yellow);
+        painters.paintMediumBuildTiles(mediumBuildTiles, Color.Blue);
 
     }
 
