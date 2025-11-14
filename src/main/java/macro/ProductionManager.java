@@ -5,6 +5,7 @@ import bwem.BWEM;
 import bwem.Base;
 import debug.Painters;
 import information.BaseInfo;
+import information.GameState;
 import information.enemy.EnemyInformation;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.*;
@@ -21,15 +22,14 @@ import java.util.*;
 
 public class ProductionManager {
     private Game game;
+    private GameState gameState;
     private Player player;
     private Race enemyRace;
     private ResourceManager resourceManager;
     private BaseInfo baseInfo;
-    private BWEM bwem;
     private Painters painters;
     private TilePositionValidator tilePositionValidator;
     private BuildTiles buildTiles;
-    private EnemyInformation enemyInformation;
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
     private HashSet<Unit> allBuildings = new HashSet<>();
@@ -44,15 +44,15 @@ public class ProductionManager {
 
 
 
-    public ProductionManager(Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, BWEM bwem, EnemyInformation enemyInformation) {
+    public ProductionManager(Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, GameState gameState) {
         this.game = game;
         this.player = player;
         this.resourceManager = resourceManager;
         this.baseInfo = baseInfo;
-        this.enemyInformation = enemyInformation;
+        this.gameState = gameState;
 
         tilePositionValidator = new TilePositionValidator(game);
-        buildTiles = new BuildTiles(game, bwem, baseInfo);
+        buildTiles = new BuildTiles(game, baseInfo);
 
         painters = new Painters(game);
 
@@ -410,8 +410,8 @@ public class ProductionManager {
                 break;
             case TWORAXACADEMY:
                 for(Unit productionBuilding : productionBuildings) {
-                    if(!enemyInformation.getTechUnitResponse().isEmpty()) {
-                        for(UnitType unitType: enemyInformation.getTechUnitResponse()) {
+                    if(!gameState.getTechUnitResponse().isEmpty()) {
+                        for(UnitType unitType: gameState.getTechUnitResponse()) {
                             if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
                                 if(isRecruitable(UnitType.Terran_Science_Vessel, 1) && !hasUnitInQueue(unitType)) {
                                     if(unitType == UnitType.Terran_Science_Vessel) {
@@ -459,8 +459,8 @@ public class ProductionManager {
                 break;
             case TWOFAC:
                 for(Unit productionBuilding : productionBuildings) {
-                    if(!enemyInformation.getTechUnitResponse().isEmpty()) {
-                        for(UnitType unitType: enemyInformation.getTechUnitResponse()) {
+                    if(!gameState.getTechUnitResponse().isEmpty()) {
+                        for(UnitType unitType: gameState.getTechUnitResponse()) {
                             if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
                                 if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
                                     addToQueue(unitType, PlannedItemType.UNIT, 2);
@@ -478,9 +478,6 @@ public class ProductionManager {
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
                         if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 4 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
                             addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                        }
-                        else if(isRecruitable(UnitType.Terran_Goliath) && !hasUnitInQueue(UnitType.Terran_Goliath) && (enemyInformation.hasType(UnitType.Protoss_Arbiter) || enemyInformation.hasType(UnitType.Protoss_Carrier) || enemyInformation.hasType(UnitType.Protoss_Scout))) {
-                            addToQueue(UnitType.Terran_Goliath, PlannedItemType.UNIT, 2);
                         }
                         else if(isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
                             addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 3);
@@ -632,8 +629,8 @@ public class ProductionManager {
                     return;
                 }
 
-                if(enemyInformation.getEnemyOpener() != null) {
-                    if(enemyInformation.getEnemyOpener().getStrategyName().equals("Four Pool")) {
+                if(gameState.getEnemyOpener() != null) {
+                    if(gameState.getEnemyOpener().getStrategyName().equals("Four Pool")) {
                         pi.setBuildPosition(buildTiles.getCloseBunkerTile());
                         return;
                     }
@@ -694,13 +691,13 @@ public class ProductionManager {
         openerResponse = true;
 
         Map<UnitType, Integer> buildingCounts = new HashMap<>();
-        for(UnitType building : enemyInformation.getEnemyOpener().getBuildingResponse()) {
+        for(UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             buildingCounts.merge(building, 1, Integer::sum);
         }
 
         productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()));
 
-        for(UnitType building : enemyInformation.getEnemyOpener().getBuildingResponse()) {
+        for(UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             if(unitTypeCount.get(building) == 0) {
                 if(building.isAddon()) {
                     addToQueue(building, PlannedItemType.ADDON, 1);
@@ -714,11 +711,11 @@ public class ProductionManager {
     }
 
     private void enemyTechResponse() {
-        if(enemyInformation.getEnemyTechUnits().isEmpty()) {
+        if(gameState.getKnownEnemyTechUnits().isEmpty()) {
             return;
         }
 
-        for(EnemyTechUnits techUnit : enemyInformation.getEnemyTechUnits()) {
+        for(EnemyTechUnits techUnit : gameState.getKnownEnemyTechUnits()) {
             if(techUnit.getFriendlyBuildingResponse().isEmpty()) {
                 continue;
             }
@@ -1039,7 +1036,7 @@ public class ProductionManager {
         addSupplyDepot();
         addUnitProduction();
 
-        if(enemyInformation.getEnemyOpener() != null && !openerResponse) {
+        if(gameState.getEnemyOpener() != null && !openerResponse) {
             openerResponse();
         }
 

@@ -2,6 +2,7 @@ package information.enemy;
 
 import bwapi.Game;
 import information.BaseInfo;
+import information.GameState;
 import macro.ResourceManager;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
@@ -9,23 +10,23 @@ import util.Time;
 
 public class EnemyScoutResponse {
     private Game game;
-    private EnemyInformation enemyInformation;
+    private GameState gameState;
     private ResourceManager resourceManager;
     private BaseInfo baseInfo;
     private EnemyUnits enemyScout;
     private Workers counterScout;
     private boolean initiallyScouted = false;
 
-    public EnemyScoutResponse(Game game, EnemyInformation enemyInformation, ResourceManager resourceManager, BaseInfo baseInfo) {
+    public EnemyScoutResponse(Game game, GameState gameState, ResourceManager resourceManager, BaseInfo baseInfo) {
         this.game = game;
-        this.enemyInformation = enemyInformation;
+        this.gameState = gameState;
         this.resourceManager = resourceManager;
         this.baseInfo = baseInfo;
     }
 
     private void initialScoutInBase() {
-        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
-            if(enemyUnit.getEnemyType().isWorker() && enemyInformation.enemyInBase()) {
+        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if(enemyUnit.getEnemyType().isWorker() && gameState.isEnemyInBase()) {
                 setEnemyScout(enemyUnit);
                 initiallyScouted = true;
             }

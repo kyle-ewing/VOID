@@ -5,6 +5,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
 import information.BaseInfo;
+import information.GameState;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import util.Time;
@@ -12,22 +13,29 @@ import util.Time;
 import java.util.HashSet;
 
 public class EnemyInformation {
-    private HashSet<EnemyUnits> enemyUnits = new HashSet<>();
-    private HashSet<EnemyTechUnits> enemyTechUnits = new HashSet<>();
-    private HashSet<UnitType> enemyTechunitResponse = new HashSet<>();
+    private HashSet<EnemyUnits> enemyUnits;
+    private HashSet<EnemyTechUnits> enemyTechUnits;
+    private HashSet<UnitType> techunitResponse;
     private BaseInfo baseInfo;
     private Game game;
-    private EnemyUnits startingEnemyBase = null;
+    private GameState gameState;
+    private EnemyUnits startingEnemyBase;
     private Base enemyNatural = null;
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
     private int openerDefenseTimer = 0;
     private static final int OPENER_DEFENSE_TIME = 6480;
-    private boolean enemyBuildingDiscovered = false;
 
-    public EnemyInformation(BaseInfo baseInfo, Game game) {
+    public EnemyInformation(BaseInfo baseInfo, Game game, GameState gameState) {
         this.baseInfo = baseInfo;
         this.game = game;
+        this.gameState = gameState;
+
+        enemyUnits = gameState.getKnownEnemyUnits();
+        enemyTechUnits = gameState.getKnownEnemyTechUnits();
+        techunitResponse = gameState.getTechUnitResponse();
+        startingEnemyBase = gameState.getStartingEnemyBase();
+
         enemyStrategyManager = new EnemyStrategyManager(baseInfo);
     }
 
@@ -56,15 +64,19 @@ public class EnemyInformation {
             }
 
             if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                gameState.setEnemyInBase(true);
                 return true;
             }
             else if(baseInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                gameState.setEnemyInBase(true);
                 return true;
             }
             else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                gameState.setEnemyInBase(true);
                 return true;
             }
         }
+        gameState.setEnemyInBase(false);
         return false;
     }
 
@@ -106,11 +118,11 @@ public class EnemyInformation {
                 }
 
                 enemyTechUnits.add(enemyTechUnit);
-                enemyTechunitResponse.add(enemyTechUnit.getResponseUnitType());
+                techunitResponse.add(enemyTechUnit.getResponseUnitType());
             }
             else if(!enemyTechUnit.isEnemyTechUnit(enemyUnits) && enemyTechUnits.contains(enemyTechUnit)) {
                 enemyTechUnits.remove(enemyTechUnit);
-                enemyTechunitResponse.remove(enemyTechUnit.getResponseUnitType());
+                techunitResponse.remove(enemyTechUnit.getResponseUnitType());
             }
         }
     }
@@ -158,6 +170,7 @@ public class EnemyInformation {
         for(EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
             if(enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
                 enemyOpener = enemyStrategy;
+                gameState.setEnemyOpener(enemyOpener);
                 game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
                 break;
             }
@@ -165,13 +178,6 @@ public class EnemyInformation {
 
         checkOpenerDefense(currentTime);
         checkTechUnits();
-
-        if(enemyOpener != null) {
-            game.drawTextScreen(5, 60, "Enemy Opener: " + enemyOpener.getStrategyName());
-        }
-        else {
-            game.drawTextScreen(5, 60, "Enemy Opener: Unknown");
-        }
     }
 
     public void onUnitDiscover(Unit unit) {
@@ -179,15 +185,16 @@ public class EnemyInformation {
             addEnemyUnit(unit);
 
             if(unit.getType().isBuilding()) {
-                enemyBuildingDiscovered = true;
+                gameState.setEnemyBuildingDiscovered(true);
             }
         }
 
-        if (startingEnemyBase == null) {
+        if (gameState.getStartingEnemyBase() == null) {
             if(unit.getType().isResourceDepot()) {
                 for(EnemyUnits enemyUnit : enemyUnits) {
                     if(enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyID() == unit.getID()) {
-                        startingEnemyBase = enemyUnit;
+                        gameState.setStartingEnemyBase(enemyUnit);
+                        break;
                     }
                 }
             }
@@ -212,13 +219,14 @@ public class EnemyInformation {
             }
 
             if (enemyUnit.getEnemyID() == unit.getID()) {
+                System.out.println("Enemy unit destroyed: " + enemyUnit.getEnemyType().toString());
                 enemyUnits.remove(enemyUnit);
                 break;
             }
         }
 
         if(!checkForBuildings() && unit.getType().isBuilding()) {
-            enemyBuildingDiscovered = false;
+            gameState.setEnemyBuildingDiscovered(false);
         }
     }
 
@@ -244,16 +252,9 @@ public class EnemyInformation {
         return enemyUnits;
     }
 
+    //Fix later
     public EnemyUnits getStartingEnemyBase() {
-        return startingEnemyBase;
-    }
-
-    public EnemyStrategy getEnemyOpener() {
-        return enemyOpener;
-    }
-
-    public boolean isEnemyBuildingDiscovered() {
-        return enemyBuildingDiscovered;
+        return gameState.getStartingEnemyBase();
     }
 
     public BaseInfo getBaseInfo() {
@@ -265,6 +266,6 @@ public class EnemyInformation {
     }
 
     public HashSet<UnitType> getTechUnitResponse() {
-        return enemyTechunitResponse;
+        return techunitResponse;
     }
 }

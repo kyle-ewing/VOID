@@ -16,7 +16,6 @@ import java.util.List;
 
 public class BuildTiles {
     private Game game;
-    private BWEM bwem;
     private BaseInfo baseInfo;
     private TilePositionValidator tilePositionValidator;
     private Painters painters;
@@ -35,13 +34,12 @@ public class BuildTiles {
     private TilePosition naturalChokeTurret;
     private Base startingBase;
 
-    public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
+    public BuildTiles(Game game, BaseInfo baseInfo) {
         this.game = game;
-        this.bwem = bwem;
         this.baseInfo = baseInfo;
 
         tilePositionValidator = new TilePositionValidator(game);
-        painters = new Painters(game, bwem);
+        //painters = new Painters(game, bwem);
 
         startingBase = baseInfo.getStartingBase();
         generateBuildTiles();
@@ -1044,21 +1042,21 @@ public class BuildTiles {
             regenerateBuildTiles();
         }
 
-        painters.paintPaintBunkerTile(closeBunkerTile);
-        painters.paintPaintBunkerTile(mainChokeBunker);
-        painters.paintPaintBunkerTile(naturalChokeBunker);
-        painters.paintMissileTile(mainChokeTurret);
-        painters.paintMissileTile(naturalChokeTurret);
-        painters.paintAvailableBuildTiles(largeBuildTiles, largeBuildTilesNoGap, 0, "Production");
-        painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
+//        painters.paintPaintBunkerTile(closeBunkerTile);
+//        painters.paintPaintBunkerTile(mainChokeBunker);
+//        painters.paintPaintBunkerTile(naturalChokeBunker);
+//        painters.paintMissileTile(mainChokeTurret);
+//        painters.paintMissileTile(naturalChokeTurret);
+//        painters.paintAvailableBuildTiles(largeBuildTiles, largeBuildTilesNoGap, 0, "Production");
+//        painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
 //        painters.paintTileZone(mineralExlusionTiles, Color.Cyan);
 //        painters.paintTileZone(geyserExlusionTiles, Color.Green);
 //        painters.paintTileZone(frontBaseTiles, Color.Purple);
 //        painters.paintTileZone(backBaseTiles, Color.Orange);
 //        painters.paintTileZone(ccExclusionTiles, Color.Red);
-        painters.paintLargeBuildTiles(largeBuildTiles, Color.Green);
-        painters.paintLargeBuildTiles(largeBuildTilesNoGap, Color.Yellow);
-        painters.paintMediumBuildTiles(mediumBuildTiles, Color.Blue);
+//        painters.paintLargeBuildTiles(largeBuildTiles, Color.Green);
+//        painters.paintLargeBuildTiles(largeBuildTilesNoGap, Color.Yellow);
+//        painters.paintMediumBuildTiles(mediumBuildTiles, Color.Blue);
 
     }
 

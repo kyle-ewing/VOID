@@ -15,6 +15,7 @@ import macro.unitgroups.Workers;
 public class Scouting {
     private BWEM bwem;
     private Game game;
+    private GameState gameState;
     private ResourceManager resourceManager;
     private BaseInfo baseInfo;
     private Painters painters;
@@ -29,13 +30,13 @@ public class Scouting {
     private boolean completedScout = false;
     private boolean attemptsMaxed = false;
 
-    public Scouting(BWEM bwem, Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, EnemyInformation enemyInformation) {
+    public Scouting(BWEM bwem, Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, GameState gameState) {
         this.bwem = bwem;
         this.game = game;
         this.player = player;
         this.resourceManager = resourceManager;
         this.baseInfo = baseInfo;
-        this.enemyInformation = enemyInformation;
+        this.gameState = gameState;
 
         this.painters = new Painters(game, bwem, resourceManager);
     }
@@ -83,7 +84,7 @@ public class Scouting {
         }
 
 
-        Position enemyBasePos = enemyInformation.getStartingEnemyBase().getEnemyPosition();
+        Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
         double angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
 
         int x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
@@ -103,11 +104,11 @@ public class Scouting {
     }
 
     public void onFrame() {
-        if(player.supplyUsed() / 2 >= 10 && enemyInformation.getStartingEnemyBase() == null) {
+        if(player.supplyUsed() / 2 >= 10 && gameState.getStartingEnemyBase() == null) {
             sendScout();
         }
 
-        if(enemyInformation.getStartingEnemyBase() != null) {
+        if(gameState.getStartingEnemyBase() != null) {
             scoutEnemyPerimeter();
             completedScout = true;
         }
