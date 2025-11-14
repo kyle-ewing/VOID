@@ -4,6 +4,7 @@ import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
 import information.BaseInfo;
+import information.GameState;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
@@ -19,7 +20,7 @@ public class ResourceManager {
     private BaseInfo baseInfo;
     private Player player;
     private Game game;
-    private EnemyInformation enemyInformation;
+    private GameState gameState;
     private EnemyScoutResponse enemyScoutResponse;
     private HashSet<Workers> workers = new HashSet<>();
     private HashSet<Workers> defenseForce = new HashSet<>();
@@ -35,13 +36,13 @@ public class ResourceManager {
     private boolean openerResponse = false;
     private boolean startingMineralsAssigned = false;
 
-    public ResourceManager(BaseInfo baseInfo, Player player, Game game, EnemyInformation enemyInformation) {
+    public ResourceManager(BaseInfo baseInfo, Player player, Game game, GameState gameState) {
         this.baseInfo = baseInfo;
         this.player = player;
-        this.enemyInformation = enemyInformation;
+        this.gameState = gameState;
         this.game = game;
 
-        enemyScoutResponse = new EnemyScoutResponse(game, enemyInformation, this, baseInfo);
+        enemyScoutResponse = new EnemyScoutResponse(game, gameState, this, baseInfo);
     }
 
     //TODO: refactor all of this and organize with switch cases
@@ -57,7 +58,7 @@ public class ResourceManager {
 
         int frameCount = game.getFrameCount();
 
-        if(enemyInformation.getEnemyOpener() != null && !openerResponse) {
+        if(gameState.getEnemyOpener() != null && !openerResponse) {
             enemyStrategyResponse();
             openerResponse = true;
         }
@@ -267,7 +268,7 @@ public class ResourceManager {
     //Avoid false positives from a single worker attacking a scv (Stone check)
     private boolean actuallyThreatened() {
         int enemyWorkerCount = 0;
-        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             if(enemyUnit.getEnemyType().isWorker()) {
                 if(enemyUnit.getEnemyPosition() == null) {
                     continue;
@@ -289,7 +290,7 @@ public class ResourceManager {
         int closestDistance = 1000;
         EnemyUnits closestEnemy = null;
 
-        for (EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             Position enemyPosition = enemyUnit.getEnemyPosition();
             Position unitPosition = worker.getUnit().getPosition();
 
@@ -323,7 +324,7 @@ public class ResourceManager {
     }
 
     private boolean enemyInBase() {
-        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             if(enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
@@ -337,7 +338,7 @@ public class ResourceManager {
     }
 
     private void enemyStrategyResponse() {
-        switch(enemyInformation.getEnemyOpener().getStrategyName()) {
+        switch(gameState.getEnemyOpener().getStrategyName()) {
             case "Cannon Rush":
                 createDefenseForce(6);
                 break;
@@ -417,7 +418,7 @@ public class ResourceManager {
             }
         }
 
-        for(EnemyUnits enemyUnit : enemyInformation.getEnemyUnits()) {
+        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             if(enemyUnit.getEnemyPosition() == null) {
                 continue;
             }

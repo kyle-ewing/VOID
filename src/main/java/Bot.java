@@ -1,5 +1,6 @@
 import debug.Painters;
 import information.BaseInfo;
+import information.GameState;
 import information.enemy.EnemyInformation;
 import information.Scouting;
 import macro.ProductionManager;
@@ -7,12 +8,14 @@ import macro.ResourceManager;
 import bwapi.*;
 import bwem.BWEM;
 import macro.UnitManager;
+import util.Time;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
     private Game game;
     private BWEM bwem;
     private Player player;
+    private GameState gameState;
     private BaseInfo baseInfo;
     private EnemyInformation enemyInformation;
     private ResourceManager resourceManager;
@@ -31,15 +34,17 @@ public class Bot extends DefaultBWListener {
         bwem = new BWEM(game);
         bwem.initialize();
 
-//        game.setLocalSpeed(5);
-//        game.enableFlag(Flag.UserInput);
+        gameState = new GameState(game, bwem);
+
+        game.setLocalSpeed(5);
+        game.enableFlag(Flag.UserInput);
 
         baseInfo = new BaseInfo(bwem, game);
-        enemyInformation = new EnemyInformation(baseInfo, game);
-        resourceManager = new ResourceManager(baseInfo, player, game, enemyInformation);
-        productionManager = new ProductionManager(game, player, resourceManager, baseInfo, bwem, enemyInformation);
-        scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, enemyInformation);
-        unitManager = new UnitManager(enemyInformation, baseInfo, game, scouting);
+        enemyInformation = new EnemyInformation(baseInfo, game, gameState);
+        resourceManager = new ResourceManager(baseInfo, player, game, gameState);
+        productionManager = new ProductionManager(game, player, resourceManager, baseInfo, gameState);
+        scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, gameState);
+        unitManager = new UnitManager(enemyInformation, gameState, baseInfo, game, scouting);
 
         //Debug painters
         painters = new Painters(game, bwem, resourceManager);
@@ -49,7 +54,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onFrame() {
-        game.drawTextScreen(5,15, "Frame: " + game.getFrameCount());
+        gameState.onFrame();
         enemyInformation.onFrame();
         resourceManager.onFrame();
         productionManager.onFrame();

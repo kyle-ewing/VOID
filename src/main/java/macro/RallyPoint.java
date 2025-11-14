@@ -3,6 +3,7 @@ package macro;
 import bwapi.Position;
 import bwem.Base;
 import information.BaseInfo;
+import information.GameState;
 import information.enemy.EnemyInformation;
 import information.enemy.enemyopeners.EnemyStrategy;
 import macro.unitgroups.CombatUnits;
@@ -12,16 +13,16 @@ import java.util.List;
 
 public class RallyPoint {
     private PathFinding pathFinding;
-    private EnemyInformation enemyInformation;
+    private GameState gameState;
     private BaseInfo baseInfo;
     private EnemyStrategy enemyStrategy = null;
     private Base startingBase;
     private Position mainRallyPoint;
     private Position naturalRallyPoint;
 
-    public RallyPoint(PathFinding pathFinding, EnemyInformation enemyInformation, BaseInfo baseInfo) {
+    public RallyPoint(PathFinding pathFinding, GameState gameState, BaseInfo baseInfo) {
         this.pathFinding = pathFinding;
-        this.enemyInformation = enemyInformation;
+        this.gameState = gameState;
         this.baseInfo = baseInfo;
 
         this.startingBase = baseInfo.getStartingBase();
@@ -30,7 +31,7 @@ public class RallyPoint {
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
-        if(enemyInformation.getEnemyOpener() == null || enemyStrategy.isStrategyDefended() || baseInfo.isNaturalOwned()) {
+        if(enemyStrategy == null || enemyStrategy.isStrategyDefended() || baseInfo.isNaturalOwned()) {
             if(baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) {
                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             }
@@ -40,7 +41,7 @@ public class RallyPoint {
             }
         }
 
-        if(enemyInformation.getEnemyOpener() == null) {
+        if(gameState.getEnemyOpener() == null) {
             return;
         }
 
@@ -86,7 +87,7 @@ public class RallyPoint {
     }
 
     public void onFrame() {
-        enemyStrategy = enemyInformation.getEnemyOpener();
+        enemyStrategy = gameState.getEnemyOpener();
     }
 
 

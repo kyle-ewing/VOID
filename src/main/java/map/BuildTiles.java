@@ -16,7 +16,6 @@ import java.util.List;
 
 public class BuildTiles {
     private Game game;
-    private BWEM bwem;
     private BaseInfo baseInfo;
     private TilePositionValidator tilePositionValidator;
     private Painters painters;
@@ -35,13 +34,12 @@ public class BuildTiles {
     private TilePosition naturalChokeTurret;
     private Base startingBase;
 
-    public BuildTiles(Game game, BWEM bwem, BaseInfo baseInfo) {
+    public BuildTiles(Game game, BaseInfo baseInfo) {
         this.game = game;
-        this.bwem = bwem;
         this.baseInfo = baseInfo;
 
         tilePositionValidator = new TilePositionValidator(game);
-        painters = new Painters(game, bwem);
+        painters = new Painters(game);
 
         startingBase = baseInfo.getStartingBase();
         generateBuildTiles();
