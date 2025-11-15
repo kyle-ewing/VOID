@@ -5,6 +5,8 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import macro.unitgroups.CombatUnits;
+import macro.unitgroups.WorkerStatus;
+import macro.unitgroups.Workers;
 import macro.unitgroups.units.SiegeTank;
 
 import java.util.HashSet;
@@ -108,6 +110,29 @@ public class ClosestUnit {
         }
 
         combatUnit.setEnemyUnit(closestEnemy);
+    }
+
+    //Closest worker to build position
+    public static Workers findClosestWorker(Position position, HashSet<Workers> workers) {
+        Workers closestWorker = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for(Workers worker : workers) {
+            if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                int distance = worker.getUnit().getPosition().getApproxDistance(position);
+                if(distance < closestDistance) {
+                    closestDistance = distance;
+                    closestWorker = worker;
+                }
+            }
+        }
+
+        if(closestWorker != null) {
+            closestWorker.setDistanceToBuildTarget(closestWorker.getUnit().getDistance(position));
+        }
+
+
+        return closestWorker;
     }
 
     private static EnemyUnits findClosestEnemyUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {

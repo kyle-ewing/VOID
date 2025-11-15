@@ -7,6 +7,8 @@ import bwem.BWEM;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import macro.ResourceTracking;
+import macro.unitgroups.Workers;
 import util.Time;
 
 import java.util.HashSet;
@@ -15,12 +17,14 @@ public class GameState {
     private Game game;
     private BWEM bwem;
     private Player player;
+    private ResourceTracking resourceTracking;
     private EnemyStrategy enemyOpener = null;
 
     private EnemyUnits startingEnemyBase = null;
     private boolean enemyInBase = false;
     private boolean enemyBuildingDiscovered = false;
 
+    private HashSet<Workers> workers = new HashSet<>();
     private HashSet<EnemyUnits> knownEnemyUnits = new HashSet<>();
     private HashSet<EnemyTechUnits> knownEnemyTechUnits = new HashSet<>();
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
@@ -30,11 +34,12 @@ public class GameState {
         this.bwem = bwem;
 
         player = game.self();
+        resourceTracking = new ResourceTracking(player);
     }
 
     public void onFrame() {
         drawToScreen();
-
+        resourceTracking.onFrame();
     }
 
     private void drawToScreen() {
@@ -45,6 +50,10 @@ public class GameState {
         } else {
             game.drawTextScreen(5, 60, "Enemy Opener: Unknown");
         }
+    }
+
+    public HashSet<Workers> getWorkers() {
+        return workers;
     }
 
     public HashSet<EnemyUnits> getKnownEnemyUnits() {
@@ -89,5 +98,9 @@ public class GameState {
 
     public void setEnemyInBase(boolean enemyInBase) {
         this.enemyInBase = enemyInBase;
+    }
+
+    public ResourceTracking getResourceTracking() {
+        return resourceTracking;
     }
 }

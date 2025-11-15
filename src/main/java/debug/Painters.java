@@ -4,7 +4,6 @@ import bwapi.*;
 import bwem.BWEM;
 import bwem.Base;
 import bwem.ChokePoint;
-import macro.ResourceManager;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
 import macro.unitgroups.Workers;
@@ -15,13 +14,6 @@ import java.util.*;
 public class Painters {
     Game game;
     BWEM bwem;
-    ResourceManager resourceManager;
-
-    public Painters(Game game, BWEM bwem, ResourceManager resourceManager) {
-        this.game = game;
-        this.bwem = bwem;
-        this.resourceManager = resourceManager;
-    }
 
     public Painters(Game game) {
         this.game = game;
@@ -53,8 +45,8 @@ public class Painters {
         game.drawCircleMap(position, radius, color);
     }
 
-    private void paintWorker() {
-        for(Workers worker : resourceManager.getWorkers()) {
+    public void paintWorker(HashSet<Workers> workers) {
+        for(Workers worker : workers) {
             switch (worker.getWorkerStatus()) {
                 case MINERALS:
                     paintCircle(worker.getUnit(), 8, Color.Blue);
@@ -168,8 +160,8 @@ public class Painters {
         }
     }
 
-    public void paintWorkerText() {
-        for(Workers worker : resourceManager.getWorkers()) {
+    public void paintWorkerText(HashSet<Workers> workers) {
+        for(Workers worker : workers) {
             game.drawTextMap(worker.getUnit().getPosition(), worker.getWorkerStatus().toString());
         }
     }
@@ -321,11 +313,5 @@ public class Painters {
             return;
         }
         game.drawCircleMap(unit.getPosition(), radius, color);
-    }
-
-
-    public void onFrame() {
-        paintWorker();
-        paintWorkerText();
     }
 }

@@ -219,7 +219,6 @@ public class EnemyInformation {
             }
 
             if (enemyUnit.getEnemyID() == unit.getID()) {
-                System.out.println("Enemy unit destroyed: " + enemyUnit.getEnemyType().toString());
                 enemyUnits.remove(enemyUnit);
                 break;
             }
