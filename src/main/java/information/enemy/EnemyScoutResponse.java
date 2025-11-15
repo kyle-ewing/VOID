@@ -3,7 +3,7 @@ package information.enemy;
 import bwapi.Game;
 import information.BaseInfo;
 import information.GameState;
-import macro.ResourceManager;
+import macro.WorkerManager;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
 import util.Time;
@@ -11,16 +11,16 @@ import util.Time;
 public class EnemyScoutResponse {
     private Game game;
     private GameState gameState;
-    private ResourceManager resourceManager;
+    private WorkerManager workerManager;
     private BaseInfo baseInfo;
     private EnemyUnits enemyScout;
     private Workers counterScout;
     private boolean initiallyScouted = false;
 
-    public EnemyScoutResponse(Game game, GameState gameState, ResourceManager resourceManager, BaseInfo baseInfo) {
+    public EnemyScoutResponse(Game game, GameState gameState, WorkerManager workerManager, BaseInfo baseInfo) {
         this.game = game;
         this.gameState = gameState;
-        this.resourceManager = resourceManager;
+        this.workerManager = workerManager;
         this.baseInfo = baseInfo;
     }
 
@@ -44,7 +44,7 @@ public class EnemyScoutResponse {
 
     private void assignCounterScout() {
         if(counterScout == null) {
-            for(Workers worker : resourceManager.getWorkers()) {
+            for(Workers worker : workerManager.getWorkers()) {
                 if(!worker.getUnit().isCarryingMinerals() && worker.getWorkerStatus() == WorkerStatus.MINERALS) {
                     worker.setWorkerStatus(WorkerStatus.COUNTERSCOUT);
                     counterScout = worker;

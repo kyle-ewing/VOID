@@ -4,11 +4,10 @@ import information.GameState;
 import information.enemy.EnemyInformation;
 import information.Scouting;
 import macro.ProductionManager;
-import macro.ResourceManager;
+import macro.WorkerManager;
 import bwapi.*;
 import bwem.BWEM;
 import macro.UnitManager;
-import util.Time;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
@@ -18,7 +17,7 @@ public class Bot extends DefaultBWListener {
     private GameState gameState;
     private BaseInfo baseInfo;
     private EnemyInformation enemyInformation;
-    private ResourceManager resourceManager;
+    private WorkerManager workerManager;
     private ProductionManager productionManager;
     private UnitManager unitManager;
     private Scouting scouting;
@@ -36,31 +35,25 @@ public class Bot extends DefaultBWListener {
 
         gameState = new GameState(game, bwem);
 
-        game.setLocalSpeed(5);
-        game.enableFlag(Flag.UserInput);
+//        game.setLocalSpeed(5);
+//        game.enableFlag(Flag.UserInput);
 
         baseInfo = new BaseInfo(bwem, game);
         enemyInformation = new EnemyInformation(baseInfo, game, gameState);
-        resourceManager = new ResourceManager(baseInfo, player, game, gameState);
-        productionManager = new ProductionManager(game, player, resourceManager, baseInfo, gameState);
-        scouting = new Scouting(bwem, game, player, resourceManager, baseInfo, gameState);
+        workerManager = new WorkerManager(baseInfo, player, game, gameState);
+        productionManager = new ProductionManager(game, player, baseInfo, gameState);
+        scouting = new Scouting(game, baseInfo, gameState);
         unitManager = new UnitManager(enemyInformation, gameState, baseInfo, game, scouting);
-
-        //Debug painters
-        painters = new Painters(game, bwem, resourceManager);
-
-
     }
 
     @Override
     public void onFrame() {
         gameState.onFrame();
         enemyInformation.onFrame();
-        resourceManager.onFrame();
+        workerManager.onFrame();
         productionManager.onFrame();
         unitManager.onFrame();
         scouting.onFrame();
-        painters.onFrame();
         baseInfo.onFrame();
     }
 
@@ -87,14 +80,14 @@ public class Bot extends DefaultBWListener {
         }
 
         productionManager.onUnitComplete(unit);
-        resourceManager.onUnitComplete(unit);
+        workerManager.onUnitComplete(unit);
         unitManager.onUnitComplete(unit);
     }
 
     @Override
     public void onUnitDestroy(Unit unit) {
 
-        resourceManager.onUnitDestroy(unit);
+        workerManager.onUnitDestroy(unit);
         enemyInformation.onUnitDestroy(unit);
 
         if(unit.getPlayer() == game.self()) {

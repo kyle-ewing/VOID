@@ -25,7 +25,6 @@ public class ProductionManager {
     private GameState gameState;
     private Player player;
     private Race enemyRace;
-    private ResourceManager resourceManager;
     private BaseInfo baseInfo;
     private Painters painters;
     private TilePositionValidator tilePositionValidator;
@@ -37,17 +36,15 @@ public class ProductionManager {
     private ArrayList<BuildOrder> openerNames = new ArrayList<>();
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
     private BuildOrder startingOpener;
-    private Unit newestCompletedBuilding = null;
     private TilePosition bunkerPosition = null;
     private boolean openerResponse = false;
     private boolean priorityStop = false;
 
 
 
-    public ProductionManager(Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, GameState gameState) {
+    public ProductionManager(Game game, Player player, BaseInfo baseInfo, GameState gameState) {
         this.game = game;
         this.player = player;
-        this.resourceManager = resourceManager;
         this.baseInfo = baseInfo;
         this.gameState = gameState;
 
@@ -120,7 +117,7 @@ public class ProductionManager {
             if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
                     && pi.getPlannedItemType() == PlannedItemType.UNIT && meetsRequirements(pi.getUnitType())
                     && pi.getSupply() > player.supplyUsed() / 2) {
-                if(resourceManager.getAvailableMinerals() >= pi.getUnitType().mineralPrice() && resourceManager.getAvailableGas() < pi.getUnitType().gasPrice()) {
+                if(gameState.getResourceTracking().getAvailableMinerals() >= pi.getUnitType().mineralPrice() && gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice()) {
                     priorityStop = true;
                 }
             }
@@ -143,14 +140,14 @@ public class ProductionManager {
                             }
 
                             if(pi.getTechUpgrade() != null) {
-                                if(resourceManager.getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || resourceManager.getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
+                                if(gameState.getResourceTracking().getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
                                     continue;
                                 }
                                 researchTech(pi.getTechUpgrade());
                                 pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                             }
                             else if(pi.getUpgradeType() != null) {
-                                if(resourceManager.getAvailableMinerals() < pi.getUpgradeType().mineralPrice() || resourceManager.getAvailableGas() < pi.getUpgradeType().gasPrice()) {
+                                if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUpgradeType().gasPrice()) {
                                     continue;
                                 }
                                 researchUpgrade(pi.getUpgradeType());
@@ -159,7 +156,7 @@ public class ProductionManager {
                             continue;
                         }
 
-                        if(resourceManager.getAvailableMinerals() >= pi.getUnitType().mineralPrice() && resourceManager.getAvailableGas() >= pi.getUnitType().gasPrice()) {
+                        if(gameState.getResourceTracking().getAvailableMinerals() >= pi.getUnitType().mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= pi.getUnitType().gasPrice()) {
 
                             if(pi.getPlannedItemType() == PlannedItemType.UNIT) {
                                 for(Unit productionBuilding : productionBuildings) {
@@ -190,13 +187,14 @@ public class ProductionManager {
                                 }
 
                                 if(pi.getBuildPosition() != null) {
-                                    worker = resourceManager.getClosestWorker(pi.getBuildPosition().toPosition());
+                                    worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers());
+
                                     pi.setAssignedBuilder(worker);
                                 }
 
                                 if(pi.getAssignedBuilder() != null) {
                                     if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
-                                        resourceManager.reserveResources(pi.getUnitType());
+                                        gameState.getResourceTracking().reserveResources(pi.getUnitType());
                                         worker.setBuildingPosition(pi.getBuildPosition().toPosition());
                                         worker.getUnit().move(pi.getBuildPosition().toPosition());
                                         worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
@@ -245,13 +243,13 @@ public class ProductionManager {
                         if(worker.getBuildFrameCount() > 600) {
                             worker.setWorkerStatus(WorkerStatus.IDLE);
                             worker.getUnit().stop();
-                            resourceManager.unreserveResources(pi.getUnitType());
+                            gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                             pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                         }
                     }
 
                     if(worker.getWorkerStatus() == WorkerStatus.STUCK) {
-                        resourceManager.unreserveResources(pi.getUnitType());
+                        gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                     }
 
@@ -260,7 +258,7 @@ public class ProductionManager {
                     }
 
                     if(buildingInProduction(pi.getBuildPosition(), pi.getUnitType())) {
-                        resourceManager.unreserveResources(pi.getUnitType());
+                        gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
 
                         if(worker.getUnitID() == pi.getAssignedBuilder().getUnitID() ) {
@@ -288,7 +286,7 @@ public class ProductionManager {
                         }
 
                         boolean builderHasDied = true;
-                        for(Workers workers : resourceManager.getWorkers()) {
+                        for(Workers workers : gameState.getWorkers()) {
                             if(workers == pi.getAssignedBuilder()) {
                                 builderHasDied = false;
                                 break;
@@ -296,7 +294,7 @@ public class ProductionManager {
                         }
 
                         if(builderHasDied) {
-                            for(Workers newWorker : resourceManager.getWorkers()) {
+                            for(Workers newWorker : gameState.getWorkers()) {
                                 if(newWorker.getWorkerStatus() == WorkerStatus.MINERALS) {
                                     pi.setAssignedBuilder(newWorker);
                                     newWorker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
@@ -396,14 +394,14 @@ public class ProductionManager {
         switch(startingOpener.getBuildOrderName()) {
             case EIGHTRAX:
                 for(Unit productionBuilding : productionBuildings) {
-                    if(productionBuilding.getType() == UnitType.Terran_Barracks && !productionBuilding.isTraining() && resourceManager.getAvailableMinerals() >= 50) {
+                    if(productionBuilding.getType() == UnitType.Terran_Barracks && !productionBuilding.isTraining() && gameState.getResourceTracking().getAvailableMinerals() >= 50) {
                         productionBuilding.train(UnitType.Terran_Marine);
                     }
                 }
                 break;
             case TWORAX:
                 for(Unit productionBuilding : productionBuildings) {
-                    if(productionBuilding.getType() == UnitType.Terran_Barracks && !productionBuilding.isTraining() && resourceManager.getAvailableMinerals() >= 50) {
+                    if(productionBuilding.getType() == UnitType.Terran_Barracks && !productionBuilding.isTraining() && gameState.getResourceTracking().getAvailableMinerals() >= 50) {
                         productionBuilding.train(UnitType.Terran_Marine);
                     }
                 }
@@ -444,7 +442,7 @@ public class ProductionManager {
 
                 }
                 //TODO: remove when transitions are added
-                if(resourceManager.getAvailableMinerals() > 500 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
+                if(gameState.getResourceTracking().getAvailableMinerals() > 500 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
                     addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
                 }
                 break;
@@ -485,7 +483,7 @@ public class ProductionManager {
                         }
                     }
 
-                    if(resourceManager.getAvailableMinerals() > 500 && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
+                    if(gameState.getResourceTracking().getAvailableMinerals() > 500 && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
                         addProductionBuilding(UnitType.Terran_Factory, 3);
                     }
                 }
@@ -815,7 +813,7 @@ public class ProductionManager {
         int totalSupply = game.self().supplyTotal() / 2;
         int freeSupply = totalSupply - usedSupply;
 
-        if(resourceManager.getAvailableMinerals() >= unitType.mineralPrice() && resourceManager.getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
+        if(gameState.getResourceTracking().getAvailableMinerals() >= unitType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
             return true;
         }
         return false;
@@ -826,11 +824,11 @@ public class ProductionManager {
         int totalSupply = game.self().supplyTotal() / 2;
         int freeSupply = totalSupply - usedSupply;
 
-        if(resourceManager.getAvailableMinerals() >= unitType.mineralPrice() && resourceManager.getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
+        if(gameState.getResourceTracking().getAvailableMinerals() >= unitType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
             return true;
         }
 
-        if(priority == 1 && freeSupply >= unitType.supplyRequired() / 2 && resourceManager.getAvailableGas() <= unitType.gasPrice()) {
+        if(priority == 1 && freeSupply >= unitType.supplyRequired() / 2 && gameState.getResourceTracking().getAvailableGas() <= unitType.gasPrice()) {
             return true;
         }
 
@@ -864,7 +862,7 @@ public class ProductionManager {
     }
 
     private void researchUpgrade(UpgradeType upgradeType) {
-        if(resourceManager.getAvailableMinerals() >= upgradeType.mineralPrice() && resourceManager.getAvailableGas() >= upgradeType.gasPrice()) {
+        if(gameState.getResourceTracking().getAvailableMinerals() >= upgradeType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= upgradeType.gasPrice()) {
             for(Unit researchBuilding : allBuildings) {
                 if(researchBuilding.canUpgrade(upgradeType) && !researchBuilding.isUpgrading()) {
                     researchBuilding.upgrade(upgradeType);
@@ -875,7 +873,7 @@ public class ProductionManager {
     }
 
     private void researchTech(TechType techType) {
-        if(resourceManager.getAvailableMinerals() >= techType.mineralPrice() && resourceManager.getAvailableGas() >= techType.gasPrice()) {
+        if(gameState.getResourceTracking().getAvailableMinerals() >= techType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= techType.gasPrice()) {
             for(Unit researchBuilding : allBuildings) {
                 if(researchBuilding.canResearch(techType) && !researchBuilding.isUpgrading()) {
                     researchBuilding.research(techType);
@@ -934,7 +932,7 @@ public class ProductionManager {
     private void resetBuilding(Unit unit) {
         for(PlannedItem pi : productionQueue) {
             if(pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getUnitType() == unit.getType()) {
-                for(Workers worker : resourceManager.getWorkers()) {
+                for(Workers worker : gameState.getWorkers()) {
                     if(!worker.getUnit().exists()) {
                         continue;
                     }
@@ -1057,9 +1055,6 @@ public class ProductionManager {
 
         if(unit.canTrain()) {
             productionBuildings.add(unit);
-        }
-        if(unit.getType().isBuilding()) {
-            newestCompletedBuilding = unit;
         }
         buildTiles.onUnitComplete(unit);
     }

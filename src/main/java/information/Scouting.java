@@ -4,23 +4,18 @@ import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
-import bwem.BWEM;
 import bwem.Base;
 import debug.Painters;
 import information.enemy.EnemyInformation;
-import macro.ResourceManager;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
 
 public class Scouting {
-    private BWEM bwem;
     private Game game;
     private GameState gameState;
-    private ResourceManager resourceManager;
     private BaseInfo baseInfo;
     private Painters painters;
     private Player player;
-    private EnemyInformation enemyInformation;
 
     private Workers scout;
     private int scoutRadius = 200;
@@ -30,15 +25,13 @@ public class Scouting {
     private boolean completedScout = false;
     private boolean attemptsMaxed = false;
 
-    public Scouting(BWEM bwem, Game game, Player player, ResourceManager resourceManager, BaseInfo baseInfo, GameState gameState) {
-        this.bwem = bwem;
+    public Scouting(Game game, BaseInfo baseInfo, GameState gameState) {
         this.game = game;
-        this.player = player;
-        this.resourceManager = resourceManager;
         this.baseInfo = baseInfo;
         this.gameState = gameState;
+        this.player = game.self();
 
-        this.painters = new Painters(game, bwem, resourceManager);
+        this.painters = new Painters(game);
     }
 
     public void sendScout() {
@@ -64,7 +57,7 @@ public class Scouting {
 
 
     private void selectScout() {
-        for(Workers scv: resourceManager.getWorkers()) {
+        for(Workers scv: gameState.getWorkers()) {
             if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
                 scoutingAttempts++;
                 scout = scv;

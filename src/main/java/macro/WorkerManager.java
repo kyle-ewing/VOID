@@ -3,44 +3,41 @@ package macro;
 import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
+import debug.Painters;
 import information.BaseInfo;
 import information.GameState;
-import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
-import map.PathFinding;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
-public class ResourceManager {
+public class WorkerManager {
     private BaseInfo baseInfo;
     private Player player;
     private Game game;
     private GameState gameState;
+    private Painters painters;
     private EnemyScoutResponse enemyScoutResponse;
-    private HashSet<Workers> workers = new HashSet<>();
+    private HashSet<Workers> workers;
     private HashSet<Workers> defenseForce = new HashSet<>();
     private HashSet<Workers> repairForce = new HashSet<>();
     private HashMap<Unit, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private HashMap<Base, HashSet<Workers>> mineralSaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
-    private int reservedMinerals = 0;
-    private int reservedGas = 0;
-    private int availableMinerals = 0;
-    private int availableGas = 0;
-    private boolean isReserved = false;
     private boolean openerResponse = false;
     private boolean startingMineralsAssigned = false;
 
-    public ResourceManager(BaseInfo baseInfo, Player player, Game game, GameState gameState) {
+    public WorkerManager(BaseInfo baseInfo, Player player, Game game, GameState gameState) {
         this.baseInfo = baseInfo;
         this.player = player;
         this.gameState = gameState;
         this.game = game;
+
+        workers = gameState.getWorkers();
+        painters = new Painters(game);
 
         enemyScoutResponse = new EnemyScoutResponse(game, gameState, this, baseInfo);
     }
@@ -48,8 +45,6 @@ public class ResourceManager {
     //TODO: refactor all of this and organize with switch cases
     public void onFrame() {
         startingMineralAssignment();
-        setAvailableMinerals(availableMinerals);
-        setAvailableGas(availableGas);
         gatherGas();
         workerBuildClock();
         buildingHealthCheck();
@@ -79,7 +74,7 @@ public class ResourceManager {
 
 
             if(worker.getWorkerStatus() == WorkerStatus.DEFEND) {
-                updateClosetEnemy(worker);
+                ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 900);
                 workerAttackClock(worker);
 
                 if(frameCount % 24 != 0) {
@@ -145,6 +140,9 @@ public class ResourceManager {
             }
 
         }
+
+        painters.paintWorker(workers);
+        painters.paintWorkerText(workers);
     }
 
     private void gatherMinerals(Workers worker) {
@@ -216,22 +214,6 @@ public class ResourceManager {
         startingMineralsAssigned = true;
     }
 
-    public  void reserveResources(UnitType unitType) {
-        reservedMinerals += unitType.mineralPrice();
-        reservedGas += unitType.gasPrice();
-        availableMinerals = player.minerals() - reservedMinerals;
-        availableGas = player.gas() - reservedGas;
-        isReserved = true;
-    }
-
-    public void unreserveResources(UnitType unitType) {
-        reservedMinerals -= unitType.mineralPrice();
-        reservedGas -= unitType.gasPrice();
-        availableMinerals = player.minerals() - reservedMinerals;
-        availableGas = player.gas() - reservedGas;
-        isReserved = false;
-    }
-
     //
     private void workerBuildClock() {
         for(Workers worker : workers) {
@@ -284,43 +266,6 @@ public class ResourceManager {
             }
         }
         return enemyWorkerCount > 1;
-    }
-
-    public void updateClosetEnemy(Workers worker) {
-        int closestDistance = 1000;
-        EnemyUnits closestEnemy = null;
-
-        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            Position enemyPosition = enemyUnit.getEnemyPosition();
-            Position unitPosition = worker.getUnit().getPosition();
-
-            //Stop units from getting stuck on outdated position info
-            if(worker.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().isVisible()) {
-                continue;
-            }
-
-            if(!worker.getUnit().hasPath(enemyPosition)) {
-                continue;
-            }
-
-            if(enemyUnit.getEnemyUnit().getType().isFlyer() || !enemyUnit.getEnemyUnit().isDetected()) {
-                continue;
-            }
-
-            int distance = unitPosition.getApproxDistance(enemyPosition);
-
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestEnemy = enemyUnit;
-            }
-        }
-
-        if (closestEnemy != null) {
-            worker.setEnemyUnit(closestEnemy);
-        }
-        else {
-            worker.setEnemyUnit(null);
-        }
     }
 
     private boolean enemyInBase() {
@@ -455,28 +400,6 @@ public class ResourceManager {
         worker.setAttackClock(worker.getAttackClock() + 1);
     }
 
-    public Workers getClosestWorker(Position position) {
-        Workers closestWorker = null;
-        int closestDistance = Integer.MAX_VALUE;
-
-        for(Workers worker : workers) {
-            if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
-                int distance = worker.getUnit().getPosition().getApproxDistance(position);
-                if(distance < closestDistance) {
-                    closestDistance = distance;
-                    closestWorker = worker;
-                }
-            }
-        }
-
-        if(closestWorker != null) {
-            closestWorker.setDistanceToBuildTarget(closestWorker.getUnit().getDistance(position));
-        }
-
-
-        return closestWorker;
-    }
-
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_SCV) {
             workers.add(new Workers(game, unit));
@@ -535,51 +458,7 @@ public class ResourceManager {
         }
     }
 
-    public int getReservedMinerals() {
-        return reservedMinerals;
-    }
-
-    public void setReservedMinerals(int reservedMinerals) {
-        this.reservedMinerals = reservedMinerals;
-    }
-
-    public int getReservedGas() {
-        return reservedGas;
-    }
-
-    public void setReservedGas(int reservedGas) {
-        this.reservedGas = reservedGas;
-    }
-
-    public int getAvailableMinerals() {
-        return availableMinerals;
-    }
-
-    private void setAvailableMinerals(int availableMinerals) {
-        this.availableMinerals = player.minerals() - reservedMinerals;
-    }
-
-    public int getAvailableGas() {
-        return availableGas;
-    }
-
-    public void setAvailableGas(int availableGas) {
-        this.availableGas = player.gas() - reservedGas;
-    }
-
-    public boolean isReserved() {
-        return isReserved;
-    }
-
-    public void setReserved(boolean reserved) {
-        isReserved = reserved;
-    }
-
     public HashSet<Workers> getWorkers() {
         return workers;
-    }
-
-    public HashSet<Workers> getDefenseForce() {
-        return defenseForce;
     }
 }
