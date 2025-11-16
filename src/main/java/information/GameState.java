@@ -1,40 +1,63 @@
 package information;
 
-import bwapi.Game;
-import bwapi.Player;
-import bwapi.UnitType;
+import bwapi.*;
 import bwem.BWEM;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.ResourceTracking;
+import macro.buildorders.BuildOrder;
+import macro.buildorders.BuildOrderManager;
+import macro.buildorders.BunkerLocation;
 import macro.unitgroups.Workers;
+import map.BuildTiles;
+import planner.BuildComparator;
+import planner.PlannedItem;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.PriorityQueue;
 
 public class GameState {
     private Game game;
     private BWEM bwem;
+    private BaseInfo baseInfo;
     private Player player;
+    private BuildTiles buildTiles;
     private ResourceTracking resourceTracking;
+    private BuildOrderManager buildOrderManager;
     private EnemyStrategy enemyOpener = null;
 
+    private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
+    private TilePosition bunkerPosition = null;
+
     private boolean enemyInBase = false;
     private boolean enemyBuildingDiscovered = false;
 
+    private HashSet<Unit> productionBuildings = new HashSet<>();
+    private HashSet<Unit> allBuildings = new HashSet<>();
+    private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashSet<Workers> workers = new HashSet<>();
     private HashSet<EnemyUnits> knownEnemyUnits = new HashSet<>();
     private HashSet<EnemyTechUnits> knownEnemyTechUnits = new HashSet<>();
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
+    private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
 
-    public GameState(Game game, BWEM bwem) {
+    private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
+
+    public GameState(Game game, BWEM bwem, BaseInfo baseInfo) {
         this.game = game;
         this.bwem = bwem;
+        this.baseInfo = baseInfo;
 
         player = game.self();
+
+        buildTiles = new BuildTiles(game, baseInfo);
+        buildOrderManager = new BuildOrderManager(game.enemy().getRace());
         resourceTracking = new ResourceTracking(player);
+        addOpeningBuildOrders();
     }
 
     public void onFrame() {
@@ -52,8 +75,65 @@ public class GameState {
         }
     }
 
+    //Change when learning is added
+    private void addOpeningBuildOrders() {
+        openingBuildOrders = buildOrderManager.getOpenersForRace();
+
+        for(BuildOrder bo : openingBuildOrders) {
+            startingOpener = bo;
+            productionQueue.addAll(bo.getBuildOrder());
+            setBunkerPosition(bo.getBunkerLocation());
+        }
+    }
+
+    private void setBunkerPosition(BunkerLocation bunkerLocation) {
+        switch(bunkerLocation) {
+            case MAIN:
+                bunkerPosition = buildTiles.getMainChokeBunker();
+                break;
+            case NATURAL:
+                bunkerPosition = buildTiles.getNaturalChokeBunker();
+                break;
+            default:
+                bunkerPosition = null;
+                break;
+        }
+    }
+
+    public BuildTiles getBuildTiles() {
+        return buildTiles;
+    }
+
     public HashSet<Workers> getWorkers() {
         return workers;
+    }
+
+    public PriorityQueue<PlannedItem> getProductionQueue() {
+        return productionQueue;
+    }
+
+    public HashMap<UnitType, Integer> getUnitTypeCount() {
+        return unitTypeCount;
+    }
+
+    public HashSet<Unit> getAllBuildings() {
+        return allBuildings;
+    }
+
+    public HashSet<Unit> getProductionBuildings() {
+        return productionBuildings;
+    }
+
+    public HashSet<BuildOrder> getOpeningBuildOrders() {
+        return openingBuildOrders;
+    }
+
+    public BuildOrder getStartingOpener() {
+        return startingOpener;
+    }
+
+    public TilePosition getBunkerPosition() {
+        return bunkerPosition;
     }
 
     public HashSet<EnemyUnits> getKnownEnemyUnits() {

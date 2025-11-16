@@ -25,4 +25,8 @@ public class TwoRax extends BuildOrder {
     public void setLiftableBuildings() {
 
     }
+
+    public BunkerLocation getBunkerLocation() {
+        return BunkerLocation.MAIN;
+    }
 }

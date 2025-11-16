@@ -24,4 +24,8 @@ public class OneRaxFE extends BuildOrder {
     public void setLiftableBuildings() {
     }
 
+    public BunkerLocation getBunkerLocation() {
+        return null;
+    }
+
 }
