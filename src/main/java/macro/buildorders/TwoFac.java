@@ -48,4 +48,8 @@ public class TwoFac extends BuildOrder {
         getLiftableBuildings().add(UnitType.Terran_Engineering_Bay);
         getLiftableBuildings().add(UnitType.Terran_Barracks);
     }
+
+    public BunkerLocation getBunkerLocation() {
+        return BunkerLocation.NATURAL;
+    }
 }

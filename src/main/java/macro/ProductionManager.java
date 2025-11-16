@@ -24,17 +24,15 @@ public class ProductionManager {
     private Game game;
     private GameState gameState;
     private Player player;
-    private Race enemyRace;
     private BaseInfo baseInfo;
     private Painters painters;
     private TilePositionValidator tilePositionValidator;
     private BuildTiles buildTiles;
-    private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
-    private HashSet<Unit> productionBuildings = new HashSet<>();
-    private HashSet<Unit> allBuildings = new HashSet<>();
+    private HashMap<UnitType, Integer> unitTypeCount;
+    private HashSet<Unit> productionBuildings;
+    private HashSet<Unit> allBuildings;
     private HashSet<TilePosition> reservedTurretPositions = new HashSet<>();
-    private ArrayList<BuildOrder> openerNames = new ArrayList<>();
-    private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
+    private PriorityQueue<PlannedItem> productionQueue;
     private BuildOrder startingOpener;
     private TilePosition bunkerPosition = null;
     private boolean openerResponse = false;
@@ -48,8 +46,15 @@ public class ProductionManager {
         this.baseInfo = baseInfo;
         this.gameState = gameState;
 
+        productionQueue = gameState.getProductionQueue();
+        unitTypeCount = gameState.getUnitTypeCount();
+        productionBuildings = gameState.getProductionBuildings();
+        allBuildings = gameState.getAllBuildings();
+        buildTiles = gameState.getBuildTiles();
+        startingOpener = gameState.getStartingOpener();
+        bunkerPosition = gameState.getBunkerPosition();
+
         tilePositionValidator = new TilePositionValidator(game);
-        buildTiles = new BuildTiles(game, baseInfo);
 
         painters = new Painters(game);
 
@@ -57,51 +62,7 @@ public class ProductionManager {
     }
 
     public void initialize() {
-        enemyRace = game.enemy().getRace();
-        getOpenerNames();
-        appendBuildOrder(enemyRace);
         initUnitCounts();
-    }
-
-    //TODO: move to it's own class
-    private PriorityQueue<PlannedItem> appendBuildOrder(Race enemyRace) {
-        if(enemyRace.toString().equals("Zerg")) {
-            for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
-                    bunkerPosition = buildTiles.getMainChokeBunker();
-                    productionQueue.addAll(buildOrder.getBuildOrder());
-                    startingOpener = buildOrder;
-                }
-            }
-        }
-        else if(enemyRace.toString().equals("Terran")) {
-            for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
-                    bunkerPosition = buildTiles.getMainChokeBunker();
-                    productionQueue.addAll(buildOrder.getBuildOrder());
-                    startingOpener = buildOrder;
-                }
-            }
-        }
-        else if(enemyRace.toString().equals("Protoss")) {
-            for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
-                    bunkerPosition = buildTiles.getMainChokeBunker();
-                    productionQueue.addAll(buildOrder.getBuildOrder());
-                    startingOpener = buildOrder;
-                }
-            }
-        }
-        else {
-            for(BuildOrder buildOrder : openerNames) {
-                if(buildOrder.getBuildOrderName() == BuildOrderName.TWORAXACADEMY) {
-                    bunkerPosition = buildTiles.getMainChokeBunker();
-                    productionQueue.addAll(buildOrder.getBuildOrder());
-                    startingOpener = buildOrder;
-                }
-            }
-        }
-        return productionQueue;
     }
 
     private void buildingProduction() {
@@ -1020,14 +981,6 @@ public class ProductionManager {
         return productionQueue.stream().anyMatch(pi -> pi.getUnitType() == unitType && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
     }
 
-    private void getOpenerNames() {
-        openerNames.add(new EightRax());
-        openerNames.add(new TwoRax());
-        openerNames.add(new TwoRaxAcademy());
-        openerNames.add(new OneRaxFE());
-        openerNames.add(new TwoFac());
-    }
-
     public void onFrame() {
         scvProduction();
         buildingProduction();
@@ -1043,7 +996,6 @@ public class ProductionManager {
         painters.paintProductionQueueReadout(productionQueue);
     }
 
-    //TODO: get rid of this why am i checking before it's done
     public void onUnitCreate(Unit unit) {
         if(unit.getType().isBuilding()) {
             allBuildings.add(unit);

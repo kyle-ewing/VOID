@@ -1,7 +1,6 @@
 package macro.buildorders;
 
 import bwapi.TechType;
-import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import planner.PlannedItem;
@@ -44,5 +43,9 @@ public class TwoRaxAcademy extends BuildOrder {
     }
 
     public void setLiftableBuildings() {
+    }
+
+    public BunkerLocation getBunkerLocation() {
+        return BunkerLocation.MAIN;
     }
 }

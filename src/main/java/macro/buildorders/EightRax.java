@@ -23,4 +23,8 @@ public class EightRax extends BuildOrder {
 
     public void setLiftableBuildings() {
     }
+
+    public BunkerLocation getBunkerLocation() {
+        return null;
+    }
 }
