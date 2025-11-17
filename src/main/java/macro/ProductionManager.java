@@ -387,7 +387,7 @@ public class ProductionManager {
                     }
 
                     if (isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
-                        if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic) && unitTypeCount.get(UnitType.Terran_Medic) < 3 && !hasUnitInQueue(UnitType.Terran_Medic)) {
+                        if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic) && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)) {
                                 addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
                         }
                         else if(isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {

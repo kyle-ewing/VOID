@@ -9,6 +9,7 @@ public class Scan extends CombatUnits {
     public Scan(Game game, Unit unit) {
         super(game, unit);
         unitStatus = UnitStatus.SCAN;
+        hasStaticStatus = true;
     }
 
     @Override

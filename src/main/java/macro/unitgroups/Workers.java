@@ -21,6 +21,7 @@ public class Workers extends CombatUnits {
 
     public Workers(Game game, Unit unit) {
         super(game, unit);
+        super.hasStaticStatus = true;
         this.workerStatus = WorkerStatus.IDLE;
         this.unitStatus = UnitStatus.WORKER;
         this.buildFrameCount = 0;

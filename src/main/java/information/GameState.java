@@ -46,6 +46,7 @@ public class GameState {
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
     private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
+    private HashMap<UnitType, Integer> openerMoveOutCondition = new HashMap<>();
 
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
 
@@ -85,6 +86,7 @@ public class GameState {
             startingOpener = bo;
             productionQueue.addAll(bo.getBuildOrder());
             setBunkerPosition(bo.getBunkerLocation());
+            openerMoveOutCondition = bo.getMoveOutCondition();
         }
     }
 
@@ -176,6 +178,10 @@ public class GameState {
 
     public EnemyStrategy getEnemyOpener() {
         return enemyOpener;
+    }
+
+    public HashMap<UnitType, Integer> getOpenerMoveOutCondition() {
+        return openerMoveOutCondition;
     }
 
     public boolean isEnemyInBase() {

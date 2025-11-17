@@ -11,6 +11,7 @@ public class SpiderMines extends CombatUnits {
     public SpiderMines(Game game, Unit unit) {
         super(game, unit);
         unitStatus = UnitStatus.MINE;
+        hasStaticStatus = true;
     }
 
     @Override
