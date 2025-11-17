@@ -31,15 +31,14 @@ public class UnitManager {
     private Scouting scouting;
     private RallyPoint rallyPoint;
     private PathFinding pathFinding;
-    private HashSet<CombatUnits> combatUnits = new HashSet<>();
-    private HashMap<UnitType, Integer> unitCount = new HashMap<>();
+    private HashSet<CombatUnits> combatUnits;
+    private HashMap<UnitType, Integer> unitCount;
     private HashMap<Base, CombatUnits> designatedScouts = new HashMap<>();
     private EnemyUnits priorityTarget = null;
     private int bunkerLoad = 0;
     private int scouts = 0;
     private int rallyClock = 0;
     private Unit bunker = null;
-    private boolean bunkerunLoaded = false;
     private boolean beingAllInned = false;
     private boolean defendedAllIn = false;
 
@@ -54,8 +53,10 @@ public class UnitManager {
         this.pathFinding = baseInfo.getPathFinding();
         this.rallyPoint = new RallyPoint(pathFinding, gameState, baseInfo);
 
+        combatUnits = gameState.getCombatUnits();
+        unitCount = gameState.getUnitTypeCount();
+
         painters = new Painters(game);
-        initUnitCounts();
     }
 
     public void onFrame() {
@@ -590,14 +591,6 @@ public class UnitManager {
         return false;
     }
 
-    private void initUnitCounts()  {
-        for(UnitType unitType : UnitType.values()) {
-            if(unitType.getRace().toString().equals("Terran") && !unitType.isCritter() && !unitType.isHero() && !unitType.isBeacon() && !unitType.isSpecialBuilding()) {
-                unitCount.put(unitType, 0);
-            }
-        }
-    }
-
     private boolean isExistingUnit(Unit unit) {
         for(CombatUnits combatUnit : combatUnits) {
             if(combatUnit.getUnitID() == unit.getID()) {
@@ -616,13 +609,11 @@ public class UnitManager {
         if(unit.getType() == UnitType.Terran_Comsat_Station) {
             CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
             combatUnits.add(combatUnit);
-            unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
             return;
         }
         else if(unit.getType() == UnitType.Spell_Scanner_Sweep) {
             CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
             combatUnits.add(combatUnit);
-            unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
             return;
         }
 
@@ -637,13 +628,11 @@ public class UnitManager {
 
             CombatUnits combatUnit = new CombatUnits(game, unit, UnitStatus.BUILDING);
             combatUnits.add(combatUnit);
-            unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
             return;
         }
 
         CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
         combatUnits.add(combatUnit);
-        unitCount.put(unit.getType(), unitCount.getOrDefault(unit.getType(), 0) + 1);
     }
 
     public void onUnitDestroy(Unit unit) {
@@ -651,10 +640,6 @@ public class UnitManager {
             bunker = null;
             return;
         }
-
-//        if(unit.getType().isBuilding() && unit.getType() != UnitType.Terran_Comsat_Station) {
-//            return;
-//        }
 
         Iterator<CombatUnits> iterator = combatUnits.iterator();
         while (iterator.hasNext()) {
@@ -672,10 +657,6 @@ public class UnitManager {
                 break;
             }
         }
-
-        if(unitCount.containsKey(unit.getType())) {
-            unitCount.put(unit.getType(), unitCount.get(unit.getType()) - 1);
-        }
     }
 
     //Debug painters
@@ -689,9 +670,5 @@ public class UnitManager {
             painters.paintMedicTarget(combatUnit);
         }
 
-    }
-
-    public HashSet<CombatUnits> getCombatUnits() {
-        return combatUnits;
     }
 }

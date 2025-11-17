@@ -9,6 +9,7 @@ import macro.ResourceTracking;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
 import macro.buildorders.BunkerLocation;
+import macro.unitgroups.CombatUnits;
 import macro.unitgroups.Workers;
 import map.BuildTiles;
 import planner.BuildComparator;
@@ -36,14 +37,15 @@ public class GameState {
     private boolean enemyInBase = false;
     private boolean enemyBuildingDiscovered = false;
 
+    private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
     private HashSet<Unit> allBuildings = new HashSet<>();
-    private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashSet<Workers> workers = new HashSet<>();
     private HashSet<EnemyUnits> knownEnemyUnits = new HashSet<>();
     private HashSet<EnemyTechUnits> knownEnemyTechUnits = new HashSet<>();
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
     private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
+    private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
 
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
 
@@ -106,6 +108,10 @@ public class GameState {
 
     public HashSet<Workers> getWorkers() {
         return workers;
+    }
+
+    public HashSet<CombatUnits> getCombatUnits() {
+        return combatUnits;
     }
 
     public PriorityQueue<PlannedItem> getProductionQueue() {
