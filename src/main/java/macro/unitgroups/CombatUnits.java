@@ -28,6 +28,7 @@ public class CombatUnits {
     protected boolean hasTankSupport = false;
     protected boolean priorityTargetExists = false;
     protected boolean inBase = true;
+    protected boolean hasStaticStatus = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -56,6 +57,7 @@ public class CombatUnits {
         this.rallyPoint = null;
         this.unitStatus = unitStatus;
         this.inBunker = false;
+        this.hasStaticStatus = true;
     }
 
 
@@ -257,5 +259,9 @@ public class CombatUnits {
 
     public void setPriorityEnemyUnit(EnemyUnits priorityEnemyUnit) {
         this.priorityEnemyUnit = priorityEnemyUnit;
+    }
+
+    public boolean hasStaticStatus() {
+        return hasStaticStatus;
     }
 }

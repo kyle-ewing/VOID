@@ -6,6 +6,7 @@ import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class OneRaxFE extends BuildOrder {
     public BuildOrderName getBuildOrderName() {
@@ -26,6 +27,11 @@ public class OneRaxFE extends BuildOrder {
 
     public BunkerLocation getBunkerLocation() {
         return null;
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+        return moveOutCondition;
     }
 
 }

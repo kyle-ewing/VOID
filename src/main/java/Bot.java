@@ -33,8 +33,6 @@ public class Bot extends DefaultBWListener {
         bwem = new BWEM(game);
         bwem.initialize();
 
-
-
 //        game.setLocalSpeed(5);
 //        game.enableFlag(Flag.UserInput);
 

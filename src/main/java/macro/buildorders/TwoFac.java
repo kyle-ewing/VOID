@@ -8,6 +8,7 @@ import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TwoFac extends BuildOrder {
 
@@ -51,5 +52,12 @@ public class TwoFac extends BuildOrder {
 
     public BunkerLocation getBunkerLocation() {
         return BunkerLocation.NATURAL;
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+        moveOutCondition.put(UnitType.Terran_Vulture, 6);
+        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
+        return moveOutCondition;
     }
 }

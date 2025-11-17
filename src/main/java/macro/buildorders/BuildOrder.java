@@ -5,6 +5,7 @@ import bwapi.UnitType;
 import planner.PlannedItem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public abstract class BuildOrder {
@@ -16,6 +17,7 @@ public abstract class BuildOrder {
     public abstract ArrayList<PlannedItem> getBuildOrder();
     public abstract void setLiftableBuildings();
     public abstract BunkerLocation getBunkerLocation();
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition();
 
     public HashSet<UnitType> getLiftableBuildings() {
         return liftableBuildings;

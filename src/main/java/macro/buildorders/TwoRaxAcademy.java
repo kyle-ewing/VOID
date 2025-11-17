@@ -8,6 +8,7 @@ import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TwoRaxAcademy extends BuildOrder {
     public BuildOrderName getBuildOrderName() {
@@ -47,5 +48,12 @@ public class TwoRaxAcademy extends BuildOrder {
 
     public BunkerLocation getBunkerLocation() {
         return BunkerLocation.MAIN;
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+        moveOutCondition.put(UnitType.Terran_Marine, 15);
+        moveOutCondition.put(UnitType.Terran_Medic, 4);
+        return moveOutCondition;
     }
 }
