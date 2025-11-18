@@ -27,7 +27,6 @@ public class UnitManager {
     private Game game;
     private GameState gameState;
     private CombatUnitCreator combatUnitCreator;
-    private Painters painters;
     private Scouting scouting;
     private RallyPoint rallyPoint;
     private PathFinding pathFinding;
@@ -55,12 +54,9 @@ public class UnitManager {
 
         combatUnits = gameState.getCombatUnits();
         unitCount = gameState.getUnitTypeCount();
-
-        painters = new Painters(game);
     }
 
     public void onFrame() {
-        paintRanges();
         enemyOpenerResponse();
         rallyPoint.onFrame();
         int frameCount = game.getFrameCount();
@@ -689,18 +685,5 @@ public class UnitManager {
                 break;
             }
         }
-    }
-
-    //Debug painters
-    public void paintRanges() {
-        for(CombatUnits combatUnit : combatUnits) {
-            //painters.drawAttackRange(combatUnit.getUnit());
-            painters.paintUnitStatus(combatUnit);
-            painters.paintClosestEnemy(combatUnit);
-            painters.paintStimStatus(combatUnit);
-            painters.paintCombatScouts(combatUnit);
-            painters.paintMedicTarget(combatUnit);
-        }
-
     }
 }

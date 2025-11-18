@@ -18,7 +18,6 @@ public class BuildTiles {
     private Game game;
     private BaseInfo baseInfo;
     private TilePositionValidator tilePositionValidator;
-    private Painters painters;
     private HashSet<TilePosition> mediumBuildTiles = new HashSet<>();
     private HashSet<TilePosition> largeBuildTiles = new HashSet<>();
     private HashSet<TilePosition> largeBuildTilesNoGap = new HashSet<>();
@@ -39,7 +38,6 @@ public class BuildTiles {
         this.baseInfo = baseInfo;
 
         tilePositionValidator = new TilePositionValidator(game);
-        painters = new Painters(game);
 
         startingBase = baseInfo.getStartingBase();
         generateBuildTiles();
@@ -1037,27 +1035,30 @@ public class BuildTiles {
         return naturalChokeTurret;
     }
 
+    public HashSet<TilePosition> getBackBaseTiles() {
+        return backBaseTiles;
+    }
+
+    public HashSet<TilePosition> getFrontBaseTiles() {
+        return frontBaseTiles;
+    }
+
+    public HashSet<TilePosition> getCcExclusionTiles() {
+        return ccExclusionTiles;
+    }
+
+    public HashSet<TilePosition> getGeyserExlusionTiles() {
+        return geyserExlusionTiles;
+    }
+
+    public HashSet<TilePosition> getMineralExlusionTiles() {
+        return mineralExlusionTiles;
+    }
+
     public void onFrame() {
         if(mediumBuildTiles.isEmpty() || mediumBuildTiles.size() == 1) {
             regenerateBuildTiles();
         }
-
-        painters.paintPaintBunkerTile(closeBunkerTile);
-        painters.paintPaintBunkerTile(mainChokeBunker);
-        painters.paintPaintBunkerTile(naturalChokeBunker);
-        painters.paintMissileTile(mainChokeTurret);
-        painters.paintMissileTile(naturalChokeTurret);
-        painters.paintAvailableBuildTiles(largeBuildTiles, largeBuildTilesNoGap, 0, "Production");
-        painters.paintAvailableBuildTiles(mediumBuildTiles, 15, "Medium");
-//        painters.paintTileZone(mineralExlusionTiles, Color.Cyan);
-//        painters.paintTileZone(geyserExlusionTiles, Color.Green);
-//        painters.paintTileZone(frontBaseTiles, Color.Purple);
-//        painters.paintTileZone(backBaseTiles, Color.Orange);
-//        painters.paintTileZone(ccExclusionTiles, Color.Red);
-        painters.paintLargeBuildTiles(largeBuildTiles, Color.Green);
-        painters.paintLargeBuildTiles(largeBuildTilesNoGap, Color.Yellow);
-        painters.paintMediumBuildTiles(mediumBuildTiles, Color.Blue);
-
     }
 
     public void onUnitComplete(Unit unit) {

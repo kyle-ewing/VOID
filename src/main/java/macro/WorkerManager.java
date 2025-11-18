@@ -19,7 +19,6 @@ public class WorkerManager {
     private Player player;
     private Game game;
     private GameState gameState;
-    private Painters painters;
     private EnemyScoutResponse enemyScoutResponse;
     private HashSet<Workers> workers;
     private HashSet<Workers> defenseForce = new HashSet<>();
@@ -37,7 +36,6 @@ public class WorkerManager {
         this.game = game;
 
         workers = gameState.getWorkers();
-        painters = new Painters(game);
 
         enemyScoutResponse = new EnemyScoutResponse(game, gameState, this, baseInfo);
     }
@@ -140,9 +138,6 @@ public class WorkerManager {
             }
 
         }
-
-        painters.paintWorker(workers);
-        painters.paintWorkerText(workers);
     }
 
     private void gatherMinerals(Workers worker) {

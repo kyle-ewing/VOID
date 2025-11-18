@@ -41,15 +41,12 @@ public class BaseInfo {
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
-    private Painters painters;
-
     //TODO: save paths so operation only needs to be calculated once
     public BaseInfo(BWEM bwem, Game game) {
         this.bwem = bwem;
         this.game = game;
 
         pathFinding = new PathFinding(bwem, game);
-        painters = new Painters(game, bwem);
 
         init();
     }
@@ -584,20 +581,6 @@ public class BaseInfo {
 
     public HashSet<TilePosition> getMinBaseTiles() {
         return minBaseTiles;
-    }
-
-    //onFrame used for debug painters
-    public void onFrame() {
-        //painters.paintAllChokes();
-        painters.paintNatural(naturalBase);
-//        painters.paintTiles(mainCliffEdge);
-//        painters.paintTiles(naturalChokeEdge);
-        //painters.paintBasePosition(mapBases);
-        //painters.paintTilePositions(pathTest);
-        //painters.paintTiles(baseTiles);
-//        painters.paintExpansionOrdering(orderedExpansions);
-        //painters.paintMainBufferZone(startingBase);
-        painters.paintNaturalChoke(mainChokePoint);
     }
 
     public void onUnitCreate(Unit unit) {
