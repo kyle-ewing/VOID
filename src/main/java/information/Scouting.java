@@ -10,11 +10,11 @@ import information.enemy.EnemyInformation;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
 
+//TODO: move scouting into gamestate
 public class Scouting {
     private Game game;
     private GameState gameState;
     private BaseInfo baseInfo;
-    private Painters painters;
     private Player player;
 
     private Workers scout;
@@ -30,8 +30,6 @@ public class Scouting {
         this.baseInfo = baseInfo;
         this.gameState = gameState;
         this.player = game.self();
-
-        this.painters = new Painters(game);
     }
 
     public void sendScout() {
@@ -105,10 +103,6 @@ public class Scouting {
             scoutEnemyPerimeter();
             completedScout = true;
         }
-
-        if(scout != null) {
-            painters.paintScoutPath(scout.getUnit());
-        }
     }
 
     public void onEnemyDestroy(Unit unit) {
@@ -127,5 +121,9 @@ public class Scouting {
 
     public boolean isAttemptsMaxed() {
         return attemptsMaxed;
+    }
+
+    public Workers getScout() {
+        return scout;
     }
 }

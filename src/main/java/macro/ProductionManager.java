@@ -25,7 +25,6 @@ public class ProductionManager {
     private GameState gameState;
     private Player player;
     private BaseInfo baseInfo;
-    private Painters painters;
     private TilePositionValidator tilePositionValidator;
     private BuildTiles buildTiles;
     private HashMap<UnitType, Integer> unitTypeCount;
@@ -55,8 +54,6 @@ public class ProductionManager {
         bunkerPosition = gameState.getBunkerPosition();
 
         tilePositionValidator = new TilePositionValidator(game);
-
-        painters = new Painters(game);
 
         initialize();
     }
@@ -993,7 +990,6 @@ public class ProductionManager {
 
         enemyTechResponse();
         buildTiles.onFrame();
-        painters.paintProductionQueueReadout(productionQueue);
     }
 
     public void onUnitCreate(Unit unit) {

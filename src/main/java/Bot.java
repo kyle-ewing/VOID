@@ -1,3 +1,4 @@
+import config.Config;
 import debug.Painters;
 import information.BaseInfo;
 import information.GameState;
@@ -22,7 +23,7 @@ public class Bot extends DefaultBWListener {
     private UnitManager unitManager;
     private Scouting scouting;
 
-    //Debug painters
+    //Debug
     private Painters painters;
 
     @Override
@@ -43,6 +44,8 @@ public class Bot extends DefaultBWListener {
         productionManager = new ProductionManager(game, player, baseInfo, gameState);
         scouting = new Scouting(game, baseInfo, gameState);
         unitManager = new UnitManager(enemyInformation, gameState, baseInfo, game, scouting);
+
+        painters = new Painters(game, gameState, gameState.getConfig(), scouting);
     }
 
     @Override
@@ -53,7 +56,7 @@ public class Bot extends DefaultBWListener {
         productionManager.onFrame();
         unitManager.onFrame();
         scouting.onFrame();
-        baseInfo.onFrame();
+        painters.onFrame();
     }
 
 

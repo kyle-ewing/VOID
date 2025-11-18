@@ -2,6 +2,7 @@ package information;
 
 import bwapi.*;
 import bwem.BWEM;
+import config.Config;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
@@ -23,6 +24,7 @@ import java.util.PriorityQueue;
 public class GameState {
     private Game game;
     private BWEM bwem;
+    private Config config;
     private BaseInfo baseInfo;
     private Player player;
     private BuildTiles buildTiles;
@@ -54,6 +56,7 @@ public class GameState {
         this.game = game;
         this.bwem = bwem;
         this.baseInfo = baseInfo;
+        this.config = new Config();
 
         player = game.self();
 
@@ -64,18 +67,7 @@ public class GameState {
     }
 
     public void onFrame() {
-        drawToScreen();
         resourceTracking.onFrame();
-    }
-
-    private void drawToScreen() {
-        game.drawTextScreen(5,15, "Time: " + new Time(game.getFrameCount()) + " Frame: " + game.getFrameCount());
-
-        if (enemyOpener != null) {
-            game.drawTextScreen(5, 60, "Enemy Opener: " + enemyOpener.getStrategyName());
-        } else {
-            game.drawTextScreen(5, 60, "Enemy Opener: Unknown");
-        }
     }
 
     //Change when learning is added
@@ -104,8 +96,16 @@ public class GameState {
         }
     }
 
+    public BaseInfo getBaseInfo() {
+        return baseInfo;
+    }
+
     public BuildTiles getBuildTiles() {
         return buildTiles;
+    }
+
+    public Config getConfig() {
+        return config;
     }
 
     public HashSet<Workers> getWorkers() {
