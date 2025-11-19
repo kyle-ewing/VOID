@@ -71,6 +71,8 @@ public class Painters {
         if(config.debugBases) {
             paintNatural(gameState.getBaseInfo().getNaturalBase());
             paintExpansionOrdering(gameState.getBaseInfo().getOrderedExpansions());
+            paintdistanceFromCC(gameState.getBaseInfo().getStartingBase(), 700, Color.Red);
+            paintdistanceFromCC(gameState.getBaseInfo().getNaturalBase(), 400, Color.Red);
         }
 
         if(config.debugChokes) {
@@ -93,7 +95,8 @@ public class Painters {
         }
 
         if(config.debugScout) {
-            paintScoutPath(scouting.getScout().getUnit());
+            if(scouting.getScout() != null)
+                paintScoutPath(scouting.getScout().getUnit());
         }
     }
 
@@ -317,6 +320,13 @@ public class Painters {
         for(TilePosition tile : buildTiles) {
             game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
         }
+    }
+
+    private void paintdistanceFromCC(Base base, int distance, Color color) {
+        if(base == null) {
+            return;
+        }
+        game.drawCircleMap(base.getCenter(), distance, color);
     }
 
     //Generic Painters
