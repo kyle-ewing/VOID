@@ -189,7 +189,7 @@ public class UnitManager {
                     combatUnit.attack();
                     break;
                 case RALLY:
-                    if(enemyInBase()) {
+                    if(gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
@@ -208,7 +208,7 @@ public class UnitManager {
                     loadBunker(combatUnit);
                     break;
                 case DEFEND:
-                    if(enemyInBase()) {
+                    if(gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 1000);
                     }
@@ -252,7 +252,7 @@ public class UnitManager {
                 case SIEGEDEF:
                     ((SiegeTank) combatUnit).siegeDef();
 
-                    if(enemyInBase()) {
+                    if(gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }

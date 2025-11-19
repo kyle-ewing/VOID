@@ -1,6 +1,7 @@
 package information.enemy;
 
 import bwapi.Game;
+import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
@@ -63,6 +64,8 @@ public class EnemyInformation {
                 continue;
             }
 
+            Position enemyPos = enemyUnit.getEnemyUnit().getPosition();
+
             if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 gameState.setEnemyInBase(true);
                 return true;
@@ -72,6 +75,15 @@ public class EnemyInformation {
                 return true;
             }
             else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                gameState.setEnemyInBase(true);
+                return true;
+            }
+            else if(enemyUnit.getEnemyType().isFlyer()) {
+                if(enemyPos.getDistance(baseInfo.getStartingBase().getCenter()) < 700 || (baseInfo.getNaturalBase() != null && (enemyPos.getDistance(baseInfo.getNaturalBase().getCenter()) < 400 && baseInfo.isNaturalOwned()))) {
+                    gameState.setEnemyInBase(true);
+                    return true;
+                }
+
                 gameState.setEnemyInBase(true);
                 return true;
             }
@@ -157,6 +169,7 @@ public class EnemyInformation {
 
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
+        enemyInBase();
 
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyUnit().isVisible()) {
