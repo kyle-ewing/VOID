@@ -430,9 +430,8 @@ public class WorkerManager {
         if(unit.getType() == UnitType.Terran_Refinery) {
             for(Workers worker : refinerySaturation.get(unit)) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
+                refinerySaturation.get(unit).remove(worker);
             }
-
-            refinerySaturation.remove(unit);
             return;
         }
 
@@ -443,6 +442,10 @@ public class WorkerManager {
                     if(buildingRepair.get(building) == worker) {
                         buildingRepair.put(building, null);
                     }
+                }
+
+                for(Unit geyser : refinerySaturation.keySet()) {
+                    refinerySaturation.get(geyser).remove(worker);
                 }
 
                 removeMineralSaturation(worker);
