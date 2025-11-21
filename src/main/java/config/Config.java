@@ -26,7 +26,7 @@ public final class Config {
     public boolean debugWorkers = true;
 
     // Production and planning
-    public boolean debugProductionQueue = false;
+    public boolean debugProductionQueue = true;
 
     public Config() {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();

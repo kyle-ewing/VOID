@@ -1,13 +1,26 @@
 package macro.unitgroups.units;
 
 import bwapi.Game;
+import bwapi.TechType;
 import bwapi.Unit;
+import bwapi.UnitType;
 import macro.unitgroups.CombatUnits;
 import macro.unitgroups.UnitStatus;
+import util.Time;
+
+import java.util.HashSet;
 
 public class ScienceVessel extends CombatUnits {
+    private int irradiateClock = 0;
+    private boolean irradiating = false;
+
+
     public ScienceVessel(Game game, Unit unit) {
         super(game, unit);
+
+        priorityTargets.add(UnitType.Zerg_Defiler);
+        priorityTargets.add(UnitType.Zerg_Mutalisk);
+        priorityTargets.add(UnitType.Zerg_Lurker);
     }
 
     public void rally() {
@@ -20,6 +33,39 @@ public class ScienceVessel extends CombatUnits {
             return;
         }
 
+        if(irradiating) {
+            irradiateClock += 8;
+
+            if(irradiateClock >= 64) {
+                irradiating = false;
+                irradiateClock = 0;
+            }
+        }
+
+
+
+        if(priorityEnemyUnit != null && priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+            irradiateClock = 0;
+            irradiating = false;
+            setPriorityTargetLock(false);
+            setIgnoreCurrentPriorityTarget(true);
+        }
+        else if(priorityEnemyUnit != null && !priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+            setIgnoreCurrentPriorityTarget(false);
+        }
+
+
+        if(game.self().hasResearched(TechType.Irradiate) && unit.getEnergy() >= 75) {
+            if(priorityEnemyUnit != null && unit.getDistance(priorityEnemyUnit.getEnemyUnit()) <= 550 && !ignoreCurrentPriorityTarget) {
+                irradiate();
+                return;
+            }
+        }
+
+        if(irradiating) {
+            return;
+        }
+
         unit.move(friendlyUnit.getUnit().getPosition());
 
     }
@@ -28,6 +74,43 @@ public class ScienceVessel extends CombatUnits {
         if(friendlyUnit == null) {
             super.setTargetRange(200);
             super.setUnitStatus(UnitStatus.RETREAT);
+            return;
+        }
+
+        if(irradiating) {
+            irradiateClock += 8;
+
+            if(irradiateClock >= 64) {
+                irradiating = false;
+                irradiateClock = 0;
+            }
+        }
+
+        if(priorityEnemyUnit == null) {
+            irradiating = false;
+            setPriorityTargetLock(false);
+            setIgnoreCurrentPriorityTarget(false);
+        }
+
+        if(priorityEnemyUnit != null && priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+            irradiateClock = 0;
+            irradiating = false;
+            setPriorityTargetLock(false);
+            setIgnoreCurrentPriorityTarget(true);
+        }
+        else if(priorityEnemyUnit != null && !priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+            setIgnoreCurrentPriorityTarget(false);
+        }
+
+
+        if(game.self().hasResearched(TechType.Irradiate) && unit.getEnergy() >= 75) {
+            if(priorityEnemyUnit != null && unit.getDistance(priorityEnemyUnit.getEnemyUnit()) <= 550 && !ignoreCurrentPriorityTarget) {
+                irradiate();
+                return;
+            }
+        }
+
+        if(irradiating) {
             return;
         }
 
@@ -50,4 +133,11 @@ public class ScienceVessel extends CombatUnits {
 
         unit.move(rallyPoint.toPosition());
     }
+
+    private void irradiate() {
+        irradiating = true;
+        setPriorityTargetLock(true);
+        unit.useTech(TechType.Irradiate, priorityEnemyUnit.getEnemyUnit());
+    }
+
 }
