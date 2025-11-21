@@ -186,11 +186,11 @@ public class Painters {
 
     private void paintCombatUnitValues() {
         //Set this to track specific unit types and grab one unit to see all values
-        UnitType desiredUnitToTreack = UnitType.Terran_Science_Vessel;
+        UnitType desiredUnitToTrack = UnitType.Terran_Science_Vessel;
         CombatUnits trackedUnit = null;
 
         for(CombatUnits unit : gameState.getCombatUnits()) {
-            if(unit.getUnitType() == desiredUnitToTreack) {
+            if(unit.getUnitType() == desiredUnitToTrack) {
                 trackedUnit = unit;
                 break;
             }
@@ -258,10 +258,10 @@ public class Painters {
         game.drawTextScreen(xStart, yOffset, "Priority Target Lock: " + trackedUnit.priorityTargetLock());
         yOffset += lineHeight;
 
-        game.drawTextScreen(xStart, yOffset, "Enemy Unit: " + (trackedUnit.getEnemyUnit() != null ? trackedUnit.getEnemyUnit().getEnemyPosition() : "null"));
+        game.drawTextScreen(xStart, yOffset, "Enemy Unit: " + (trackedUnit.getEnemyUnit() != null ? trackedUnit.getEnemyUnit().getEnemyType() : "null"));
         yOffset += lineHeight;
 
-        game.drawTextScreen(xStart, yOffset, "Priority Enemy: " + (trackedUnit.getPriorityEnemyUnit() != null ? trackedUnit.getPriorityEnemyUnit().getEnemyPosition() : "null"));
+        game.drawTextScreen(xStart, yOffset, "Priority Enemy: " + (trackedUnit.getPriorityEnemyUnit() != null ? trackedUnit.getPriorityEnemyUnit().getEnemyType() : "null"));
         yOffset += lineHeight;
 
 //        game.drawTextScreen(xStart, yOffset, "Friendly Unit: " + (trackedUnit.getFriendlyUnit() != null ? trackedUnit.getFriendlyUnit().getUnitID() : "null"));

@@ -115,12 +115,14 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-//            if(priorityTarget != null) {
-//                combatUnit.setPriorityEnemyUnit(priorityTarget);
-//            }
-//            else {
-//                combatUnit.setPriorityEnemyUnit(null);
-//            }
+            if(priorityTarget != null) {
+                combatUnit.setPriorityEnemyUnit(priorityTarget);
+
+                if(!priorityTargetExists()) {
+                    priorityTarget = null;
+                    combatUnit.setPriorityEnemyUnit(null);
+                }
+            }
 
             if(moveOutConditionsMet(gameState.getOpenerMoveOutCondition())) {
                 if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD || unitStatus == UnitStatus.SIEGEDEF) {
@@ -194,6 +196,10 @@ public class UnitManager {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
+                    else if(priorityTarget != null) {
+                        combatUnit.setEnemyInBase(true);
+                        combatUnit.setEnemyUnit(priorityTarget);
+                    }
                     else {
                         combatUnit.setEnemyInBase(false);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 150);
@@ -212,6 +218,10 @@ public class UnitManager {
                     if(gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 1000);
+                    }
+                    else if(priorityTarget != null) {
+                        combatUnit.setEnemyInBase(true);
+                        combatUnit.setEnemyUnit(priorityTarget);
                     }
                     else {
                         combatUnit.setEnemyInBase(false);
@@ -631,6 +641,10 @@ public class UnitManager {
             }
         }
         return true;
+    }
+
+    private boolean priorityTargetExists() {
+        return gameState.getKnownEnemyUnits().contains(priorityTarget);
     }
 
     public void onUnitComplete(Unit unit) {
