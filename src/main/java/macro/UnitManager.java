@@ -107,6 +107,7 @@ public class UnitManager {
                     break;
                 case Terran_Science_Vessel:
                     ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
+                    ClosestUnit.priorityTargets(combatUnit, combatUnit.getPriorityTargets(), gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     break;
             }
 
@@ -114,12 +115,12 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-            if(priorityTarget != null) {
-                combatUnit.setPriorityEnemyUnit(priorityTarget);
-            }
-            else {
-                combatUnit.setPriorityEnemyUnit(null);
-            }
+//            if(priorityTarget != null) {
+//                combatUnit.setPriorityEnemyUnit(priorityTarget);
+//            }
+//            else {
+//                combatUnit.setPriorityEnemyUnit(null);
+//            }
 
             if(moveOutConditionsMet(gameState.getOpenerMoveOutCondition())) {
                 if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD || unitStatus == UnitStatus.SIEGEDEF) {
@@ -546,6 +547,10 @@ public class UnitManager {
             boolean isThreat = (enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon && enemyUnit.getEnemyUnit().isPowered() && enemyUnit.getEnemyUnit().isCompleted()) || enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony || (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.getEnemyUnit().isBurrowed() && !enemyUnit.getEnemyUnit().isDetected());
 
             if(!isThreat) {
+                continue;
+            }
+
+            if(combatUnit.getUnit().isFlying() && !enemyUnit.getEnemyType().airWeapon().targetsAir()) {
                 continue;
             }
 

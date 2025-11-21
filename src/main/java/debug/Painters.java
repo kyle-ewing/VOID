@@ -46,6 +46,7 @@ public class Painters {
                 paintCombatScouts(unit);
                 paintStimStatus(unit);
             }
+            paintCombatUnitValues();
         }
 
         if(config.debugWorkers) {
@@ -181,6 +182,92 @@ public class Painters {
         if(unit.getFriendlyUnit() != null) {
             game.drawLineMap(unit.getUnit().getPosition(), unit.getFriendlyUnit().getUnit().getPosition(), Color.Green);
         }
+    }
+
+    private void paintCombatUnitValues() {
+        //Set this to track specific unit types and grab one unit to see all values
+        UnitType desiredUnitToTreack = UnitType.Terran_Science_Vessel;
+        CombatUnits trackedUnit = null;
+
+        for(CombatUnits unit : gameState.getCombatUnits()) {
+            if(unit.getUnitType() == desiredUnitToTreack) {
+                trackedUnit = unit;
+                break;
+            }
+        }
+
+        if(trackedUnit == null) {
+            return;
+        }
+
+        int yOffset = 200;
+        int lineHeight = 12;
+        int xStart = 480;
+
+        game.setTextSize(Text.Size.Small);
+
+        //Comment out unneeded values
+        game.drawTextScreen(xStart, yOffset, "=== Combat Unit Debug ===");
+        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Unit ID: " + trackedUnit.getUnitID());
+        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Unit Type: " + trackedUnit.getUnitType());
+        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Status: " + trackedUnit.getUnitStatus());
+        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Rally Point: " + trackedUnit.getRallyPoint());
+        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Target Range: " + trackedUnit.getTargetRange());
+//        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Reset Clock: " + trackedUnit.getResetClock());
+//        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "In Bunker: " + trackedUnit.isInBunker());
+//        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Enemy In Base: " + trackedUnit.isEnemyInBase());
+//        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "In Range Of Threat: " + trackedUnit.isInRangeOfThreat());
+        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Natural Rally Set: " + trackedUnit.isNaturalRallySet());
+//        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Has Tank Support: " + trackedUnit.hasTankSupport());
+//        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Priority Target Exists: " + trackedUnit.isPriorityTargetExists());
+//        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "In Base: " + trackedUnit.isInBase());
+//        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Has Static Status: " + trackedUnit.hasStaticStatus());
+//        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Ignore Priority Target: " + trackedUnit.ignoreCurrentPriorityTarget());
+        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Priority Target Lock: " + trackedUnit.priorityTargetLock());
+        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Enemy Unit: " + (trackedUnit.getEnemyUnit() != null ? trackedUnit.getEnemyUnit().getEnemyPosition() : "null"));
+        yOffset += lineHeight;
+
+        game.drawTextScreen(xStart, yOffset, "Priority Enemy: " + (trackedUnit.getPriorityEnemyUnit() != null ? trackedUnit.getPriorityEnemyUnit().getEnemyPosition() : "null"));
+        yOffset += lineHeight;
+
+//        game.drawTextScreen(xStart, yOffset, "Friendly Unit: " + (trackedUnit.getFriendlyUnit() != null ? trackedUnit.getFriendlyUnit().getUnitID() : "null"));
+
+        game.setTextSize(Text.Size.Default);
+
     }
 
     //Worker Painters

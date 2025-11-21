@@ -29,6 +29,8 @@ public class CombatUnits {
     protected boolean priorityTargetExists = false;
     protected boolean inBase = true;
     protected boolean hasStaticStatus = false;
+    protected boolean ignoreCurrentPriorityTarget = false;
+    protected boolean priorityTargetLock = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -263,5 +265,21 @@ public class CombatUnits {
 
     public boolean hasStaticStatus() {
         return hasStaticStatus;
+    }
+
+    public boolean ignoreCurrentPriorityTarget() {
+        return ignoreCurrentPriorityTarget;
+    }
+
+    public void setIgnoreCurrentPriorityTarget(boolean ignoreCurrentPriorityTarget) {
+        this.ignoreCurrentPriorityTarget = ignoreCurrentPriorityTarget;
+    }
+
+    public boolean priorityTargetLock() {
+        return priorityTargetLock;
+    }
+
+    public void setPriorityTargetLock(boolean priorityTargetLock) {
+        this.priorityTargetLock = priorityTargetLock;
     }
 }

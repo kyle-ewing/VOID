@@ -95,8 +95,21 @@ public class ClosestUnit {
 
     public static void priorityTargets(CombatUnits combatUnit, HashSet<UnitType> priorityUnit, HashSet<EnemyUnits> enemyUnits, int range) {
         HashSet<EnemyUnits> priorityEnemies = new HashSet<>();
+
+        if(!enemyUnits.contains(combatUnit.getPriorityEnemyUnit())) {
+            combatUnit.setPriorityEnemyUnit(null);
+        }
+
+        if (combatUnit.priorityTargetLock()) {
+            return;
+        }
+
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(priorityUnit.contains(enemyUnit.getEnemyType())) {
+                if(combatUnit.getPriorityEnemyUnit() == enemyUnit && combatUnit.ignoreCurrentPriorityTarget()) {
+                    continue;
+                }
+
                 priorityEnemies.add(enemyUnit);
                 combatUnit.setPriorityTargetExists(true);
             }
@@ -104,12 +117,7 @@ public class ClosestUnit {
 
         EnemyUnits closestEnemy = findClosestEnemyUnit(combatUnit, priorityEnemies, range);
 
-        if(closestEnemy == null) {
-            combatUnit.setPriorityTargetExists(false);
-            closestEnemy = findClosestEnemyUnit(combatUnit, enemyUnits, range);
-        }
-
-        combatUnit.setEnemyUnit(closestEnemy);
+        combatUnit.setPriorityEnemyUnit(closestEnemy);
     }
 
     //Closest worker to build position
@@ -153,11 +161,11 @@ public class ClosestUnit {
                 continue;
             }
 
-            if(!combatUnit.getUnit().getType().airWeapon().targetsAir() && enemyUnit.getEnemyUnit().getType().isFlyer()) {
+            if((!combatUnit.getUnit().getType().airWeapon().targetsAir() && !combatUnit.getUnit().isFlying()) && enemyUnit.getEnemyUnit().getType().isFlyer()) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed() || enemyUnit.getEnemyUnit().isMorphing()
+            if(((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && !enemyUnit.getEnemyUnit().isDetected()) || enemyUnit.getEnemyUnit().isMorphing()
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer) {
                 continue;
             }
