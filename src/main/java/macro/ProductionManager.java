@@ -145,7 +145,7 @@ public class ProductionManager {
                                 }
 
                                 if(pi.getBuildPosition() != null) {
-                                    worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers());
+                                    worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), baseInfo.getPathFinding());
 
                                     pi.setAssignedBuilder(worker);
                                 }

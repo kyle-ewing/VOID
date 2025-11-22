@@ -8,8 +8,10 @@ import macro.unitgroups.CombatUnits;
 import macro.unitgroups.WorkerStatus;
 import macro.unitgroups.Workers;
 import macro.unitgroups.units.SiegeTank;
+import map.PathFinding;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class ClosestUnit {
@@ -121,22 +123,27 @@ public class ClosestUnit {
     }
 
     //Closest worker to build position
-    public static Workers findClosestWorker(Position position, HashSet<Workers> workers) {
+    public static Workers findClosestWorker(Position position, HashSet<Workers> workers, PathFinding pathFinding) {
         Workers closestWorker = null;
         int closestDistance = Integer.MAX_VALUE;
 
         for(Workers worker : workers) {
-            if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
-                int distance = worker.getUnit().getPosition().getApproxDistance(position);
-                if(distance < closestDistance) {
-                    closestDistance = distance;
-                    closestWorker = worker;
-                }
+            if(worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+                continue;
             }
-        }
 
-        if(closestWorker != null) {
-            closestWorker.setDistanceToBuildTarget(closestWorker.getUnit().getDistance(position));
+            Position workerPos = worker.getUnit().getPosition();
+            List<Position> path = pathFinding.findPath(workerPos, position);
+
+            if (path == null || path.isEmpty()) {
+                continue;
+            }
+
+            int pathLen = path.size();
+            if (pathLen < closestDistance) {
+                closestDistance = pathLen;
+                closestWorker = worker;
+            }
         }
 
 
