@@ -27,6 +27,15 @@ public class Painters {
         this.gameState = gameState;
         this.config = config;
         this.scouting = scouting;
+
+        gameSpeed();
+    }
+
+    private void gameSpeed() {
+        if(config.gameSpeed) {
+            game.setLocalSpeed(5);
+            game.enableFlag(Flag.UserInput);
+        }
     }
 
     public void onFrame() {
@@ -83,6 +92,7 @@ public class Painters {
         if(config.debugBaseTiles) {
             paintTileZone(gameState.getBuildTiles().getFrontBaseTiles(), Color.Purple);
             paintTileZone(gameState.getBuildTiles().getBackBaseTiles(), Color.Orange);
+            paintTileZone(gameState.getBaseInfo().getNaturalTiles(),  Color.Teal);
         }
 
         if(config.debugCCExclusionZone) {

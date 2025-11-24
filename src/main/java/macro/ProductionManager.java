@@ -80,6 +80,11 @@ public class ProductionManager {
                 }
             }
 
+            if(gameState.isEnemyInNatural() && pi.getUnitType() == UnitType.Terran_Command_Center) {
+                priorityStop = false;
+                continue;
+            }
+
             if(priorityStop && pi.getPriority() != 1 && pi.getPlannedItemType() == PlannedItemType.BUILDING && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                 continue;
             }

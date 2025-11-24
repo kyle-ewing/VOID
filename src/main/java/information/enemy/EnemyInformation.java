@@ -58,7 +58,7 @@ public class EnemyInformation {
         return false;
     }
 
-    public boolean enemyInBase() {
+    private boolean enemyInBase() {
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(!enemyUnit.getEnemyType().canAttack()) {
                 continue;
@@ -90,6 +90,36 @@ public class EnemyInformation {
         }
         gameState.setEnemyInBase(false);
         return false;
+    }
+
+    private void enemyInNatural() {
+        if(baseInfo.getNaturalBase() == null) {
+            return;
+        }
+
+        for(EnemyUnits enemyUnit : enemyUnits) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if(!enemyUnit.getEnemyType().canAttack() && !enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+
+            Position enemyPos = enemyUnit.getEnemyUnit().getPosition();
+
+            if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyTilePosition())) {
+                gameState.setEnemyInNatural(true);
+                return;
+            }
+            else if(enemyUnit.getEnemyType().isFlyer()) {
+                if(enemyPos.getDistance(baseInfo.getNaturalBase().getCenter()) < 400 && baseInfo.isNaturalOwned()) {
+                    gameState.setEnemyInNatural(true);
+                    return;
+                }
+            }
+        }
+        gameState.setEnemyInNatural(false);
     }
 
     public boolean hasType(UnitType unitType) {
@@ -170,6 +200,7 @@ public class EnemyInformation {
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
         enemyInBase();
+        enemyInNatural();
 
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyUnit().isVisible()) {
@@ -177,6 +208,7 @@ public class EnemyInformation {
                     updateUnitType(enemyUnit);
                 }
                 enemyUnit.setEnemyPosition(enemyUnit.getEnemyUnit().getPosition());
+                enemyUnit.setEnemyTilePosition(enemyUnit.getEnemyUnit().getTilePosition());
             }
         }
 
