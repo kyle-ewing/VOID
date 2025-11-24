@@ -1,6 +1,7 @@
 package information.enemy;
 
 import bwapi.Position;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -9,12 +10,14 @@ public class EnemyUnits {
     private Unit enemyUnit;
     private UnitType enemyType;
     private Position enemyPosition;
+    private TilePosition enemyTilePosition;
 
     public EnemyUnits(int enemyID, Unit enemyUnit) {
         this.enemyID = enemyID;
         this.enemyUnit = enemyUnit;
         this.enemyType = enemyUnit.getType();
         this.enemyPosition = enemyUnit.getPosition();
+        this.enemyTilePosition = enemyUnit.getTilePosition();
     }
 
     public int getEnemyID() {
@@ -35,6 +38,14 @@ public class EnemyUnits {
 
     public void setEnemyPosition(Position enemyPosition) {
         this.enemyPosition = enemyPosition;
+    }
+
+    public TilePosition getEnemyTilePosition() {
+        return enemyTilePosition;
+    }
+
+    public void setEnemyTilePosition(TilePosition enemyTilePosition) {
+        this.enemyTilePosition = enemyTilePosition;
     }
 
     public Unit getEnemyUnit() {

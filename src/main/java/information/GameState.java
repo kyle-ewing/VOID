@@ -37,6 +37,7 @@ public class GameState {
     private TilePosition bunkerPosition = null;
 
     private boolean enemyInBase = false;
+    private boolean enemyInNatural = false;
     private boolean enemyBuildingDiscovered = false;
 
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
@@ -190,6 +191,14 @@ public class GameState {
 
     public void setEnemyInBase(boolean enemyInBase) {
         this.enemyInBase = enemyInBase;
+    }
+
+    public boolean isEnemyInNatural() {
+        return enemyInNatural;
+    }
+
+    public void setEnemyInNatural(boolean enemyInNatural) {
+        this.enemyInNatural = enemyInNatural;
     }
 
     public ResourceTracking getResourceTracking() {

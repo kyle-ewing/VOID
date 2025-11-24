@@ -6,11 +6,12 @@ public final class Config {
     // Debug drawing flags
     // HUD and general info
     public boolean debugHud = true;
+    public boolean gameSpeed = false;
 
     // Map
     public boolean debugBases = false;
     public boolean debugChokes = false;
-    public boolean debugBaseTiles = false;
+    public boolean debugBaseTiles = true;
     public boolean debugMineralExclusionZone = false;
     public boolean debugGeyserExclusionZone = false;
     public boolean debugCCExclusionZone = false;
@@ -33,6 +34,7 @@ public final class Config {
 
         // HUD and general info
         this.debugHud = getBooleanOrDefault(dotenv, "DEBUG_HUD", this.debugHud);
+        this.gameSpeed = getBooleanOrDefault(dotenv, "GAME_SPEED", this.gameSpeed);
 
         // Map and pathfinding
         this.debugBaseTiles = getBooleanOrDefault(dotenv, "DEBUG_BASE_TILES", this.debugBaseTiles);
