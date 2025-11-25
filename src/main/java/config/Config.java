@@ -3,6 +3,8 @@ package config;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public final class Config {
+    Dotenv dotenv  = Dotenv.configure().ignoreIfMissing().load();;
+
     // Debug drawing flags
     // HUD and general info
     public boolean debugHud = true;
@@ -30,39 +32,33 @@ public final class Config {
     public boolean debugProductionQueue = true;
 
     public Config() {
-        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-
         // HUD and general info
-        this.debugHud = getBooleanOrDefault(dotenv, "DEBUG_HUD", this.debugHud);
-        this.gameSpeed = getBooleanOrDefault(dotenv, "GAME_SPEED", this.gameSpeed);
+        this.debugHud = getBooleanOrDefault("DEBUG_HUD", this.debugHud);
+        this.gameSpeed = getBooleanOrDefault("GAME_SPEED", this.gameSpeed);
 
         // Map and pathfinding
-        this.debugBaseTiles = getBooleanOrDefault(dotenv, "DEBUG_BASE_TILES", this.debugBaseTiles);
-        this.debugChokes = getBooleanOrDefault(dotenv, "DEBUG_CHOKES", this.debugChokes);
-        this.debugMineralExclusionZone =
-                getBooleanOrDefault(dotenv, "DEBUG_MINERAL_EXCLUSION_ZONE", this.debugMineralExclusionZone);
-        this.debugGeyserExclusionZone =
-                getBooleanOrDefault(dotenv, "DEBUG_GEYSER_EXCLUSION_ZONE", this.debugGeyserExclusionZone);
-        this.debugCCExclusionZone =
-                getBooleanOrDefault(dotenv, "DEBUG_CC_EXCLUSION_ZONE", this.debugCCExclusionZone);
+        this.debugBaseTiles = getBooleanOrDefault("DEBUG_BASE_TILES", this.debugBaseTiles);
+        this.debugChokes = getBooleanOrDefault("DEBUG_CHOKES", this.debugChokes);
+        this.debugMineralExclusionZone = getBooleanOrDefault("DEBUG_MINERAL_EXCLUSION_ZONE", this.debugMineralExclusionZone);
+        this.debugGeyserExclusionZone = getBooleanOrDefault("DEBUG_GEYSER_EXCLUSION_ZONE", this.debugGeyserExclusionZone);
+        this.debugCCExclusionZone = getBooleanOrDefault("DEBUG_CC_EXCLUSION_ZONE", this.debugCCExclusionZone);
 
         // Bases and buildings
-        this.debugBases = getBooleanOrDefault(dotenv, "DEBUG_BASES", this.debugBases);
-        this.debugBuildTiles = getBooleanOrDefault(dotenv, "DEBUG_BUILD_TILES", this.debugBuildTiles);
-        this.debugBunkerTiles = getBooleanOrDefault(dotenv, "DEBUG_BUNKER_TILES", this.debugBunkerTiles);
-        this.debugTurretTiles = getBooleanOrDefault(dotenv, "DEBUG_TURRET_TILES", this.debugTurretTiles);
+        this.debugBases = getBooleanOrDefault("DEBUG_BASES", this.debugBases);
+        this.debugBuildTiles = getBooleanOrDefault("DEBUG_BUILD_TILES", this.debugBuildTiles);
+        this.debugBunkerTiles = getBooleanOrDefault("DEBUG_BUNKER_TILES", this.debugBunkerTiles);
+        this.debugTurretTiles = getBooleanOrDefault("DEBUG_TURRET_TILES", this.debugTurretTiles);
 
         // Combat and units
-        this.debugCombatUnits = getBooleanOrDefault(dotenv, "DEBUG_COMBAT_UNITS", this.debugCombatUnits);
-        this.debugWorkers = getBooleanOrDefault(dotenv, "DEBUG_WORKERS", this.debugWorkers);
-        this.debugScout = getBooleanOrDefault(dotenv, "DEBUG_SCOUT", this.debugScout);
+        this.debugCombatUnits = getBooleanOrDefault("DEBUG_COMBAT_UNITS", this.debugCombatUnits);
+        this.debugWorkers = getBooleanOrDefault("DEBUG_WORKERS", this.debugWorkers);
+        this.debugScout = getBooleanOrDefault("DEBUG_SCOUT", this.debugScout);
 
         // Production and planning
-        this.debugProductionQueue =
-                getBooleanOrDefault(dotenv, "DEBUG_PRODUCTION_QUEUE", this.debugProductionQueue);
+        this.debugProductionQueue = getBooleanOrDefault("DEBUG_PRODUCTION_QUEUE", this.debugProductionQueue);
     }
 
-    private boolean getBooleanOrDefault(Dotenv dotenv, String key, boolean defaultValue) {
+    private boolean getBooleanOrDefault(String key, boolean defaultValue) {
         String value = dotenv.get(key);
         return value != null ? Boolean.parseBoolean(value) : defaultValue;
     }

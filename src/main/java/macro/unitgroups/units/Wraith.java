@@ -33,6 +33,10 @@ public class Wraith extends CombatUnits {
             return;
         }
 
+        if(enemyUnit.getEnemyPosition() == null) {
+            return;
+        }
+
         if(priorityTargetExists) {
             setUnitStatus(UnitStatus.HUNTING);
         }
@@ -46,8 +50,6 @@ public class Wraith extends CombatUnits {
         else {
             unit.attack(enemyUnit.getEnemyUnit());
         }
-
-
     }
 
     @Override
