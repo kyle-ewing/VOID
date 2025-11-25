@@ -116,7 +116,7 @@ public class Painters {
         game.drawTextScreen(5,15, "Time: " + new Time(game.getFrameCount()) + " Frame: " + game.getFrameCount());
 
         paintAvailableBuildTiles(gameState.getBuildTiles().getLargeBuildTiles(), gameState.getBuildTiles().getLargeBuildTilesNoGap(), 0, "Production" );
-        paintAvailableBuildTiles(gameState.getBuildTiles().getMediumBuildTiles(), 15, "Production" );
+        paintAvailableBuildTiles(gameState.getBuildTiles().getMediumBuildTiles(), 15, "Medium" );
 
         if (gameState.getEnemyOpener() != null) {
             game.drawTextScreen(5, 60, "Enemy Opener: " + gameState.getEnemyOpener().getStrategyName());
