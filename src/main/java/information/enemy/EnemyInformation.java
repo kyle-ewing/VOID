@@ -58,7 +58,7 @@ public class EnemyInformation {
         return false;
     }
 
-    private boolean enemyInBase() {
+    private void enemyInBase() {
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(!enemyUnit.getEnemyType().canAttack()) {
                 continue;
@@ -68,28 +68,27 @@ public class EnemyInformation {
 
             if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 gameState.setEnemyInBase(true);
-                return true;
+                return;
             }
             else if(baseInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 gameState.setEnemyInBase(true);
-                return true;
+                return;
             }
             else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 gameState.setEnemyInBase(true);
-                return true;
+                return;
             }
             else if(enemyUnit.getEnemyType().isFlyer()) {
                 if(enemyPos.getDistance(baseInfo.getStartingBase().getCenter()) < 700 || (baseInfo.getNaturalBase() != null && (enemyPos.getDistance(baseInfo.getNaturalBase().getCenter()) < 400 && baseInfo.isNaturalOwned()))) {
                     gameState.setEnemyInBase(true);
-                    return true;
+                    return;
                 }
 
                 gameState.setEnemyInBase(true);
-                return true;
+                return;
             }
         }
         gameState.setEnemyInBase(false);
-        return false;
     }
 
     private void enemyInNatural() {
@@ -183,7 +182,7 @@ public class EnemyInformation {
                             return;
                         }
                     default:
-                        if(!enemyInBase()) {
+                        if(!gameState.isEnemyInBase()) {
                             enemyOpener.setDefendedStrategy(true);
                             return;
                         }
