@@ -153,7 +153,6 @@ public class ProductionManager {
 
                                 if(pi.getAssignedBuilder() != null) {
                                     if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
-                                        gameState.getResourceTracking().reserveResources(pi.getUnitType());
                                         worker.build(pi, gameState.getResourceTracking());
                                     }
                                 }
