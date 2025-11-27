@@ -1,15 +1,15 @@
-package macro;
+package unitgroups;
 
 import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
-import debug.Painters;
 import information.BaseInfo;
 import information.GameState;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
-import macro.unitgroups.WorkerStatus;
-import macro.unitgroups.Workers;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
+import util.ClosestUnit;
 
 import java.util.HashMap;
 import java.util.HashSet;

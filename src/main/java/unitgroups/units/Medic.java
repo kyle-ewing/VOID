@@ -1,10 +1,8 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
 
 public class Medic extends CombatUnits {
     public Medic(Game game, Unit unit) {

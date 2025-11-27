@@ -1,4 +1,4 @@
-package macro.unitgroups;
+package unitgroups.units;
 
 public enum UnitStatus {
     IDLE, ATTACK, RETREAT, DEFEND, RALLY, PATROL, LOAD, SCOUT, ADDON, SCAN, OBSTRUCTING, MINE, SIEGEDEF, HUNTING, WORKER, BUILDING

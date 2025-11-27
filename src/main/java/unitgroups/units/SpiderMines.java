@@ -1,14 +1,15 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Unit;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
 
-public class Comsat extends CombatUnits {
-    public Comsat(Game game, Unit unit) {
+public class SpiderMines extends CombatUnits {
+    //Override everything as mines don't do anything
+
+    public SpiderMines(Game game, Unit unit) {
         super(game, unit);
-        unitStatus = UnitStatus.ADDON;
+        unitStatus = UnitStatus.MINE;
+        hasStaticStatus = true;
     }
 
     @Override
@@ -30,4 +31,5 @@ public class Comsat extends CombatUnits {
     public void rally() {
 
     }
+
 }

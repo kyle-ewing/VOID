@@ -1,9 +1,12 @@
-package macro.unitgroups;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 import information.enemy.EnemyUnits;
+import macro.ResourceTracking;
+import planner.PlannedItem;
+import planner.PlannedItemStatus;
 
 public class Workers extends CombatUnits {
     private Unit repairTarget;
@@ -88,6 +91,24 @@ public class Workers extends CombatUnits {
             setWorkerStatus(WorkerStatus.STUCK);
         }
 
+    }
+
+    public void build(PlannedItem pi, ResourceTracking resourceTracking) {
+        resourceTracking.reserveResources(pi.getUnitType());
+        this.setBuildingPosition(pi.getBuildPosition().toPosition());
+        this.getUnit().move(pi.getBuildPosition().toPosition());
+        this.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
+        pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
+
+        this.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
+    }
+
+    //Build clock timeout, reset build
+    public void buildReset(PlannedItem pi, ResourceTracking resourceTracking) {
+        this.setWorkerStatus(WorkerStatus.IDLE);
+        this.getUnit().stop();
+        resourceTracking.unreserveResources(pi.getUnitType());
+        pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
     }
 
 

@@ -1,8 +1,6 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.*;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
 
 public class Marine extends CombatUnits {
     private static final int UPGRADE_RANGE = 32;

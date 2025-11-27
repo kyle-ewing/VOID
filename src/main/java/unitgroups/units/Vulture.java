@@ -1,12 +1,10 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.*;
 import bwem.Base;
 import bwem.ChokePoint;
 import information.BaseInfo;
 import information.enemy.EnemyInformation;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
 import util.Time;
 
 import java.util.ArrayList;
