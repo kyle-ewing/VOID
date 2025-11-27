@@ -1,9 +1,8 @@
-package macro.unitgroups;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Unit;
 import information.enemy.EnemyInformation;
-import macro.unitgroups.units.*;
 
 public class CombatUnitCreator {
     private Game game;

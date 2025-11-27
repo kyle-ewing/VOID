@@ -5,10 +5,8 @@ import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
 import bwem.Base;
-import debug.Painters;
-import information.enemy.EnemyInformation;
-import macro.unitgroups.WorkerStatus;
-import macro.unitgroups.Workers;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
 
 //TODO: move scouting into gamestate
 public class Scouting {

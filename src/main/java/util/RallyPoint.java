@@ -1,14 +1,13 @@
-package macro;
+package util;
 
 import bwapi.Position;
 import bwem.Base;
 import information.BaseInfo;
 import information.GameState;
-import information.enemy.EnemyInformation;
 import information.enemy.enemyopeners.EnemyStrategy;
-import macro.unitgroups.CombatUnits;
+import unitgroups.units.CombatUnits;
 import map.PathFinding;
-import util.PositionInterpolator;
+
 import java.util.List;
 
 public class RallyPoint {

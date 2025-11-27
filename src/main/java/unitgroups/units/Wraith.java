@@ -1,12 +1,10 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Unit;
 import bwapi.UnitType;
 import information.BaseInfo;
 import information.enemy.EnemyInformation;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
 
 public class Wraith extends CombatUnits {
     private EnemyInformation enemyInformation;

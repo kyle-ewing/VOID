@@ -1,22 +1,19 @@
 package macro;
 
 import bwapi.*;
-import bwem.BWEM;
 import bwem.Base;
-import debug.Painters;
 import information.BaseInfo;
 import information.GameState;
-import information.enemy.EnemyInformation;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.*;
-import macro.unitgroups.WorkerStatus;
-import macro.unitgroups.Workers;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
 import map.BuildTiles;
 import map.TilePositionValidator;
-import planner.BuildComparator;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
+import util.ClosestUnit;
 
 import java.util.*;
 
@@ -151,19 +148,12 @@ public class ProductionManager {
 
                                 if(pi.getBuildPosition() != null) {
                                     worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), baseInfo.getPathFinding());
-
                                     pi.setAssignedBuilder(worker);
                                 }
 
                                 if(pi.getAssignedBuilder() != null) {
                                     if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
-                                        gameState.getResourceTracking().reserveResources(pi.getUnitType());
-                                        worker.setBuildingPosition(pi.getBuildPosition().toPosition());
-                                        worker.getUnit().move(pi.getBuildPosition().toPosition());
-                                        worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
-                                        pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
-
-                                        worker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
+                                        worker.build(pi, gameState.getResourceTracking());
                                     }
                                 }
                             }
@@ -201,13 +191,8 @@ public class ProductionManager {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
 
-
-
                         if(worker.getBuildFrameCount() > 600) {
-                            worker.setWorkerStatus(WorkerStatus.IDLE);
-                            worker.getUnit().stop();
-                            gameState.getResourceTracking().unreserveResources(pi.getUnitType());
-                            pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                            worker.buildReset(pi, gameState.getResourceTracking());
                         }
                     }
 

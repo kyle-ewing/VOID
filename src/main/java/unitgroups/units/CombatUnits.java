@@ -1,4 +1,4 @@
-package macro.unitgroups;
+package unitgroups.units;
 
 import bwapi.*;
 import information.enemy.EnemyUnits;

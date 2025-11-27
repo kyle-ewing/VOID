@@ -1,4 +1,4 @@
-package macro.unitgroups;
+package unitgroups.units;
 
 public enum WorkerStatus {
     IDLE, MINERALS, GAS, MOVING_TO_BUILD, BUILDING, REPAIRING, ATTACKING, SCOUTING, DEFEND, COUNTERSCOUT, STUCK

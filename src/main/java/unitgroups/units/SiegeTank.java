@@ -1,10 +1,8 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.*;
 import information.BaseInfo;
 import information.enemy.EnemyInformation;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
 
 import java.util.HashSet;
 import java.util.Random;

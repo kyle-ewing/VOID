@@ -1,14 +1,9 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
-import util.Time;
-
-import java.util.HashSet;
 
 public class ScienceVessel extends CombatUnits {
     private int irradiateClock = 0;

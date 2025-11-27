@@ -1,7 +1,7 @@
 package planner;
 
 import bwapi.*;
-import macro.unitgroups.Workers;
+import unitgroups.units.Workers;
 
 public class PlannedItem {
     private UnitType unitType;

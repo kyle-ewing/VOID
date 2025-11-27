@@ -1,15 +1,12 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Unit;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
 
-public class Scan extends CombatUnits {
-    public Scan(Game game, Unit unit) {
+public class Comsat extends CombatUnits {
+    public Comsat(Game game, Unit unit) {
         super(game, unit);
-        unitStatus = UnitStatus.SCAN;
-        hasStaticStatus = true;
+        unitStatus = UnitStatus.ADDON;
     }
 
     @Override

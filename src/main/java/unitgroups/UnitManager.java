@@ -1,19 +1,16 @@
-package macro;
+package unitgroups;
 
 import bwapi.*;
 import bwem.Base;
-import debug.Painters;
 import information.BaseInfo;
 import information.GameState;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import information.Scouting;
-import macro.unitgroups.CombatUnitCreator;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
-import macro.unitgroups.units.SiegeTank;
-import macro.unitgroups.units.Vulture;
+import unitgroups.units.*;
 import map.PathFinding;
+import util.ClosestUnit;
+import util.RallyPoint;
 import util.Time;
 
 import java.util.HashMap;

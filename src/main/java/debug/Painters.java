@@ -1,15 +1,14 @@
 package debug;
 
 import bwapi.*;
-import bwem.BWEM;
 import bwem.Base;
 import bwem.ChokePoint;
 import config.Config;
 import information.GameState;
 import information.Scouting;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.UnitStatus;
-import macro.unitgroups.Workers;
+import unitgroups.units.CombatUnits;
+import unitgroups.units.UnitStatus;
+import unitgroups.units.Workers;
 import planner.PlannedItem;
 import util.Time;
 

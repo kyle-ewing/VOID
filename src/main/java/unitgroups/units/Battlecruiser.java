@@ -1,8 +1,7 @@
-package macro.unitgroups.units;
+package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Unit;
-import macro.unitgroups.CombatUnits;
 
 public class Battlecruiser extends CombatUnits {
     public Battlecruiser(Game game, Unit unit) {

@@ -3,9 +3,9 @@ package information.enemy;
 import bwapi.Game;
 import information.BaseInfo;
 import information.GameState;
-import macro.WorkerManager;
-import macro.unitgroups.WorkerStatus;
-import macro.unitgroups.Workers;
+import unitgroups.WorkerManager;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
 import util.Time;
 
 public class EnemyScoutResponse {

@@ -1,18 +1,16 @@
-package macro;
+package util;
 
 import bwapi.Position;
-import bwapi.Unit;
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
-import macro.unitgroups.CombatUnits;
-import macro.unitgroups.WorkerStatus;
-import macro.unitgroups.Workers;
-import macro.unitgroups.units.SiegeTank;
+import unitgroups.units.CombatUnits;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
+import unitgroups.units.SiegeTank;
 import map.PathFinding;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Predicate;
 
 public class ClosestUnit {
     public static void findClosestUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {
