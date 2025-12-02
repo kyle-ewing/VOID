@@ -85,6 +85,7 @@ public class UnitManager {
             }
 
             combatUnit.onFrame();
+            inRangeOfThreat(combatUnit);
 
             //Set rally point if not set
             if(combatUnit.getRallyPoint() == null || (baseInfo.getNaturalBase() != null && !combatUnit.isNaturalRallySet())) {
@@ -166,12 +167,12 @@ public class UnitManager {
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
 
                     if(combatUnit.getUnitType() == UnitType.Terran_Marine) {
-                        if(inRangeOfThreat(combatUnit) && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
+                        if(combatUnit.isInRangeOfThreat() && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
                             avoidThreat(combatUnit);
                             combatUnit.setUnitStatus(UnitStatus.RETREAT);
                             continue;
                         }
-                        else if(inRangeOfThreat(combatUnit) && combatUnit.hasTankSupport()) {
+                        else if(combatUnit.isInRangeOfThreat() && combatUnit.hasTankSupport()) {
                             avoidThreat(combatUnit);
                             combatUnit.setUnitStatus(UnitStatus.RETREAT);
                             continue;
@@ -180,10 +181,10 @@ public class UnitManager {
                         break;
                     }
 
-                    if(inRangeOfThreat(combatUnit)) {
+                    if(combatUnit.isInRangeOfThreat()) {
                         avoidThreat(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.RETREAT);
-                        continue;
+                        break;
                     }
 
                     combatUnit.attack();
@@ -205,6 +206,13 @@ public class UnitManager {
                     if(obstructingBuild(combatUnit)) {
                         break;
                     }
+
+                    if(combatUnit.isInRangeOfThreat()) {
+                        avoidThreat(combatUnit);
+                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                        break;
+                    }
+
                     rallyClockReset(combatUnit);
                     combatUnit.rally();
                     break;
@@ -229,16 +237,20 @@ public class UnitManager {
                         break;
                     }
 
+                    if(combatUnit.isInRangeOfThreat()) {
+                        avoidThreat(combatUnit);
+                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                        break;
+                    }
+
                     rallyClockReset(combatUnit);
                     combatUnit.defend();
                     break;
                 case RETREAT:
-                    if(!inRangeOfThreat(combatUnit)) {
-                        combatUnit.setInRangeOfThreat(false);
+                    if(!combatUnit.isInRangeOfThreat()) {
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     }
-
-                    if(inRangeOfThreat(combatUnit)) {
+                    else {
                         avoidThreat(combatUnit);
                     }
 
@@ -270,27 +282,6 @@ public class UnitManager {
                     combatUnit.hunting();
             }
         }
-    }
-
-    private boolean enemyInBase() {
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            if(enemyUnit.getEnemyPosition() == null) {
-                continue;
-            }
-
-            if(enemyUnit.getEnemyType().canAttack() && enemyUnit.getEnemyType().isFlyer()) {
-                continue;
-            }
-
-            TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
-            if (baseInfo.getBaseTiles().contains(enemyTile)) {
-                return true;
-            }
-            else if(baseInfo.getMinBaseTiles().contains(enemyTile)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void loadBunker(CombatUnits combatUnit) {
@@ -402,6 +393,8 @@ public class UnitManager {
             }
 
             if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && friendlyUnitInRange()) {
+
+
                 combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition());
             }
         }
@@ -518,42 +511,37 @@ public class UnitManager {
     }
 
     private void avoidThreat(CombatUnits combatUnit) {
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            if(enemyUnit.getEnemyPosition() == null) {
-                continue;
-            }
-
-            if(!((enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon && enemyUnit.getEnemyUnit().isPowered() && enemyUnit.getEnemyUnit().isCompleted()) || enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony || (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.getEnemyUnit().isBurrowed() && !enemyUnit.getEnemyUnit().isDetected()))) {
-                continue;
-            }
-
-            Position unitPos = combatUnit.getUnit().getPosition();
-            Position threatPos = enemyUnit.getEnemyPosition();
-
-            int dx = unitPos.getX() - threatPos.getX();
-            int dy = unitPos.getY() - threatPos.getY();
-
-            int moveX = unitPos.getX() + (dx * 200 / Math.max(1, unitPos.getApproxDistance(threatPos)));
-            int moveY = unitPos.getY() + (dy * 200 / Math.max(1, unitPos.getApproxDistance(threatPos)));
-
-            moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
-            moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
-
-            Position movePos = new Position(moveX, moveY);
-            combatUnit.getUnit().move(movePos);
-            break;
+        EnemyUnits closestThreat = ClosestUnit.findClosestEnemyUnit(combatUnit, gameState.getKnownValidThreats(), Integer.MAX_VALUE);
+        if(closestThreat == null || closestThreat.getEnemyPosition() == null) {
+            return;
         }
+
+        Position unitPos = combatUnit.getUnit().getPosition();
+        Position threatPos = closestThreat.getEnemyPosition();
+
+        int dx = unitPos.getX() - threatPos.getX();
+        int dy = unitPos.getY() - threatPos.getY();
+
+        int moveX = unitPos.getX() + (dx * 200 / Math.max(1, unitPos.getApproxDistance(threatPos)));
+        int moveY = unitPos.getY() + (dy * 200 / Math.max(1, unitPos.getApproxDistance(threatPos)));
+
+        moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
+        moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
+
+        Position movePos = new Position(moveX, moveY);
+        combatUnit.getUnit().move(movePos);
     }
 
-    private boolean inRangeOfThreat(CombatUnits combatUnit) {
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+    private void inRangeOfThreat(CombatUnits combatUnit) {
+        if(gameState.getKnownValidThreats().isEmpty()) {
+            combatUnit.setInRangeOfThreat(false);
+            return;
+        }
+
+        boolean inRange = false;
+
+        for(EnemyUnits enemyUnit : gameState.getKnownValidThreats()) {
             if(enemyUnit.getEnemyPosition() == null) {
-                continue;
-            }
-
-            boolean isThreat = (enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon && enemyUnit.getEnemyUnit().isPowered() && enemyUnit.getEnemyUnit().isCompleted()) || enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony || (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.getEnemyUnit().isBurrowed() && !enemyUnit.getEnemyUnit().isDetected());
-
-            if(!isThreat) {
                 continue;
             }
 
@@ -561,12 +549,12 @@ public class UnitManager {
                 continue;
             }
 
-             if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 125) {
-                combatUnit.setInRangeOfThreat(true);
-                return true;
+            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 75) {
+                inRange = true;
             }
         }
-        return false;
+
+        combatUnit.setInRangeOfThreat(inRange);
     }
 
     private UnitType typeOfThreat(CombatUnits combatUnit) {

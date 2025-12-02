@@ -15,6 +15,7 @@ import java.util.HashSet;
 
 public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits;
+    private HashSet<EnemyUnits> validThreats;
     private HashSet<EnemyTechUnits> enemyTechUnits;
     private HashSet<UnitType> techunitResponse;
     private BaseInfo baseInfo;
@@ -33,6 +34,7 @@ public class EnemyInformation {
         this.gameState = gameState;
 
         enemyUnits = gameState.getKnownEnemyUnits();
+        validThreats = gameState.getKnownValidThreats();
         enemyTechUnits = gameState.getKnownEnemyTechUnits();
         techunitResponse = gameState.getTechUnitResponse();
         startingEnemyBase = gameState.getStartingEnemyBase();
@@ -168,6 +170,12 @@ public class EnemyInformation {
         }
     }
 
+    private boolean isThreat(Unit unit) {
+        return unit.getType() == UnitType.Zerg_Lurker ||
+                unit.getType() == UnitType.Zerg_Sunken_Colony && !unit.isMorphing() ||
+                unit.getType() == UnitType.Protoss_Photon_Cannon && unit.isPowered();
+    }
+
     //TODO: add time limit in enemy strategy to change check times depending on strategy
     private void checkOpenerDefense(Time currentTime) {
         if (enemyOpener != null && !enemyOpener.isStrategyDefended()) {
@@ -208,6 +216,17 @@ public class EnemyInformation {
                 }
                 enemyUnit.setEnemyPosition(enemyUnit.getEnemyUnit().getPosition());
                 enemyUnit.setEnemyTilePosition(enemyUnit.getEnemyUnit().getTilePosition());
+                enemyUnit.setBurrowed(enemyUnit.getEnemyUnit().isBurrowed());
+            }
+
+            //Remove irradiated units that die out of view
+            if(enemyUnit.getEnemyUnit().isIrradiated()) {
+                enemyUnit.setIrradiateTimer();
+
+                if(enemyUnit.getIrradiateTimer() > 240) {
+                    enemyUnits.removeIf(eu -> eu.getEnemyID() == enemyUnit.getEnemyID());
+                    validThreats.removeIf(eu -> eu.getEnemyID() == enemyUnit.getEnemyID());
+                }
             }
         }
 
@@ -244,14 +263,26 @@ public class EnemyInformation {
             }
         }
 
+        if(isThreat(unit)) {
+            for(EnemyUnits threat : validThreats) {
+                if(threat.getEnemyID() == unit.getID()) {
+                    return;
+                }
+            }
+            addEnemyThreat(unit);
+        }
+
     }
 
     public void onUnitShow(Unit unit) {
-//        while(enemyUnits.iterator().hasNext()) {
-//            if(enemyUnits.iterator().next().getEnemyID() == unit.getID()) {
-//                enemyUnits.iterator().next().setEnemyPosition(unit.getTilePosition());
-//            }
-//        }
+        if(isThreat(unit)) {
+            for(EnemyUnits threat : validThreats) {
+                if(threat.getEnemyID() == unit.getID()) {
+                    return;
+                }
+            }
+            addEnemyThreat(unit);
+        }
     }
 
     public void onUnitDestroy(Unit unit) {
@@ -264,6 +295,13 @@ public class EnemyInformation {
 
             if (enemyUnit.getEnemyID() == unit.getID()) {
                 enemyUnits.remove(enemyUnit);
+                break;
+            }
+        }
+
+        for(EnemyUnits threat : validThreats) {
+            if(threat.getEnemyID() == unit.getID()) {
+                validThreats.remove(threat);
                 break;
             }
         }
@@ -289,6 +327,10 @@ public class EnemyInformation {
 
     private void addEnemyUnit(Unit unit) {
         enemyUnits.add(new EnemyUnits(unit.getID(), unit));
+    }
+
+    private void addEnemyThreat(Unit unit) {
+        validThreats.add(new EnemyUnits(unit.getID(), unit));
     }
 
     public HashSet<EnemyUnits> getEnemyUnits() {

@@ -7,10 +7,12 @@ import bwapi.UnitType;
 
 public class EnemyUnits {
     private int enemyID;
+    private int irradiateTimer = 0;
     private Unit enemyUnit;
     private UnitType enemyType;
     private Position enemyPosition;
     private TilePosition enemyTilePosition;
+    private boolean wasBurrowed = false;
 
     public EnemyUnits(int enemyID, Unit enemyUnit) {
         this.enemyID = enemyID;
@@ -50,5 +52,21 @@ public class EnemyUnits {
 
     public Unit getEnemyUnit() {
         return enemyUnit;
+    }
+
+    public boolean wasBurrowed() {
+        return wasBurrowed;
+    }
+
+    public void setBurrowed(boolean wasBurrowed) {
+        this.wasBurrowed = wasBurrowed;
+    }
+
+    public int getIrradiateTimer() {
+        return irradiateTimer;
+    }
+
+    public void setIrradiateTimer() {
+        this.irradiateTimer = irradiateTimer + 1;
     }
 }

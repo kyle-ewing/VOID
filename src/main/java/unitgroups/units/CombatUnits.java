@@ -118,7 +118,7 @@ public class CombatUnits {
         }
 
         if(!inRangeOfThreat) {
-            setUnitStatus(UnitStatus.ATTACK);
+            setUnitStatus(UnitStatus.RALLY);
         }
     }
 

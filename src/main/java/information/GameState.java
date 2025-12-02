@@ -44,6 +44,7 @@ public class GameState {
     private HashSet<Unit> allBuildings = new HashSet<>();
     private HashSet<Workers> workers = new HashSet<>();
     private HashSet<EnemyUnits> knownEnemyUnits = new HashSet<>();
+    private HashSet<EnemyUnits> knownValidThreats = new HashSet<>();
     private HashSet<EnemyTechUnits> knownEnemyTechUnits = new HashSet<>();
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
     private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
@@ -146,6 +147,10 @@ public class GameState {
 
     public HashSet<EnemyUnits> getKnownEnemyUnits() {
         return knownEnemyUnits;
+    }
+
+    public HashSet<EnemyUnits> getKnownValidThreats() {
+        return knownValidThreats;
     }
 
     public HashSet<UnitType> getTechUnitResponse() {
