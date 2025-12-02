@@ -63,14 +63,6 @@ public class Marine extends CombatUnits {
             return;
         }
 
-        if(!unit.isStimmed() && unit.isAttacking()) {
-            unit.useTech(TechType.Stim_Packs);
-        }
-
-        if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
-            unit.attack(enemyUnit.getEnemyPosition());
-        }
-
         if(!inRangeOfThreat) {
             setUnitStatus(UnitStatus.ATTACK);
         }

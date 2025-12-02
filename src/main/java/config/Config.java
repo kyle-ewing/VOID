@@ -13,7 +13,7 @@ public final class Config {
     // Map
     public boolean debugBases = false;
     public boolean debugChokes = false;
-    public boolean debugBaseTiles = true;
+    public boolean debugBaseTiles = false;
     public boolean debugMineralExclusionZone = false;
     public boolean debugGeyserExclusionZone = false;
     public boolean debugCCExclusionZone = false;

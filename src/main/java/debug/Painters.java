@@ -6,6 +6,7 @@ import bwem.ChokePoint;
 import config.Config;
 import information.GameState;
 import information.Scouting;
+import information.enemy.EnemyUnits;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
 import unitgroups.units.Workers;
@@ -53,7 +54,10 @@ public class Painters {
                 paintMedicTarget(unit);
                 paintCombatScouts(unit);
                 paintStimStatus(unit);
+
             }
+            enemyRangePainter();
+            paintThreatUnitsToScreen();
             paintCombatUnitValues();
         }
 
@@ -124,7 +128,7 @@ public class Painters {
         }
     }
 
-    //Combat Unit Painters
+    //Unit Painters
     private void paintUnitStatus(CombatUnits unit) {
         switch(unit.getUnitStatus()) {
             case RALLY:
@@ -195,7 +199,7 @@ public class Painters {
 
     private void paintCombatUnitValues() {
         //Set this to track specific unit types and grab one unit to see all values
-        UnitType desiredUnitToTrack = UnitType.Terran_Science_Vessel;
+        UnitType desiredUnitToTrack = UnitType.Terran_Marine;
         CombatUnits trackedUnit = null;
 
         for(CombatUnits unit : gameState.getCombatUnits()) {
@@ -261,23 +265,66 @@ public class Painters {
 //        game.drawTextScreen(xStart, yOffset, "Has Static Status: " + trackedUnit.hasStaticStatus());
 //        yOffset += lineHeight;
 
-        game.drawTextScreen(xStart, yOffset, "Ignore Priority Target: " + trackedUnit.ignoreCurrentPriorityTarget());
-        yOffset += lineHeight;
-
-        game.drawTextScreen(xStart, yOffset, "Priority Target Lock: " + trackedUnit.priorityTargetLock());
-        yOffset += lineHeight;
+//        game.drawTextScreen(xStart, yOffset, "Ignore Priority Target: " + trackedUnit.ignoreCurrentPriorityTarget());
+//        yOffset += lineHeight;
+//
+//        game.drawTextScreen(xStart, yOffset, "Priority Target Lock: " + trackedUnit.priorityTargetLock());
+//        yOffset += lineHeight;
 
         game.drawTextScreen(xStart, yOffset, "Enemy Unit: " + (trackedUnit.getEnemyUnit() != null ? trackedUnit.getEnemyUnit().getEnemyType() : "null"));
         yOffset += lineHeight;
 
-        game.drawTextScreen(xStart, yOffset, "Priority Enemy: " + (trackedUnit.getPriorityEnemyUnit() != null ? trackedUnit.getPriorityEnemyUnit().getEnemyType() : "null"));
-        yOffset += lineHeight;
+//        game.drawTextScreen(xStart, yOffset, "Priority Enemy: " + (trackedUnit.getPriorityEnemyUnit() != null ? trackedUnit.getPriorityEnemyUnit().getEnemyType() : "null"));
+//        yOffset += lineHeight;
 
 //        game.drawTextScreen(xStart, yOffset, "Friendly Unit: " + (trackedUnit.getFriendlyUnit() != null ? trackedUnit.getFriendlyUnit().getUnitID() : "null"));
 
         game.setTextSize(Text.Size.Default);
 
     }
+
+    private void enemyRangePainter() {
+        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            //Change condition to paint specific unit types
+            if(enemyUnit.getEnemyType() != UnitType.Zerg_Lurker) {
+                continue;
+            }
+
+            if(enemyUnit.getEnemyPosition() != null) {
+                UnitType enemyType = enemyUnit.getEnemyType();
+                if(enemyType.groundWeapon() != null) {
+                    int range = enemyType.groundWeapon().maxRange();
+                    game.drawCircleMap(enemyUnit.getEnemyPosition(), range, Color.Red);
+
+                    //Optional threat range
+                    int threatRange = enemyType.groundWeapon().maxRange() + 150;
+                    game.drawCircleMap(enemyUnit.getEnemyPosition(), threatRange, Color.Orange);
+
+                }
+            }
+        }
+    }
+
+    public void paintThreatUnitsToScreen() {
+        int yOffset = 200;
+        int lineHeight = 12;
+        int xStart = 5;
+
+        game.setTextSize(Text.Size.Small);
+
+        for(EnemyUnits enemyUnit : gameState.getKnownValidThreats()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            game.drawTextScreen(xStart, yOffset, "Threat Unit: " + enemyUnit.getEnemyType() + " at " + enemyUnit.getEnemyPosition());
+            yOffset += lineHeight;
+            game.drawCircleMap(enemyUnit.getEnemyPosition(), 5, Color.Red, true);
+        }
+
+        game.setTextSize(Text.Size.Default);
+    }
+
 
     //Worker Painters
     private void paintWorker(HashSet<Workers> workers) {

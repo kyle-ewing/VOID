@@ -148,7 +148,7 @@ public class ClosestUnit {
         return closestWorker;
     }
 
-    private static EnemyUnits findClosestEnemyUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {
+    public static EnemyUnits findClosestEnemyUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {
         int closestDistance = range;
         EnemyUnits closestEnemy = null;
 
@@ -156,8 +156,10 @@ public class ClosestUnit {
             Position enemyPosition = enemyUnit.getEnemyPosition();
             Position unitPosition = combatUnit.getUnit().getPosition();
 
+            boolean burrowedLurker = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.wasBurrowed());
+
             //Stop units from getting stuck on outdated position info
-            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists()) {
+            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists() && !burrowedLurker) {
                 enemyUnit.setEnemyPosition(null);
                 continue;
             }
