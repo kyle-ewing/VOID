@@ -116,11 +116,13 @@ public class EnemyInformation {
             else if(enemyUnit.getEnemyType().isFlyer()) {
                 if(enemyPos.getDistance(baseInfo.getNaturalBase().getCenter()) < 400 && baseInfo.isNaturalOwned()) {
                     gameState.setEnemyInNatural(true);
+                    gameState.setEnemyFlyerInBase(true);
                     return;
                 }
             }
         }
         gameState.setEnemyInNatural(false);
+        gameState.setEnemyFlyerInBase(false);
     }
 
     public boolean hasType(UnitType unitType) {
