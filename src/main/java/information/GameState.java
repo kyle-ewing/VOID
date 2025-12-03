@@ -38,6 +38,7 @@ public class GameState {
     private boolean enemyInBase = false;
     private boolean enemyInNatural = false;
     private boolean enemyBuildingDiscovered = false;
+    private boolean enemyFlyerInBase = false;
 
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
@@ -207,5 +208,13 @@ public class GameState {
 
     public ResourceTracking getResourceTracking() {
         return resourceTracking;
+    }
+
+    public boolean enemyFlyerInBase() {
+        return enemyFlyerInBase;
+    }
+
+    public void setEnemyFlyerInBase(boolean enemyFlyerInBase) {
+        this.enemyFlyerInBase = enemyFlyerInBase;
     }
 }

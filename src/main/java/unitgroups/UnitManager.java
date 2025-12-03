@@ -190,7 +190,12 @@ public class UnitManager {
                     combatUnit.attack();
                     break;
                 case RALLY:
-                    if(gameState.isEnemyInBase()) {
+                    //Avoid units who can't shoot up trying to defend against air
+                    if(gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
+                        combatUnit.setEnemyInBase(true);
+                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
+                    }
+                    else if(gameState.isEnemyInBase() && !gameState.enemyFlyerInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
@@ -393,8 +398,6 @@ public class UnitManager {
             }
 
             if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && friendlyUnitInRange()) {
-
-
                 combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition());
             }
         }
