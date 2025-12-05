@@ -271,7 +271,14 @@ public class EnemyInformation {
                     return;
                 }
             }
-            addEnemyThreat(unit);
+
+            for(EnemyUnits enemyUnit : enemyUnits) {
+                if(enemyUnit.getEnemyID() == unit.getID()) {
+                    validThreats.add(enemyUnit);
+                    break;
+                }
+            }
+
         }
 
     }
@@ -283,7 +290,11 @@ public class EnemyInformation {
                     return;
                 }
             }
-            addEnemyThreat(unit);
+            for(EnemyUnits enemyUnit : enemyUnits) {
+                if(enemyUnit.getEnemyID() == unit.getID()) {
+                    validThreats.add(enemyUnit);
+                }
+            }
         }
     }
 
@@ -329,10 +340,6 @@ public class EnemyInformation {
 
     private void addEnemyUnit(Unit unit) {
         enemyUnits.add(new EnemyUnits(unit.getID(), unit));
-    }
-
-    private void addEnemyThreat(Unit unit) {
-        validThreats.add(new EnemyUnits(unit.getID(), unit));
     }
 
     public HashSet<EnemyUnits> getEnemyUnits() {

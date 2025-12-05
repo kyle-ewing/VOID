@@ -28,6 +28,9 @@ public final class Config {
     public boolean debugScout = true;
     public boolean debugWorkers = true;
 
+    //Enemy Units
+    public boolean debugEnemyUnits = true;
+
     // Production and planning
     public boolean debugProductionQueue = true;
 
@@ -53,6 +56,9 @@ public final class Config {
         this.debugCombatUnits = getBooleanOrDefault("DEBUG_COMBAT_UNITS", this.debugCombatUnits);
         this.debugWorkers = getBooleanOrDefault("DEBUG_WORKERS", this.debugWorkers);
         this.debugScout = getBooleanOrDefault("DEBUG_SCOUT", this.debugScout);
+
+        // Enemy Units
+         this.debugEnemyUnits = getBooleanOrDefault("DEBUG_ENEMY_UNITS", this.debugEnemyUnits);
 
         // Production and planning
         this.debugProductionQueue = getBooleanOrDefault("DEBUG_PRODUCTION_QUEUE", this.debugProductionQueue);
