@@ -56,14 +56,17 @@ public class Painters {
                 paintStimStatus(unit);
 
             }
-            enemyRangePainter();
-            paintThreatUnitsToScreen();
             paintCombatUnitValues();
         }
 
         if(config.debugWorkers) {
             paintWorker(gameState.getWorkers());
             paintWorkerText(gameState.getWorkers());
+        }
+
+        if(config.debugEnemyUnits) {
+            enemyRangePainter();
+            paintThreatUnitsToScreen();
         }
 
         if(config.debugBuildTiles) {
@@ -297,7 +300,7 @@ public class Painters {
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), range, Color.Red);
 
                     //Optional threat range
-                    int threatRange = enemyType.groundWeapon().maxRange() + 150;
+                    int threatRange = enemyType.groundWeapon().maxRange() + 125;
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), threatRange, Color.Orange);
 
                 }
