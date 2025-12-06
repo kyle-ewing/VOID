@@ -326,6 +326,10 @@ public class ProductionManager {
     private boolean hasHigherPriorityBuilding() {
         for (PlannedItem pi : productionQueue) {
             if ((pi.getPlannedItemType() == PlannedItemType.BUILDING) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && meetsRequirements(pi.getUnitType()) && pi.getPriority() < 3) {
+                if(gameState.isEnemyInNatural() && pi.getUnitType() == UnitType.Terran_Command_Center) {
+                    continue;
+                }
+
                 return true;
             }
             else if(pi.getPlannedItemType() == PlannedItemType.UPGRADE && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && isResearching(pi.getTechBuilding())) {
