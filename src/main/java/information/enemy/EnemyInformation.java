@@ -9,6 +9,7 @@ import information.BaseInfo;
 import information.GameState;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import planner.PlannedItemStatus;
 import util.Time;
 
 import java.util.HashSet;
@@ -224,13 +225,11 @@ public class EnemyInformation {
             //Remove irradiated units that die out of view
             if(enemyUnit.getEnemyUnit().isIrradiated()) {
                 enemyUnit.setIrradiateTimer();
-
-                if(enemyUnit.getIrradiateTimer() > 240) {
-                    enemyUnits.removeIf(eu -> eu.getEnemyID() == enemyUnit.getEnemyID());
-                    validThreats.removeIf(eu -> eu.getEnemyID() == enemyUnit.getEnemyID());
-                }
             }
         }
+
+        enemyUnits.removeIf(eu -> eu.getIrradiateTimer() > 240);
+        validThreats.removeIf(eu -> eu.getIrradiateTimer() > 240);
 
         for(EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
             if(enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
