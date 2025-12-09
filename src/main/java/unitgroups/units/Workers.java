@@ -64,7 +64,7 @@ public class Workers extends CombatUnits {
             return;
         }
 
-        if(!unit.isMoving()) {
+        if(unit.isIdle()) {
             idleClock++;
         }
 

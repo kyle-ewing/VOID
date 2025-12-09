@@ -59,13 +59,18 @@ public class ProductionManager {
         initUnitCounts();
     }
 
-    private void buildingProduction() {
+    private void production() {
         boolean hasHighPriorityBuilding = hasHigherPriorityBuilding();
+        boolean blockedByHigherPriority = false;
         Workers worker = null;
 
         for (PlannedItem pi : productionQueue) {
             if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
+            }
+
+            if (blockedByHigherPriority && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                continue;
             }
 
             //Throttle gas units but allow mineral only if enough is banked (Vessels very gas heavy and only unit worth prioritizing)
@@ -92,84 +97,89 @@ public class ProductionManager {
 
             switch (pi.getPlannedItemStatus()) {
                 case NOT_STARTED:
-                    if(pi.getSupply() <= player.supplyUsed() / 2) {
+                    if(pi.getSupply() > player.supplyUsed() / 2) {
+                        continue;
+                    }
 
-                        if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
-                            if(!canBeResearched(pi.getTechBuilding()) || !isResearching(pi.getTechBuilding())) {
-                                continue;
-                            }
-
-                            if(pi.getTechUpgrade() != null) {
-                                if(gameState.getResourceTracking().getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
-                                    continue;
-                                }
-                                researchTech(pi.getTechUpgrade());
-                                pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
-                            }
-                            else if(pi.getUpgradeType() != null) {
-                                if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUpgradeType().gasPrice()) {
-                                    continue;
-                                }
-                                researchUpgrade(pi.getUpgradeType());
-                                pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
-                            }
+                    if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
+                        if(!canBeResearched(pi.getTechBuilding()) || !isResearching(pi.getTechBuilding())) {
                             continue;
                         }
 
-                        if(gameState.getResourceTracking().getAvailableMinerals() >= pi.getUnitType().mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= pi.getUnitType().gasPrice()) {
-
-                            if(pi.getPlannedItemType() == PlannedItemType.UNIT) {
-                                for(Unit productionBuilding : productionBuildings) {
-                                    if(productionBuilding.canTrain(pi.getUnitType()) && !productionBuilding.isTraining()) {
-                                        productionBuilding.train(pi.getUnitType());
-                                        pi.setProductionBuilding(productionBuilding);
-                                        pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
-                                        break;
-                                    }
-                                }
+                        if(pi.getTechUpgrade() != null) {
+                            if(gameState.getResourceTracking().getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
+                                blockedByHigherPriority = true;
+                                continue;
                             }
-                            else if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
-                                if(pi.getBuildPosition() == null) {
-                                    if (pi.getUnitType() == UnitType.Terran_Refinery) {
-                                        setRefineryPosition(pi);
-                                    }
-                                    else if (pi.getUnitType() == UnitType.Terran_Command_Center) {
-                                        setCommandCenterPosition(pi);
-                                    }
-                                    else {
-                                        setBuildingPosition(pi);
-                                    }
-
-                                    //Skip over if out of tiles
-                                    if(pi.getBuildPosition() == null) {
-                                        continue;
-                                    }
-                                }
-
-                                if(pi.getBuildPosition() != null) {
-                                    worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), baseInfo.getPathFinding());
-                                    pi.setAssignedBuilder(worker);
-                                }
-
-                                if(pi.getAssignedBuilder() != null) {
-                                    if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
-                                        worker.build(pi, gameState.getResourceTracking());
-                                    }
-                                }
+                            researchTech(pi.getTechUpgrade());
+                            pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+                        }
+                        else if(pi.getUpgradeType() != null) {
+                            if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUpgradeType().gasPrice()) {
+                                blockedByHigherPriority = true;
+                                continue;
                             }
-                            else if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
-                                for(Unit productionBuilding : productionBuildings) {
-                                    if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
-                                        if(productionQueue.stream().anyMatch(plannedItem -> plannedItem.getAddOnParent() == productionBuilding)) {
-                                            continue;
-                                        }
+                            researchUpgrade(pi.getUpgradeType());
+                            pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+                        }
+                        continue;
+                    }
 
-                                        productionBuilding.buildAddon(pi.getUnitType());
-                                        pi.setAddOnParent(productionBuilding);
-                                        pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
-                                        break;
-                                    }
+                    if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() && gameState.getResourceTracking().getAvailableGas() <= pi.getUnitType().gasPrice()) {
+                        blockedByHigherPriority = true;
+                        continue;
+                    }
+
+                    if(pi.getPlannedItemType() == PlannedItemType.UNIT) {
+                        for(Unit productionBuilding : productionBuildings) {
+                            if(productionBuilding.canTrain(pi.getUnitType()) && !productionBuilding.isTraining()) {
+                                productionBuilding.train(pi.getUnitType());
+                                pi.setProductionBuilding(productionBuilding);
+                                pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+                                break;
+                            }
+                        }
+                    }
+                    else if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                        if(pi.getBuildPosition() == null) {
+                            if (pi.getUnitType() == UnitType.Terran_Refinery) {
+                                setRefineryPosition(pi);
+                            }
+                            else if (pi.getUnitType() == UnitType.Terran_Command_Center) {
+                                setCommandCenterPosition(pi);
+                            }
+                            else {
+                                setBuildingPosition(pi);
+                            }
+
+                            //Skip over if out of tiles
+                            if(pi.getBuildPosition() == null) {
+                                continue;
+                            }
+                        }
+
+                        if(pi.getBuildPosition() != null) {
+                            worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), baseInfo.getPathFinding());
+                            pi.setAssignedBuilder(worker);
+                        }
+
+                        if(pi.getAssignedBuilder() != null) {
+                            if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
+                                worker.build(pi, gameState.getResourceTracking());
+                            }
+                        }
+                    }
+                    else if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
+                        for(Unit productionBuilding : productionBuildings) {
+                            if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
+                                if(productionQueue.stream().anyMatch(plannedItem -> plannedItem.getAddOnParent() == productionBuilding)) {
+                                    continue;
                                 }
+
+                                productionBuilding.buildAddon(pi.getUnitType());
+                                pi.setAddOnParent(productionBuilding);
+                                pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+                                break;
                             }
                         }
                     }
@@ -191,7 +201,7 @@ public class ProductionManager {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
 
-                        if(worker.getBuildFrameCount() > 600) {
+                        if(worker.getBuildFrameCount() > 240) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }
                     }
@@ -974,7 +984,7 @@ public class ProductionManager {
 
     public void onFrame() {
         scvProduction();
-        buildingProduction();
+        production();
         addSupplyDepot();
         addUnitProduction();
 
