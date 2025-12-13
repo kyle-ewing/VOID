@@ -41,6 +41,11 @@ public class Marine extends CombatUnits {
             return;
         }
 
+        if(!enemyInBase && !inBase) {
+            setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
+
         kite();
 
         if(minimnumThreshold()) {
