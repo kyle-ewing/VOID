@@ -10,6 +10,30 @@ public class Marine extends CombatUnits {
     }
 
     @Override
+    public void rally() {
+        if(rallyPoint == null) {
+            return;
+        }
+
+        if(priorityEnemyUnit != null) {
+            setEnemyUnit(priorityEnemyUnit);
+            setUnitStatus(UnitStatus.DEFEND);
+        }
+
+        if(enemyUnit != null && enemyInBase) {
+            setUnitStatus(UnitStatus.DEFEND);
+        }
+
+        if(inBase) {
+            unit.attack(rallyPoint.toPosition());
+        }
+        else {
+            unit.move(rallyPoint.toPosition());
+        }
+
+    }
+
+    @Override
     public void attack() {
         if(enemyUnit == null) {
             return;
@@ -19,19 +43,7 @@ public class Marine extends CombatUnits {
             inBunker = false;
         }
 
-        kite();
-
-        if(minimnumThreshold()) {
-            return;
-        }
-
-        if(!unit.isStimmed() && unit.isAttacking()) {
-            unit.useTech(TechType.Stim_Packs);
-        }
-
-        if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
-            unit.attack(enemyUnit.getEnemyPosition());
-        }
+        attackUnit();
     }
 
     @Override
@@ -46,6 +58,22 @@ public class Marine extends CombatUnits {
             return;
         }
 
+        attackUnit();
+
+    }
+
+    @Override
+    public void retreat() {
+        if(enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
+            return;
+        }
+
+        if(!inRangeOfThreat) {
+            setUnitStatus(UnitStatus.ATTACK);
+        }
+    }
+
+    private void attackUnit() {
         kite();
 
         if(minimnumThreshold()) {
@@ -58,18 +86,6 @@ public class Marine extends CombatUnits {
 
         if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
             unit.attack(enemyUnit.getEnemyPosition());
-        }
-
-    }
-
-    @Override
-    public void retreat() {
-        if(enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
-            return;
-        }
-
-        if(!inRangeOfThreat) {
-            setUnitStatus(UnitStatus.ATTACK);
         }
     }
 
