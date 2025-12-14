@@ -38,5 +38,7 @@ public class CannonRush extends EnemyStrategy {
     }
 
     public void buildingResponse() {
+        getBuildingResponse().add(UnitType.Terran_Factory);
+        getBuildingResponse().add(UnitType.Terran_Machine_Shop);
     }
 }
