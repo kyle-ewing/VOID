@@ -201,7 +201,7 @@ public class ProductionManager {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
 
-                        if(worker.getBuildFrameCount() > 240) {
+                        if(worker.getBuildFrameCount() > 284) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }
                     }

@@ -74,6 +74,7 @@ public class BaseInfo {
         setNaturalChoke();
         setStartingBaseTiles();
         setNaturalBaseTiles();
+        extendNaturalTiles();
         setOrderedExpansions();
         setGeyserTiles();
         setMainCliffEdge();
@@ -140,6 +141,30 @@ public class BaseInfo {
         }
 
         return tiles;
+    }
+
+    //Tiles around choke added for rally jank
+    private void extendNaturalTiles() {
+        if(naturalChokePoint == null) {
+            return;
+        }
+
+        Position chokeCenter = naturalChokePoint.getCenter().toPosition();
+        int maxDistance = 64;
+
+        int mapWidth = game.mapWidth();
+        int mapHeight = game.mapHeight();
+
+        for(int x = 0; x < mapWidth; x++) {
+            for(int y = 0; y < mapHeight; y++) {
+                TilePosition tile = new TilePosition(x, y);
+                Position tilePos = tile.toPosition();
+
+                if(chokeCenter.getApproxDistance(tilePos) <= maxDistance) {
+                    naturalTiles.add(tile);
+                }
+            }
+        }
     }
 
     private void setStartingBaseTiles() {
