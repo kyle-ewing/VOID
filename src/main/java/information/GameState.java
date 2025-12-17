@@ -65,6 +65,7 @@ public class GameState {
         buildTiles = new BuildTiles(game, baseInfo);
         buildOrderManager = new BuildOrderManager(game.enemy().getRace());
         resourceTracking = new ResourceTracking(player);
+        jadeBunkerPosition();
         addOpeningBuildOrders();
     }
 
@@ -79,8 +80,11 @@ public class GameState {
         for(BuildOrder bo : openingBuildOrders) {
             startingOpener = bo;
             productionQueue.addAll(bo.getBuildOrder());
-            setBunkerPosition(bo.getBunkerLocation());
             openerMoveOutCondition = bo.getMoveOutCondition();
+
+            if(bunkerPosition == null) {
+                setBunkerPosition(bo.getBunkerLocation());
+            }
         }
     }
 
@@ -95,6 +99,13 @@ public class GameState {
             default:
                 bunkerPosition = null;
                 break;
+        }
+    }
+
+    //Temp fix for Jade high ground bunker
+    private void jadeBunkerPosition() {
+        if(game.mapFileName().contains("Jade")) {
+            bunkerPosition = buildTiles.getNaturalChokeBunker();
         }
     }
 
