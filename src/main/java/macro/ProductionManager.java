@@ -618,15 +618,13 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
         }
         else {
-            if(buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
-                reservedTurretPositions.add(buildTiles.getMainChokeTurret());
-                pi.setBuildPosition(buildTiles.getMainChokeTurret());
-                return;
-            }
-
-            if(buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+            if((baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
                 reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                 pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
+            }
+            else if(buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
+                reservedTurretPositions.add(buildTiles.getMainChokeTurret());
+                pi.setBuildPosition(buildTiles.getMainChokeTurret());
             }
         }
     }
