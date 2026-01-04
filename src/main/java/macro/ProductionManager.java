@@ -361,13 +361,6 @@ public class ProductionManager {
                     }
                 }
                 break;
-            case TWORAX:
-                for(Unit productionBuilding : productionBuildings) {
-                    if(productionBuilding.getType() == UnitType.Terran_Barracks && !productionBuilding.isTraining() && gameState.getResourceTracking().getAvailableMinerals() >= 50) {
-                        productionBuilding.train(UnitType.Terran_Marine);
-                    }
-                }
-                break;
             case TWORAXACADEMY:
                 for(Unit productionBuilding : productionBuildings) {
                     if(!gameState.getTechUnitResponse().isEmpty()) {
@@ -450,7 +443,39 @@ public class ProductionManager {
                     }
                 }
                 break;
+            case ONEFACFE:
+                for(Unit productionBuilding : productionBuildings) {
+                    if(!gameState.getTechUnitResponse().isEmpty()) {
+                        for(UnitType unitType: gameState.getTechUnitResponse()) {
+                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
+                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
+                                    addToQueue(unitType, PlannedItemType.UNIT, 2);
+                                }
+                            }
+                        }
+                    }
 
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks) && unitTypeCount.get(UnitType.Terran_Factory) < 1) {
+                        if (isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
+                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT, 3);
+                        }
+                    }
+
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
+                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 4 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                        }
+                        else if(isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
+                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 3);
+
+                        }
+                    }
+
+                    if(gameState.getResourceTracking().getAvailableMinerals() > 500 && unitTypeCount.get(UnitType.Terran_Factory) < 5 && !hasUnitInQueue(UnitType.Terran_Factory)) {
+                        addProductionBuilding(UnitType.Terran_Factory, 3);
+                    }
+                }
+                break;
         }
     }
 
