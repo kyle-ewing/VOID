@@ -59,6 +59,7 @@ public class Workers extends CombatUnits {
         }
     }
 
+    //Adjust worker position in case it gets stuck ontop of build tile
     public void pulseCheck() {
         if(buildingPosition == null) {
             return;
@@ -69,7 +70,7 @@ public class Workers extends CombatUnits {
         }
 
         if(idleClock > 48) {
-            unit.move(buildingPosition);
+            unit.move(new Position(buildingPosition.getX() + 2, buildingPosition.getY() + 2));
             idleClock = 0;
         }
     }
@@ -97,7 +98,6 @@ public class Workers extends CombatUnits {
         resourceTracking.reserveResources(pi.getUnitType());
         this.setBuildingPosition(pi.getBuildPosition().toPosition());
         this.getUnit().move(pi.getBuildPosition().toPosition());
-        this.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
         pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
 
         this.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
@@ -107,6 +107,7 @@ public class Workers extends CombatUnits {
     public void buildReset(PlannedItem pi, ResourceTracking resourceTracking) {
         this.setWorkerStatus(WorkerStatus.IDLE);
         this.getUnit().stop();
+        this.idleClock = 0;
         resourceTracking.unreserveResources(pi.getUnitType());
         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
     }

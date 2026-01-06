@@ -31,7 +31,7 @@ public class OneFacFE extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 32, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3));
-        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
+        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
