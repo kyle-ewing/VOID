@@ -125,7 +125,7 @@ public class ProductionManager {
                         continue;
                     }
 
-                    if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() && gameState.getResourceTracking().getAvailableGas() <= pi.getUnitType().gasPrice()) {
+                    if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice()) {
                         blockedByHigherPriority = true;
                         continue;
                     }
@@ -201,7 +201,12 @@ public class ProductionManager {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
 
-                        if(worker.getBuildFrameCount() > 284) {
+                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 96 && worker.getIdleClock() > 24) {
+                            worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
+                        }
+
+                        //TODO: ignore if building CC (or other long distance builds)
+                        if(worker.getBuildFrameCount() > 420) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }
                     }
