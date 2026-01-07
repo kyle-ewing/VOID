@@ -70,7 +70,7 @@ public class Workers extends CombatUnits {
         }
 
         if(idleClock > 48) {
-            unit.move(new Position(buildingPosition.getX() + 2, buildingPosition.getY() + 2));
+            unit.move(new Position(unit.getPosition().getX() + 2, unit.getPosition().getY() + 2));
             idleClock = 0;
         }
     }
