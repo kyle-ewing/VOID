@@ -141,7 +141,7 @@ public class EnemyInformation {
                 continue;
             }
 
-            if(!outRangingUnit.getEnemyType().canAttack() || outRangingUnit.getEnemyType().isBuilding()) {
+            if(!outRangingUnit.getEnemyType().canAttack() || outRangingUnit.getEnemyType().isBuilding() || outRangingUnit.getEnemyType() == UnitType.Terran_Marine) {
                 continue;
             }
 

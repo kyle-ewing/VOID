@@ -233,7 +233,7 @@ public class Vulture extends CombatUnits {
 
     private boolean isOutRanged() {
         if(enemyUnit != null) {
-            if(enemyUnit.getEnemyType().isBuilding()) {
+            if(enemyUnit.getEnemyType().isBuilding() || enemyUnit.getEnemyType() == UnitType.Terran_Marine) {
                 return false;
             }
             if(enemyUnit.getEnemyType().groundWeapon().maxRange() + 32 >= weaponRange()) {
