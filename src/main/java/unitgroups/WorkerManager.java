@@ -137,6 +137,14 @@ public class WorkerManager {
                 }
             }
 
+            if(worker.getWorkerStatus() == WorkerStatus.SCOUTING) {
+                if(gameState.getEnemyOpener() == null) {
+                    continue;
+                }
+
+                scoutAttack(worker);
+            }
+
         }
     }
 
@@ -393,6 +401,15 @@ public class WorkerManager {
 
     private void workerAttackClock(Workers worker) {
         worker.setAttackClock(worker.getAttackClock() + 1);
+    }
+
+    private void scoutAttack(Workers worker) {
+        if(worker.getEnemyUnit() != null) {
+            worker.selfDefense();
+        }
+        else {
+            ClosestUnit.findClosestEnemyUnit(worker, gameState.getKnownEnemyUnits(), 600);
+        }
     }
 
     public void onUnitComplete(Unit unit) {
