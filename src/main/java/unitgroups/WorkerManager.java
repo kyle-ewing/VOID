@@ -164,15 +164,19 @@ public class WorkerManager {
     }
 
     private void gatherGas() {
-        for(Workers scv : workers) {
-            if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
-                for(Unit geyser : refinerySaturation.keySet()) {
-                    if(refinerySaturation.get(geyser).size() < 3) {
-                        refinerySaturation.get(geyser).add(scv);
-                        scv.setWorkerStatus(WorkerStatus.GAS);
-                        scv.getUnit().gather(geyser);
-                    }
+        Workers scv;
+
+        for(Unit geyser : refinerySaturation.keySet()) {
+            if(refinerySaturation.get(geyser).size() < 3) {
+                scv = ClosestUnit.findClosestWorker(geyser.getPosition(), workers, baseInfo.getPathFinding());
+
+                if(scv == null) {
+                    continue;
                 }
+
+                refinerySaturation.get(geyser).add(scv);
+                scv.setWorkerStatus(WorkerStatus.GAS);
+                scv.getUnit().gather(geyser);
             }
         }
     }
