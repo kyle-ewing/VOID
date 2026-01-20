@@ -125,7 +125,8 @@ public class ProductionManager {
                         continue;
                     }
 
-                    if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice()) {
+                    if((gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice())
+                        && meetsRequirements(pi.getUnitType())) {
                         blockedByHigherPriority = true;
                         continue;
                     }
@@ -961,6 +962,11 @@ public class ProductionManager {
                 return false;
             }
             if(unitType.tileHeight() == 2 && unitType.tileWidth() == 3 && buildTiles.getMediumBuildTiles().isEmpty()) {
+                return false;
+            }
+
+            //Check if refinery exists so gas buildings don't deadlock build
+            if(unitType.gasPrice() > 0 && unitTypeCount.get(UnitType.Terran_Refinery) == 0) {
                 return false;
             }
         }
