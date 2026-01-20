@@ -63,88 +63,86 @@ public class WorkerManager {
                 }
             }
 
-            if(worker.getWorkerStatus() == WorkerStatus.IDLE) {
-                if(!worker.isAssignedToBase()) {
-                    assignMineralSaturation(worker);
-                }
-                worker.setWorkerStatus(WorkerStatus.MINERALS);
-            }
-
-
-            if(worker.getWorkerStatus() == WorkerStatus.DEFEND) {
-                ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 900);
-                workerAttackClock(worker);
-
-                if(frameCount % 24 != 0) {
-                    return;
-                }
-
-                if(worker.getEnemyUnit() != null) {
-                    worker.selfDefense();
-                }
-
-                if((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()) {
-                    worker.setWorkerStatus(WorkerStatus.IDLE);
-                    worker.setAttackClock(0);
-                    removeDefenseForce(worker);
-                }
-
-            }
-
-            if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
-                for(Unit building : buildingRepair.keySet()) {
-                    if(buildingRepair.get(building) == null) {
-                        buildingRepair.put(building, worker);
-                        worker.setRepairTarget(building);
-                        worker.setWorkerStatus(WorkerStatus.REPAIRING);
+            switch(worker.getWorkerStatus()) {
+                case MINERALS:
+                    for(Unit building : buildingRepair.keySet()) {
+                        if(buildingRepair.get(building) == null) {
+                            buildingRepair.put(building, worker);
+                            worker.setRepairTarget(building);
+                            worker.setWorkerStatus(WorkerStatus.REPAIRING);
+                        }
                     }
-                }
-                if(worker.getUnit().isIdle()) {
-                    gatherMinerals(worker);
-                }
+                    if(worker.getUnit().isIdle()) {
+                        gatherMinerals(worker);
+                    }
 
-                if(worker.getUnit().isGatheringGas()) {
-                    worker.getUnit().stop();
-                }
+                    if(worker.getUnit().isGatheringGas()) {
+                        worker.getUnit().stop();
+                    }
 
-                worker.setIdleClock(0);
-            }
-
-            //TODO: this helps with false positives but still improperly tries to free up workers actually stuck
-            if(worker.getWorkerStatus() == WorkerStatus.STUCK) {
-                if(frameCount % 24 != 0) {
-                    return;
-                }
-
-                if(worker.getUnit().isGatheringMinerals()) {
-                    worker.setWorkerStatus(WorkerStatus.MINERALS);
-                }
-
-                gatherMinerals(worker);
-
-            }
-
-            if(worker.getWorkerStatus() == WorkerStatus.REPAIRING) {
-                worker.repair(worker.getRepairTarget());
-            }
-
-            if((worker.getWorkerStatus() == WorkerStatus.BUILDING) && worker.getUnit().isIdle()) {
-                worker.setIdleClock(worker.getIdleClock() + 12);
-
-                if(worker.getIdleClock() > 300) {
-                    worker.setWorkerStatus(WorkerStatus.IDLE);
                     worker.setIdleClock(0);
-                }
+                    break;
+                case GAS:
+                    //TODO: pull off gas if geyser is depleted
+                    break;
+                case IDLE:
+                    if(!worker.isAssignedToBase()) {
+                        assignMineralSaturation(worker);
+                    }
+                    worker.setWorkerStatus(WorkerStatus.MINERALS);
+                    break;
+                case DEFEND:
+                    ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 900);
+                    workerAttackClock(worker);
+
+                    if(frameCount % 24 != 0) {
+                        return;
+                    }
+
+                    if(worker.getEnemyUnit() != null) {
+                        worker.selfDefense();
+                    }
+
+                    if((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()) {
+                        worker.setWorkerStatus(WorkerStatus.IDLE);
+                        worker.setAttackClock(0);
+                        removeDefenseForce(worker);
+                    }
+                    break;
+                case BUILDING:
+                    if(worker.getUnit().isIdle()) {
+                        worker.setIdleClock(worker.getIdleClock() + 12);
+
+                        if(worker.getIdleClock() > 300) {
+                            worker.setWorkerStatus(WorkerStatus.IDLE);
+                            worker.setIdleClock(0);
+                        }
+                    }
+                    break;
+                case REPAIRING:
+                    worker.repair(worker.getRepairTarget());
+                    break;
+                case SCOUTING:
+                    if(gameState.getEnemyOpener() == null) {
+                        break;
+                    }
+
+                    scoutAttack(worker);
+                    break;
+                case STUCK:
+                    if(frameCount % 24 != 0) {
+                        return;
+                    }
+
+                    if(worker.getUnit().isGatheringMinerals()) {
+                        worker.setWorkerStatus(WorkerStatus.MINERALS);
+                    }
+
+                    gatherMinerals(worker);
+                    break;
+                default:
+                    //do nothing
             }
-
-            if(worker.getWorkerStatus() == WorkerStatus.SCOUTING) {
-                if(gameState.getEnemyOpener() == null) {
-                    continue;
-                }
-
-                scoutAttack(worker);
-            }
-
         }
     }
 
