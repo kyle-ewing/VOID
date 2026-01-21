@@ -40,7 +40,6 @@ public class WorkerManager {
         enemyScoutResponse = new EnemyScoutResponse(game, gameState, this, baseInfo);
     }
 
-    //TODO: refactor all of this and organize with switch cases
     public void onFrame() {
         startingMineralAssignment();
         gatherGas();
@@ -449,7 +448,7 @@ public class WorkerManager {
         if(unit.getType() == UnitType.Terran_Refinery) {
             for(Workers worker : refinerySaturation.get(unit)) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
-                refinerySaturation.get(unit).remove(worker);
+                refinerySaturation.get(unit).removeIf(w -> w == worker);
             }
             return;
         }

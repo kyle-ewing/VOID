@@ -29,6 +29,10 @@ public class OneRaxFE extends BuildOrder {
         return null;
     }
 
+    public BuildType BuildType() {
+        return BuildType.BIO;
+    }
+
     public HashMap<UnitType, Integer> getMoveOutCondition() {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         return moveOutCondition;
