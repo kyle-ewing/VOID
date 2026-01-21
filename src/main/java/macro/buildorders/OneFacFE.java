@@ -51,6 +51,10 @@ public class OneFacFE extends BuildOrder {
         return BunkerLocation.NATURAL;
     }
 
+    public BuildType BuildType() {
+        return BuildType.MECH;
+    }
+
     public HashMap<UnitType, Integer> getMoveOutCondition() {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         moveOutCondition.put(UnitType.Terran_Vulture, 6);

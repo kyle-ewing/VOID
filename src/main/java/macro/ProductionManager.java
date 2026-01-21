@@ -518,6 +518,13 @@ public class ProductionManager {
         addToQueue(unitType, PlannedItemType.BUILDING, priority);
     }
 
+    private void addExpansion() {
+        if(gameState.getCanExpand()) {
+            addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 2);
+            gameState.setCanExpand(false);
+        }
+    }
+
     private void scvProduction() {
         int ownedBases = baseInfo.getOwnedBases().size();
         int workerCap = 24 * ownedBases;
@@ -1021,6 +1028,7 @@ public class ProductionManager {
         production();
         addSupplyDepot();
         addUnitProduction();
+        addExpansion();
 
         if(gameState.getEnemyOpener() != null && !openerResponse) {
             openerResponse();
@@ -1050,7 +1058,7 @@ public class ProductionManager {
         removeBuilding(unit);
 
         if(unit.getType().isBuilding()) {
-            if(unit.getType() == UnitType.Terran_Bunker || unit.getType() == UnitType.Terran_Refinery) {
+            if(unit.getType() == UnitType.Terran_Refinery) {
                 return;
             }
 

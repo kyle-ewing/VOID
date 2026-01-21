@@ -6,6 +6,7 @@ import config.Config;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import macro.ExpansionCriteria;
 import macro.ResourceTracking;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
@@ -30,6 +31,7 @@ public class GameState {
     private ResourceTracking resourceTracking;
     private BuildOrderManager buildOrderManager;
     private EnemyStrategy enemyOpener = null;
+    private ExpansionCriteria expansionCriteria;
 
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
@@ -39,6 +41,7 @@ public class GameState {
     private boolean enemyInNatural = false;
     private boolean enemyBuildingDiscovered = false;
     private boolean enemyFlyerInBase = false;
+    private boolean canExpand = false;
 
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
@@ -65,12 +68,14 @@ public class GameState {
         buildTiles = new BuildTiles(game, baseInfo);
         buildOrderManager = new BuildOrderManager(game.enemy().getRace());
         resourceTracking = new ResourceTracking(player);
+        expansionCriteria = new ExpansionCriteria(game, player, this);
         jadeBunkerPosition();
         addOpeningBuildOrders();
     }
 
     public void onFrame() {
         resourceTracking.onFrame();
+        expansionCriteria.onFrame();
     }
 
     //Change when learning is added
@@ -108,6 +113,7 @@ public class GameState {
             bunkerPosition = buildTiles.getNaturalChokeBunker();
         }
     }
+
 
     public BaseInfo getBaseInfo() {
         return baseInfo;
@@ -201,6 +207,8 @@ public class GameState {
         return openerMoveOutCondition;
     }
 
+
+
     public boolean isEnemyInBase() {
         return enemyInBase;
     }
@@ -227,5 +235,13 @@ public class GameState {
 
     public void setEnemyFlyerInBase(boolean enemyFlyerInBase) {
         this.enemyFlyerInBase = enemyFlyerInBase;
+    }
+
+    public boolean getCanExpand() {
+        return canExpand;
+    }
+
+    public void setCanExpand(boolean canExpand) {
+        this.canExpand = canExpand;
     }
 }
