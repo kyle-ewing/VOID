@@ -36,6 +36,8 @@ public class EnemyStrategyManager {
         enemyTechUnits.add(new Carrier());
         enemyTechUnits.add(new DarkTemplar());
         enemyTechUnits.add(new Lurker());
+        enemyTechUnits.add(new Wraith());
+        enemyTechUnits.add(new BattleCruiser());
     }
 
     public HashSet<EnemyStrategy> getEnemyStrategies() {
