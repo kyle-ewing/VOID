@@ -630,6 +630,16 @@ public class UnitManager {
                     return false;
                 }
             }
+            //Group goliaths and vultures together
+            else if(unitType == UnitType.Terran_Vulture) {
+                int vultureCount = unitCount.getOrDefault(UnitType.Terran_Vulture, 0);
+                int goliathCount = unitCount.getOrDefault(UnitType.Terran_Goliath, 0);
+                int total = vultureCount + goliathCount;
+
+                if (total < requiredCount) {
+                    return false;
+                }
+            }
             else {
                 if(!unitCount.containsKey(unitType) || unitCount.get(unitType) < requiredCount) {
                     return false;
