@@ -92,7 +92,7 @@ public class ExpansionCriteria {
         }
 
         if(!productionBuildingCriteria) {
-            switch (gameState.getStartingOpener().BuildType()) {
+            switch (gameState.getStartingOpener().buildType()) {
                 case BIO:
                     if(gameState.getUnitTypeCount().get(UnitType.Terran_Barracks) >= 5 && baseCount == 2) {
                         productionBuildingCriteria = true;

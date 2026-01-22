@@ -56,7 +56,7 @@ public class Painters {
                 paintStimStatus(unit);
 
             }
-            paintCombatUnitValues();
+//            paintCombatUnitValues();
         }
 
         if(config.debugWorkers) {

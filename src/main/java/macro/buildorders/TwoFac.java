@@ -54,7 +54,7 @@ public class TwoFac extends BuildOrder {
         return BunkerLocation.NATURAL;
     }
 
-    public BuildType BuildType() {
+    public BuildType buildType() {
         return BuildType.MECH;
     }
 

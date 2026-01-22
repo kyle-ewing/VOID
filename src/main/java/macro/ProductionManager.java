@@ -1062,6 +1062,10 @@ public class ProductionManager {
                 return;
             }
 
+            if(unit.getType() == UnitType.Terran_Bunker && gameState.getStartingOpener().buildType() != BuildType.BIO) {
+                return;
+            }
+
             if(unit.getType() == UnitType.Terran_Missile_Turret) {
                 reservedTurretPositions.remove(unit.getTilePosition());
             }

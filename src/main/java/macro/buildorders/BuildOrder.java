@@ -17,7 +17,7 @@ public abstract class BuildOrder {
     public abstract ArrayList<PlannedItem> getBuildOrder();
     public abstract void setLiftableBuildings();
     public abstract BunkerLocation getBunkerLocation();
-    public abstract BuildType BuildType();
+    public abstract BuildType buildType();
     public abstract HashMap<UnitType, Integer> getMoveOutCondition();
 
     public HashSet<UnitType> getLiftableBuildings() {

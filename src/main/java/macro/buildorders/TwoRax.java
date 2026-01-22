@@ -31,7 +31,7 @@ public class TwoRax extends BuildOrder {
         return BunkerLocation.MAIN;
     }
 
-    public BuildType BuildType() {
+    public BuildType buildType() {
         return BuildType.BIO;
     }
 

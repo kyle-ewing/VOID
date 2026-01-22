@@ -51,7 +51,7 @@ public class TwoRaxAcademy extends BuildOrder {
         return BunkerLocation.MAIN;
     }
 
-    public BuildType BuildType() {
+    public BuildType buildType() {
         return BuildType.BIO;
     }
 
