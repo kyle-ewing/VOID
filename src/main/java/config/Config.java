@@ -19,9 +19,9 @@ public final class Config {
     public boolean debugCCExclusionZone = false;
 
     // Bases and buildings
-    public boolean debugBuildTiles = false;
-    public boolean debugBunkerTiles = false;
-    public boolean debugTurretTiles = false;
+    public boolean debugBuildTiles = true;
+    public boolean debugBunkerTiles = true;
+    public boolean debugTurretTiles = true;
 
     // Combat Units and workers
     public boolean debugCombatUnits = true;

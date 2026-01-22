@@ -29,7 +29,7 @@ public class OneRaxFE extends BuildOrder {
         return null;
     }
 
-    public BuildType BuildType() {
+    public BuildType buildType() {
         return BuildType.BIO;
     }
 
