@@ -97,6 +97,7 @@ public class Workers extends CombatUnits {
     public void build(PlannedItem pi, ResourceTracking resourceTracking) {
         resourceTracking.reserveResources(pi.getUnitType());
         this.setBuildingPosition(pi.getBuildPosition().toPosition());
+        this.distanceToBuildTarget = this.getUnit().getDistance(pi.getBuildPosition().toPosition());
         this.getUnit().move(pi.getBuildPosition().toPosition());
         pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
 
