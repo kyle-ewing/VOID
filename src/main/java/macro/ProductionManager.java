@@ -64,7 +64,7 @@ public class ProductionManager {
         boolean blockedByHigherPriority = false;
         Workers worker = null;
 
-        for (PlannedItem pi : productionQueue) {
+        for(PlannedItem pi : productionQueue) {
             if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
@@ -198,11 +198,7 @@ public class ProductionManager {
 
                         worker.pulseCheck();
 
-                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 96) {
-                            worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
-                        }
-
-                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 96 && worker.getIdleClock() > 24) {
+                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 144) {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
 
@@ -505,13 +501,13 @@ public class ProductionManager {
     }
 
     private void addProductionBuilding(UnitType unitType, int priority) {
-        if(buildTiles.getLargeBuildTiles().isEmpty()) {
+        if(buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
             return;
         }
 
         int currentlyBuilding = (int) productionQueue.stream().filter(pi -> pi.getUnitType() != null && pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4 && (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED || pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS)).count();
 
-        if(buildTiles.getLargeBuildTiles().size() == currentlyBuilding) {
+        if(buildTiles.getLargeBuildTiles().size() + buildTiles.getLargeBuildTilesNoGap().size() == currentlyBuilding) {
             return;
         }
 
@@ -579,10 +575,7 @@ public class ProductionManager {
         int distanceFromSCV = Integer.MAX_VALUE;
 
         if(pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4) {
-            if(buildTiles.getLargeBuildTiles().isEmpty() && pi.getUnitType().canBuildAddon()) {
-                return;
-            }
-            if(buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
+            if(buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty() && pi.getUnitType().canBuildAddon()) {
                 return;
             }
 
@@ -597,6 +590,22 @@ public class ProductionManager {
                     if(distance < distanceFromSCV) {
                         distanceFromSCV = distance;
                         cloestBuildTile = tilePosition;
+                    }
+                }
+
+                //Use no gap tiles if no other large tiles are available
+                if(cloestBuildTile == null) {
+                    for(TilePosition tilePosition : buildTiles.getLargeBuildTilesNoGap()) {
+                        if(tileTaken(tilePosition)) {
+                            continue;
+                        }
+
+                        int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
+
+                        if(distance < distanceFromSCV) {
+                            distanceFromSCV = distance;
+                            cloestBuildTile = tilePosition;
+                        }
                     }
                 }
             }
