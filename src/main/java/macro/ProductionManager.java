@@ -1079,11 +1079,15 @@ public class ProductionManager {
                 reservedTurretPositions.remove(unit.getTilePosition());
             }
 
+            //Readd everything as P1 except CCs after the natural
             if(!unit.isCompleted()) {
                 resetBuilding(unit);
             }
             else if(unit.getType().isAddon()){
                 addToQueue(unit.getType(), PlannedItemType.ADDON, 1);
+            }
+            else if(unit.getType() == UnitType.Terran_Command_Center && baseInfo.isNaturalOwned()) {
+                addToQueue(unit.getType(), PlannedItemType.BUILDING, 2);
             }
             else {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
