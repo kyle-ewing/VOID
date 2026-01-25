@@ -27,6 +27,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new NinePool(baseInfo));
         enemyStrategies.add(new CannonRush(baseInfo));
         enemyStrategies.add(new GasSteal(baseInfo));
+        enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new DTRush());
     }
 
