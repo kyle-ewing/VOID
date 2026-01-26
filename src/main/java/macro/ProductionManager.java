@@ -483,11 +483,16 @@ public class ProductionManager {
 
     //Unplanned depot additions to the queue
     private void addSupplyDepot() {
+
         if(!isDepotInQueue()) {
 
             int usedSupply = game.self().supplyUsed() / 2;
             int totalSupply = game.self().supplyTotal() / 2;
             int freeSupply = totalSupply - usedSupply;
+
+            if(totalSupply >= 200) {
+                return;
+            }
 
             if(freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() >= 2) {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
