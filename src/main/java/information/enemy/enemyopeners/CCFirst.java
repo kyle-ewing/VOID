@@ -24,7 +24,7 @@ public class CCFirst extends  EnemyStrategy {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType().isResourceDepot()) {
+            if(enemyUnit.getEnemyType() == UnitType.Terran_Command_Center) {
                 for(Base base : baseInfo.getMapBases()) {
                     if(base.isStartingLocation()) {
                         if(base.getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 10) {
@@ -50,7 +50,8 @@ public class CCFirst extends  EnemyStrategy {
         return enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(ut -> ut == UnitType.Terran_Barracks)
                 && enemyUnits.stream().map(EnemyUnits::getEnemyType).anyMatch(ut -> ut == UnitType.Terran_Command_Center)
                 && isStartingBase
-                && time.greaterThan(new Time(2, 0));
+                && time.greaterThan(new Time(2, 0))
+                && time.lessThanOrEqual(new Time(4, 0));
     }
 
     public void buildingResponse() {
