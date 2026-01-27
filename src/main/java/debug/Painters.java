@@ -87,8 +87,9 @@ public class Painters {
         if(config.debugBases) {
             paintNatural(gameState.getBaseInfo().getNaturalBase());
             paintExpansionOrdering(gameState.getBaseInfo().getOrderedExpansions());
-            paintdistanceFromCC(gameState.getBaseInfo().getStartingBase(), 700, Color.Red);
-            paintdistanceFromCC(gameState.getBaseInfo().getNaturalBase(), 400, Color.Red);
+            paintExpansionDistances(gameState.getBaseInfo().getOrderedExpansions(), gameState.getBaseInfo().getStartingBase());
+//            paintdistanceFromCC(gameState.getBaseInfo().getStartingBase(), 700, Color.Red);
+//            paintdistanceFromCC(gameState.getBaseInfo().getNaturalBase(), 400, Color.Red);
         }
 
         if(config.debugChokes) {
@@ -442,7 +443,7 @@ public class Painters {
     //Map Painters
     private void paintNatural(Base base) {
         game.drawCircleMap(base.getCenter(), 40, Color.Green);
-        game.drawTextMap(base.getCenter(), "Natural");
+        game.drawTextMap(base.getCenter().getX(), base.getCenter().getY()  -10, "\u0007 Natural");
     }
 
     private void paintNaturalChoke(ChokePoint chokePoint) {
@@ -459,6 +460,21 @@ public class Painters {
         for(int i = 0; i < orderedExpansions.size(); i++) {
             game.drawTextMap(orderedExpansions.get(i).getCenter(), "Expansion: " + i);
             game.drawCircleMap(orderedExpansions.get(i).getCenter(), 40, Color.Purple);
+        }
+    }
+
+    private void paintExpansionDistances(List<Base> orderedExpansions, Base startingBase) {
+        if(orderedExpansions.size() < 2) {
+            return;
+        }
+
+        for(Base expansion : orderedExpansions) {
+            if(expansion == null) {
+                continue;
+            }
+
+            int distance = expansion.getCenter().getApproxDistance(startingBase.getCenter());
+            game.drawTextMap(expansion.getCenter().getX(), expansion.getCenter().getY() + 10, "Distance from main: " + distance);
         }
     }
 
