@@ -2,7 +2,6 @@ package information;
 
 import bwapi.*;
 import bwem.*;
-import debug.Painters;
 import map.PathFinding;
 import map.AllBasePaths;
 
@@ -67,7 +66,7 @@ public class BaseInfo {
         setChokePoints();
 
         allBasePaths = new AllBasePaths(this);
-        allPathsMap = new HashMap<>(allBasePaths.getPathLists());
+        allPathsMap = new HashMap<>(allBasePaths.getBasePathLists());
 
         setNaturalBase();
         setMainChoke();

@@ -215,9 +215,9 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        for(Base base : baseInfo.getAllBasePaths().getPathLists().keySet()) {
+        for(Base base : baseInfo.getAllBasePaths().getChokePathLists().keySet()) {
             if(enemyInformation.getStartingEnemyBase().getEnemyPosition().equals(base.getCenter())) {
-                List<Position> allPositions = baseInfo.getAllBasePaths().getPathLists().get(base);
+                List<Position> allPositions = baseInfo.getAllBasePaths().getChokePathLists().get(base);
 
                 for(Position position : allPositions) {
                     boolean nearMainChoke = position.getDistance(mainChoke.getCenter().toPosition()) < 175;
