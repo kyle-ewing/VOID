@@ -53,7 +53,7 @@ public class BaseInfo {
 
     public void init() {
 
-        for(Unit unit : game.getAllUnits()) {
+        for(Unit unit : game.self().getUnits()) {
             if(unit.getType() == UnitType.Terran_Command_Center) {
                 initalCC = unit;
             }

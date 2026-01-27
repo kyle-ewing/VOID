@@ -211,6 +211,8 @@ public class EnemyInformation {
         Time currentTime = new Time(game.getFrameCount());
         enemyInBase();
         enemyInNatural();
+        checkOpenerDefense(currentTime);
+        checkTechUnits();
 
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyUnit().isVisible()) {
@@ -231,6 +233,10 @@ public class EnemyInformation {
         enemyUnits.removeIf(eu -> eu.getIrradiateTimer() > 240);
         validThreats.removeIf(eu -> eu.getIrradiateTimer() > 240);
 
+        if(enemyOpener != null) {
+            return;
+        }
+
         for(EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
             if(enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
                 enemyOpener = enemyStrategy;
@@ -239,9 +245,6 @@ public class EnemyInformation {
                 break;
             }
         }
-
-        checkOpenerDefense(currentTime);
-        checkTechUnits();
     }
 
     public void onUnitDiscover(Unit unit) {
