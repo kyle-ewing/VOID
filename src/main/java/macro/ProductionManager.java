@@ -637,21 +637,7 @@ public class ProductionManager {
             }
 
             if(pi.getUnitType() == UnitType.Terran_Bunker) {
-                if(buildTiles.getCloseBunkerTile() == null) {
-                    return;
-                }
-
-                if(gameState.getEnemyOpener() != null) {
-                    if(gameState.getEnemyOpener().getStrategyName().equals("Four Pool")) {
-                        pi.setBuildPosition(buildTiles.getCloseBunkerTile());
-                        return;
-                    }
-                }
-
-                if(bunkerPosition != null) {
-                    pi.setBuildPosition(bunkerPosition);
-                }
-
+                pi.setBuildPosition(setBunkerPosition());
                 return;
             }
 
@@ -695,6 +681,31 @@ public class ProductionManager {
             break;
         }
 
+    }
+
+    private TilePosition setBunkerPosition() {
+        if(buildTiles.getCloseBunkerTile() == null) {
+            return null;
+        }
+
+        if(gameState.getEnemyOpener() != null) {
+            switch(gameState.getEnemyOpener().getStrategyName()) {
+                case "Cannon Rush":
+                    return buildTiles.getMainChokeBunker();
+                case "SCV Rush":
+                    return buildTiles.getMainChokeBunker();
+                case "Four Pool":
+                    return buildTiles.getCloseBunkerTile();
+                case "DT Rush":
+                    return buildTiles.getMainChokeBunker();
+            }
+        }
+
+        if(bunkerPosition != null) {
+           return bunkerPosition;
+        }
+
+        return null;
     }
 
     private void openerResponse() {
