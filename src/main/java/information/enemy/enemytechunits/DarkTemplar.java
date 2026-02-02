@@ -7,7 +7,7 @@ import java.util.HashSet;
 
 public class DarkTemplar extends EnemyTechUnits {
     public DarkTemplar() {
-        super("Dark Templar", UnitType.Terran_Science_Vessel);
+        super("Dark Templar", UnitType.Terran_Science_Vessel, false);
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {

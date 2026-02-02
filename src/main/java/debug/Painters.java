@@ -82,6 +82,8 @@ public class Painters {
         if(config.debugTurretTiles) {
             paintMissileTile(gameState.getBuildTiles().getMainChokeTurret());
             paintMissileTile(gameState.getBuildTiles().getNaturalChokeTurret());
+            paintMineralLineTurrets(gameState.getBuildTiles().getMineralLineTurrets());
+            paintMainTurrets(gameState.getBuildTiles().getMainTurrets());
         }
 
         if(config.debugBases) {
@@ -438,6 +440,33 @@ public class Painters {
                 start.getY() + UnitType.Terran_Missile_Turret.tileHeight() * 32
         );
         game.drawBoxMap(start, end, Color.Teal);
+    }
+
+    private void paintMineralLineTurrets(HashMap<Base, TilePosition> mineralLineTurrets) {
+        for(Map.Entry<Base, TilePosition> entry : mineralLineTurrets.entrySet()) {
+            TilePosition tilePosition = entry.getValue();
+
+            game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
+            Position start = tilePosition.toPosition();
+            Position end = new Position(
+                    start.getX() + UnitType.Terran_Missile_Turret.tileWidth() * 32,
+                    start.getY() + UnitType.Terran_Missile_Turret.tileHeight() * 32
+            );
+            game.drawBoxMap(start, end, Color.Orange);
+        }
+    }
+
+    private void paintMainTurrets(HashSet<TilePosition> turretTiles) {
+        for(TilePosition turretTile : turretTiles) {
+
+            game.drawTextMap(turretTile.toPosition(), String.valueOf(turretTile));
+            Position start = turretTile.toPosition();
+            Position end = new Position(
+                    start.getX() + UnitType.Terran_Missile_Turret.tileWidth() * 32,
+                    start.getY() + UnitType.Terran_Missile_Turret.tileHeight() * 32
+            );
+            game.drawBoxMap(start, end, Color.Orange);
+        }
     }
 
     //Map Painters

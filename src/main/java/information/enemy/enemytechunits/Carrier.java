@@ -12,7 +12,7 @@ import java.util.HashSet;
 
 public class Carrier extends EnemyTechUnits {
     public Carrier() {
-        super("Carrier", UnitType.Terran_Goliath);
+        super("Carrier", UnitType.Terran_Goliath, true);
     }
 
 

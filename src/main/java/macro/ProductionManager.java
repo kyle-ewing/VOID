@@ -331,6 +331,10 @@ public class ProductionManager {
         productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, plannedItemType, priority));
     }
 
+    private void addToQueue(UnitType unitType, PlannedItemType plannedItemType,  TilePosition buildPosition, int priority) {
+        productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, plannedItemType, buildPosition, priority));
+    }
+
     private void addAddOn(UnitType unitType, int priority) {
         productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, priority));
     }
@@ -741,32 +745,51 @@ public class ProductionManager {
                 continue;
             }
 
+            //Remove buildings already owned and already highest priority in queue
+            techUnit.getFriendlyBuildingResponse().removeIf(
+                    buildingResponse -> allBuildings.stream().anyMatch(unit -> unit.getType() == buildingResponse));
+
+            techUnit.getFriendlyBuildingResponse().removeIf(buildingPriority ->
+                    productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority && pi.getPriority() == 1));
 
             for(UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
-                boolean existingBuilding = false;
-                for(Unit building : allBuildings) {
-                    if(building.getType() == buildingResponse) {
-                        existingBuilding = true;
-                        break;
+                productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() != 1);
+
+                if(buildingResponse.isAddon()) {
+                    addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
+                }
+                else {
+                    addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                }
+
+
+            }
+
+            //Spam turrets if flyers are detected
+            if(techUnit.isFlyer()) {
+                for(Base base : baseInfo.getOwnedBases()) {
+                    TilePosition turretTile = buildTiles.getMineralLineTurrets().get(base);
+                    if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
+                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,1);
                     }
                 }
 
-                for(PlannedItem pi : productionQueue) {
-                    if(pi.getUnitType() == buildingResponse) {
-                        existingBuilding = true;
-                        break;
+                for(TilePosition turretTile : buildTiles.getMainTurrets()) {
+                    if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
+                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,1);
                     }
                 }
 
-                if(!existingBuilding) {
-                    if(buildingResponse.isAddon()) {
-                        addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
-                    }
-                    else {
-                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
-                    }
+                TilePosition mainChokeTurret = buildTiles.getMainChokeTurret();
+                TilePosition naturalChokeTurret = buildTiles.getNaturalChokeTurret();
+
+                if(mainChokeTurret != null && !hasTurretAtBase(mainChokeTurret) && !hasPositionInQueue(mainChokeTurret) && !tileTaken(mainChokeTurret)) {
+                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, mainChokeTurret,1);
                 }
 
+                if(naturalChokeTurret != null && !hasTurretAtBase(naturalChokeTurret) && !hasPositionInQueue(naturalChokeTurret) && !tileTaken(naturalChokeTurret)) {
+                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, naturalChokeTurret,1);
+                }
             }
 
             if(techUnit.getFriendlyUpgradeResponse().isEmpty()) {
@@ -810,6 +833,16 @@ public class ProductionManager {
             }
 
         }
+    }
+
+    private boolean hasTurretAtBase(TilePosition location) {
+        for(Unit unit : game.self().getUnits()) {
+            if(unit.getType() == UnitType.Terran_Missile_Turret &&
+                    unit.getTilePosition().equals(location)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //Track number of buildings to check for building requirements
@@ -1046,6 +1079,10 @@ public class ProductionManager {
 
     private boolean hasUnitInQueue(UnitType unitType) {
         return productionQueue.stream().anyMatch(pi -> pi.getUnitType() == unitType && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
+    }
+
+    private boolean hasPositionInQueue(TilePosition tilePosition) {
+        return productionQueue.stream().anyMatch(pi -> pi.getBuildPosition() != null && pi.getBuildPosition().equals(tilePosition) && pi.getPlannedItemStatus() != PlannedItemStatus.COMPLETE);
     }
 
     public void onFrame() {
