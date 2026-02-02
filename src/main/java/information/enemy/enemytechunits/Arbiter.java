@@ -9,7 +9,7 @@ import java.util.HashSet;
 
 public class Arbiter extends EnemyTechUnits {
     public Arbiter() {
-        super("Arbiter", UnitType.Terran_Science_Vessel);
+        super("Arbiter", UnitType.Terran_Science_Vessel, true);
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {

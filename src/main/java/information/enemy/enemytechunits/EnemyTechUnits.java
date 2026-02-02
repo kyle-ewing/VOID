@@ -12,11 +12,13 @@ public abstract class EnemyTechUnits {
     private UnitType responseUnitType;
     private ArrayList<UnitType> friendlyBuildingResponse = new ArrayList<>();
     private ArrayList<PlannedItem> friendlyUpgradeResponse = new ArrayList<>();
+    private boolean isFlyer;
     private boolean triggeredResponse = false;
 
-    public EnemyTechUnits(String techName, UnitType unitType) {
+    public EnemyTechUnits(String techName, UnitType unitType, boolean isFlyer) {
         this.techName = techName;
         this.responseUnitType = unitType;
+        this.isFlyer = isFlyer;
     }
 
     //PlannedItem used because of upgrade/tech difference
@@ -26,6 +28,10 @@ public abstract class EnemyTechUnits {
 
     public String getTechName() {
         return techName;
+    }
+
+    public boolean isFlyer() {
+        return isFlyer;
     }
 
     public UnitType getResponseUnitType() {

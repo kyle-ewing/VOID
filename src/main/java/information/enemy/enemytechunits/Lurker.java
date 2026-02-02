@@ -12,7 +12,7 @@ import java.util.HashSet;
 
 public class Lurker extends EnemyTechUnits {
     public Lurker() {
-        super("Lurker", UnitType.Terran_Science_Vessel);
+        super("Lurker", UnitType.Terran_Science_Vessel, false);
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {

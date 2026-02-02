@@ -74,6 +74,15 @@ public class PlannedItem {
         this.priority = priority;
     }
 
+    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, TilePosition buildPosition , int priority) {
+        this.unitType = unitType;
+        this.supply = supply;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.buildPosition = buildPosition;
+        this.priority = priority;
+    }
+
     public PlannedItemStatus getPlannedItemStatus() {
         return plannedItemStatus;
     }

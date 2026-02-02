@@ -11,7 +11,7 @@ import java.util.HashSet;
 
 public class Wraith extends EnemyTechUnits {
     public Wraith() {
-        super("Wraith", UnitType.Terran_Goliath);
+        super("Wraith", UnitType.Terran_Goliath, true);
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
@@ -29,6 +29,8 @@ public class Wraith extends EnemyTechUnits {
 
     public void techBuildingResponse() {
         getFriendlyBuildingResponse().add(UnitType.Terran_Armory);
+        getFriendlyBuildingResponse().add(UnitType.Terran_Engineering_Bay);
+        getFriendlyBuildingResponse().add(UnitType.Terran_Academy);
     }
 
     public void techUpgradeResponse() {

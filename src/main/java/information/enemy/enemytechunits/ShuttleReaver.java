@@ -12,7 +12,7 @@ import java.util.HashSet;
 
 public class ShuttleReaver extends EnemyTechUnits {
     public ShuttleReaver() {
-        super("Shuttle Reaver", UnitType.Terran_Wraith);
+        super("Shuttle Reaver", UnitType.Terran_Wraith, true);
 
 
     }

@@ -11,7 +11,7 @@ import java.util.HashSet;
 
 public class BattleCruiser extends EnemyTechUnits {
     public BattleCruiser() {
-        super("BattleCruiser", UnitType.Terran_Goliath);
+        super("BattleCruiser", UnitType.Terran_Goliath, true);
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
