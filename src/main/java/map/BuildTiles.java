@@ -821,12 +821,46 @@ public class BuildTiles {
         Collections.shuffle(front);
         Collections.shuffle(back);
 
-        for(int i = 0; i < Math.min(3, front.size()); i++) {
-            mainTurrets.add(front.get(i));
+        int addedFront = 0;
+        for(int i = 0; i < front.size() && addedFront < 3; i++) {
+            TilePosition candidate = front.get(i);
+
+            if(!tilePositionValidator.isBuildable(candidate, UnitType.Terran_Missile_Turret)) {
+                continue;
+            }
+            if(intersectsExclusionZones(candidate)) {
+                continue;
+            }
+            if(isTileInPlannedBuildingFootprint(candidate)) {
+                continue;
+            }
+            if(intersectsExistingBuildTiles(candidate, UnitType.Terran_Missile_Turret)) {
+                continue;
+            }
+
+            mainTurrets.add(candidate);
+            addedFront++;
         }
 
-        for(int i = 0; i < Math.min(2, back.size()); i++) {
-            mainTurrets.add(back.get(i));
+        int addedBack = 0;
+        for(int i = 0; i < back.size() && addedBack < 2; i++) {
+            TilePosition candidate = back.get(i);
+
+            if(!tilePositionValidator.isBuildable(candidate, UnitType.Terran_Missile_Turret)) {
+                continue;
+            }
+            if(intersectsExclusionZones(candidate)) {
+                continue;
+            }
+            if(isTileInPlannedBuildingFootprint(candidate)) {
+                continue;
+            }
+            if(intersectsExistingBuildTiles(candidate, UnitType.Terran_Missile_Turret)) {
+                continue;
+            }
+
+            mainTurrets.add(candidate);
+            addedBack++;
         }
     }
 
@@ -901,7 +935,6 @@ public class BuildTiles {
                 }
             }
         }
-
 
         if(mainChokeBunker != null) {
             int mainChokeBunkerX = mainChokeBunker.getX();
@@ -994,6 +1027,25 @@ public class BuildTiles {
             int existingYStart = existingTile.getY();
             int existingXEnd = existingTile.getX() + UnitType.Terran_Supply_Depot.tileWidth();
             int existingYEnd = existingTile.getY() + UnitType.Terran_Supply_Depot.tileHeight();
+
+            for(int x = newX; x < newX + typeWidth; x++) {
+                for(int y = newY; y < newY + typeHeight; y++) {
+                    if(x >= existingXStart && x < existingXEnd && y >= existingYStart && y < existingYEnd) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        for(TilePosition existingTile : mineralLineTurrets.values()) {
+            if(existingTile == null) {
+                continue;
+            }
+
+            int existingXStart = existingTile.getX();
+            int existingYStart = existingTile.getY();
+            int existingXEnd = existingXStart + UnitType.Terran_Missile_Turret.tileWidth();
+            int existingYEnd = existingYStart + UnitType.Terran_Missile_Turret.tileHeight();
 
             for(int x = newX; x < newX + typeWidth; x++) {
                 for(int y = newY; y < newY + typeHeight; y++) {

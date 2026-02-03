@@ -48,6 +48,7 @@ public class CCFirst extends  EnemyStrategy {
 
         //Not ideal check, does not cover proxies
         return enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(ut -> ut == UnitType.Terran_Barracks)
+                && enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(ut -> ut == UnitType.Terran_Marine)
                 && enemyUnits.stream().map(EnemyUnits::getEnemyType).anyMatch(ut -> ut == UnitType.Terran_Command_Center)
                 && isStartingBase
                 && time.greaterThan(new Time(2, 0))
