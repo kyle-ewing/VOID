@@ -388,7 +388,7 @@ public class UnitManager {
             return;
         }
 
-        if(isActiveScanNearUnit()) {
+        if(activeScanNearUnit()) {
             return;
         }
 
@@ -403,7 +403,7 @@ public class UnitManager {
         }
     }
 
-    private boolean isActiveScanNearUnit() {
+    private boolean activeScanNearUnit() {
         for(CombatUnits scanUnit : combatUnits) {
             if(scanUnit.getUnitStatus() == UnitStatus.SCAN) {
                 for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
@@ -451,6 +451,10 @@ public class UnitManager {
 
             for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
                 if(enemyUnit.getEnemyPosition() == null) {
+                    continue;
+                }
+
+                if(!friendlyUnit.getUnitType().groundWeapon().targetsAir() || !friendlyUnit.getUnitType().airWeapon().targetsGround()) {
                     continue;
                 }
 

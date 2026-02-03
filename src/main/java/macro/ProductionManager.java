@@ -540,7 +540,7 @@ public class ProductionManager {
 
             if (!scvInQueue) {
                 for(int i = 0; i < ownedBases; i++) {
-                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 4);
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
                 }
             }
         }
