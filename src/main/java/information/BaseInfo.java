@@ -477,21 +477,34 @@ public class BaseInfo {
     }
 
     public void setNaturalChoke() {
+        if(naturalBase == null) {
+            return;
+        }
+
         naturalChokePoint = null;
         int closestDistance = Integer.MAX_VALUE;
 
-        for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
-            if(chokePoint == getMainChoke()) {
+        List<ChokePoint> naturalChokes = naturalBase.getArea().getChokePoints();
+        HashMap<ChokePoint, Double> chokeDistances = new HashMap<>();
+
+        Base potentialEnemyBase = startingBases.iterator().next();
+
+        //Handles maps where there are multiple chokes leading out of the natural and tries to idenifty the correct choke for the bunker/rally
+        for(ChokePoint choke : naturalChokes) {
+            if(choke == getMainChoke()) {
                 continue;
             }
 
-            int distance = naturalBase.getLocation().getApproxDistance(chokePoint.getCenter().toTilePosition());
+            chokeDistances.put(choke, choke.getCenter().toPosition().getDistance(potentialEnemyBase.getCenter()));
+        }
 
-            if(distance < closestDistance) {
-                naturalChokePoint = chokePoint;
-                closestDistance = distance;
+        for(ChokePoint choke : chokeDistances.keySet()) {
+            if(chokeDistances.get(choke) < closestDistance) {
+                naturalChokePoint = choke;
+                closestDistance = chokeDistances.get(choke).intValue();
             }
         }
+
     }
 
     //WIP, hacky solution for Andromeda
