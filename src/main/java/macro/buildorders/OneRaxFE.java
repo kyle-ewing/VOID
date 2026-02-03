@@ -7,6 +7,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class OneRaxFE extends BuildOrder {
     public BuildOrderName getBuildOrderName() {
@@ -22,7 +23,8 @@ public class OneRaxFE extends BuildOrder {
         return buildOrder;
     }
 
-    public void setLiftableBuildings() {
+    public HashSet<UnitType> getLiftableBuildings() {
+        return  liftableBuildings;
     }
 
     public BunkerLocation getBunkerLocation() {

@@ -15,14 +15,10 @@ public abstract class BuildOrder {
 
     public abstract BuildOrderName getBuildOrderName();
     public abstract ArrayList<PlannedItem> getBuildOrder();
-    public abstract void setLiftableBuildings();
+    public abstract HashSet<UnitType> getLiftableBuildings();
     public abstract BunkerLocation getBunkerLocation();
     public abstract BuildType buildType();
     public abstract HashMap<UnitType, Integer> getMoveOutCondition();
-
-    public HashSet<UnitType> getLiftableBuildings() {
-        return liftableBuildings;
-    }
 
     public TilePosition getBunkerPostion() {
         return bunkerPostion;

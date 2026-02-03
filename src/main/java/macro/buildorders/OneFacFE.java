@@ -9,6 +9,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class OneFacFE extends BuildOrder {
 
@@ -43,9 +44,10 @@ public class OneFacFE extends BuildOrder {
         return buildOrder;
     }
 
-    public void setLiftableBuildings() {
-        getLiftableBuildings().add(UnitType.Terran_Engineering_Bay);
-        getLiftableBuildings().add(UnitType.Terran_Barracks);
+    public HashSet<UnitType> getLiftableBuildings() {
+        liftableBuildings.add(UnitType.Terran_Engineering_Bay);
+        liftableBuildings.add(UnitType.Terran_Barracks);
+        return liftableBuildings;
     }
 
     public BunkerLocation getBunkerLocation() {

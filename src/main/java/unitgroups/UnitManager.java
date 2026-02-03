@@ -7,6 +7,7 @@ import information.GameState;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import information.Scouting;
+import information.enemy.enemytechunits.EnemyTechUnits;
 import unitgroups.units.*;
 import map.PathFinding;
 import util.ClosestUnit;
@@ -78,6 +79,12 @@ public class UnitManager {
 
         //TODO: this is all horrible
         for(CombatUnits combatUnit : combatUnits) {
+            if(combatUnit.getUnitStatus() == UnitStatus.BUILDING && combatUnit.getUnit().canLift() && !combatUnit.getUnit().isLifted()) {
+                liftBuilding(combatUnit);
+            }
+            else if(combatUnit.getUnitStatus() == UnitStatus.BUILDING && combatUnit.getUnit().isLifted()) {
+                landBuilding(combatUnit);
+            }
 
             //Skip over units who don't move or need to be controlled
             if(combatUnit.hasStaticStatus()) {
@@ -655,6 +662,43 @@ public class UnitManager {
 
     private boolean priorityTargetExists() {
         return gameState.getKnownEnemyUnits().contains(priorityTarget);
+    }
+
+    private void liftBuilding(CombatUnits building) {
+        if(gameState.getLiftableBuildings().contains(building.getUnitType())) {
+            if(gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn && building.getUnitType().canProduce()) {
+                return;
+            }
+
+            if(building.getUnitType() == UnitType.Terran_Barracks && combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)) {
+                return;
+            }
+
+
+
+            //Don't lift if cannot build goliaths and air threats are seen
+            if(building.getUnitType() == UnitType.Terran_Barracks
+                    && gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer)
+                    && gameState.getUnitTypeCount().getOrDefault(UnitType.Terran_Armory, 0) == 0
+                    && combatUnits.stream().anyMatch(cu -> cu.getUnitType() == UnitType.Terran_Goliath)) {
+                return;
+            }
+
+            building.getUnit().lift();
+        }
+    }
+
+    private void landBuilding(CombatUnits building) {
+        if(gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
+            building.getUnit().land(building.getUnit().getInitialTilePosition());
+        }
+
+        if(gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer) &&
+                building.getUnitType() == UnitType.Terran_Barracks && gameState.getUnitTypeCount().get(UnitType.Terran_Armory) == 0) {
+            building.getUnit().land(building.getUnit().getInitialTilePosition());
+        }
+
+
     }
 
     public void onUnitComplete(Unit unit) {
