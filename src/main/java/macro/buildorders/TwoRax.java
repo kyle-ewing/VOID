@@ -7,6 +7,7 @@ import planner.PlannedItemType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class TwoRax extends BuildOrder {
     public BuildOrderName getBuildOrderName() {
@@ -23,8 +24,8 @@ public class TwoRax extends BuildOrder {
         return buildOrder;
     }
 
-    public void setLiftableBuildings() {
-
+    public HashSet<UnitType> getLiftableBuildings() {
+        return  liftableBuildings;
     }
 
     public BunkerLocation getBunkerLocation() {

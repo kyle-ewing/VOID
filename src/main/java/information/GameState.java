@@ -52,6 +52,7 @@ public class GameState {
     private HashSet<EnemyTechUnits> knownEnemyTechUnits = new HashSet<>();
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
     private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
+    private HashSet<UnitType> liftableBuildings = new HashSet<>();
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashMap<UnitType, Integer> openerMoveOutCondition = new HashMap<>();
 
@@ -86,6 +87,7 @@ public class GameState {
             startingOpener = bo;
             productionQueue.addAll(bo.getBuildOrder());
             openerMoveOutCondition = bo.getMoveOutCondition();
+            liftableBuildings.addAll(bo.getLiftableBuildings());
 
             if(bunkerPosition == null) {
                 setBunkerPosition(bo.getBunkerLocation());
@@ -207,7 +209,9 @@ public class GameState {
         return openerMoveOutCondition;
     }
 
-
+    public HashSet<UnitType> getLiftableBuildings() {
+        return liftableBuildings;
+    }
 
     public boolean isEnemyInBase() {
         return enemyInBase;
