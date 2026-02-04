@@ -590,7 +590,7 @@ public class BuildTiles {
         if(naturalChoke != null) {
             TilePosition chokeTile = naturalChoke.getCenter().toTilePosition();
             TilePosition baseTile = baseInfo.getNaturalBase().getLocation();
-            TilePosition closerNatural = PositionInterpolator.interpolate(chokeTile, baseTile, 0.00);
+            TilePosition closerNatural = PositionInterpolator.interpolate(chokeTile, baseTile, 0.10);
             TilePosition naturalBunker = findValidTileNear(closerNatural, UnitType.Terran_Bunker);
 
 
