@@ -176,7 +176,8 @@ public class EnemyInformation {
     private boolean isThreat(Unit unit) {
         return unit.getType() == UnitType.Zerg_Lurker ||
                 unit.getType() == UnitType.Zerg_Sunken_Colony && !unit.isMorphing() ||
-                unit.getType() == UnitType.Protoss_Photon_Cannon && unit.isPowered();
+                unit.getType() == UnitType.Protoss_Photon_Cannon && unit.isPowered() ||
+                unit.getType() == UnitType.Terran_Bunker;
     }
 
     //TODO: add time limit in enemy strategy to change check times depending on strategy

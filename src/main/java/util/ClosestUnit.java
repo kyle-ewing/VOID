@@ -159,7 +159,7 @@ public class ClosestUnit {
             boolean burrowedLurker = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.wasBurrowed());
 
             //Stop units from getting stuck on outdated position info
-            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists() && !burrowedLurker) {
+            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists() && !burrowedLurker && !enemyUnit.getEnemyType().isBuilding()) {
                 enemyUnit.setEnemyPosition(null);
                 continue;
             }
