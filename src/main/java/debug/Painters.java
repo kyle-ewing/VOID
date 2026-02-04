@@ -292,7 +292,7 @@ public class Painters {
     private void enemyRangePainter() {
         for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             //Change condition to paint specific unit types
-            if(enemyUnit.getEnemyType() != UnitType.Zerg_Lurker) {
+            if(enemyUnit.getEnemyType() != UnitType.Zerg_Lurker && enemyUnit.getEnemyType() != UnitType.Terran_Bunker && enemyUnit.getEnemyType() != UnitType.Protoss_Photon_Cannon) {
                 continue;
             }
 
@@ -303,7 +303,11 @@ public class Painters {
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), range, Color.Red);
 
                     //Optional threat range
-                    int threatRange = enemyType.groundWeapon().maxRange() + 125;
+                    int threatRange = enemyType.groundWeapon().maxRange() + 175;
+
+                    if(enemyUnit.getEnemyType() == UnitType.Terran_Bunker) {
+                        threatRange = UnitType.Terran_Marine.groundWeapon().maxRange() + 225;
+                    }
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), threatRange, Color.Orange);
 
                 }

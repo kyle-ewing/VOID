@@ -563,7 +563,14 @@ public class UnitManager {
                 continue;
             }
 
-            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 125) {
+            if(enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {
+                if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < UnitType.Terran_Marine.groundWeapon().maxRange() + 225) {
+                    inRange = true;
+                }
+                continue;
+            }
+
+            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 175) {
                 //Check if it's an active threat
                 if(enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && !enemyUnit.getEnemyUnit().isBurrowed()) {
                     continue;
@@ -601,7 +608,7 @@ public class UnitManager {
     private boolean hasTankSupport(CombatUnits combatUnit) {
         if(unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
             ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Tank_Mode);
-            if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 300) {
+            if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 250) {
                 return true;
             }
 
