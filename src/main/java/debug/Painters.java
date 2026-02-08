@@ -303,10 +303,10 @@ public class Painters {
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), range, Color.Red);
 
                     //Optional threat range
-                    int threatRange = enemyType.groundWeapon().maxRange() + 175;
+                    int threatRange = enemyType.groundWeapon().maxRange() + 150;
 
                     if(enemyUnit.getEnemyType() == UnitType.Terran_Bunker) {
-                        threatRange = UnitType.Terran_Marine.groundWeapon().maxRange() + 225;
+                        threatRange = UnitType.Terran_Marine.groundWeapon().maxRange() + 200;
                     }
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), threatRange, Color.Orange);
 
