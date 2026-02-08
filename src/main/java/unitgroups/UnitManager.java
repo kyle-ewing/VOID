@@ -564,13 +564,13 @@ public class UnitManager {
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {
-                if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < UnitType.Terran_Marine.groundWeapon().maxRange() + 225) {
+                if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < UnitType.Terran_Marine.groundWeapon().maxRange() + 200) {
                     inRange = true;
                 }
                 continue;
             }
 
-            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 175) {
+            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 150) {
                 //Check if it's an active threat
                 if(enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && !enemyUnit.getEnemyUnit().isBurrowed()) {
                     continue;
