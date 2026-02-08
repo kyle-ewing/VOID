@@ -668,6 +668,10 @@ public class ProductionManager {
                 reservedTurretPositions.add(buildTiles.getMainChokeTurret());
                 pi.setBuildPosition(buildTiles.getMainChokeTurret());
             }
+            //If choke tiles don't exist remove from queue to prevent deadlocking
+            else {
+                pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+            }
         }
     }
 
