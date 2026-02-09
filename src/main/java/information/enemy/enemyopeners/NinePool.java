@@ -23,15 +23,16 @@ public class NinePool extends EnemyStrategy {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
-                if(time.lessThanOrEqual(new Time(2,30))) {
-                    if(enemyUnit.getEnemyUnit().isCompleted()) {
-                        return true;
-                    }
-                }
-            }
-            else if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if(baseInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1000
+            //Refine later to prevent false positives
+//            if(enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
+//                if(time.lessThanOrEqual(new Time(2,30))) {
+//                    if(enemyUnit.getEnemyUnit().isCompleted()) {
+//                        return true;
+//                    }
+//                }
+//            }
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
+                if(baseInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1200
                 && time.lessThanOrEqual(new Time(3,0))) {
                     return true;
                 }

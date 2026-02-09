@@ -732,7 +732,16 @@ public class ProductionManager {
                     addToQueue(building, PlannedItemType.ADDON, 1);
                 }
                 else {
-                    addToQueue(building, PlannedItemType.BUILDING, 1);
+                    if(building == UnitType.Terran_Missile_Turret) {
+                        for(TilePosition turretTile : gameState.getBuildTiles().getMainTurrets()) {
+                            if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
+                                addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 2);
+                            }
+                        }
+                    }
+                    else {
+                        addToQueue(building, PlannedItemType.BUILDING, 1);
+                    }
                 }
             }
 
