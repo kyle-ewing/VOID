@@ -29,6 +29,7 @@ public class Lurker extends EnemyTechUnits {
     }
 
     public void techBuildingResponse() {
+        getFriendlyBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getFriendlyBuildingResponse().add(UnitType.Terran_Factory);
         getFriendlyBuildingResponse().add(UnitType.Terran_Starport);
         getFriendlyBuildingResponse().add(UnitType.Terran_Control_Tower);
