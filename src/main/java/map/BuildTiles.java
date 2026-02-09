@@ -19,6 +19,7 @@ public class BuildTiles {
     private HashSet<TilePosition> mineralExlusionTiles = new HashSet<>();
     private HashSet<TilePosition> geyserExlusionTiles = new HashSet<>();
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
+    private HashSet<TilePosition> chokeExclusionTiles = new HashSet<>();
     private HashSet<TilePosition> frontBaseTiles = new HashSet<>();
     private HashSet<TilePosition> backBaseTiles = new HashSet<>();
     private HashSet<TilePosition> mainTurrets = new HashSet<>();
@@ -44,12 +45,13 @@ public class BuildTiles {
         mineralExclusionZone(startingBase);
         geyserExclusionZone(startingBase);
         ccExclusionZone(startingBase);
+        chokeExclusionZone(startingBase);
         generateFrontBaseTiles();
         generateBackBaseTiles();
         generateChokeBunkerTiles();
         generateCloseBunkerTile();
-        generateChokeTurretTiles();
         generateLargeTiles();
+        generateChokeTurretTiles();
         generateMediumTiles(backBaseTiles);
         generateTurretTiles();
     }
@@ -58,8 +60,9 @@ public class BuildTiles {
         mineralExclusionZone(baseInfo.getNaturalBase());
         geyserExclusionZone(baseInfo.getNaturalBase());
         ccExclusionZone(baseInfo.getNaturalBase());
-        generateMediumTiles(frontBaseTiles);
-        //generateMediumTiles(baseInfo.getNaturalTiles());
+        chokeExclusionZone(baseInfo.getNaturalBase());
+        //generateMediumTiles(frontBaseTiles);
+        generateMediumTiles(baseInfo.getNaturalTiles());
     }
 
     //TODO: I hate all of this
@@ -76,21 +79,6 @@ public class BuildTiles {
         }
         else {
             sortedFrontTiles.sort(Comparator.comparingInt(TilePosition::getY));
-        }
-
-        //First pass largeBuildTilesNoGap with no gap stacks
-        for(TilePosition tile : sortedFrontTiles) {
-            if(largeBuildTilesNoGap.size() >= 4) {
-                break;
-            }
-
-            if(backBaseTiles.contains(tile)) {
-                continue;
-            }
-
-            if(isValidBarracksStack(tile, UnitType.Terran_Barracks, 0) && !largeBuildTilesNoGap.contains(tile) && !largeBuildTiles.contains(tile)) {
-                addBarracksStackNoGap(tile.getX(), tile.getY(), UnitType.Terran_Barracks);
-            }
         }
 
         //First pass largeBuildTiles with 3 tile gap stacks
@@ -117,6 +105,45 @@ public class BuildTiles {
             }
         }
 
+        //First pass largeBuildTiles with 2 tile gap stacks (may cause blockage?)
+        for(TilePosition tile : sortedFrontTiles) {
+            if(largeBuildTiles.size() >= 8) {
+                break;
+            }
+
+            if(backBaseTiles.contains(tile)) {
+                continue;
+            }
+
+            if(isValidBarracksStack(tile, UnitType.Terran_Barracks, 2)) {
+                int stackX = tile.getX();
+                int stackY = tile.getY();
+
+                int adjacentX = stackX + UnitType.Terran_Barracks.tileWidth() + 2;
+                TilePosition adjacentPos = new TilePosition(adjacentX, stackY);
+
+                if (frontBaseTiles.contains(adjacentPos) && isValidBarracksStack(adjacentPos, UnitType.Terran_Barracks, 2)) {
+                    addBarracksStack(stackX, stackY, UnitType.Terran_Barracks);
+                    addBarracksStack(adjacentX, stackY, UnitType.Terran_Barracks);
+                }
+            }
+        }
+
+        //First pass largeBuildTilesNoGap with no gap stacks
+        for(TilePosition tile : sortedFrontTiles) {
+            if(largeBuildTilesNoGap.size() >= 4) {
+                break;
+            }
+
+            if(backBaseTiles.contains(tile)) {
+                continue;
+            }
+
+            if(isValidBarracksStack(tile, UnitType.Terran_Barracks, 0) && !largeBuildTilesNoGap.contains(tile) && !largeBuildTiles.contains(tile)) {
+                addBarracksStackNoGap(tile.getX(), tile.getY(), UnitType.Terran_Barracks);
+            }
+        }
+
         //Second pass largeBuildTiles with 3 tile gap stacks
         if(largeBuildTiles.size() < 8) {
             for(TilePosition tile : sortedFrontTiles) {
@@ -133,63 +160,7 @@ public class BuildTiles {
                 }
             }
         }
-
-        //Third pass largeBuildTiles with 3 tile gap no stack
-        if(largeBuildTiles.size() < 6) {
-            int barWidth = UnitType.Terran_Barracks.tileWidth();
-            int barHeight = UnitType.Terran_Barracks.tileHeight();
-
-            for(TilePosition tile : sortedFrontTiles) {
-                if(largeBuildTiles.size() >= 8) {
-                    break;
-                }
-
-                if(backBaseTiles.contains(tile)) {
-                    continue;
-                }
-
-                if(!isValidBarracksPosition(tile, UnitType.Terran_Barracks, 3)) {
-                    continue;
-                }
-
-                boolean overlapsWithGapTiles = false;
-                for(TilePosition gapTile : largeBuildTiles) {
-                    int gapFootprintEndX = gapTile.getX() + barWidth + 3;
-                    int gapFootprintEndY = gapTile.getY() + barHeight;
-
-                    if(!(tile.getX() + barWidth <= gapTile.getX() ||
-                            tile.getX() >= gapFootprintEndX ||
-                            tile.getY() + barHeight <= gapTile.getY() ||
-                            tile.getY() >= gapFootprintEndY)) {
-                        overlapsWithGapTiles = true;
-                        break;
-                    }
-                }
-
-                if(overlapsWithGapTiles) {
-                    continue;
-                }
-
-                boolean overlapsWithNoGapTiles = false;
-                for(TilePosition noGapTile : largeBuildTilesNoGap) {
-                    int noGapFootprintEndX = noGapTile.getX() + barWidth + 3;
-                    int noGapFootprintEndY = noGapTile.getY() + barHeight;
-
-                    if(!(tile.getX() + barWidth <= noGapTile.getX() ||
-                            tile.getX() >= noGapFootprintEndX ||
-                            tile.getY() + barHeight <= noGapTile.getY() ||
-                            tile.getY() >= noGapFootprintEndY)) {
-                        overlapsWithNoGapTiles = true;
-                        break;
-                    }
-                }
-
-                if(!overlapsWithNoGapTiles) {
-                    largeBuildTiles.add(tile);
-                }
-            }
-        }
-
+        
         //Second pass largeBuildTilesNoGap with no gap no stack
         if(largeBuildTilesNoGap.size() < 4) {
             int barWidth = UnitType.Terran_Barracks.tileWidth();
@@ -295,6 +266,15 @@ public class BuildTiles {
                 if(!tilePositionValidator.isWithinMap(bufferTile) || intersectsExclusionZones(bufferTile) || !tilePositionValidator.isWalkable(bufferTile)) {
                     return false;
                 }
+            }
+        }
+
+        //Check tile gap below stack
+        for(int x = 0; x < barWidth; x++) {
+            TilePosition gapTile = new TilePosition(tile.getX() + x, tile.getY() - 1);
+
+            if(intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, barracksType)) {
+                return false;
             }
         }
 
@@ -944,7 +924,7 @@ public class BuildTiles {
         TilePosition highestYTile = null;
         TilePosition commandCenterTile = base.getLocation();
 
-        for(Mineral mineral : baseInfo.getStartingMinerals()) {
+        for(Mineral mineral : base.getMinerals()) {
             TilePosition mineralTile = mineral.getUnit().getTilePosition();
 
             if(lowestXTile == null || mineralTile.getX() < lowestXTile.getX()) {
@@ -975,6 +955,10 @@ public class BuildTiles {
     }
 
     private void geyserExclusionZone(Base base) {
+        if(base.getGeysers().isEmpty()) {
+            return;
+        }
+
         TilePosition geyserTile = base.getGeysers().iterator().next().getUnit().getTilePosition();
         int geyserX = geyserTile.getX();
         int geyserY = geyserTile.getY();
@@ -1006,8 +990,26 @@ public class BuildTiles {
         }
     }
 
+    private void chokeExclusionZone(Base base) {
+        int exclusionRadius = 3;
+
+        for(ChokePoint choke : base.getArea().getChokePoints()) {
+            TilePosition chokeTile = choke.getCenter().toTilePosition();
+
+            for(int x = chokeTile.getX() - exclusionRadius; x <= chokeTile.getX() + exclusionRadius; x++) {
+                for(int y = chokeTile.getY() - exclusionRadius; y <= chokeTile.getY() + exclusionRadius; y++) {
+                    TilePosition tile = new TilePosition(x, y);
+                    if(tilePositionValidator.isWithinMap(tile)) {
+                        chokeExclusionTiles.add(tile);
+                    }
+                }
+            }
+        }
+    }
+
     private boolean intersectsExclusionZones(TilePosition tilePosition) {
-        return geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition) || ccExclusionTiles.contains(tilePosition);
+        return geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition)
+                || ccExclusionTiles.contains(tilePosition) || chokeExclusionTiles.contains(tilePosition);
     }
 
     private void generateFrontBaseTiles() {
@@ -1050,24 +1052,6 @@ public class BuildTiles {
             }
             backBaseTiles.add(tilePosition);
         }
-    }
-
-    private boolean blockedByExistingBuilding(TilePosition tilePosition, UnitType buildingType) {
-        int width = buildingType.tileWidth();
-        int height = buildingType.tileHeight();
-
-        for(int x = tilePosition.getX(); x < tilePosition.getX() + width; x++) {
-            for(int y = tilePosition.getY(); y < tilePosition.getY() + height; y++) {
-                TilePosition tile = new TilePosition(x, y);
-                if(!tilePositionValidator.isWithinMap(tile)) {
-                    return true;
-                }
-                if(!game.canBuildHere(tile, buildingType, null)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private boolean rectanglesIntersect(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2) {
