@@ -29,6 +29,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new GasSteal(baseInfo));
         enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new SCVRush(baseInfo));
+        enemyStrategies.add(new OneBaseMuta(baseInfo));
         enemyStrategies.add(new DTRush());
     }
 
@@ -40,6 +41,7 @@ public class EnemyStrategyManager {
         enemyTechUnits.add(new Lurker());
         enemyTechUnits.add(new Wraith());
         enemyTechUnits.add(new BattleCruiser());
+        enemyTechUnits.add(new Mutalisk());
     }
 
     public HashSet<EnemyStrategy> getEnemyStrategies() {
