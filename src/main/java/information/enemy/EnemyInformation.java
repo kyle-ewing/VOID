@@ -44,7 +44,7 @@ public class EnemyInformation {
     }
 
     private boolean previouslyDiscovered(Unit unit) {
-        for (EnemyUnits enemyUnit : enemyUnits) {
+        for(EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyID() == unit.getID()) {
                 return true;
             }
@@ -53,7 +53,7 @@ public class EnemyInformation {
     }
 
     private boolean checkForBuildings() {
-        for (EnemyUnits enemyUnit : enemyUnits) {
+        for(EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyType().isBuilding()) {
                 return true;
             }
@@ -257,10 +257,11 @@ public class EnemyInformation {
             }
         }
 
-        if (gameState.getStartingEnemyBase() == null) {
+        if(gameState.getStartingEnemyBase() == null) {
             if(unit.getType().isResourceDepot()) {
                 for(EnemyUnits enemyUnit : enemyUnits) {
-                    if(enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyID() == unit.getID()) {
+                    if(enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyID() == unit.getID()
+                    && baseInfo.getStartingBases().stream().anyMatch(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10)) {
                         gameState.setStartingEnemyBase(enemyUnit);
                         break;
                     }
@@ -323,6 +324,7 @@ public class EnemyInformation {
         }
 
         if(!checkForBuildings() && unit.getType().isBuilding()) {
+            System.out.println("Time: " + new Time(game.getFrameCount()) + " Frame: " + game.getFrameCount());
             gameState.setEnemyBuildingDiscovered(false);
         }
     }

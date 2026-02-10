@@ -16,6 +16,7 @@ public class ScienceVessel extends CombatUnits {
         priorityTargets.add(UnitType.Zerg_Defiler);
         priorityTargets.add(UnitType.Zerg_Mutalisk);
         priorityTargets.add(UnitType.Zerg_Lurker);
+        priorityTargets.add(UnitType.Zerg_Guardian);
     }
 
     public void rally() {

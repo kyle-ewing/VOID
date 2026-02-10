@@ -171,8 +171,15 @@ public class ClosestUnit {
                 }
                 else {
                     enemyUnit.setEnemyPosition(null);
+                }
+
+                //Hard force position reset if units literally on top of an enemy that is clearly not there anymore
+                if(combatUnit.getUnit().getDistance(enemyPosition) < 10 && !enemyUnit.getEnemyUnit().isVisible()) {
+                    enemyUnit.setEnemyPosition(null);
                     continue;
                 }
+
+                continue;
             }
 
             if(!combatUnit.getUnit().hasPath(enemyPosition)) {

@@ -1006,7 +1006,7 @@ public class ProductionManager {
                         continue;
                     }
 
-                    if(worker.getUnit() == null) {
+                    if(worker.getUnit() == null || pi.getAssignedBuilder() == null) {
                         continue;
                     }
 

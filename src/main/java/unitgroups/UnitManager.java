@@ -154,7 +154,7 @@ public class UnitManager {
                 }
             }
 
-            if((scouting.isCompletedScout() || scouting.isAttemptsMaxed()) && !gameState.isEnemyBuildingDiscovered() && (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Vulture ) && scouts < baseInfo.getMapBases().size()) {
+            if((scouting.isCompletedScout() || scouting.attemptsMaxed()) && !gameState.isEnemyBuildingDiscovered() && (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Vulture ) && scouts < baseInfo.getMapBases().size()) {
                 combatUnit.setUnitStatus(UnitStatus.SCOUT);
                 assignScouts(combatUnit);
                 scouts++;
@@ -167,7 +167,7 @@ public class UnitManager {
                 combatUnit.setHasTankSupport(false);
             }
 
-//            unitStatus = combatUnit.getUnitStatus();
+            unitStatus = combatUnit.getUnitStatus();
 
             switch(unitStatus) {
                 case ATTACK:
@@ -313,14 +313,15 @@ public class UnitManager {
     }
 
     private void bunkerStatus(CombatUnits combatUnit) {
-        if(!combatUnit.isInBunker() && (bunker != null && bunkerLoad < 4 && priorityTarget == null) && combatUnit.getUnitStatus() != UnitStatus.ATTACK) {
+        if(!combatUnit.isInBunker() && (bunker != null && bunkerLoad < 4 && priorityTarget == null)
+                && (combatUnit.getUnitStatus() == UnitStatus.RALLY || combatUnit.getUnitStatus() == UnitStatus.DEFEND)) {
+
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
     }
 
     private void assignScouts(CombatUnits combatUnit) {
         for(Base base : baseInfo.getMapBases()) {
-
             if(designatedScouts.containsKey(base)) {
                 continue;
             }
@@ -353,6 +354,7 @@ public class UnitManager {
         }
 
         if(gameState.isEnemyBuildingDiscovered()) {
+            game.sendText("Enemy building discovered, unassigning scouts");
             scouts = 0;
             designatedScouts.clear();
         }
@@ -570,7 +572,7 @@ public class UnitManager {
                 continue;
             }
 
-            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 125) {
+            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 100) {
                 //Check if it's an active threat
                 if(enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && !enemyUnit.getEnemyUnit().isBurrowed()) {
                     continue;
