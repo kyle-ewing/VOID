@@ -17,6 +17,8 @@ public class Wraith extends CombatUnits {
         unitStatus = UnitStatus.HUNTING;
         priorityTargets.add(UnitType.Protoss_Shuttle);
         priorityTargets.add(UnitType.Protoss_Probe);
+        priorityTargets.add(UnitType.Zerg_Guardian);
+        priorityTargets.add(UnitType.Terran_Dropship);
     }
 
     @Override
