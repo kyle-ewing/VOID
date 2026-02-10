@@ -570,7 +570,7 @@ public class UnitManager {
                 continue;
             }
 
-            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 150) {
+            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 125) {
                 //Check if it's an active threat
                 if(enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && !enemyUnit.getEnemyUnit().isBurrowed()) {
                     continue;

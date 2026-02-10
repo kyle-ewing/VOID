@@ -374,7 +374,7 @@ public class ProductionManager {
                             if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
                                 if(isRecruitable(UnitType.Terran_Science_Vessel, 1) && !hasUnitInQueue(unitType)) {
                                     if(unitType == UnitType.Terran_Science_Vessel) {
-                                        if(unitTypeCount.get(unitType) < 2) {
+                                        if(unitTypeCount.get(unitType) < 3) {
                                             addToQueue(unitType, PlannedItemType.UNIT, 1);
                                         }
                                     }
