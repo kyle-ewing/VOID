@@ -117,7 +117,7 @@ public class Scouting {
         return completedScout;
     }
 
-    public boolean isAttemptsMaxed() {
+    public boolean attemptsMaxed() {
         return attemptsMaxed;
     }
 

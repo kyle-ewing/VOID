@@ -67,6 +67,7 @@ public class Painters {
         if(config.debugEnemyUnits) {
             enemyRangePainter();
             paintThreatUnitsToScreen();
+            paintEnemyBuildingsToScreen();
         }
 
         if(config.debugBuildTiles) {
@@ -115,6 +116,7 @@ public class Painters {
         }
 
         if(config.debugScout) {
+            paintRescoutCriteria();
             if(scouting.getScout() != null)
                 paintScoutPath(scouting.getScout().getUnit());
         }
@@ -318,7 +320,7 @@ public class Painters {
     public void paintThreatUnitsToScreen() {
         int yOffset = 200;
         int lineHeight = 12;
-        int xStart = 5;
+        int xStart = 350;
 
         game.setTextSize(Text.Size.Small);
 
@@ -330,6 +332,33 @@ public class Painters {
             game.drawTextScreen(xStart, yOffset, "Threat Unit: " + enemyUnit.getEnemyType() + " at " + enemyUnit.getEnemyPosition());
             yOffset += lineHeight;
             game.drawCircleMap(enemyUnit.getEnemyPosition(), 5, Color.Red, true);
+        }
+
+        game.setTextSize(Text.Size.Default);
+    }
+
+    public void paintEnemyBuildingsToScreen() {
+        int yOffset = 150;
+        int lineHeight = 12;
+        int xStart = 5;
+
+        game.setTextSize(Text.Size.Small);
+
+        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if(!enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+
+            if(enemyUnit.getEnemyPosition() == null) {
+                game.drawTextScreen(xStart, yOffset, "Unknown Enemy Unit: " + enemyUnit.getEnemyType());
+                yOffset += lineHeight;
+                continue;
+            }
+
+            game.drawTextScreen(xStart, yOffset, "Known Enemy Building: " + enemyUnit.getEnemyType() + " at " + enemyUnit.getEnemyPosition());
+            yOffset += lineHeight;
+            game.drawCircleMap(enemyUnit.getEnemyPosition(), 5, Color.Blue, true);
+
         }
 
         game.setTextSize(Text.Size.Default);
@@ -546,6 +575,24 @@ public class Painters {
         }
 
         game.drawLineMap(unit.getPosition(), unit.getTargetPosition(), Color.Cyan);
+    }
+
+    private void paintRescoutCriteria() {
+        int yOffset = 15;
+        int lineHeight = 12;
+        int xStart = 175;
+
+        game.setTextSize(Text.Size.Small);
+
+        game.drawTextScreen(xStart, yOffset, "=== Rescout Criteria ===");
+        yOffset += lineHeight;
+        game.drawTextScreen(xStart, yOffset, "Scouting Completed: " + scouting.isCompletedScout());
+        yOffset += lineHeight;
+        game.drawTextScreen(xStart, yOffset, "Scouting Attempts: " + scouting.attemptsMaxed());
+        yOffset += lineHeight;
+        game.drawTextScreen(xStart, yOffset, "Enemy Buildings Known: " + gameState.isEnemyBuildingDiscovered());
+
+        game.setTextSize(Text.Size.Default);
     }
 
     private void paintScoutPoints(int x, int y) {
