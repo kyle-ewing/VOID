@@ -1,6 +1,7 @@
 package util;
 
 import bwapi.Position;
+import bwapi.Unit;
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import unitgroups.units.CombatUnits;
@@ -156,12 +157,22 @@ public class ClosestUnit {
             Position enemyPosition = enemyUnit.getEnemyPosition();
             Position unitPosition = combatUnit.getUnit().getPosition();
 
-            boolean burrowedLurker = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.wasBurrowed());
+
 
             //Stop units from getting stuck on outdated position info
-            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists() && !burrowedLurker && !enemyUnit.getEnemyType().isBuilding()) {
-                enemyUnit.setEnemyPosition(null);
-                continue;
+            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists() && !enemyUnit.getEnemyType().isBuilding()) {
+                boolean burrowedLurker = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.wasBurrowed());
+
+                if(burrowedLurker) {
+                    if(hasDetectionNearPosition(enemyUnit, combatUnit)) {
+                        enemyUnit.setEnemyPosition(null);
+                        continue;
+                    }
+                }
+                else {
+                    enemyUnit.setEnemyPosition(null);
+                    continue;
+                }
             }
 
             if(!combatUnit.getUnit().hasPath(enemyPosition)) {
@@ -190,6 +201,23 @@ public class ClosestUnit {
         }
 
         return closestEnemy;
+    }
+
+    private static boolean hasDetectionNearPosition(EnemyUnits enemyUnit, CombatUnits combatUnit) {
+        if(!combatUnit.getUnitType().isDetector()) {
+            return false;
+        }
+
+        int detectionRange = 0;
+
+        if(combatUnit.getUnitType() == UnitType.Terran_Missile_Turret) {
+            detectionRange = 224;
+        }
+        else {
+            detectionRange = 320;
+        }
+
+        return combatUnit.getUnit().getDistance(enemyUnit.getEnemyPosition()) < detectionRange;
     }
 
 }
