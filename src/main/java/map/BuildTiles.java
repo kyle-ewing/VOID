@@ -5,12 +5,14 @@ import bwem.Base;
 import bwem.ChokePoint;
 import bwem.Mineral;
 import information.BaseInfo;
+import information.GameState;
 import util.PositionInterpolator;
 
 import java.util.*;
 
 public class BuildTiles {
     private Game game;
+    private GameState gameState;
     private BaseInfo baseInfo;
     private TilePositionValidator tilePositionValidator;
     private HashSet<TilePosition> mediumBuildTiles = new HashSet<>();
@@ -30,10 +32,12 @@ public class BuildTiles {
     private TilePosition mainChokeTurret;
     private TilePosition naturalChokeTurret;
     private Base startingBase;
+    private boolean naturalTilesGenerated = false;
 
-    public BuildTiles(Game game, BaseInfo baseInfo) {
+    public BuildTiles(Game game, BaseInfo baseInfo, GameState gameState) {
         this.game = game;
         this.baseInfo = baseInfo;
+        this.gameState = gameState;
 
         tilePositionValidator = new TilePositionValidator(game);
 
@@ -57,12 +61,15 @@ public class BuildTiles {
     }
 
     private void regenerateBuildTiles() {
-        mineralExclusionZone(baseInfo.getNaturalBase());
-        geyserExclusionZone(baseInfo.getNaturalBase());
-        ccExclusionZone(baseInfo.getNaturalBase());
-        chokeExclusionZone(baseInfo.getNaturalBase());
-        //generateMediumTiles(frontBaseTiles);
-        generateMediumTiles(baseInfo.getNaturalTiles());
+        if(!naturalTilesGenerated) {
+            mineralExclusionZone(baseInfo.getNaturalBase());
+            geyserExclusionZone(baseInfo.getNaturalBase());
+            ccExclusionZone(baseInfo.getNaturalBase());
+            chokeExclusionZone(baseInfo.getNaturalBase());
+            //generateMediumTiles(frontBaseTiles);
+            generateMediumTiles(baseInfo.getNaturalTiles());
+            naturalTilesGenerated = true;
+        }
     }
 
     //TODO: I hate all of this
@@ -925,7 +932,7 @@ public class BuildTiles {
         TilePosition commandCenterTile = base.getLocation();
 
         for(Mineral mineral : base.getMinerals()) {
-            TilePosition mineralTile = mineral.getUnit().getTilePosition();
+            TilePosition mineralTile = mineral.getTopLeft();
 
             if(lowestXTile == null || mineralTile.getX() < lowestXTile.getX()) {
                 lowestXTile = mineralTile;
@@ -941,8 +948,8 @@ public class BuildTiles {
             }
         }
 
-        int boxStartX = Math.min(lowestXTile.getX(), commandCenterTile.getX());
-        int boxEndX = Math.max(highestXTile.getX() + 1, commandCenterTile.getX());
+        int boxStartX = Math.min(lowestXTile.getX(), commandCenterTile.getX() + 2);
+        int boxEndX = Math.max(highestXTile.getX() + 1, commandCenterTile.getX() - 2);
         int boxStartY = Math.min(lowestYTile.getY(), commandCenterTile.getY());
         int boxEndY = Math.max(highestYTile.getY(), commandCenterTile.getY());
 
@@ -959,10 +966,10 @@ public class BuildTiles {
             return;
         }
 
-        TilePosition geyserTile = base.getGeysers().iterator().next().getUnit().getTilePosition();
+        TilePosition geyserTile = base.getGeysers().iterator().next().getTopLeft();
         int geyserX = geyserTile.getX();
         int geyserY = geyserTile.getY();
-        TilePosition commandCenterTile = baseInfo.getStartingBase().getLocation();
+        TilePosition commandCenterTile = base.getLocation();
 
         int boxStartX = Math.min(geyserX, commandCenterTile.getX());
         int boxEndX = Math.max(geyserX + 3, commandCenterTile.getX());
@@ -1120,6 +1127,10 @@ public class BuildTiles {
 
     public void onFrame() {
         if(mediumBuildTiles.isEmpty() || mediumBuildTiles.size() == 1) {
+            if(!naturalTilesGenerated && gameState.isEnemyInNatural()) {
+                return;
+            }
+
             regenerateBuildTiles();
         }
     }

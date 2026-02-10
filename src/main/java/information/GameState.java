@@ -66,7 +66,7 @@ public class GameState {
 
         player = game.self();
 
-        buildTiles = new BuildTiles(game, baseInfo);
+        buildTiles = new BuildTiles(game, baseInfo, this);
         buildOrderManager = new BuildOrderManager(game.enemy().getRace());
         resourceTracking = new ResourceTracking(player);
         expansionCriteria = new ExpansionCriteria(game, player, this);
