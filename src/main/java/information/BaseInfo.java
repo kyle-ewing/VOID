@@ -242,6 +242,10 @@ public class BaseInfo {
                 continue;
             }
 
+            if(base == naturalBase) {
+                orderedExpansions.add(0, base);
+            }
+
             List<Position> path = allPathsMap.get(base);
 
             if(path == null || path.isEmpty()) {
@@ -249,10 +253,6 @@ public class BaseInfo {
             }
 
             int distance = path.size();
-
-            if(base.getGeysers().isEmpty()) {
-                continue;
-            }
 
             if(orderedExpansions.isEmpty()) {
                 orderedExpansions.add(base);

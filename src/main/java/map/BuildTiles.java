@@ -3,6 +3,7 @@ package map;
 import bwapi.*;
 import bwem.Base;
 import bwem.ChokePoint;
+import bwem.Geyser;
 import bwem.Mineral;
 import information.BaseInfo;
 import information.GameState;
@@ -309,7 +310,7 @@ public class BuildTiles {
         HashSet<TilePosition> usedTiles = new HashSet<>();
 
         for(TilePosition tile : sortedBackTiles) {
-            if(mediumBuildTiles.size() >= 24) {
+            if(mediumBuildTiles.size() >= 22) {
                 break;
             }
 
@@ -966,19 +967,24 @@ public class BuildTiles {
             return;
         }
 
-        TilePosition geyserTile = base.getGeysers().iterator().next().getTopLeft();
-        int geyserX = geyserTile.getX();
-        int geyserY = geyserTile.getY();
-        TilePosition commandCenterTile = base.getLocation();
+        TilePosition geyserTile = null;
 
-        int boxStartX = Math.min(geyserX, commandCenterTile.getX());
-        int boxEndX = Math.max(geyserX + 3, commandCenterTile.getX());
-        int boxStartY = Math.min(geyserY, commandCenterTile.getY());
-        int boxEndY = Math.max(geyserY + 2, commandCenterTile.getY());
+        for(Geyser geyser : base.getGeysers()) {
+            geyserTile = geyser.getTopLeft();
 
-        for(int x = boxStartX; x <= boxEndX; x++) {
-            for(int y = boxStartY; y <= boxEndY; y++) {
-                geyserExlusionTiles.add(new TilePosition(x, y));
+            int geyserX = geyserTile.getX();
+            int geyserY = geyserTile.getY();
+            TilePosition commandCenterTile = base.getLocation();
+
+            int boxStartX = Math.min(geyserX, commandCenterTile.getX());
+            int boxEndX = Math.max(geyserX + 3, commandCenterTile.getX());
+            int boxStartY = Math.min(geyserY, commandCenterTile.getY());
+            int boxEndY = Math.max(geyserY + 2, commandCenterTile.getY());
+
+            for(int x = boxStartX; x <= boxEndX; x++) {
+                for(int y = boxStartY; y <= boxEndY; y++) {
+                    geyserExlusionTiles.add(new TilePosition(x, y));
+                }
             }
         }
     }

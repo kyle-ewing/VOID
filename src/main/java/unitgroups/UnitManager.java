@@ -354,7 +354,6 @@ public class UnitManager {
         }
 
         if(gameState.isEnemyBuildingDiscovered()) {
-            game.sendText("Enemy building discovered, unassigning scouts");
             scouts = 0;
             designatedScouts.clear();
         }
