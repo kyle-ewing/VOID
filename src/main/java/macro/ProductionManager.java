@@ -374,8 +374,11 @@ public class ProductionManager {
                             if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
                                 if(isRecruitable(UnitType.Terran_Science_Vessel, 1) && !hasUnitInQueue(unitType)) {
                                     if(unitType == UnitType.Terran_Science_Vessel) {
-                                        if(unitTypeCount.get(unitType) < 3) {
+                                        if(unitTypeCount.get(unitType) < 1) {
                                             addToQueue(unitType, PlannedItemType.UNIT, 1);
+                                        }
+                                        else if(unitTypeCount.get(unitType) < 5) {
+                                            addToQueue(unitType, PlannedItemType.UNIT, 2);
                                         }
                                     }
                                     else {
@@ -387,7 +390,9 @@ public class ProductionManager {
                     }
 
                     if (isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
-                        if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic) && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)) {
+                        if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic)
+                                && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)
+                                && unitTypeCount.get(UnitType.Terran_Marine) > 6) {
                                 addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
                         }
                         else if(isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
@@ -783,13 +788,13 @@ public class ProductionManager {
                 for(Base base : baseInfo.getOwnedBases()) {
                     TilePosition turretTile = buildTiles.getMineralLineTurrets().get(base);
                     if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
-                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,1);
+                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,2);
                     }
                 }
 
                 for(TilePosition turretTile : buildTiles.getMainTurrets()) {
                     if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
-                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,1);
+                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,3);
                     }
                 }
 
@@ -797,11 +802,13 @@ public class ProductionManager {
                 TilePosition naturalChokeTurret = buildTiles.getNaturalChokeTurret();
 
                 if(mainChokeTurret != null && !hasTurretAtBase(mainChokeTurret) && !hasPositionInQueue(mainChokeTurret) && !tileTaken(mainChokeTurret)) {
-                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, mainChokeTurret,1);
+                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, mainChokeTurret,2);
                 }
 
-                if(naturalChokeTurret != null && !hasTurretAtBase(naturalChokeTurret) && !hasPositionInQueue(naturalChokeTurret) && !tileTaken(naturalChokeTurret)) {
-                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, naturalChokeTurret,1);
+                if(naturalChokeTurret != null && !hasTurretAtBase(naturalChokeTurret)
+                        && !hasPositionInQueue(naturalChokeTurret) && !tileTaken(naturalChokeTurret)
+                        && baseInfo.isNaturalOwned() && !gameState.isEnemyInNatural()) {
+                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, naturalChokeTurret,2);
                 }
             }
 
