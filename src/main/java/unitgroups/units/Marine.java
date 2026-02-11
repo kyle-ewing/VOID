@@ -69,7 +69,7 @@ public class Marine extends CombatUnits {
         }
 
         if(!inRangeOfThreat) {
-            setUnitStatus(UnitStatus.ATTACK);
+            setUnitStatus(UnitStatus.RALLY);
         }
     }
 

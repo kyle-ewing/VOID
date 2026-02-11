@@ -45,7 +45,7 @@ public class SiegeTank extends CombatUnits {
         }
 
         if(enemyUnit.getEnemyUnit().getDistance(unit) > 128) {
-            super.setUnitStatus(UnitStatus.ATTACK);
+            super.setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
@@ -75,13 +75,15 @@ public class SiegeTank extends CombatUnits {
         }
 
         if(kiteThreshold()) {
+            int maxRange = weaponRange();
+            Position kitePos = getKitePos(maxRange);
+
             if(unit.getGroundWeaponCooldown() == 0) {
-                unit.attack(super.rallyPoint.toPosition());
+                unit.attack(enemyUnit.getEnemyPosition());
                 return;
             }
 
-            int maxRange = weaponRange();
-            Position kitePos = getKitePos(maxRange);
+
             unit.move(kitePos);
             return;
         }
