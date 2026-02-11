@@ -212,7 +212,7 @@ public class UnitManager {
                     }
                     else {
                         combatUnit.setEnemyInBase(false);
-                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 150);
+                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 100);
                     }
 
                     if(obstructingBuild(combatUnit)) {
