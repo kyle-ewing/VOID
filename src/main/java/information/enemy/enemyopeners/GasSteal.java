@@ -1,9 +1,11 @@
 package information.enemy.enemyopeners;
 
+import bwapi.UnitType;
 import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class GasSteal extends EnemyStrategy{
@@ -16,6 +18,10 @@ public class GasSteal extends EnemyStrategy{
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        if(time.greaterThan(new Time(2,20))) {
+            return false;
+        }
+
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyPosition() == null) {
                 continue;
@@ -33,5 +39,18 @@ public class GasSteal extends EnemyStrategy{
     }
 
     public void buildingResponse() {
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+        moveOutCondition.put(UnitType.Terran_Marine, 2);
+        return moveOutCondition;
+    }
+
+    public HashSet<UnitType> removeBuildings() {
+        HashSet<UnitType> removeBuildings = new HashSet<>();
+        removeBuildings.add(UnitType.Terran_Bunker);
+        removeBuildings.add(UnitType.Terran_Missile_Turret);
+        return removeBuildings;
     }
 }

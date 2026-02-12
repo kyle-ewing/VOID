@@ -7,6 +7,7 @@ import information.enemy.EnemyUnits;
 import planner.PlannedItem;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class CCFirst extends  EnemyStrategy {
@@ -56,5 +57,13 @@ public class CCFirst extends  EnemyStrategy {
     }
 
     public void buildingResponse() {
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        return new HashMap<>();
+    }
+
+    public HashSet<UnitType> removeBuildings() {
+        return new HashSet<>();
     }
 }

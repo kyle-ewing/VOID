@@ -5,6 +5,7 @@ import information.enemy.EnemyUnits;
 import util.Time;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public abstract class EnemyStrategy {
@@ -19,6 +20,8 @@ public abstract class EnemyStrategy {
 
     public abstract boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time);
     public abstract void buildingResponse();
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition();
+    public abstract HashSet<UnitType> removeBuildings();
 
     public String getStrategyName() {
         return strategyName;

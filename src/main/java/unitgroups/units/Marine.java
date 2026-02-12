@@ -4,6 +4,7 @@ import bwapi.*;
 
 public class Marine extends CombatUnits {
     private static final int UPGRADE_RANGE = 32;
+    private Integer badTargetID = null;
 
     public Marine(Game game, Unit unit) {
         super(game, unit);
@@ -84,8 +85,24 @@ public class Marine extends CombatUnits {
             unit.useTech(TechType.Stim_Packs);
         }
 
+        if(unit.getOrderTarget() != null && unit.getOrderTarget().getID() != enemyUnit.getEnemyID() && unit.isAttacking()) {
+            if(badTargetID == null || badTargetID != unit.getTarget().getID()) {
+                unit.stop();
+                return;
+            }
+        }
+
+        if(unit.getOrderTarget() != null && unit.getOrderTarget().getID() == enemyUnit.getEnemyID()) {
+            badTargetID = null;
+        }
+
         if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
-            unit.attack(enemyUnit.getEnemyPosition());
+            if(enemyUnit.getEnemyUnit().isVisible()) {
+                unit.attack(enemyUnit.getEnemyUnit());
+            }
+            else {
+                unit.attack(enemyUnit.getEnemyPosition());
+            }
         }
     }
 

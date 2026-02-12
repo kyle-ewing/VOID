@@ -63,7 +63,7 @@ public class EnemyInformation {
 
     private void enemyInBase() {
         for(EnemyUnits enemyUnit : enemyUnits) {
-            if(!enemyUnit.getEnemyType().canAttack()) {
+            if(!enemyUnit.getEnemyType().canAttack() && enemyUnit.getEnemyType() != UnitType.Zerg_Extractor) {
                 continue;
             }
 
@@ -324,7 +324,6 @@ public class EnemyInformation {
         }
 
         if(!checkForBuildings() && unit.getType().isBuilding()) {
-            System.out.println("Time: " + new Time(game.getFrameCount()) + " Frame: " + game.getFrameCount());
             gameState.setEnemyBuildingDiscovered(false);
         }
     }

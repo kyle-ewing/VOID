@@ -153,14 +153,23 @@ public class ClosestUnit {
         int closestDistance = range;
         EnemyUnits closestEnemy = null;
 
+        //Priority tracking for sunks over creep colonies
+        EnemyUnits prioritySunk = null;
+
         for(EnemyUnits enemyUnit : enemyUnits) {
             Position enemyPosition = enemyUnit.getEnemyPosition();
             Position unitPosition = combatUnit.getUnit().getPosition();
 
+            if(enemyUnit.getEnemyUnit().isVisible() && enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony) {
+                prioritySunk = enemyUnit;
+            }
 
+            if(combatUnit.getUnit().getDistance(enemyPosition) > range) {
+                continue;
+            }
 
             //Stop units from getting stuck on outdated position info
-            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists() && !enemyUnit.getEnemyType().isBuilding()) {
+            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists()) {
                 boolean burrowedLurker = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.wasBurrowed());
 
                 if(burrowedLurker) {
@@ -190,8 +199,11 @@ public class ClosestUnit {
                 continue;
             }
 
-            if(((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && !enemyUnit.getEnemyUnit().isDetected()) || enemyUnit.getEnemyUnit().isMorphing()
-                    || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer) {
+            if(((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && !enemyUnit.getEnemyUnit().isDetected())
+                    || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord
+                    || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer
+                    || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Larva
+                    || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Egg) {
                 continue;
             }
 
@@ -201,10 +213,34 @@ public class ClosestUnit {
 
             int distance = unitPosition.getApproxDistance(enemyPosition);
 
-            if(distance < closestDistance) {
+
+            //Edge case focus sunk over creep colony
+            if(closestEnemy != null
+                    && prioritySunk != null
+                    && enemyUnit.getEnemyType() == UnitType.Zerg_Creep_Colony
+                    && enemyUnit.getEnemyUnit().isVisible()) {
+
+                closestDistance = unitPosition.getApproxDistance(prioritySunk.getEnemyPosition());
+                closestEnemy = prioritySunk;
+            }
+            //Focus units over buildings if visible and not static defense
+            else if(closestEnemy != null && closestEnemy.getEnemyType().isBuilding()
+                    && enemyUnit.getEnemyUnit().isVisible()
+                    && (!enemyUnit.getEnemyType().isBuilding() || isStaticDefense(enemyUnit.getEnemyType()))) {
                 closestDistance = distance;
                 closestEnemy = enemyUnit;
             }
+            else if(distance < closestDistance
+                    && (closestEnemy == null
+                    || !closestEnemy.getEnemyType().isBuilding()
+                    || !isStaticDefense(closestEnemy.getEnemyType())
+                    || isStaticDefense(enemyUnit.getEnemyType()))) {
+
+                closestDistance = distance;
+                closestEnemy = enemyUnit;
+            }
+
+
         }
 
         return closestEnemy;
@@ -225,6 +261,14 @@ public class ClosestUnit {
         }
 
         return combatUnit.getUnit().getDistance(enemyUnit.getEnemyPosition()) < detectionRange;
+    }
+
+    private static boolean isStaticDefense(UnitType unitType) {
+        return unitType == UnitType.Zerg_Sunken_Colony
+                || unitType == UnitType.Zerg_Creep_Colony
+                || unitType == UnitType.Protoss_Photon_Cannon
+                || unitType == UnitType.Terran_Missile_Turret
+                || unitType == UnitType.Terran_Bunker;
     }
 
 }

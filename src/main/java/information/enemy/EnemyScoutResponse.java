@@ -55,11 +55,25 @@ public class EnemyScoutResponse {
     }
 
     private void clearCounterScout() {
-        if(counterScout != null) {
-            if(!enemyScout.getEnemyUnit().exists()) {
+       if(counterScout == null) {
+           return;
+       }
+
+        if(enemyScout != null) {
+            if(!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase()) {
                 counterScout.setWorkerStatus(WorkerStatus.IDLE);
                 counterScout = null;
             }
+        }
+        else {
+            counterScout.setWorkerStatus(WorkerStatus.IDLE);
+            counterScout = null;
+        }
+    }
+
+    private void clearEnemyScout() {
+        if(!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase()) {
+            enemyScout = null;
         }
     }
 
@@ -69,6 +83,10 @@ public class EnemyScoutResponse {
 
     public void onFrame() {
         if(new Time(game.getFrameCount()).greaterThan(new Time(3,30))) {
+            if(counterScout == null) {
+                return;
+            }
+
             clearCounterScout();
             return;
         }
@@ -77,9 +95,15 @@ public class EnemyScoutResponse {
             initialScoutInBase();
         }
 
+        if(enemyScout == null && initiallyScouted) {
+            clearCounterScout();;
+        }
+
+
         if(enemyScout != null) {
             assignCounterScout();
             followScout();
+            clearEnemyScout();
         }
 
 

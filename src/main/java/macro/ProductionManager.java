@@ -396,7 +396,16 @@ public class ProductionManager {
                                 addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
                         }
                         else if(isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
-                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
+
+                            //temp fix
+                            if(gameState.getEnemyOpener() != null) {
+                                if(gameState.getEnemyOpener().getStrategyName().equals("Gas Steal")) {
+                                    addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,2);
+                                }
+                            }
+                            else {
+                                addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
+                            }
                         }
                     }
 
@@ -538,6 +547,13 @@ public class ProductionManager {
     private void scvProduction() {
         int ownedBases = baseInfo.getOwnedBases().size();
         int workerCap = 24 * ownedBases;
+
+        //temp fix
+        if(gameState.getEnemyOpener() != null) {
+            if(gameState.getEnemyOpener().getStrategyName().equals("Gas Steal") && !gameState.moveOutConditionsMet()) {
+                workerCap = 12;
+            }
+        }
 
         if(unitTypeCount.get(UnitType.Terran_SCV) < workerCap) {
             boolean scvInQueue = productionQueue.stream()
@@ -730,6 +746,7 @@ public class ProductionManager {
         }
 
         productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()));
+        productionQueue.removeIf(pi -> pi.getUnitType() != null && gameState.getEnemyOpener().removeBuildings().contains(pi.getUnitType()));
 
         for(UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             if(unitTypeCount.get(building) == 0) {
@@ -749,7 +766,6 @@ public class ProductionManager {
                     }
                 }
             }
-
         }
     }
 

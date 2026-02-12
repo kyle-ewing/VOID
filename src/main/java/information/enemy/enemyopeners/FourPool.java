@@ -5,6 +5,7 @@ import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class FourPool extends EnemyStrategy {
@@ -43,5 +44,13 @@ public class FourPool extends EnemyStrategy {
 
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Bunker);
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        return new HashMap<>();
+    }
+
+    public HashSet<UnitType> removeBuildings() {
+        return new HashSet<>();
     }
 }

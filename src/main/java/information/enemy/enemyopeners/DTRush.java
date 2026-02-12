@@ -4,6 +4,7 @@ import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class DTRush extends EnemyStrategy{
@@ -46,5 +47,13 @@ public class DTRush extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Starport);
         getBuildingResponse().add(UnitType.Terran_Control_Tower);
         getBuildingResponse().add(UnitType.Terran_Science_Facility);
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        return new HashMap<>();
+    }
+
+    public HashSet<UnitType> removeBuildings() {
+        return new HashSet<>();
     }
 }
