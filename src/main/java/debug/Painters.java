@@ -56,7 +56,6 @@ public class Painters {
                 paintStimStatus(unit);
 
             }
-//            paintCombatUnitValues();
         }
 
         if(config.debugWorkers) {
@@ -68,6 +67,10 @@ public class Painters {
             enemyRangePainter();
             paintThreatUnitsToScreen();
             paintEnemyBuildingsToScreen();
+        }
+
+        if(config.debugDetailedUnitInfo) {
+            paintCombatUnitValues();
         }
 
         if(config.debugBuildTiles) {
@@ -284,6 +287,11 @@ public class Painters {
 
 //        game.drawTextScreen(xStart, yOffset, "Priority Enemy: " + (trackedUnit.getPriorityEnemyUnit() != null ? trackedUnit.getPriorityEnemyUnit().getEnemyType() : "null"));
 //        yOffset += lineHeight;
+
+        if(trackedUnit.getUnit().getOrderTarget() != null) {
+            game.drawTextScreen(xStart, yOffset, "Target Unit: " + trackedUnit.getUnit().getOrderTarget().getType());
+            yOffset += lineHeight;
+        }
 
 //        game.drawTextScreen(xStart, yOffset, "Friendly Unit: " + (trackedUnit.getFriendlyUnit() != null ? trackedUnit.getFriendlyUnit().getUnitID() : "null"));
 

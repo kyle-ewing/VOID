@@ -10,6 +10,7 @@ import information.enemy.EnemyUnits;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.ClosestUnit;
+import util.Time;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +63,20 @@ public class WorkerManager {
                 }
             }
 
+            //temp, clean up later
+            if(gameState.getEnemyOpener() != null
+                    && gameState.getEnemyOpener().getStrategyName().equals("Gas Steal")
+                    && gameState.isEnemyInBase()) {
+
+                if(new Time(game.getFrameCount()).greaterThan(new Time(2, 5))) {
+                    createDefenseForce(4);
+                }
+                else {
+                    createDefenseForce(1);
+                }
+
+            }
+
             switch(worker.getWorkerStatus()) {
                 case MINERALS:
                     for(Unit building : buildingRepair.keySet()) {
@@ -71,7 +86,7 @@ public class WorkerManager {
                             worker.setWorkerStatus(WorkerStatus.REPAIRING);
                         }
                     }
-                    if(worker.getUnit().isIdle()) {
+                    if(worker.getUnit().isIdle() || worker.getUnit().isAttacking()) {
                         gatherMinerals(worker);
                     }
 
@@ -95,7 +110,7 @@ public class WorkerManager {
                     workerAttackClock(worker);
 
                     if(frameCount % 24 != 0) {
-                        return;
+                        break;
                     }
 
                     if(worker.getEnemyUnit() != null) {
@@ -105,6 +120,7 @@ public class WorkerManager {
                     if((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         worker.setAttackClock(0);
+                        worker.setAssignedToBase(false);
                         removeDefenseForce(worker);
                     }
                     break;
@@ -237,6 +253,7 @@ public class WorkerManager {
         for(Workers worker : workers) {
             if(worker.getWorkerStatus() == WorkerStatus.MINERALS && defenseForce.size() < defenseSize) {
                 defenseForce.add(worker);
+                removeMineralSaturation(worker);
                 worker.setWorkerStatus(WorkerStatus.DEFEND);
             }
 
@@ -248,7 +265,7 @@ public class WorkerManager {
 
     private void removeDefenseForce(Workers worker) {
         worker.setWorkerStatus(WorkerStatus.IDLE);
-        defenseForce.remove(workers);
+        defenseForce.remove(worker);
     }
 
     //Avoid false positives from a single worker attacking a scv (Stone check)

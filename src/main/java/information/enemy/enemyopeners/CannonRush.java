@@ -5,6 +5,7 @@ import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class CannonRush extends EnemyStrategy {
@@ -41,5 +42,13 @@ public class CannonRush extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Refinery);
         getBuildingResponse().add(UnitType.Terran_Factory);
         getBuildingResponse().add(UnitType.Terran_Machine_Shop);
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        return new HashMap<>();
+    }
+
+    public HashSet<UnitType> removeBuildings() {
+        return new HashSet<>();
     }
 }

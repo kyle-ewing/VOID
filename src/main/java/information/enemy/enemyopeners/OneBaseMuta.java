@@ -5,6 +5,7 @@ import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class OneBaseMuta extends EnemyStrategy {
@@ -24,7 +25,8 @@ public class OneBaseMuta extends EnemyStrategy {
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Spire) {
-                if(time.lessThanOrEqual(new Time(5,0))) {
+                if(time.lessThanOrEqual(new Time(5,0))
+                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Hatchery || et == UnitType.Zerg_Lair ).count() == 1) {
                     return true;
                 }
             }
@@ -38,5 +40,13 @@ public class OneBaseMuta extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        return new HashMap<>();
+    }
+
+    public HashSet<UnitType> removeBuildings() {
+        return new HashSet<>();
     }
 }

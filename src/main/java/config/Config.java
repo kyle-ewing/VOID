@@ -25,8 +25,9 @@ public final class Config {
 
     // Combat Units and workers
     public boolean debugCombatUnits = true;
-    public boolean debugScout = true;
+    public boolean debugScout = false;
     public boolean debugWorkers = true;
+    public boolean debugDetailedUnitInfo = false;
 
     //Enemy Units
     public boolean debugEnemyUnits = true;
@@ -56,6 +57,7 @@ public final class Config {
         this.debugCombatUnits = getBooleanOrDefault("DEBUG_COMBAT_UNITS", this.debugCombatUnits);
         this.debugWorkers = getBooleanOrDefault("DEBUG_WORKERS", this.debugWorkers);
         this.debugScout = getBooleanOrDefault("DEBUG_SCOUT", this.debugScout);
+        this.debugDetailedUnitInfo = getBooleanOrDefault("DEBUG_DETAILED_UNIT_INFO", this.debugDetailedUnitInfo);
 
         // Enemy Units
          this.debugEnemyUnits = getBooleanOrDefault("DEBUG_ENEMY_UNITS", this.debugEnemyUnits);

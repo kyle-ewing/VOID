@@ -42,6 +42,8 @@ public class GameState {
     private boolean enemyBuildingDiscovered = false;
     private boolean enemyFlyerInBase = false;
     private boolean canExpand = false;
+    private boolean enemyOpenerIdentified = false;
+    private boolean moveOutConditionsMet = false;
 
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
@@ -53,6 +55,7 @@ public class GameState {
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
     private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
     private HashSet<UnitType> liftableBuildings = new HashSet<>();
+    private HashSet<UnitType> removeBuildings = new HashSet<>();
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
     private HashMap<UnitType, Integer> openerMoveOutCondition = new HashMap<>();
 
@@ -77,6 +80,11 @@ public class GameState {
     public void onFrame() {
         resourceTracking.onFrame();
         expansionCriteria.onFrame();
+        moveOutConditionsMet(openerMoveOutCondition);
+
+        if(!enemyOpenerIdentified) {
+            amendMoveOutCondition();
+        }
     }
 
     //Change when learning is added
@@ -106,6 +114,56 @@ public class GameState {
             default:
                 bunkerPosition = null;
                 break;
+        }
+    }
+
+    private void moveOutConditionsMet(HashMap<UnitType, Integer> openerMoveOutCondition) {
+        for(UnitType unitType : openerMoveOutCondition.keySet()) {
+            int requiredCount = openerMoveOutCondition.get(unitType);
+
+            //Handle both tanks modes
+            if(unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Terran_Siege_Tank_Siege_Mode) {
+                int tankModeCount = unitTypeCount.getOrDefault(UnitType.Terran_Siege_Tank_Tank_Mode, 0);
+                int siegeModeCount = unitTypeCount.getOrDefault(UnitType.Terran_Siege_Tank_Siege_Mode, 0);
+                int totalTanks = tankModeCount + siegeModeCount;
+
+                if(totalTanks < requiredCount) {
+                    moveOutConditionsMet = false;
+                    return;
+                }
+            }
+            //Group goliaths and vultures together
+            else if(unitType == UnitType.Terran_Vulture) {
+                int vultureCount = unitTypeCount.getOrDefault(UnitType.Terran_Vulture, 0);
+                int goliathCount = unitTypeCount.getOrDefault(UnitType.Terran_Goliath, 0);
+                int total = vultureCount + goliathCount;
+
+                if (total < requiredCount) {
+                    moveOutConditionsMet = false;
+                    return;
+                }
+            }
+            else {
+                if(!unitTypeCount.containsKey(unitType) || unitTypeCount.get(unitType) < requiredCount) {
+                    moveOutConditionsMet = false;
+                    return;
+                }
+            }
+        }
+        moveOutConditionsMet = true;
+    }
+
+    private void amendMoveOutCondition() {
+        if(enemyOpener != null) {
+            HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition();
+
+            if(enemyMoveOutCondition.isEmpty()) {
+                enemyOpenerIdentified = true;
+                return;
+            }
+
+            openerMoveOutCondition = enemyMoveOutCondition;
+            enemyOpenerIdentified = true;
         }
     }
 
@@ -247,5 +305,9 @@ public class GameState {
 
     public void setCanExpand(boolean canExpand) {
         this.canExpand = canExpand;
+    }
+
+    public boolean moveOutConditionsMet() {
+        return moveOutConditionsMet;
     }
 }

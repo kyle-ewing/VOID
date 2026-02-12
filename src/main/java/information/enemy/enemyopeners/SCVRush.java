@@ -6,6 +6,7 @@ import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import util.Time;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 //Stone Cold Steve Austin's favorite strategy
@@ -43,5 +44,13 @@ public class SCVRush extends EnemyStrategy {
     }
 
     public void buildingResponse() {
+    }
+
+    public HashMap<UnitType, Integer> getMoveOutCondition() {
+        return new HashMap<>();
+    }
+
+    public HashSet<UnitType> removeBuildings() {
+        return new HashSet<>();
     }
 }
