@@ -50,6 +50,9 @@ public class BuildTiles {
         mineralExclusionZone(startingBase);
         geyserExclusionZone(startingBase);
         ccExclusionZone(startingBase);
+        mineralExclusionZone(baseInfo.getNaturalBase());
+        geyserExclusionZone(baseInfo.getNaturalBase());
+        ccExclusionZone(baseInfo.getNaturalBase());
         chokeExclusionZone(startingBase);
         generateFrontBaseTiles();
         generateBackBaseTiles();
@@ -63,9 +66,6 @@ public class BuildTiles {
 
     private void regenerateBuildTiles() {
         if(!naturalTilesGenerated) {
-            mineralExclusionZone(baseInfo.getNaturalBase());
-            geyserExclusionZone(baseInfo.getNaturalBase());
-            ccExclusionZone(baseInfo.getNaturalBase());
             chokeExclusionZone(baseInfo.getNaturalBase());
             //generateMediumTiles(frontBaseTiles);
             generateMediumTiles(baseInfo.getNaturalTiles());
@@ -91,7 +91,7 @@ public class BuildTiles {
 
         //First pass largeBuildTiles with 3 tile gap stacks
         for(TilePosition tile : sortedFrontTiles) {
-            if(largeBuildTiles.size() >= 8) {
+            if(largeBuildTiles.size() >= 10) {
                 break;
             }
 

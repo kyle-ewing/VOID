@@ -4,6 +4,7 @@ import bwapi.*;
 import bwem.Base;
 import information.BaseInfo;
 import information.GameState;
+import information.enemy.EnemyUnits;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.*;
 import unitgroups.units.WorkerStatus;
@@ -64,7 +65,7 @@ public class ProductionManager {
         boolean blockedByHigherPriority = false;
         Workers worker = null;
 
-        for(PlannedItem pi : productionQueue) {
+        for(PlannedItem pi : new PriorityQueue<>(productionQueue)) {
             if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
@@ -82,7 +83,7 @@ public class ProductionManager {
                 }
             }
 
-            if(gameState.isEnemyInNatural() && pi.getUnitType() == UnitType.Terran_Command_Center) {
+            if(gameState.isEnemyInNatural() && (pi.getBuildPosition() != null && !baseInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
                 priorityStop = false;
                 continue;
             }
@@ -357,8 +358,6 @@ public class ProductionManager {
 
 
     private void addUnitProduction() {
-
-
         switch(startingOpener.getBuildOrderName()) {
             case EIGHTRAX:
                 for(Unit productionBuilding : productionBuildings) {
@@ -389,7 +388,13 @@ public class ProductionManager {
                         }
                     }
 
-                    if (isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
+                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                        }
+                    }
+
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
                         if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic)
                                 && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)
                                 && unitTypeCount.get(UnitType.Terran_Marine) > 6) {
@@ -412,11 +417,7 @@ public class ProductionManager {
                         }
                     }
 
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
-                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                        }
-                    }
+
 
                 }
                 //TODO: remove when transitions are added
@@ -544,6 +545,34 @@ public class ProductionManager {
         if(gameState.getCanExpand()) {
             addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 2);
             gameState.setCanExpand(false);
+        }
+    }
+
+    private void addCCTurret(Unit unit) {
+        TilePosition turretPosition = null;
+        Base newBase = null;
+
+        for(Base base : baseInfo.getMapBases()) {
+            if(base.getLocation().getDistance(unit.getTilePosition()) < 10) {
+                newBase = base;
+                break;
+            }
+        }
+
+        if(newBase != null) {
+            if(newBase == baseInfo.getStartingBase()) {
+                return;
+            }
+            else if(newBase == baseInfo.getNaturalBase() && !tileTaken(buildTiles.getNaturalChokeTurret())) {
+                turretPosition = buildTiles.getNaturalChokeTurret();
+            }
+            else {
+                turretPosition = buildTiles.getMineralLineTurrets().get(newBase);
+            }
+        }
+
+        if(turretPosition != null) {
+            addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretPosition, 2);
         }
     }
 
@@ -692,7 +721,6 @@ public class ProductionManager {
                 reservedTurretPositions.add(buildTiles.getMainChokeTurret());
                 pi.setBuildPosition(buildTiles.getMainChokeTurret());
             }
-            //If choke tiles don't exist remove from queue to prevent deadlocking
             else {
                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
             }
@@ -1143,6 +1171,16 @@ public class ProductionManager {
         if(unit.getType().isBuilding()) {
             allBuildings.add(unit);
         }
+
+        if(unit.getType() == UnitType.Terran_Command_Center) {
+            addCCTurret(unit);
+            addToQueue(UnitType.Terran_Comsat_Station, PlannedItemType.ADDON, 2);
+
+            if(gameState.getStartingOpener().buildType() == BuildType.BIO
+                && baseInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10 && !baseInfo.hasBunkerInNatural()) {
+                addToQueue(UnitType.Terran_Bunker, PlannedItemType.BUILDING, buildTiles.getNaturalChokeBunker(), 2);
+            }
+        }
     }
 
     public void onUnitComplete(Unit unit) {
@@ -1169,6 +1207,7 @@ public class ProductionManager {
 
             if(unit.getType() == UnitType.Terran_Missile_Turret) {
                 reservedTurretPositions.remove(unit.getTilePosition());
+                addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, unit.getTilePosition(), 3);
             }
 
             //Readd everything as P1 except CCs after the natural

@@ -103,7 +103,7 @@ public class UnitManager {
                 rallyPoint.setRallyPoint(combatUnit);
             }
 
-            switch (combatUnit.getUnitType()) {
+            switch(combatUnit.getUnitType()) {
                 case Terran_Marine:
                     bunkerStatus(combatUnit);
                     break;
@@ -307,7 +307,12 @@ public class UnitManager {
     }
 
     private void unLoadBunker(CombatUnits combatUnit) {
-        bunker.unloadAll();
+        for(Unit unit : game.self().getUnits()) {
+            if(unit.getType() != UnitType.Terran_Bunker) {
+                continue;
+            }
+            unit.unloadAll();
+        }
         bunkerLoad = 0;
         combatUnit.setInBunker(false);
     }
@@ -426,6 +431,11 @@ public class UnitManager {
 
             //Give a tolerance just outside of detection range to not waste scans
             if(scanUnit.getUnitType().isDetector()) {
+                //Edge case
+                if(scanUnit.getUnit().getPosition() == null) {
+                    continue;
+                }
+
                 for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
                     if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
                         if(enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= scanUnit.getUnitType().sightRange()) {
@@ -714,6 +724,13 @@ public class UnitManager {
     public void onUnitDestroy(Unit unit) {
         if(unit.getType() == UnitType.Terran_Bunker) {
             bunker = null;
+
+            for(Unit u : game.self().getUnits()) {
+                if(u.getType() == UnitType.Terran_Bunker && u.isCompleted()) {
+                    this.bunker = u;
+                    break;
+                }
+            }
             return;
         }
 

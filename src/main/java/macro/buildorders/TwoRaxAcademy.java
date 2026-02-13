@@ -29,7 +29,6 @@ public class TwoRaxAcademy extends BuildOrder {
         buildOrder.add(new PlannedItem(TechType.Stim_Packs, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 2));
         buildOrder.add(new PlannedItem(UpgradeType.U_238_Shells, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 1, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 28, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Weapons, 28, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
@@ -39,8 +38,7 @@ public class TwoRaxAcademy extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 1));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 38, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 3));
         buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 45, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 45, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         return buildOrder;
     }
 
@@ -60,6 +58,7 @@ public class TwoRaxAcademy extends BuildOrder {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         moveOutCondition.put(UnitType.Terran_Marine, 15);
         moveOutCondition.put(UnitType.Terran_Medic, 4);
+        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
         return moveOutCondition;
     }
 }

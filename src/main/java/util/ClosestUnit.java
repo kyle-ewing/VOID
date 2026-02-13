@@ -47,7 +47,7 @@ public class ClosestUnit {
                 continue;
             }
 
-            if(friendlyUnit.isInBunker()) {
+            if(friendlyUnit.isInBunker() || friendlyUnit.getUnit().isLoaded()) {
                 continue;
             }
 
