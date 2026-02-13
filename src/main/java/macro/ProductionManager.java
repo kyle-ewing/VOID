@@ -402,6 +402,9 @@ public class ProductionManager {
                                 if(gameState.getEnemyOpener().getStrategyName().equals("Gas Steal")) {
                                     addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,2);
                                 }
+                                else {
+                                    addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
+                                }
                             }
                             else {
                                 addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);

@@ -20,8 +20,8 @@ public abstract class EnemyStrategy {
 
     public abstract boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time);
     public abstract void buildingResponse();
-    public abstract HashMap<UnitType, Integer> getMoveOutCondition();
     public abstract HashSet<UnitType> removeBuildings();
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time);
 
     public String getStrategyName() {
         return strategyName;

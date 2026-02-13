@@ -129,7 +129,7 @@ public class UnitManager {
                 }
             }
 
-            if(moveOutConditionsMet(gameState.getOpenerMoveOutCondition())) {
+            if(gameState.moveOutConditionsMet()) {
                 if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD || unitStatus == UnitStatus.SIEGEDEF) {
                     if(bunker != null) {
                         unLoadBunker(combatUnit);
@@ -633,39 +633,6 @@ public class UnitManager {
             }
         }
         return false;
-    }
-
-    private boolean moveOutConditionsMet(HashMap<UnitType, Integer> openerMoveOutCondition) {
-        for(UnitType unitType : openerMoveOutCondition.keySet()) {
-            int requiredCount = openerMoveOutCondition.get(unitType);
-
-            //Handle both tanks modes
-            if(unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Terran_Siege_Tank_Siege_Mode) {
-                int tankModeCount = unitCount.getOrDefault(UnitType.Terran_Siege_Tank_Tank_Mode, 0);
-                int siegeModeCount = unitCount.getOrDefault(UnitType.Terran_Siege_Tank_Siege_Mode, 0);
-                int totalTanks = tankModeCount + siegeModeCount;
-
-                if(totalTanks < requiredCount) {
-                    return false;
-                }
-            }
-            //Group goliaths and vultures together
-            else if(unitType == UnitType.Terran_Vulture) {
-                int vultureCount = unitCount.getOrDefault(UnitType.Terran_Vulture, 0);
-                int goliathCount = unitCount.getOrDefault(UnitType.Terran_Goliath, 0);
-                int total = vultureCount + goliathCount;
-
-                if (total < requiredCount) {
-                    return false;
-                }
-            }
-            else {
-                if(!unitCount.containsKey(unitType) || unitCount.get(unitType) < requiredCount) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private boolean priorityTargetExists() {

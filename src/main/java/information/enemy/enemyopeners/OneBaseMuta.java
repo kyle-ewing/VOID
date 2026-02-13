@@ -42,7 +42,7 @@ public class OneBaseMuta extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition() {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         return new HashMap<>();
     }
 

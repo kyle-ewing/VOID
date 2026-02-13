@@ -16,6 +16,7 @@ import unitgroups.units.Workers;
 import map.BuildTiles;
 import planner.BuildComparator;
 import planner.PlannedItem;
+import util.Time;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ public class GameState {
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
     private TilePosition bunkerPosition = null;
+    private Time time;
 
     private boolean enemyInBase = false;
     private boolean enemyInNatural = false;
@@ -78,13 +80,14 @@ public class GameState {
     }
 
     public void onFrame() {
+        time = new Time(game.getFrameCount());
+
         resourceTracking.onFrame();
         expansionCriteria.onFrame();
-        moveOutConditionsMet(openerMoveOutCondition);
 
-        if(!enemyOpenerIdentified) {
-            amendMoveOutCondition();
-        }
+        amendMoveOutCondition();
+        moveOutConditionsMet();
+
     }
 
     //Change when learning is added
@@ -117,7 +120,7 @@ public class GameState {
         }
     }
 
-    private void moveOutConditionsMet(HashMap<UnitType, Integer> openerMoveOutCondition) {
+    public boolean moveOutConditionsMet() {
         for(UnitType unitType : openerMoveOutCondition.keySet()) {
             int requiredCount = openerMoveOutCondition.get(unitType);
 
@@ -128,8 +131,7 @@ public class GameState {
                 int totalTanks = tankModeCount + siegeModeCount;
 
                 if(totalTanks < requiredCount) {
-                    moveOutConditionsMet = false;
-                    return;
+                    return false;
                 }
             }
             //Group goliaths and vultures together
@@ -138,32 +140,29 @@ public class GameState {
                 int goliathCount = unitTypeCount.getOrDefault(UnitType.Terran_Goliath, 0);
                 int total = vultureCount + goliathCount;
 
-                if (total < requiredCount) {
-                    moveOutConditionsMet = false;
-                    return;
+                if(total < requiredCount) {
+                    return false;
                 }
             }
             else {
                 if(!unitTypeCount.containsKey(unitType) || unitTypeCount.get(unitType) < requiredCount) {
-                    moveOutConditionsMet = false;
-                    return;
+                    return false;
                 }
             }
         }
-        moveOutConditionsMet = true;
+        return true;
     }
 
     private void amendMoveOutCondition() {
         if(enemyOpener != null) {
-            HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition();
+            HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(time);
 
             if(enemyMoveOutCondition.isEmpty()) {
-                enemyOpenerIdentified = true;
+                openerMoveOutCondition = startingOpener.getMoveOutCondition();
                 return;
             }
 
             openerMoveOutCondition = enemyMoveOutCondition;
-            enemyOpenerIdentified = true;
         }
     }
 
@@ -305,9 +304,5 @@ public class GameState {
 
     public void setCanExpand(boolean canExpand) {
         this.canExpand = canExpand;
-    }
-
-    public boolean moveOutConditionsMet() {
-        return moveOutConditionsMet;
     }
 }
