@@ -46,7 +46,7 @@ public class SCVRush extends EnemyStrategy {
     public void buildingResponse() {
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition() {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         return new HashMap<>();
     }
 

@@ -44,7 +44,7 @@ public class CannonRush extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Machine_Shop);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition() {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         return new HashMap<>();
     }
 
