@@ -37,6 +37,6 @@ public class Lurker extends EnemyTechUnits {
     }
 
     public void techUpgradeResponse() {
-        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Irradiate, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Science_Facility, 1));
+        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Irradiate, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Science_Facility, 2));
     }
 }

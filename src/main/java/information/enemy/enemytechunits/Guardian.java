@@ -11,7 +11,16 @@ public class Guardian extends EnemyTechUnits {
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
-        return enemyUnits.stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Zerg_Guardian);
+        for(EnemyUnits enemyUnit : enemyUnits) {
+            if(enemyUnit.getEnemyType() == null) {
+                continue;
+            }
+
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Guardian) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void techBuildingResponse() {
