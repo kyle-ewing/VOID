@@ -18,7 +18,7 @@ public class GasSteal extends EnemyStrategy{
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        if(time.greaterThan(new Time(2,20))) {
+        if(time.greaterThan(new Time(2,30))) {
             return false;
         }
 
@@ -47,7 +47,7 @@ public class GasSteal extends EnemyStrategy{
         if(time.lessThanOrEqual(new Time(3,30))) {
             moveOutCondition.put(UnitType.Terran_Marine, 2);
         }
-        else if(time.lessThanOrEqual(new Time(4,30))) {
+        else if(time.lessThanOrEqual(new Time(5,0))) {
             moveOutCondition.put(UnitType.Terran_Marine, 4);
         }
 

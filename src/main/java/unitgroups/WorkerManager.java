@@ -57,25 +57,23 @@ public class WorkerManager {
         }
 
         for(Workers worker : workers) {
-            if(worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
-                //Stop worker defense after the early game
-                if(new Time(frameCount).greaterThan(new Time(6,0))) {
-                    continue;
-                }
-
-                if(baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened()) {
-                    createDefenseForce(7);
+            if(new Time(frameCount).lessThanOrEqual(new Time(6,0))) {
+                if(worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
+                    //Stop worker defense after the early game
+                    if(baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened()) {
+                        createDefenseForce(7);
+                    }
                 }
 
                 //temp, clean up later
                 if(gameState.getEnemyOpener() != null
                         && gameState.getEnemyOpener().getStrategyName().equals("Gas Steal")
                         && gameState.isEnemyInBase()) {
-                    if(new Time(game.getFrameCount()).greaterThan(new Time(2, 5))) {
-                        createDefenseForce(4);
-                    }
-                    else {
+                    if(new Time(game.getFrameCount()).lessThanOrEqual(new Time(2, 5))) {
                         createDefenseForce(1);
+                    }
+                    else if(new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 0))) {
+                        createDefenseForce(4);
                     }
                 }
             }
