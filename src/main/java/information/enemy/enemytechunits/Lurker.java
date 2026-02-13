@@ -21,7 +21,7 @@ public class Lurker extends EnemyTechUnits {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Lurker) {
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Lurker || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker_Egg) {
                 return true;
             }
         }
