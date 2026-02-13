@@ -29,16 +29,15 @@ public class TwoRaxAcademy extends BuildOrder {
         buildOrder.add(new PlannedItem(TechType.Stim_Packs, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 2));
         buildOrder.add(new PlannedItem(UpgradeType.U_238_Shells, 26, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 1, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 28, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Weapons, 28, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 33, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 38, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 1));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 38, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 3));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 40, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 40, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 1));
         buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 45, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 45, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
