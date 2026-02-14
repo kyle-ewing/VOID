@@ -1115,7 +1115,7 @@ public class BuildTiles {
         int ccX_end = ccX + UnitType.Terran_Command_Center.tileWidth();
         int ccHeight = UnitType.Terran_Command_Center.tileHeight();
 
-        for(int x = ccX_end; x < ccX_end + 3; x++) {
+        for(int x = ccX; x < ccX_end + 3; x++) {
             for(int y = ccY; y < ccY + ccHeight; y++) {
                 ccExclusionTiles.add(new TilePosition(x, y));
             }
