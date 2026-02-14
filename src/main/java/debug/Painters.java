@@ -107,6 +107,7 @@ public class Painters {
             paintTileZone(gameState.getBuildTiles().getFrontBaseTiles(), Color.Purple);
             paintTileZone(gameState.getBuildTiles().getBackBaseTiles(), Color.Orange);
             paintTileZone(gameState.getBaseInfo().getNaturalTiles(),  Color.Teal);
+            paintTileZone(gameState.getBaseInfo().getMinBaseTiles(), Color.Grey);
         }
 
         if(config.debugCCExclusionZone) {

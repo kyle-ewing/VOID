@@ -60,7 +60,7 @@ public class OneFacFE extends BuildOrder {
 
     public HashMap<UnitType, Integer> getMoveOutCondition() {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
-        moveOutCondition.put(UnitType.Terran_Vulture, 6);
+        moveOutCondition.put(UnitType.Terran_Vulture, 7);
         moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
         return moveOutCondition;
     }

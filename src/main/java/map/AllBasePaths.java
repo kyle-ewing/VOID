@@ -44,7 +44,8 @@ public class AllBasePaths {
         Position startingBasePos = baseInfo.getStartingBase().getCenter();
 
         for(Base base : baseInfo.getMapBases()) {
-            if(baseInfo.getStartingBase().equals(base)) {
+            if(baseInfo.getStartingBase().equals(base)
+            || baseInfo.getMinBaseTiles().contains(base.getLocation())) {
                 continue;
             }
 

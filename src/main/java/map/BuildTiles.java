@@ -66,7 +66,7 @@ public class BuildTiles {
     }
 
     private void regenerateBuildTiles() {
-        if(!naturalTilesGenerated) {
+        if(!naturalTilesGenerated && mediumBuildTiles.isEmpty() || mediumBuildTiles.size() == 1) {
             chokeExclusionZone(baseInfo.getNaturalBase());
             //generateMediumTiles(frontBaseTiles);
             generateMediumTiles(baseInfo.getNaturalTiles());
@@ -79,6 +79,9 @@ public class BuildTiles {
             geyserExclusionZone(baseInfo.getMinOnlyBase());
             ccExclusionZone(baseInfo.getMinOnlyBase());
             generateLargeTiles(baseInfo.getMinBaseTiles());
+            minOnlyTilesGenerated = true;
+        }
+        else if(baseInfo.getMinBaseTiles().isEmpty()) {
             minOnlyTilesGenerated = true;
         }
     }
@@ -1248,14 +1251,7 @@ public class BuildTiles {
     }
 
     public void onFrame() {
-        if(mediumBuildTiles.isEmpty() || mediumBuildTiles.size() == 1) {
-            if(!naturalTilesGenerated && gameState.isEnemyInNatural()) {
-                return;
-            }
-
             regenerateBuildTiles();
-        }
-        regenerateBuildTiles();
     }
 
     public void onUnitComplete(Unit unit) {

@@ -83,6 +83,9 @@ public class BaseInfo {
 
         //Handle edge cases where bases are split into multiple areas
         combineBaseAreas();
+
+        allBasePaths = new AllBasePaths(this);
+        allPathsMap = new HashMap<>(allBasePaths.getBasePathLists());
     }
 
     private void addAllBases() {

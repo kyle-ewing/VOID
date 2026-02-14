@@ -95,6 +95,7 @@ public class Vulture extends CombatUnits {
 
         if(allowMineLaying()) {
             layMinesAtChokepoints();
+            layMinesAnyWhere();
         }
     }
 
@@ -183,10 +184,10 @@ public class Vulture extends CombatUnits {
     }
 
     private void attackMove() {
-        if(minimnumThreshold(1.05)) {
+        if(minimnumThreshold(1.2)) {
             unit.patrol(kiteTo(weaponRange()));
         }
-        else if(minimnumThreshold(0.5)) {
+        else if(minimnumThreshold(0.40)) {
             unit.move(kiteTo(weaponRange()));
         }
         else {
@@ -274,6 +275,25 @@ public class Vulture extends CombatUnits {
         }
     }
 
+    private void layMinesAnyWhere() {
+        if(baseInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())
+                || baseInfo.getNaturalTiles().contains(unit.getPosition().toTilePosition())
+                || baseInfo.getMinBaseTiles().contains(unit.getPosition().toTilePosition())) {
+            return;
+        }
+
+        if(enemyUnit != null && unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
+            return;
+        }
+
+        if(layingMines) {
+            return;
+        }
+
+        unit.useTech(TechType.Spider_Mines, unit.getPosition());
+        layingMines = true;
+    }
+
     private void layMinesOnEnemy() {
         if(enemyUnit.getEnemyType().isBuilding()) {
             return;
@@ -290,8 +310,30 @@ public class Vulture extends CombatUnits {
         }
 
         if(unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
+            //Don't lay mines in the main
+            if(baseInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())) {
+                return;
+            }
+
             if(enemyUnit.getEnemyType().groundWeapon().maxRange() <= 64) {
                 Position minePos = kiteTo(64);
+                unit.move(minePos);
+                unit.useTech(TechType.Spider_Mines, minePos);
+                layingMines = true;
+            }
+            else if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+                Position enemyPos = enemyUnit.getEnemyPosition();
+                Position unitPos = unit.getPosition();
+
+                int dx = enemyPos.getX() - unitPos.getX();
+                int dy = enemyPos.getY() - unitPos.getY();
+                double distance = unitPos.getDistance(enemyPos);
+
+                double moveX = unitPos.getX() + (dx * 10 / Math.max(1, distance));
+                double moveY = unitPos.getY() + (dy * 10 / Math.max(1, distance));
+
+                Position minePos = new Position((int) moveX, (int) moveY);
+
                 unit.move(minePos);
                 unit.useTech(TechType.Spider_Mines, minePos);
                 layingMines = true;
