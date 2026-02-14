@@ -244,6 +244,7 @@ public class BaseInfo {
 
             if(base == naturalBase) {
                 orderedExpansions.add(0, base);
+                continue;
             }
 
             List<Position> path = allPathsMap.get(base);
@@ -258,20 +259,22 @@ public class BaseInfo {
                 orderedExpansions.add(base);
             }
             else {
-                for(int i = 0; i < orderedExpansions.size(); i++) {
+                boolean inserted = false;
+
+                for(int i = 1; i < orderedExpansions.size(); i++) {
                     Base currentBase = orderedExpansions.get(i);
                     List<Position> currentPath = allPathsMap.get(currentBase);
                     int currentDistance = currentPath.size();
 
                     if(currentDistance > distance) {
                         orderedExpansions.add(i, base);
+                        inserted = true;
                         break;
                     }
+                }
 
-                    if(i == orderedExpansions.size() - 1) {
-                        orderedExpansions.add(base);
-                        break;
-                    }
+                if(!inserted) {
+                    orderedExpansions.add(base);
                 }
             }
         }
