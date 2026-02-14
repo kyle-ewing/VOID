@@ -81,6 +81,7 @@ public class Painters {
 
         if(config.debugBunkerTiles) {
             paintPaintBunkerTile(gameState.getBunkerPosition());
+            paintPaintBunkerTile(gameState.getBuildTiles().getCloseBunkerTile());
         }
 
         if(config.debugTurretTiles) {
