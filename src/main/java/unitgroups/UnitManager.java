@@ -688,6 +688,9 @@ public class UnitManager {
 
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_Bunker) {
+            if(bunker != null) {
+                bunker.unloadAll();
+            }
             bunker = unit;
             return;
         }
