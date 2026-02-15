@@ -14,6 +14,7 @@ import util.Time;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 
 public class WorkerManager {
     private BaseInfo baseInfo;
@@ -466,14 +467,15 @@ public class WorkerManager {
         if(unit.getType() == UnitType.Terran_Refinery) {
             for(Workers worker : refinerySaturation.get(unit)) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
-                refinerySaturation.get(unit).removeIf(w -> w == worker);
             }
+            refinerySaturation.remove(unit);
             return;
         }
 
-        for(Workers worker : workers) {
+        Iterator<Workers> iterator = workers.iterator();
+        while(iterator.hasNext()) {
+            Workers worker = iterator.next();
             if(worker.getUnit() == unit) {
-
                 for(Unit building : buildingRepair.keySet()) {
                     if(buildingRepair.get(building) == worker) {
                         buildingRepair.put(building, null);
@@ -485,8 +487,7 @@ public class WorkerManager {
                 }
 
                 removeMineralSaturation(worker);
-                workers.remove(worker);
-
+                iterator.remove();
                 break;
             }
         }

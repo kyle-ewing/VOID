@@ -24,8 +24,8 @@ public class BuildOrderManager {
         //protossOpeners.add(new TwoFac());
 
         //TvT
-        //terranOpeners.add(new TwoRaxAcademy());
-        terranOpeners.add(new OneFacFE());
+        terranOpeners.add(new TwoRaxAcademy());
+        //terranOpeners.add(new OneFacFE());
 
         //TvZ
         zergOpeners.add(new TwoRaxAcademy());
