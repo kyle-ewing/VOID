@@ -397,7 +397,7 @@ public class ProductionManager {
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
                         if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic)
                                 && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)
-                                && unitTypeCount.get(UnitType.Terran_Marine) > 8) {
+                                && unitTypeCount.get(UnitType.Terran_Marine) > 10) {
                                 addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
                         }
                         else if(isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
@@ -486,7 +486,11 @@ public class ProductionManager {
                     }
 
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 4 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+                        if(isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && productionBuilding.getAddon() != null
+                                && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
+                                && (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) < 4
+                                || (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) >= 2
+                                && unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath) >= 7))) {
                             addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
                         }
                         else if(isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {

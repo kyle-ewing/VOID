@@ -32,10 +32,10 @@ public class FourPool extends EnemyStrategy {
                 }
             }
             else if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if(time.lessThanOrEqual(new Time(2,10))) {
+                if(time.lessThanOrEqual(new Time(2,30))) {
                     return true;
                 }
-                else if(time.lessThanOrEqual(new Time(2,30))) {
+                else if(time.lessThanOrEqual(new Time(2,40))) {
                     if(enemyUnit.getEnemyPosition().getDistance(baseInfo.getStartingBase().getCenter()) < 2000) {
                         return true;
                     }

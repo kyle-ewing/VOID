@@ -185,9 +185,9 @@ public class Vulture extends CombatUnits {
 
     private void attackMove() {
         if(minimnumThreshold(1.2)) {
-            unit.patrol(kiteTo(weaponRange()));
+            unit.attack(kiteTo(weaponRange()));
         }
-        else if(minimnumThreshold(0.40)) {
+        else if(minimnumThreshold(0.70)) {
             unit.move(kiteTo(weaponRange()));
         }
         else {
