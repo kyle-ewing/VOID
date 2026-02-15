@@ -176,18 +176,18 @@ public class SiegeTank extends CombatUnits {
 
         switch(super.getUnitStatus()) {
             case ATTACK:
-                if(!isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 128) {
+                if(!isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                 }
 
-                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 128) {
+                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
                 break;
             case DEFEND:
-                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 128) {
+                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
@@ -200,7 +200,7 @@ public class SiegeTank extends CombatUnits {
                 }
                 break;
             case SIEGEDEF:
-                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 128) {
+                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
@@ -214,7 +214,7 @@ public class SiegeTank extends CombatUnits {
                 break;
         }
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 128 && canSiege()) {
+        if(enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64 && canSiege()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             unit.siege();
         }
