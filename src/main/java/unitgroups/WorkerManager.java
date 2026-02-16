@@ -274,6 +274,11 @@ public class WorkerManager {
     private boolean actuallyThreatened() {
         int enemyWorkerCount = 0;
         for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            //Don't trigger against lurkers or flyers
+            if(enemyUnit.getEnemyUnit().getType().isFlyer() || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker) {
+                continue;
+            }
+
             if(enemyUnit.getEnemyType().isWorker()) {
                 if(enemyUnit.getEnemyPosition() == null) {
                     continue;
@@ -351,18 +356,13 @@ public class WorkerManager {
     private void preemptiveBunkerRepair() {
         for(Unit bunker : player.getUnits()) {
             if(bunker.getType() == UnitType.Terran_Bunker && bunker.isCompleted()) {
+                System.out.println(bunker.getDistance(baseInfo.getStartingBase().getCenter()));
                 if(enemyInRange()) {
-                    for(Workers worker : workers) {
-                        if(worker.getWorkerStatus() == WorkerStatus.MINERALS && repairForce.size() < 3) {
-                            worker.setWorkerStatus(WorkerStatus.REPAIRING);
-                            worker.setRepairTarget(bunker);
-                            worker.setPreemptiveRepair(true);
-                            repairForce.add(worker);
-                        }
-                        else if(repairForce.size() > 2) {
-                            break;
-                        }
-                    }
+                    createRepairForce(bunker, 3);
+                }
+                else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 500
+                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
+                    createRepairForce(bunker, 1);
                 }
                 else if(!enemyInRange()) {
                     for(Workers worker : repairForce) {
@@ -373,6 +373,36 @@ public class WorkerManager {
                     repairForce.clear();
 
                 }
+            }
+        }
+    }
+
+    private void createRepairForce(Unit bunker, int repairSize) {
+        if(repairForce.size() == repairSize) {
+            return;
+        }
+
+        if(repairForce.size() > repairSize) {
+            Iterator<Workers> iterator = repairForce.iterator();
+            while(iterator.hasNext() && repairForce.size() > repairSize) {
+                Workers worker = iterator.next();
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                worker.setRepairTarget(null);
+                worker.setPreemptiveRepair(false);
+                iterator.remove();
+            }
+        }
+
+        for(Workers worker : workers) {
+            if(worker.getWorkerStatus() == WorkerStatus.MINERALS && repairForce.size() < repairSize
+                    && workers.size() > 8) {
+                worker.setWorkerStatus(WorkerStatus.REPAIRING);
+                worker.setRepairTarget(bunker);
+                worker.setPreemptiveRepair(true);
+                repairForce.add(worker);
+            }
+            else if(repairForce.size() >= repairSize) {
+                break;
             }
         }
     }
@@ -481,6 +511,8 @@ public class WorkerManager {
                         buildingRepair.put(building, null);
                     }
                 }
+
+                repairForce.remove(worker);
 
                 for(Unit geyser : refinerySaturation.keySet()) {
                     refinerySaturation.get(geyser).remove(worker);
