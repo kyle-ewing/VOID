@@ -11,6 +11,8 @@ import macro.ResourceTracking;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
 import macro.buildorders.BunkerLocation;
+import macro.buildorders.buildtransitions.BuildTransition;
+import planner.PlannedItemStatus;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.Workers;
 import map.BuildTiles;
@@ -18,6 +20,7 @@ import planner.BuildComparator;
 import planner.PlannedItem;
 import util.Time;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -46,6 +49,7 @@ public class GameState {
     private boolean canExpand = false;
     private boolean enemyOpenerIdentified = false;
     private boolean moveOutConditionsMet = false;
+    private boolean hasTransitioned = false;
 
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
@@ -56,6 +60,7 @@ public class GameState {
     private HashSet<EnemyTechUnits> knownEnemyTechUnits = new HashSet<>();
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
     private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
+    private HashSet<BuildTransition> buildTransition = new HashSet<>();
     private HashSet<UnitType> liftableBuildings = new HashSet<>();
     private HashSet<UnitType> removeBuildings = new HashSet<>();
     private HashMap<UnitType, Integer> unitTypeCount = new HashMap<>();
@@ -88,6 +93,11 @@ public class GameState {
         amendMoveOutCondition();
         moveOutConditionsMet();
 
+        if(!hasTransitioned && shouldTransition()) {
+            addBuildTransition();
+            hasTransitioned = true;
+        }
+
     }
 
     //Change when learning is added
@@ -103,6 +113,20 @@ public class GameState {
             if(bunkerPosition == null) {
                 setBunkerPosition(bo.getBunkerLocation());
             }
+        }
+    }
+
+    private void addBuildTransition() {
+        buildTransition = buildOrderManager.getBuildTransitions();
+
+        for(BuildTransition bt : buildTransition) {
+            for(PlannedItem pi : bt.getOptionalBuildings()) {
+                if(unitTypeCount.getOrDefault(pi.getUnitType(), 0) == 0) {
+                    productionQueue.add(pi);
+                }
+            }
+
+            productionQueue.addAll(bt.getTransitionBuild());
         }
     }
 
@@ -171,6 +195,10 @@ public class GameState {
         if(game.mapFileName().contains("Jade")) {
             bunkerPosition = buildTiles.getNaturalChokeBunker();
         }
+    }
+
+    private boolean shouldTransition() {
+        return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
     }
 
 
