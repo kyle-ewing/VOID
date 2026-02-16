@@ -1,6 +1,8 @@
 package macro.buildorders;
 
 import bwapi.Race;
+import macro.buildorders.buildtransitions.BuildTransition;
+import macro.buildorders.buildtransitions.TvZBio;
 
 import java.util.HashSet;
 
@@ -9,12 +11,14 @@ public class BuildOrderManager {
     private HashSet<BuildOrder> terranOpeners = new HashSet<>();
     private HashSet<BuildOrder> zergOpeners = new HashSet<>();
     private HashSet<BuildOrder> randomOpeners = new HashSet<>();
+    private HashSet<BuildTransition> buildTransitions = new HashSet<>();
     private Race enemyRace;
 
     public BuildOrderManager(Race enemyRace) {
         this.enemyRace = enemyRace;
 
         initBuildOrders();
+        initBuildTransitions();
     }
 
     private void initBuildOrders() {
@@ -35,6 +39,10 @@ public class BuildOrderManager {
 
     }
 
+    private void initBuildTransitions() {
+        buildTransitions.add(new TvZBio());
+    }
+
     public HashSet<BuildOrder> getOpenersForRace() {
         switch (enemyRace) {
             case Protoss:
@@ -46,6 +54,10 @@ public class BuildOrderManager {
             default:
                 return randomOpeners;
         }
+    }
+
+    public HashSet<BuildTransition> getBuildTransitions() {
+        return buildTransitions;
     }
 
 }

@@ -120,8 +120,11 @@ public class ProductionManager {
                                 blockedByHigherPriority = true;
                                 continue;
                             }
-                            researchUpgrade(pi.getUpgradeType());
-                            pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+
+                            if(canUpgrade(pi.getUpgradeType())) {
+                                researchUpgrade(pi.getUpgradeType());
+                                pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
+                            }
                         }
                         continue;
                     }
@@ -1044,6 +1047,15 @@ public class ProductionManager {
             }
         }
 
+    }
+
+    private boolean canUpgrade(UpgradeType upgradeType) {
+        for(Unit researchBuilding : allBuildings) {
+            if(researchBuilding.canUpgrade(upgradeType) && !researchBuilding.isUpgrading() && !researchBuilding.isResearching()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isResearching(UnitType unitType) {

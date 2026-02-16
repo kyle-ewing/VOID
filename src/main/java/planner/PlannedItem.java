@@ -83,6 +83,35 @@ public class PlannedItem {
         this.priority = priority;
     }
 
+    public PlannedItem(UnitType unitType, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
+        this.unitType = unitType;
+        this.supply = 0;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.priority = priority;
+        assignedBuilder = null;
+        buildPosition = null;
+    }
+
+    public PlannedItem(TechType techUpgrade, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
+        this.techUpgrade = techUpgrade;
+        this.supply = 0;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.techBuilding = techBuilding;
+        this.priority = priority;
+    }
+
+    public PlannedItem(UpgradeType upgradeType, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, Integer upgradeLevel, int priority) {
+        this.upgradeType = upgradeType;
+        this.supply = 0;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.techBuilding = techBuilding;
+        this.upgradeLevel = upgradeLevel;
+        this.priority = priority;
+    }
+
     public PlannedItemStatus getPlannedItemStatus() {
         return plannedItemStatus;
     }
