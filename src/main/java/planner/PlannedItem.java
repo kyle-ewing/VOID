@@ -19,6 +19,7 @@ public class PlannedItem {
 
     //priority 1-5, 1 being the highest
     private int priority;
+    private int resetCounter = 0;
 
     public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
         this.unitType = unitType;
@@ -214,5 +215,13 @@ public class PlannedItem {
 
     public void setProductionBuilding(Unit productionBuilding) {
         this.productionBuilding = productionBuilding;
+    }
+
+    public int getResetCounter() {
+        return resetCounter;
+    }
+
+    public void setResetCounter(int resetCounter) {
+        this.resetCounter = resetCounter;
     }
 }

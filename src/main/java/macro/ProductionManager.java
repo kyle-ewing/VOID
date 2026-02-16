@@ -306,6 +306,12 @@ public class ProductionManager {
 
                     if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
                         if(pi.getAddOnParent() == null || pi.getAddOnParent().getAddon() == null) {
+                            pi.setResetCounter(pi.getResetCounter() + 1);
+
+                            if(pi.getResetCounter() > 64) {
+                                pi.setResetCounter(0);
+                                pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                            }
                             continue;
                         }
 
