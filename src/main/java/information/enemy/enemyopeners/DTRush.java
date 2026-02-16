@@ -49,6 +49,9 @@ public class DTRush extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Science_Facility);
     }
 
+    public void upgradeResponse() {
+    }
+
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         return new HashMap<>();
     }

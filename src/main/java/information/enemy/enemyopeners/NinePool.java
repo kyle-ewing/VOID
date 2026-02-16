@@ -46,6 +46,9 @@ public class NinePool extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Bunker);
     }
 
+    public void upgradeResponse() {
+    }
+
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         return new HashMap<>();
     }

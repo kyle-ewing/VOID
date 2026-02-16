@@ -54,6 +54,9 @@ public class GasSteal extends EnemyStrategy{
         return moveOutCondition;
     }
 
+    public void upgradeResponse() {
+    }
+
     public HashSet<UnitType> removeBuildings() {
         HashSet<UnitType> removeBuildings = new HashSet<>();
         removeBuildings.add(UnitType.Terran_Bunker);

@@ -59,6 +59,9 @@ public class CCFirst extends  EnemyStrategy {
     public void buildingResponse() {
     }
 
+    public void upgradeResponse() {
+    }
+
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         return new HashMap<>();
     }

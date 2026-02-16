@@ -30,6 +30,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new SCVRush(baseInfo));
         enemyStrategies.add(new OneBaseMuta(baseInfo));
+        enemyStrategies.add(new OneBaseLurker(baseInfo));
         enemyStrategies.add(new DTRush());
     }
 

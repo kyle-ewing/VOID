@@ -49,6 +49,9 @@ public class CannonRush extends EnemyStrategy {
         return new HashMap<>();
     }
 
+    public void upgradeResponse() {
+    }
+
     public HashSet<UnitType> removeBuildings() {
         return new HashSet<>();
     }
