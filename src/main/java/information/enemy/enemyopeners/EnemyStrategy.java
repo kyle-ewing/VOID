@@ -1,6 +1,8 @@
 package information.enemy.enemyopeners;
 
+import bwapi.TechType;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
 import util.Time;
 
@@ -11,6 +13,7 @@ import java.util.HashSet;
 public abstract class EnemyStrategy {
     protected String strategyName;
     protected ArrayList<UnitType> buildingResponse = new ArrayList<>();
+    protected ArrayList<UpgradeType> upgradeResponse = new ArrayList<>();
     protected EnemyUnits priorityEnemyUnit = null;
     protected boolean defendedStrategy = false;
 
@@ -20,6 +23,7 @@ public abstract class EnemyStrategy {
 
     public abstract boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time);
     public abstract void buildingResponse();
+    public abstract  void upgradeResponse();
     public abstract HashSet<UnitType> removeBuildings();
     public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time);
 
@@ -29,6 +33,10 @@ public abstract class EnemyStrategy {
 
     public ArrayList<UnitType> getBuildingResponse() {
         return buildingResponse;
+    }
+
+    public ArrayList<UpgradeType> getUpgradeResponse() {
+        return upgradeResponse;
     }
 
     public boolean isStrategyDefended() {

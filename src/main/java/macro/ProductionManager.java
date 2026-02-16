@@ -790,16 +790,51 @@ public class ProductionManager {
                 }
                 else {
                     if(building == UnitType.Terran_Missile_Turret) {
-                        for(TilePosition turretTile : gameState.getBuildTiles().getMainTurrets()) {
-                            if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
-                                addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 2);
+                        if((baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null
+                                && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+                            reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
+                            addToQueue(building, PlannedItemType.BUILDING, buildTiles.getNaturalChokeTurret(),1);
+                        }
+                        else if(buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
+                            reservedTurretPositions.add(buildTiles.getMainChokeTurret());
+                            addToQueue(building, PlannedItemType.BUILDING, buildTiles.getMainChokeTurret(),1);
+                        }
+                        else {
+                            for(TilePosition turretTile : gameState.getBuildTiles().getMainTurrets()) {
+                                if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
+                                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 2);
+                                    break;
+                                }
                             }
                         }
+
                     }
                     else {
                         addToQueue(building, PlannedItemType.BUILDING, 1);
                     }
                 }
+            }
+        }
+
+        for(UpgradeType upgrade : gameState.getEnemyOpener().getUpgradeResponse()) {
+            boolean existingUpgrade = false;
+            UnitType researchBuilding = null;
+            int upgradeLevel = 1;
+
+            for(PlannedItem pi : productionQueue) {
+                if(pi.getUpgradeType() != null && upgrade != null) {
+                    if(pi.getUpgradeType() == upgrade) {
+                        researchBuilding = pi.getTechBuilding();
+                        upgradeLevel = pi.getUpgradeLevel();
+                        existingUpgrade = true;
+                        break;
+                    }
+                }
+            }
+
+            if(existingUpgrade) {
+                productionQueue.removeIf(pi -> pi.getUpgradeType() != null && pi.getUpgradeType() == upgrade);
+                productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE,  researchBuilding, upgradeLevel,1));
             }
         }
     }

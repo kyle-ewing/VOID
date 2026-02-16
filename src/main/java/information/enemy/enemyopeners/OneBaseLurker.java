@@ -1,6 +1,8 @@
 package information.enemy.enemyopeners;
 
+import bwapi.TechType;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import util.Time;
@@ -8,14 +10,15 @@ import util.Time;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class OneBaseMuta extends EnemyStrategy {
+public class OneBaseLurker extends EnemyStrategy {
     private BaseInfo baseInfo;
 
-    public OneBaseMuta(BaseInfo baseInfo) {
-        super("One Base Muta");
+    public OneBaseLurker(BaseInfo baseInfo) {
+        super("One Base Lurker");
         this.baseInfo = baseInfo;
 
         buildingResponse();
+        upgradeResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
@@ -24,9 +27,18 @@ public class OneBaseMuta extends EnemyStrategy {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Spire) {
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Lair && time.lessThanOrEqual(new Time(2,30))) {
+                return true;
+            }
+
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk && time.lessThanOrEqual(new Time(4,30))) {
+                return true;
+            }
+
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk_Den) {
                 if(time.lessThanOrEqual(new Time(5,0))
-                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Hatchery || et == UnitType.Zerg_Lair ).count() == 1) {
+                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair ).count() == 1
+                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(et -> et == UnitType.Zerg_Hatchery)) {
                     return true;
                 }
             }
@@ -35,14 +47,15 @@ public class OneBaseMuta extends EnemyStrategy {
     }
 
     public void buildingResponse() {
+        getBuildingResponse().add(UnitType.Terran_Bunker);
         getBuildingResponse().add(UnitType.Terran_Engineering_Bay);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
-        getBuildingResponse().add(UnitType.Terran_Missile_Turret);
-        getBuildingResponse().add(UnitType.Terran_Missile_Turret);
-        getBuildingResponse().add(UnitType.Terran_Missile_Turret);
+        getBuildingResponse().add(UnitType.Terran_Factory);
+        getBuildingResponse().add(UnitType.Terran_Machine_Shop);
     }
 
     public void upgradeResponse() {
+        getUpgradeResponse().add(UpgradeType.U_238_Shells);
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
