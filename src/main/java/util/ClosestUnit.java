@@ -199,6 +199,7 @@ public class ClosestUnit {
                 continue;
             }
 
+            //TODO: this doesn't actually skip these units, fix that
             if(((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && !enemyUnit.getEnemyUnit().isDetected())
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer
@@ -241,7 +242,11 @@ public class ClosestUnit {
                 closestEnemy = enemyUnit;
             }
 
-
+            if(closestEnemy != null && (enemyUnit.getEnemyType() != UnitType.Zerg_Overlord && enemyUnit.getEnemyType() != UnitType.Protoss_Observer)
+                    && (closestEnemy.getEnemyType() == UnitType.Zerg_Overlord || closestEnemy.getEnemyType() == UnitType.Protoss_Observer)) {
+                closestEnemy = enemyUnit;
+                closestDistance = distance;
+            }
         }
 
         return closestEnemy;
