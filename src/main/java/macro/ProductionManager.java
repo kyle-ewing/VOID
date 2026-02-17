@@ -397,12 +397,6 @@ public class ProductionManager {
                         }
                     }
 
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
-                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                        }
-                    }
-
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
                         if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic)
                                 && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)
@@ -422,6 +416,17 @@ public class ProductionManager {
                             }
                             else {
                                 addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
+                            }
+                        }
+                    }
+
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
+                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+                            if(gameState.hasTransitioned()) {
+                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 3);
+                            }
+                            else {
+                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
                             }
                         }
                     }
@@ -556,7 +561,7 @@ public class ProductionManager {
 
     private void addExpansion() {
         if(gameState.getCanExpand()) {
-            addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 2);
+            addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 3);
             gameState.setCanExpand(false);
         }
     }
@@ -1275,7 +1280,7 @@ public class ProductionManager {
                 addToQueue(unit.getType(), PlannedItemType.ADDON, 1);
             }
             else if(unit.getType() == UnitType.Terran_Command_Center && baseInfo.isNaturalOwned()) {
-                addToQueue(unit.getType(), PlannedItemType.BUILDING, 2);
+                addToQueue(unit.getType(), PlannedItemType.BUILDING, 4);
             }
             else {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);

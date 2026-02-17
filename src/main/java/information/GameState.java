@@ -333,4 +333,8 @@ public class GameState {
     public void setCanExpand(boolean canExpand) {
         this.canExpand = canExpand;
     }
+
+    public boolean hasTransitioned() {
+        return hasTransitioned;
+    }
 }
