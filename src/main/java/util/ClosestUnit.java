@@ -157,6 +157,10 @@ public class ClosestUnit {
         EnemyUnits prioritySunk = null;
 
         for(EnemyUnits enemyUnit : enemyUnits) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
             Position enemyPosition = enemyUnit.getEnemyPosition();
             Position unitPosition = combatUnit.getUnit().getPosition();
 
@@ -183,7 +187,7 @@ public class ClosestUnit {
                 }
 
                 //Hard force position reset if units literally on top of an enemy that is clearly not there anymore
-                if(combatUnit.getUnit().getDistance(enemyPosition) < 10 && !enemyUnit.getEnemyUnit().isVisible()) {
+                if(combatUnit.getUnit().getDistance(enemyPosition) < 32 && !enemyUnit.getEnemyUnit().isVisible()) {
                     enemyUnit.setEnemyPosition(null);
                     continue;
                 }
@@ -205,10 +209,6 @@ public class ClosestUnit {
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Larva
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Egg) {
-                continue;
-            }
-
-            if(enemyPosition == null) {
                 continue;
             }
 

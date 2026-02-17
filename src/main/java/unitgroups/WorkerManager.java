@@ -356,7 +356,6 @@ public class WorkerManager {
     private void preemptiveBunkerRepair() {
         for(Unit bunker : player.getUnits()) {
             if(bunker.getType() == UnitType.Terran_Bunker && bunker.isCompleted()) {
-                System.out.println(bunker.getDistance(baseInfo.getStartingBase().getCenter()));
                 if(enemyInRange()) {
                     createRepairForce(bunker, 3);
                 }

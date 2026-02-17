@@ -426,6 +426,15 @@ public class ProductionManager {
                             if(gameState.hasTransitioned()) {
                                 addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 3);
                             }
+                            //TODO: remove this when techunits takes in more than one resonse unit
+                            else if(gameState.getTechUnitResponse().contains(UnitType.Zerg_Lurker)) {
+                                if(tankCount < 2) {
+                                    addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 1);
+                                }
+                                else {
+                                    addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                                }
+                            }
                             else {
                                 addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
                             }

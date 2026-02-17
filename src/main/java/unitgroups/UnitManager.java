@@ -476,9 +476,11 @@ public class UnitManager {
                     continue;
                 }
 
-                if(!friendlyUnit.getUnitType().groundWeapon().targetsAir() || !friendlyUnit.getUnitType().airWeapon().targetsGround()) {
+                if((friendlyUnit.getUnitType().groundWeapon().maxRange() < 1 && !enemyUnit.getEnemyType().isFlyer())
+                        || (friendlyUnit.getUnitType().airWeapon().maxRange() < 1 && enemyUnit.getEnemyType().isFlyer())) {
                     continue;
                 }
+
 
                 if(friendlyUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < friendlyUnit.getUnitType().groundWeapon().maxRange()) {
                     return true;
