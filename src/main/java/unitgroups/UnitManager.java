@@ -445,6 +445,10 @@ public class UnitManager {
 
                             return true;
                         }
+
+                        if(scanUnit.getUnitType() == UnitType.Terran_Missile_Turret && enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= 224) {
+                            return true;
+                        }
                     }
                 }
             }
