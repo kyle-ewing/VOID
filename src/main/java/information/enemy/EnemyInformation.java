@@ -230,6 +230,10 @@ public class EnemyInformation {
                 enemyUnit.setIrradiateTimer();
             }
         }
+        //Edge case where buildings aren't removed on death but position is null from units walking over it
+        enemyUnits.removeIf(eu -> eu.getEnemyType().isBuilding()
+                && eu.getEnemyPosition() == null
+                 && !eu.getEnemyUnit().canLift());
 
         enemyUnits.removeIf(eu -> eu.getIrradiateTimer() > 240);
         validThreats.removeIf(eu -> eu.getIrradiateTimer() > 240);
