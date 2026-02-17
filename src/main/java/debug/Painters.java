@@ -54,7 +54,6 @@ public class Painters {
                 paintMedicTarget(unit);
                 paintCombatScouts(unit);
                 paintStimStatus(unit);
-
             }
         }
 
@@ -181,11 +180,8 @@ public class Painters {
 
     }
 
-    private void drawAttackRange(Unit unit) {
-        if(unit == null) {
-            return;
-        }
-        game.drawCircleMap(unit.getPosition(), unit.getType().groundWeapon().maxRange(), Color.Cyan);
+    private void paintAttackRange(CombatUnits unit) {
+        game.drawCircleMap(unit.getUnit().getPosition(), unit.getUnitType().groundWeapon().maxRange(), Color.Cyan);
     }
 
     private void paintStimStatus(CombatUnits unit) {
