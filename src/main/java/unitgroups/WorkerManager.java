@@ -356,11 +356,16 @@ public class WorkerManager {
     private void preemptiveBunkerRepair() {
         for(Unit bunker : player.getUnits()) {
             if(bunker.getType() == UnitType.Terran_Bunker && bunker.isCompleted()) {
+                System.out.println(bunker.getDistance(baseInfo.getStartingBase().getCenter()));
                 if(enemyInRange()) {
                     createRepairForce(bunker, 3);
                 }
-                else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 500
-                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
+                else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 600
+                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
+                    createRepairForce(bunker, 2);
+                }
+                else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 400
+                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
                     createRepairForce(bunker, 1);
                 }
                 else if(!enemyInRange()) {
