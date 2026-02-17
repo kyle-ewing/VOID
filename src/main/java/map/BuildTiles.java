@@ -59,7 +59,9 @@ public class BuildTiles {
         generateBackBaseTiles();
         generateChokeBunkerTiles();
         generateCloseBunkerTile();
-        generateChokeTurretTiles();
+        mainChokeTurret = generateChokeTurretTile(mainChokeBunker, startingBase);
+        naturalChokeTurret = generateChokeTurretTile(naturalChokeBunker, baseInfo.getNaturalBase());
+        //generateChokeTurretTiles();
         generateLargeTiles(frontBaseTiles);
         generateMediumTiles(backBaseTiles);
         generateTurretTiles();
@@ -650,6 +652,48 @@ public class BuildTiles {
                 }
             }
         }
+        return null;
+    }
+
+    //Force choke turrets to be as close to the bunker as possible
+    private TilePosition generateChokeTurretTile(TilePosition bunkerTile, Base base) {
+        int bunkerWidth = UnitType.Terran_Bunker.tileWidth();
+        int bunkerHeight = UnitType.Terran_Bunker.tileHeight();
+        int turretWidth = UnitType.Terran_Missile_Turret.tileWidth();
+        int turretHeight = UnitType.Terran_Missile_Turret.tileHeight();
+
+        int bx = bunkerTile.getX();
+        int by = bunkerTile.getY();
+
+        List<TilePosition> adjacentPositions = new ArrayList<>();
+
+        for(int y = by - turretHeight + 1; y <= by + bunkerHeight - 1; y++) {
+            adjacentPositions.add(new TilePosition(bx - turretWidth, y));
+        }
+
+        for(int y = by - turretHeight + 1; y <= by + bunkerHeight - 1; y++) {
+            adjacentPositions.add(new TilePosition(bx + bunkerWidth, y));
+        }
+
+        for(int x = bx - turretWidth + 1; x <= bx + bunkerWidth - 1; x++) {
+            adjacentPositions.add(new TilePosition(x, by - turretHeight));
+        }
+
+        for(int x = bx - turretWidth + 1; x <= bx + bunkerWidth - 1; x++) {
+            adjacentPositions.add(new TilePosition(x, by + bunkerHeight));
+        }
+
+        TilePosition baseTile = base.getLocation();
+        adjacentPositions.sort(Comparator.comparingInt(pos -> pos.getApproxDistance(baseTile)));
+
+        for(TilePosition candidate : adjacentPositions) {
+            if(tilePositionValidator.isBuildable(candidate, UnitType.Terran_Missile_Turret) &&
+                    !intersectsExclusionZones(candidate) &&
+                    !intersectsExistingBuildTiles(candidate, UnitType.Terran_Missile_Turret)) {
+                return candidate;
+            }
+        }
+
         return null;
     }
 

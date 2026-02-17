@@ -421,7 +421,8 @@ public class ProductionManager {
                     }
 
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+                        int tankCount = unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
+                        if(isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && tankCount < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
                             if(gameState.hasTransitioned()) {
                                 addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 3);
                             }
