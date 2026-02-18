@@ -70,9 +70,10 @@ public class ProductionManager {
                 priorityStop = true;
             }
 
-            //OVerride stop of floating too much
+            //OVerride stop if floating too much
             if(gameState.getResourceTracking().getAvailableMinerals() >= 800) {
                 priorityStop = false;
+                blockedByHigherPriority = false;
             }
 
             if (blockedByHigherPriority && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
@@ -135,7 +136,7 @@ public class ProductionManager {
                     }
 
                     if((gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice())
-                        && meetsRequirements(pi.getUnitType())) {
+                        && meetsRequirements(pi.getUnitType()) && pi.getPlannedItemType() != PlannedItemType.ADDON) {
                         blockedByHigherPriority = true;
                         continue;
                     }
@@ -1254,7 +1255,7 @@ public class ProductionManager {
 
             if(gameState.getStartingOpener().buildType() == BuildType.BIO
                 && baseInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10 && !baseInfo.hasBunkerInNatural()) {
-                addToQueue(UnitType.Terran_Bunker, PlannedItemType.BUILDING, buildTiles.getNaturalChokeBunker(), 2);
+                addToQueue(UnitType.Terran_Bunker, PlannedItemType.BUILDING, buildTiles.getNaturalChokeBunker(), 3);
             }
         }
     }
@@ -1297,7 +1298,7 @@ public class ProductionManager {
                 resetBuilding(unit);
             }
             else if(unit.getType().isAddon()){
-                addToQueue(unit.getType(), PlannedItemType.ADDON, 1);
+                addToQueue(unit.getType(), PlannedItemType.ADDON, 2);
             }
             else if(unit.getType() == UnitType.Terran_Command_Center && baseInfo.isNaturalOwned()) {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 4);
@@ -1307,7 +1308,7 @@ public class ProductionManager {
                     addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
                 }
                 else {
-                    addToQueue(unit.getType(), PlannedItemType.BUILDING, 3);
+                    addToQueue(unit.getType(), PlannedItemType.BUILDING, 5);
                 }
             }
 
