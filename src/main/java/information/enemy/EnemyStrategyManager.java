@@ -32,6 +32,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new OneBaseMuta(baseInfo));
         enemyStrategies.add(new OneBaseLurker(baseInfo));
         enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
+        enemyStrategies.add(new TwoBaseLurker(baseInfo));
         enemyStrategies.add(new DTRush());
     }
 
