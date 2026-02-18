@@ -16,6 +16,7 @@ public class RallyPoint {
     private BaseInfo baseInfo;
     private EnemyStrategy enemyStrategy = null;
     private Base startingBase;
+    private Base naturalBase;
     private Position mainRallyPoint;
     private Position naturalRallyPoint;
 
@@ -25,6 +26,7 @@ public class RallyPoint {
         this.baseInfo = baseInfo;
 
         this.startingBase = baseInfo.getStartingBase();
+        this.naturalBase = baseInfo.getNaturalBase();
         setInitialRallyPoints();
 
     }
@@ -36,7 +38,6 @@ public class RallyPoint {
             }
             else {
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
-
             }
         }
 
@@ -50,10 +51,10 @@ public class RallyPoint {
 
         switch(enemyStrategy.getStrategyName()) {
             case "Four Pool":
-                combatUnit.setRallyPoint(baseInfo.getStartingBase().getCenter().toTilePosition());
+                combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
                 break;
-            default:
-                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+            case "Gas Steal":
+                combatUnit.setRallyPoint(naturalBase.getCenter().toTilePosition());
                 break;
         }
 
@@ -82,7 +83,7 @@ public class RallyPoint {
 
     private void setInitialRallyPoints() {
         mainRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.75);
-        naturalRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.88);
+        naturalRallyPoint = rallyPath(naturalBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.65);
     }
 
     public void onFrame() {
