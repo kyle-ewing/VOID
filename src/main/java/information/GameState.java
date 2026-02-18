@@ -40,7 +40,7 @@ public class GameState {
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
     private TilePosition bunkerPosition = null;
-    private Time time;
+    private Time time = new Time(0);
 
     private boolean enemyInBase = false;
     private boolean enemyInNatural = false;
@@ -107,7 +107,7 @@ public class GameState {
         for(BuildOrder bo : openingBuildOrders) {
             startingOpener = bo;
             productionQueue.addAll(bo.getBuildOrder());
-            openerMoveOutCondition = bo.getMoveOutCondition();
+            openerMoveOutCondition = bo.getMoveOutCondition(time);
             liftableBuildings.addAll(bo.getLiftableBuildings());
 
             if(bunkerPosition == null) {
@@ -182,11 +182,14 @@ public class GameState {
             HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(time);
 
             if(enemyMoveOutCondition.isEmpty()) {
-                openerMoveOutCondition = startingOpener.getMoveOutCondition();
+                openerMoveOutCondition = startingOpener.getMoveOutCondition(time);
                 return;
             }
 
             openerMoveOutCondition = enemyMoveOutCondition;
+        }
+        else {
+            openerMoveOutCondition = startingOpener.getMoveOutCondition(time);
         }
     }
 
@@ -198,7 +201,7 @@ public class GameState {
     }
 
     private boolean shouldTransition() {
-        return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
+        return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0);
     }
 
 

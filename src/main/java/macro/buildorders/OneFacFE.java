@@ -6,6 +6,7 @@ import bwapi.UpgradeType;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
+import util.Time;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class OneFacFE extends BuildOrder {
         return BuildType.MECH;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition() {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         moveOutCondition.put(UnitType.Terran_Vulture, 7);
         moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);

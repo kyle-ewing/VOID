@@ -97,8 +97,12 @@ public class Scouting {
             sendScout();
         }
 
-        if(gameState.getStartingEnemyBase() != null && gameState.getEnemyOpener() == null) {
+        if(gameState.getStartingEnemyBase() != null) {
             scoutEnemyPerimeter();
+            completedScout = true;
+        }
+
+        if(gameState.getEnemyOpener() != null) {
             completedScout = true;
         }
     }

@@ -31,6 +31,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new SCVRush(baseInfo));
         enemyStrategies.add(new OneBaseMuta(baseInfo));
         enemyStrategies.add(new OneBaseLurker(baseInfo));
+        enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
         enemyStrategies.add(new DTRush());
     }
 

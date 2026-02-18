@@ -4,6 +4,7 @@ import bwapi.UnitType;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
+import util.Time;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class EightRax extends BuildOrder {
         return BuildType.BIO;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition() {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         return moveOutCondition;
     }

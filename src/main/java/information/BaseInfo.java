@@ -18,6 +18,8 @@ public class BaseInfo {
     private Base startingBase;
     private Base naturalBase;
     private Base minOnlyBase;
+    private Base enemyMain;
+    private Base enemyNatural;
     private ChokePoint mainChokePoint;
     private ChokePoint naturalChokePoint;
     private Unit initalCC = null;
@@ -623,6 +625,22 @@ public class BaseInfo {
 
     public HashSet<TilePosition> getMinBaseTiles() {
         return minBaseTiles;
+    }
+
+    public Base getEnemyNatural() {
+        return enemyNatural;
+    }
+
+    public void setEnemyNatural(Base enemyNatural) {
+        this.enemyNatural = enemyNatural;
+    }
+
+    public Base getEnemyMain() {
+        return enemyMain;
+    }
+
+    public void setEnemyMain(Base enemyMain) {
+        this.enemyMain = enemyMain;
     }
 
     public void onUnitCreate(Unit unit) {

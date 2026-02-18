@@ -13,6 +13,7 @@ import planner.PlannedItemStatus;
 import util.Time;
 
 import java.util.HashSet;
+import java.util.List;
 
 public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits;
@@ -23,7 +24,6 @@ public class EnemyInformation {
     private Game game;
     private GameState gameState;
     private EnemyUnits startingEnemyBase;
-    private Base enemyNatural = null;
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
     private int openerDefenseTimer = 0;
@@ -59,6 +59,39 @@ public class EnemyInformation {
             }
         }
         return false;
+    }
+
+    private Base setEnemyNatural() {
+        if(baseInfo.getEnemyMain() == null) {
+            return null;
+        }
+
+        Base enemyMain = baseInfo.getEnemyMain();
+        Base closestBase = null;
+
+        int shortestPathLength = Integer.MAX_VALUE;
+
+        for(Base base : baseInfo.getMapBases()) {
+            if(base.equals(enemyMain)) {
+                continue;
+            }
+
+            if(base.getGeysers().isEmpty()) {
+                continue;
+            }
+
+            List<Position> path = baseInfo.getPathFinding().findPath(
+                    enemyMain.getLocation().toPosition(),
+                    base.getLocation().toPosition()
+            );
+
+            if(path != null && !path.isEmpty() && path.size() < shortestPathLength) {
+                shortestPathLength = path.size();
+                closestBase = base;
+            }
+        }
+
+        return closestBase;
     }
 
     private void enemyInBase() {
@@ -267,6 +300,8 @@ public class EnemyInformation {
                     if(enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyID() == unit.getID()
                     && baseInfo.getStartingBases().stream().anyMatch(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10)) {
                         gameState.setStartingEnemyBase(enemyUnit);
+                        baseInfo.setEnemyMain(baseInfo.getStartingBases().stream().filter(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10).findAny().orElse(null));
+                        baseInfo.setEnemyNatural(setEnemyNatural());
                         break;
                     }
                 }

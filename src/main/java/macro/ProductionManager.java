@@ -70,6 +70,11 @@ public class ProductionManager {
                 priorityStop = true;
             }
 
+            //OVerride stop of floating too much
+            if(gameState.getResourceTracking().getAvailableMinerals() >= 800) {
+                priorityStop = false;
+            }
+
             if (blockedByHigherPriority && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                 continue;
             }
@@ -332,6 +337,7 @@ public class ProductionManager {
             }
         }
 
+        priorityStop = false;
         productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.COMPLETE);
     }
 
@@ -1278,6 +1284,12 @@ public class ProductionManager {
             if(unit.getType() == UnitType.Terran_Missile_Turret) {
                 reservedTurretPositions.remove(unit.getTilePosition());
                 addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, unit.getTilePosition(), 3);
+
+                if(!unit.isCompleted()) {
+                    resetBuilding(unit);
+                }
+
+                return;
             }
 
             //Readd everything as P1 except CCs after the natural
@@ -1291,7 +1303,12 @@ public class ProductionManager {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 4);
             }
             else {
-                addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
+                if(baseInfo.getBaseTiles().contains(unit.getTilePosition())) {
+                    addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
+                }
+                else {
+                    addToQueue(unit.getType(), PlannedItemType.BUILDING, 3);
+                }
             }
 
             resetUnitInProduction(unit);
@@ -1305,6 +1322,10 @@ public class ProductionManager {
                 buildTiles.getLargeBuildTiles().add(unit.getTilePosition());
             }
             else if(unit.getType().tileHeight() == 2 && unit.getType().tileWidth() == 3) {
+                if(unit.getType() == UnitType.Terran_Bunker) {
+                    return;
+                }
+
                 buildTiles.getMediumBuildTiles().add(unit.getTilePosition());
             }
         }

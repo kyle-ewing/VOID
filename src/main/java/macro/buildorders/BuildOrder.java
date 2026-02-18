@@ -3,6 +3,7 @@ package macro.buildorders;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import planner.PlannedItem;
+import util.Time;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public abstract class BuildOrder {
     public abstract HashSet<UnitType> getLiftableBuildings();
     public abstract BunkerLocation getBunkerLocation();
     public abstract BuildType buildType();
-    public abstract HashMap<UnitType, Integer> getMoveOutCondition();
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time);
 
     public TilePosition getBunkerPostion() {
         return bunkerPostion;
