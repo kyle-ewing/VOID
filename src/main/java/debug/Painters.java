@@ -170,6 +170,9 @@ public class Painters {
             case HUNTING:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Green, true);
                 break;
+            case AVOID:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Black, true);
+                break;
         }
     }
 

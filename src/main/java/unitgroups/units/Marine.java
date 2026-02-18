@@ -29,7 +29,7 @@ public class Marine extends CombatUnits {
             unit.attack(rallyPoint.toPosition());
         }
         else {
-            unit.move(rallyPoint.toPosition());
+            setUnitStatus(UnitStatus.RETREAT);
         }
 
     }
@@ -54,7 +54,12 @@ public class Marine extends CombatUnits {
             return;
         }
 
-        if(!enemyInBase && !inBase) {
+        if(!inBase) {
+            setUnitStatus(UnitStatus.RETREAT);
+            return;
+        }
+
+        if(!enemyInBase) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
@@ -69,7 +74,10 @@ public class Marine extends CombatUnits {
             return;
         }
 
-        if(!inRangeOfThreat) {
+        enemyUnit = null;
+        unit.move(rallyPoint.toPosition());
+
+        if(inBase || hasTankSupport) {
             setUnitStatus(UnitStatus.RALLY);
         }
     }

@@ -116,7 +116,9 @@ public class UnitManager {
                     break;
             }
 
-            combatUnit.setInBase(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition()));
+            combatUnit.setInBase(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())
+                    || (baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) && baseInfo.getNaturalTiles().contains(combatUnit.getUnit().getTilePosition())
+                    || combatUnit.getUnit().getDistance(baseInfo.getNaturalBase().getCenter()) < naturalBunkerLeashRange());
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
@@ -176,12 +178,12 @@ public class UnitManager {
                     if(combatUnit.getUnitType() == UnitType.Terran_Marine) {
                         if(combatUnit.isInRangeOfThreat() && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
                             avoidThreat(combatUnit);
-                            combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                            combatUnit.setUnitStatus(UnitStatus.AVOID);
                             continue;
                         }
                         else if(combatUnit.isInRangeOfThreat() && combatUnit.hasTankSupport()) {
                             avoidThreat(combatUnit);
-                            combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                            combatUnit.setUnitStatus(UnitStatus.AVOID);
                             continue;
                         }
                         combatUnit.attack();
@@ -190,7 +192,7 @@ public class UnitManager {
 
                     if(combatUnit.isInRangeOfThreat()) {
                         avoidThreat(combatUnit);
-                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                        combatUnit.setUnitStatus(UnitStatus.AVOID);
                         break;
                     }
 
@@ -292,6 +294,10 @@ public class UnitManager {
                 case HUNTING:
                     ClosestUnit.priorityTargets(combatUnit, combatUnit.getPriorityTargets(), gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     combatUnit.hunting();
+                    break;
+                case AVOID:
+                    combatUnit.avoid();
+                    avoidThreat(combatUnit);
             }
         }
     }
@@ -688,8 +694,13 @@ public class UnitManager {
                 building.getUnitType() == UnitType.Terran_Barracks && gameState.getUnitTypeCount().get(UnitType.Terran_Armory) == 0) {
             building.getUnit().land(building.getUnit().getInitialTilePosition());
         }
+    }
 
-
+    public int naturalBunkerLeashRange() {
+        if(baseInfo.hasBunkerInNatural() && baseInfo.getNaturalBase() != null && bunker != null) {
+            return bunker.getDistance(baseInfo.getNaturalBase().getCenter()) + 32;
+        }
+        return 10000;
     }
 
     public void onUnitComplete(Unit unit) {

@@ -44,6 +44,7 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
+
         if(enemyUnit.getEnemyUnit().getDistance(unit) > 128) {
             super.setUnitStatus(UnitStatus.RALLY);
             return;
@@ -70,6 +71,16 @@ public class SiegeTank extends CombatUnits {
     @Override
     public void defend() {
         if(enemyUnit == null) {
+            setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
+
+        if(!inBase) {
+            setUnitStatus(UnitStatus.RETREAT);
+            return;
+        }
+
+        if(!enemyInBase) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
@@ -109,7 +120,6 @@ public class SiegeTank extends CombatUnits {
         }
 
         if(!super.enemyInBase && canSiege()) {
-            super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             super.setUnitStatus(UnitStatus.SIEGEDEF);
         }
 
@@ -123,7 +133,11 @@ public class SiegeTank extends CombatUnits {
         }
 
         if(foundSiegeTile) {
-            if(unit.getDistance(siegeTile.toPosition()) > 32) {
+            if(game.getFrameCount() % 24 != 0) {
+                return;
+            }
+
+            if(unit.getDistance(siegeTile.toPosition()) > 64) {
                 unit.move(siegeTile.toPosition());
             }
             else {
