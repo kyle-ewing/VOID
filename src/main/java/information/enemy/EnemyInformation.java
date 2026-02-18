@@ -77,7 +77,7 @@ public class EnemyInformation {
                 gameState.setEnemyInBase(true);
                 return;
             }
-            else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+            else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && (baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural())) {
                 gameState.setEnemyInBase(true);
                 return;
             }

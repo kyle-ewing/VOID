@@ -464,7 +464,6 @@ public class BaseInfo {
         }
     }
 
-
     public boolean hasBunkerInNatural() {
         for(Unit building : game.self().getUnits()) {
             if(!building.getType().isBuilding()) {

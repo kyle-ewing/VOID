@@ -102,6 +102,16 @@ public class CombatUnits {
             return;
         }
 
+        if(!inBase) {
+            setUnitStatus(UnitStatus.RETREAT);
+            return;
+        }
+
+        if(!enemyInBase) {
+            setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
+
         if(!unit.isStimmed() && unit.isAttacking()) {
             unit.useTech(TechType.Stim_Packs);
         }
@@ -117,10 +127,23 @@ public class CombatUnits {
             return;
         }
 
+        enemyUnit = null;
+
         if(!inRangeOfThreat) {
             setUnitStatus(UnitStatus.RALLY);
         }
     }
+
+    public void avoid() {
+        	if(enemyUnit == null) {
+                return;
+            }
+
+            if(!inRangeOfThreat) {
+                setUnitStatus(UnitStatus.RALLY);
+            }
+    }
+
 
     public void hunting() {
 

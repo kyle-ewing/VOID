@@ -68,6 +68,13 @@ public class Medic extends CombatUnits {
         unit.attack(rallyPoint.toPosition());
     }
 
+    @Override
+    public void avoid() {
+        if(!inRangeOfThreat) {
+            setUnitStatus(UnitStatus.RALLY);
+        }
+    }
+
     //Move medics away from target to prevent blocking units from moving out
     private void unstick() {
         if (friendlyUnit == null) {
