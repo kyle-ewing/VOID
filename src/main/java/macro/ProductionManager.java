@@ -199,9 +199,6 @@ public class ProductionManager {
                 case SCV_ASSIGNED:
                     worker = pi.getAssignedBuilder();
                     if(worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
-
-                        worker.pulseCheck();
-
                         if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 144) {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
@@ -241,7 +238,8 @@ public class ProductionManager {
                             if(building.getType() == pi.getUnitType() && building.getTilePosition().equals(pi.getBuildPosition()) && building.isCompleted()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
 
-                                if (worker.getWorkerStatus() == WorkerStatus.BUILDING) {
+                                if(worker.getWorkerStatus() == WorkerStatus.BUILDING) {
+                                    worker.setBuildingPosition(null);
                                     worker.setWorkerStatus(WorkerStatus.IDLE);
                                 }
 
