@@ -22,16 +22,12 @@ public class TwoBaseLurker extends EnemyStrategy {
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyPosition() == null) {
-                continue;
-            }
-
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk && time.lessThanOrEqual(new Time(6,0))) {
                 return true;
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk_Den) {
-                if(time.lessThanOrEqual(new Time(5,0))
+                if(time.lessThanOrEqual(new Time(5,30))
                     && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair || et == UnitType.Zerg_Hatchery).count() > 1
                     && enemyUnits.stream().map(EnemyUnits::getEnemyType).anyMatch(et -> et == UnitType.Zerg_Lair)) {
                     return true;
