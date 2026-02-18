@@ -40,6 +40,9 @@ public class RallyPoint {
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
             }
         }
+        else {
+            combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+        }
 
         if(gameState.getEnemyOpener() == null) {
             return;
