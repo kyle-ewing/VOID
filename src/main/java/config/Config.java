@@ -25,7 +25,7 @@ public final class Config {
 
     // Combat Units and workers
     public boolean debugCombatUnits = true;
-    public boolean debugScout = true;
+    public boolean debugScout = false;
     public boolean debugWorkers = true;
     public boolean debugDetailedUnitInfo = false;
 
