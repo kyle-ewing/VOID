@@ -10,6 +10,7 @@ import information.GameState;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import planner.PlannedItemStatus;
+import unitgroups.units.CombatUnits;
 import util.Time;
 
 import java.util.HashSet;
@@ -115,13 +116,25 @@ public class EnemyInformation {
                 return;
             }
             else if(enemyUnit.getEnemyType().isFlyer()) {
-                if(enemyPos.getDistance(baseInfo.getStartingBase().getCenter()) < 700 || (baseInfo.getNaturalBase() != null && (enemyPos.getDistance(baseInfo.getNaturalBase().getCenter()) < 400 && baseInfo.isNaturalOwned()))) {
+                int mainChokeLeash = 700;
+                int naturalChokeLeash = 250;
+
+                if(baseInfo.getMainChoke() != null) {
+                     mainChokeLeash = (int) baseInfo.getMainChoke().getCenter().toPosition().getDistance(baseInfo.getStartingBase().getCenter()) + 32;
+                }
+
+
+                if(baseInfo.getNaturalChoke() != null ) {
+                    naturalChokeLeash = (int) baseInfo.getNaturalChoke().getCenter().toPosition().getDistance(baseInfo.getNaturalBase().getCenter()) + 32;
+                }
+
+                boolean inMainBase = enemyPos.getDistance(baseInfo.getStartingBase().getCenter()) < mainChokeLeash;
+                boolean inNaturalBase = enemyPos.getDistance(baseInfo.getStartingBase().getCenter()) < naturalChokeLeash;
+
+                if(inMainBase || (baseInfo.getNaturalBase() != null && inNaturalBase && baseInfo.isNaturalOwned())) {
                     gameState.setEnemyInBase(true);
                     return;
                 }
-
-                gameState.setEnemyInBase(true);
-                return;
             }
         }
         gameState.setEnemyInBase(false);

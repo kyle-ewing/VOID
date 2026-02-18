@@ -50,28 +50,28 @@ public class ExpansionCriteria {
                     if(gameState.getKnownEnemyUnits().stream().filter(b -> b.getEnemyType() == UnitType.Zerg_Hatchery).count() + 1
                             >= gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center)) {
                         enemyBaseCriteria = true;
-                        expansionScore += 3;
+                        expansionScore += 2;
                     }
                     break;
                 case Protoss:
                     if(gameState.getKnownEnemyUnits().stream().filter(b -> b.getEnemyType() == UnitType.Protoss_Nexus).count()
                             >= gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center)) {
                         enemyBaseCriteria = true;
-                        expansionScore += 3;
+                        expansionScore += 2;
                     }
                     break;
                 case Terran:
                     if(gameState.getKnownEnemyUnits().stream().filter(b -> b.getEnemyType() == UnitType.Terran_Command_Center).count()
                             >= gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center)) {
                         enemyBaseCriteria = true;
-                        expansionScore += 3;
+                        expansionScore += 2;
                     }
                     break;
             }
         }
 
         if(!mineralCriteria) {
-            if(gameState.getResourceTracking().availableMinerals > 800 && gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center) >= 2) {
+            if(gameState.getResourceTracking().availableMinerals > 600 && gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center) >= 2) {
                 mineralCriteria = true;
                 expansionScore += 2;
             }
