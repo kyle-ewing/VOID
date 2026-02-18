@@ -157,6 +157,9 @@ public class WorkerManager {
 
                     gatherMinerals(worker);
                     break;
+                case MOVING_TO_BUILD:
+                    worker.pulseCheck();
+                    break;
                 default:
                     //do nothing
             }

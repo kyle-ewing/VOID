@@ -62,6 +62,7 @@ public class Workers extends CombatUnits {
     //Adjust worker position in case it gets stuck ontop of build tile
     public void pulseCheck() {
         if(buildingPosition == null) {
+            workerStatus = WorkerStatus.IDLE;
             return;
         }
 
@@ -107,6 +108,7 @@ public class Workers extends CombatUnits {
     //Build clock timeout, reset build
     public void buildReset(PlannedItem pi, ResourceTracking resourceTracking) {
         this.setWorkerStatus(WorkerStatus.IDLE);
+        this.setBuildingPosition(null);
         this.getUnit().stop();
         this.idleClock = 0;
         resourceTracking.unreserveResources(pi.getUnitType());
