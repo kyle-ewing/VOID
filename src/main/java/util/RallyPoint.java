@@ -85,8 +85,8 @@ public class RallyPoint {
     }
 
     private void setInitialRallyPoints() {
-        mainRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.75);
-        naturalRallyPoint = rallyPath(naturalBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.65);
+        mainRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.62);
+        naturalRallyPoint = rallyPath(naturalBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.62);
     }
 
     public void onFrame() {

@@ -862,11 +862,13 @@ public class ProductionManager {
             buildingCounts.merge(building, 1, Integer::sum);
         }
 
-        productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()));
+        productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
         productionQueue.removeIf(pi -> pi.getUnitType() != null && gameState.getEnemyOpener().removeBuildings().contains(pi.getUnitType()));
 
         for(UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
-            if(unitTypeCount.get(building) == 0) {
+            boolean alreadyInProgress = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == building);
+
+            if(unitTypeCount.get(building) == 0 && !alreadyInProgress) {
                 if(building.isAddon()) {
                     addToQueue(building, PlannedItemType.ADDON, 1);
                 }
@@ -877,7 +879,7 @@ public class ProductionManager {
                             reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getNaturalChokeTurret(),1);
                         }
-                        else if(buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
+                        else if(buildTiles.getMainChokeTurret() != null && !hasTurretAtBase(buildTiles.getMainChokeTurret())) {
                             reservedTurretPositions.add(buildTiles.getMainChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getMainChokeTurret(),1);
                         }
@@ -936,7 +938,8 @@ public class ProductionManager {
                     buildingResponse -> allBuildings.stream().anyMatch(unit -> unit.getType() == buildingResponse));
 
             techUnit.getFriendlyBuildingResponse().removeIf(buildingPriority ->
-                    productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority && pi.getPriority() == 1));
+                    productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
+                            && (pi.getPriority() == 1 || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
 
             for(UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
                 productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() != 1);
