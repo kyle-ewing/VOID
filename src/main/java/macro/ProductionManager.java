@@ -70,7 +70,7 @@ public class ProductionManager {
                 priorityStop = true;
             }
 
-            //OVerride stop if floating too much
+            //Override stop of floating too much
             if(gameState.getResourceTracking().getAvailableMinerals() >= 800) {
                 priorityStop = false;
                 blockedByHigherPriority = false;
@@ -440,6 +440,32 @@ public class ProductionManager {
                                     addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
                                 }
                             }
+                            //TODO: extract to own class
+                            else if(gameState.getEnemyOpener() != null) {
+                                switch(gameState.getEnemyOpener().getStrategyName()) {
+                                    case "One Hatch Lurker":
+                                        if(tankCount < 2) {
+                                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 1);
+                                            }
+                                            else {
+                                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                                        }
+                                        break;
+                                    case "Two Hatch Lurker":
+                                        if(tankCount < 2) {
+                                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 1);
+                                        }
+                                        else {
+                                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                                        }
+                                        break;
+                                    case "One Base Muta":
+                                        addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 4);
+                                        break;
+                                    default:
+                                        addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                                }
+                            }
                             else {
                                 addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
                             }
@@ -626,7 +652,18 @@ public class ProductionManager {
 
             if (!scvInQueue) {
                 for(int i = 0; i < ownedBases; i++) {
-                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
+                    if(ownedBases == 1) {
+                        addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
+                    }
+                    else {
+                        if(unitTypeCount.get(UnitType.Terran_SCV) < 48) {
+                            addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
+                        }
+                        else {
+                            addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 4);
+                        }
+                    }
+
                 }
             }
         }
