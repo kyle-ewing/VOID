@@ -7,6 +7,8 @@ import information.BaseInfo;
 import information.GameState;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
+import unitgroups.units.CombatUnits;
+import unitgroups.units.UnitStatus;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.ClosestUnit;
@@ -138,6 +140,10 @@ public class WorkerManager {
                     break;
                 case REPAIRING:
                     worker.repair(worker.getRepairTarget());
+
+                    if(obstructingBuild(worker)) {
+                        moveFromObstruction(worker);
+                    }
                     break;
                 case SCOUTING:
                     if(gameState.getEnemyOpener() == null) {
@@ -417,6 +423,42 @@ public class WorkerManager {
                 break;
             }
         }
+    }
+
+    private boolean obstructingBuild(Workers worker) {
+        for(Workers scv : workers) {
+            if(scv == worker) {
+                continue;
+            }
+
+            if(scv.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD && scv.getUnit().getPosition().getDistance(worker.getUnit().getPosition()) < 64) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void moveFromObstruction(Workers worker) {
+        Workers buildingWorker = workers.stream()
+                .filter(w -> w.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD && w.getUnit().getPosition().getDistance(worker.getUnit().getPosition()) < 64)
+                .findFirst().orElse(null);
+
+        if(buildingWorker == null) {
+            return;
+        }
+
+        Position workerPos = worker.getUnit().getPosition();
+        Position builderPos = buildingWorker.getUnit().getPosition();
+
+        int distance = Math.max(1, builderPos.getApproxDistance(workerPos));
+
+        int moveX = workerPos.getX() + (workerPos.getX() - builderPos.getX() * 100 / distance);
+        int moveY = workerPos.getY() + (workerPos.getY() - builderPos.getY() * 100 / distance);
+        moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
+        moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
+
+        Position movePos = new Position(moveX, moveY);
+        worker.getUnit().move(movePos);
     }
 
     private boolean enemyInRange() {
