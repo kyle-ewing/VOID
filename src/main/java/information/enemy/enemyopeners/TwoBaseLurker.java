@@ -22,15 +22,25 @@ public class TwoBaseLurker extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        boolean hasNaturalHatch = false;
+        if(baseInfo.getEnemyNatural() != null) {
+            hasNaturalHatch = enemyUnits.stream()
+                    .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
+                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(baseInfo.getEnemyNatural().getCenter()) < 50);
+        }
+
         for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk && time.lessThanOrEqual(new Time(6,0))) {
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk
+                    || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker
+                    || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker_Egg
+                    && time.lessThanOrEqual(new Time(6,0))) {
                 return true;
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk_Den) {
                 if(time.lessThanOrEqual(new Time(5,30))
-                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair || et == UnitType.Zerg_Hatchery).count() > 1
-                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).anyMatch(et -> et == UnitType.Zerg_Lair)) {
+                    && hasNaturalHatch
+                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair || et == UnitType.Zerg_Hatchery).count() > 1) {
                     return true;
                 }
             }

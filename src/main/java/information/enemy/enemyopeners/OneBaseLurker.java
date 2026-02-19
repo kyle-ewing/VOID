@@ -32,7 +32,10 @@ public class OneBaseLurker extends EnemyStrategy {
                 return true;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk && time.lessThanOrEqual(new Time(4,30))) {
+            if(enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk
+                    || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker
+                    || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker_Egg
+                    && time.lessThanOrEqual(new Time(6,0))) {
                 return true;
             }
 

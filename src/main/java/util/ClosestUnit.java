@@ -226,6 +226,7 @@ public class ClosestUnit {
             }
             //Focus units over buildings if visible and not static defense
             else if(closestEnemy != null && closestEnemy.getEnemyType().isBuilding()
+                    && !isStaticDefense(closestEnemy.getEnemyType())
                     && enemyUnit.getEnemyUnit().isVisible()
                     && distance < 500
                     && (!enemyUnit.getEnemyType().isBuilding() || isStaticDefense(enemyUnit.getEnemyType()))) {
