@@ -4,7 +4,6 @@ import bwapi.*;
 import bwem.Base;
 import information.BaseInfo;
 import information.GameState;
-import information.enemy.EnemyUnits;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.*;
 import unitgroups.units.WorkerStatus;
@@ -91,6 +90,7 @@ public class ProductionManager {
 
             if(gameState.isEnemyInNatural() && (pi.getBuildPosition() != null && !baseInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
                 priorityStop = false;
+                hasHighPriorityBuilding = false;
                 continue;
             }
 
@@ -109,7 +109,7 @@ public class ProductionManager {
                     }
 
                     if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
-                        if(!canBeResearched(pi.getTechBuilding()) || !isResearching(pi.getTechBuilding())) {
+                        if(!canBeResearched(pi.getTechBuilding()) || !researchBuildingAvailable(pi.getTechBuilding())) {
                             continue;
                         }
 
@@ -118,12 +118,28 @@ public class ProductionManager {
                                 blockedByHigherPriority = true;
                                 continue;
                             }
+
+                            if(game.self().hasResearched(pi.getTechUpgrade())) {
+                                pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                                continue;
+                            }
+
                             researchTech(pi.getTechUpgrade());
                             pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                         }
                         else if(pi.getUpgradeType() != null) {
-                            if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUpgradeType().gasPrice()) {
+                            if(!canUpgrade(pi.getUpgradeType())) {
+                                continue;
+                            }
+
+                            if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice()
+                                    || gameState.getResourceTracking().getAvailableGas() < pi.getUpgradeType().gasPrice()) {
                                 blockedByHigherPriority = true;
+                                continue;
+                            }
+
+                            if(game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeLevel()) {
+                                pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                                 continue;
                             }
 
@@ -302,7 +318,7 @@ public class ProductionManager {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             }
 
-                            if(!isResearching(pi.getTechUpgrade()) && !game.self().hasResearched(pi.getTechUpgrade())) {
+                            if(!researchBuildingAvailable(pi.getTechUpgrade()) && !game.self().hasResearched(pi.getTechUpgrade())) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                             }
                         }
@@ -363,7 +379,7 @@ public class ProductionManager {
 
                 return true;
             }
-            else if(pi.getPlannedItemType() == PlannedItemType.UPGRADE && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && isResearching(pi.getTechBuilding())) {
+            else if(pi.getPlannedItemType() == PlannedItemType.UPGRADE && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && researchBuildingAvailable(pi.getTechBuilding())) {
                 return true;
             }
         }
@@ -1076,7 +1092,7 @@ public class ProductionManager {
         return false;
     }
 
-    private boolean isResearching(TechType techType) {
+    private boolean researchBuildingAvailable(TechType techType) {
         for(Unit researchBuilding : allBuildings) {
             if(researchBuilding.getAddon() != null && researchBuilding.getAddon().getTech() == techType) {
                 return true;
@@ -1121,7 +1137,7 @@ public class ProductionManager {
         return false;
     }
 
-    private boolean isResearching(UnitType unitType) {
+    private boolean researchBuildingAvailable(UnitType unitType) {
         int availableBuildings = 0;
         for(Unit researchBuilding : allBuildings) {
             if(researchBuilding.getType() == unitType && researchBuilding.isCompleted() && !(researchBuilding.isResearching() || researchBuilding.isUpgrading())) {
@@ -1251,11 +1267,7 @@ public class ProductionManager {
     }
 
     private boolean canBeResearched(UnitType unitType) {
-        if(unitTypeCount.get(unitType) > 0) {
-            return true;
-        }
-
-        return false;
+        return unitTypeCount.get(unitType) > 0;
     }
 
     private boolean hasUnitInQueue(UnitType unitType) {
