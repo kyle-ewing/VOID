@@ -4,6 +4,7 @@ import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
+import macro.buildorders.BuildType;
 import util.Time;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public abstract class EnemyStrategy {
     public abstract void buildingResponse();
     public abstract  void upgradeResponse();
     public abstract HashSet<UnitType> removeBuildings();
-    public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time);
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time);
 
     public String getStrategyName() {
         return strategyName;

@@ -4,6 +4,7 @@ import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.BaseInfo;
 import information.enemy.EnemyUnits;
+import macro.buildorders.BuildType;
 import util.Time;
 
 import java.util.HashMap;
@@ -49,8 +50,16 @@ public class TwoBaseLurker extends EnemyStrategy {
         getUpgradeResponse().add(UpgradeType.U_238_Shells);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
-        return new HashMap<>();
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+
+        if(buildType == BuildType.BIO) {
+            moveOutCondition.put(UnitType.Terran_Marine, 12);
+            moveOutCondition.put(UnitType.Terran_Medic, 4);
+            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
+        }
+
+        return moveOutCondition;
     }
 
     public HashSet<UnitType> removeBuildings() {

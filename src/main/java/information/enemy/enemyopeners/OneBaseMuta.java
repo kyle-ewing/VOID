@@ -3,6 +3,7 @@ package information.enemy.enemyopeners;
 import bwapi.UnitType;
 import information.BaseInfo;
 import information.enemy.EnemyUnits;
+import macro.buildorders.BuildType;
 import util.Time;
 
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class OneBaseMuta extends EnemyStrategy {
     public void upgradeResponse() {
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
         return new HashMap<>();
     }
 

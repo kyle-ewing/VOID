@@ -179,7 +179,7 @@ public class GameState {
 
     private void amendMoveOutCondition() {
         if(enemyOpener != null) {
-            HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(time);
+            HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(startingOpener.buildType(), time);
 
             if(enemyMoveOutCondition.isEmpty()) {
                 openerMoveOutCondition = startingOpener.getMoveOutCondition(time);
