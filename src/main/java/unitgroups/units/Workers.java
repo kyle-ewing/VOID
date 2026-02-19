@@ -15,6 +15,7 @@ public class Workers extends CombatUnits {
     private int attackClock;
     private int idleClock = 0;
     private int lastFrameChecked = 0;
+    private int hardReset = 0;
     private int unitID;
     private Integer distanceToBuildTarget = null;
     private EnemyUnits enemyUnit;
@@ -66,13 +67,24 @@ public class Workers extends CombatUnits {
             return;
         }
 
+        if(hardReset == 5) {
+            workerStatus = WorkerStatus.IDLE;
+            hardReset = 0;
+            return;
+        }
+
         if(unit.isIdle()) {
             idleClock++;
         }
 
         if(idleClock > 48) {
-            unit.move(new Position(unit.getPosition().getX() + 2, unit.getPosition().getY() + 2));
+            int randomDistance = (int)(Math.random() * 5) + 1;
+            double randomAngle = Math.random() * 2 * Math.PI;
+            int offsetX = (int)(randomDistance * Math.cos(randomAngle));
+            int offsetY = (int)(randomDistance * Math.sin(randomAngle));
+            unit.move(new Position(unit.getPosition().getX() + offsetX, unit.getPosition().getY() + offsetY));
             idleClock = 0;
+            hardReset++;
         }
     }
 
