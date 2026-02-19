@@ -90,7 +90,7 @@ public class WorkerManager {
                             worker.setWorkerStatus(WorkerStatus.REPAIRING);
                         }
                     }
-                    if(worker.getUnit().isIdle() || worker.getUnit().isAttacking()) {
+                    if(worker.getUnit().isIdle() || worker.getUnit().isAttacking() || !worker.getUnit().isGatheringMinerals()) {
                         gatherMinerals(worker);
                     }
 
