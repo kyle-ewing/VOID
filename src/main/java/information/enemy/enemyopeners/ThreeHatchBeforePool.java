@@ -3,6 +3,7 @@ package information.enemy.enemyopeners;
 import bwapi.UnitType;
 import information.BaseInfo;
 import information.enemy.EnemyUnits;
+import macro.buildorders.BuildType;
 import util.Time;
 
 import java.util.HashMap;
@@ -38,7 +39,7 @@ public class ThreeHatchBeforePool extends EnemyStrategy {
                 && enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(et -> et == UnitType.Zerg_Spawning_Pool)
                 && hasNaturalHatch
                 && mainHatch.getEnemyUnit().isVisible()
-                && time.greaterThan(new Time(2, 40))
+                && time.greaterThan(new Time(2, 50))
                 && time.lessThanOrEqual(new Time(3, 0));
     }
 
@@ -48,7 +49,7 @@ public void buildingResponse() {
 public void upgradeResponse() {
 }
 
-public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
+public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
     HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
     if(time.lessThanOrEqual(new Time(5,0))) {

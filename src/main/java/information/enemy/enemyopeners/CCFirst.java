@@ -4,6 +4,7 @@ import bwapi.UnitType;
 import bwem.Base;
 import information.BaseInfo;
 import information.enemy.EnemyUnits;
+import macro.buildorders.BuildType;
 import planner.PlannedItem;
 import util.Time;
 
@@ -62,7 +63,7 @@ public class CCFirst extends  EnemyStrategy {
     public void upgradeResponse() {
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
         return new HashMap<>();
     }
 
