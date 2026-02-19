@@ -1,12 +1,11 @@
 package information;
 
-import bwapi.Game;
-import bwapi.Player;
-import bwapi.Position;
-import bwapi.Unit;
+import bwapi.*;
 import bwem.Base;
+import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
+import util.Time;
 
 //TODO: move scouting into gamestate
 public class Scouting {
@@ -22,12 +21,17 @@ public class Scouting {
     private int scoutingAttempts = 0;
     private boolean completedScout = false;
     private boolean attemptsMaxed = false;
+    private boolean mainScanned = false;
+
+    private Time time;
 
     public Scouting(Game game, BaseInfo baseInfo, GameState gameState) {
         this.game = game;
         this.baseInfo = baseInfo;
         this.gameState = gameState;
         this.player = game.self();
+
+        this.time = new Time(game.getFrameCount());
     }
 
     public void sendScout() {
@@ -63,7 +67,7 @@ public class Scouting {
         }
     }
 
-    public void scoutEnemyPerimeter() {
+    private void scoutEnemyPerimeter() {
         if(scout == null) {
             return;
         }
@@ -92,7 +96,30 @@ public class Scouting {
         scout.getUnit().rightClick(targetPosition);
     }
 
+    private void scanEnemyBase() {
+        if(gameState.getStartingEnemyBase() == null) {
+            return;
+        }
+
+        CombatUnits scanner = gameState.getCombatUnits().stream().filter(cu -> cu.getUnitType() == UnitType.Terran_Comsat_Station).findFirst().orElse(null);
+
+        if(scanner == null || !scanner.getUnit().isCompleted()) {
+            return;
+        }
+
+        if(scanner.getUnit().getEnergy() < 50) {
+            return;
+        }
+
+        Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
+
+        scanner.getUnit().useTech(TechType.Scanner_Sweep, enemyBasePos);
+        mainScanned = true;
+    }
+
     public void onFrame() {
+        time = new Time(game.getFrameCount());
+
         if(player.supplyUsed() / 2 >= 10 && gameState.getStartingEnemyBase() == null) {
             sendScout();
         }
@@ -104,6 +131,10 @@ public class Scouting {
 
         if(gameState.getEnemyOpener() != null) {
             completedScout = true;
+        }
+
+        if(gameState.getEnemyOpener() == null && !mainScanned && time.greaterThan(new Time(5,0))) {
+            scanEnemyBase();
         }
     }
 
