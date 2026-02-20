@@ -373,12 +373,12 @@ public class WorkerManager {
                     createRepairForce(bunker, 3);
                 }
                 else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 650
-                        && new Time(game.getFrameCount()).greaterThan(new Time(5,0))
+                        && new Time(game.getFrameCount()).greaterThan(new Time(5,30))
                         && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
                     createRepairForce(bunker, 2);
                 }
-                else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 300
-                        && new Time(game.getFrameCount()).greaterThan(new Time(4,0))
+                else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 250
+                        && new Time(game.getFrameCount()).greaterThan(new Time(5,0))
                         && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
                     createRepairForce(bunker, 1);
                 }

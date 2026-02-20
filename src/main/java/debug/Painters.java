@@ -21,7 +21,6 @@ public class Painters {
     Config config;
     Scouting scouting;
 
-
     public Painters(Game game, GameState gameState, Config config, Scouting scouting) {
         this.game = game;
         this.gameState = gameState;
@@ -123,6 +122,22 @@ public class Painters {
             paintRescoutCriteria();
             if(scouting.getScout() != null)
                 paintScoutPath(scouting.getScout().getUnit());
+        }
+
+        if(config.debugProdQueueOutput) {
+            timeStamp();
+        }
+    }
+
+    public void onEnd() {
+        if(config.debugProdQueueOutput) {
+            printProductionQueue(gameState.getProductionQueue());
+        }
+    }
+
+    private void timeStamp() {
+        if(game.getFrameCount() % 2880 == 0) {
+            printProductionQueue(gameState.getProductionQueue());
         }
     }
 
@@ -634,5 +649,24 @@ public class Painters {
             }
         }
         game.setTextSize(Text.Size.Default);
+    }
+
+    private void printProductionQueue(PriorityQueue<PlannedItem> productionQueue) {
+        System.out.println("====== Queue at: " + new Time(game.getFrameCount()) + " ======");
+
+        List<PlannedItem> safeQueue = new ArrayList<>(productionQueue);
+            safeQueue.sort(Comparator.comparing(PlannedItem::getPlannedItemType));
+            for(PlannedItem pi : safeQueue) {
+                if(pi.getUnitType() != null) {
+                    System.out.println("Supply: " + pi.getSupply() + " " + "Type: " + pi.getUnitType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
+                }
+                else if(pi.getUpgradeType() != null) {
+                    System.out.println("Supply: " + pi.getSupply() + " " + "Type: " + pi.getUpgradeType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority() + " Upgrade level: " + pi.getUpgradeLevel());
+                }
+                else if(pi.getTechUpgrade() != null) {
+                    System.out.println("Supply: " + pi.getSupply() + " " + "Type: " + pi.getTechUpgrade().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
+                }
+            }
+        System.out.println("==============================");
     }
 }

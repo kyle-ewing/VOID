@@ -34,6 +34,7 @@ public final class Config {
 
     // Production and planning
     public boolean debugProductionQueue = true;
+    public boolean debugProdQueueOutput = false;
 
     public Config() {
         // HUD and general info
@@ -64,6 +65,7 @@ public final class Config {
 
         // Production and planning
         this.debugProductionQueue = getBooleanOrDefault("DEBUG_PRODUCTION_QUEUE", this.debugProductionQueue);
+            this.debugProdQueueOutput = getBooleanOrDefault("DEBUG_PROD_QUEUE_OUTPUT", this.debugProdQueueOutput);
     }
 
     private boolean getBooleanOrDefault(String key, boolean defaultValue) {
