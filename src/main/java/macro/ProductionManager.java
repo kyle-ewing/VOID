@@ -221,7 +221,7 @@ public class ProductionManager {
                 case SCV_ASSIGNED:
                     worker = pi.getAssignedBuilder();
                     if(worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
-                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 144) {
+                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
                             worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
                         }
 
@@ -229,6 +229,10 @@ public class ProductionManager {
                         if(worker.getBuildFrameCount() > 420) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }
+                    }
+
+                    if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                        worker.buildReset(pi, gameState.getResourceTracking());
                     }
 
                     if(worker.getWorkerStatus() == WorkerStatus.STUCK) {
@@ -421,7 +425,7 @@ public class ProductionManager {
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
                         if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic)
                                 && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)
-                                && unitTypeCount.get(UnitType.Terran_Marine) > 10) {
+                                && unitTypeCount.get(UnitType.Terran_Marine) > 8) {
                                 addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
                         }
                         else if(isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
@@ -902,6 +906,7 @@ public class ProductionManager {
 
         for(UpgradeType upgrade : gameState.getEnemyOpener().getUpgradeResponse()) {
             boolean existingUpgrade = false;
+            PlannedItem existingItem = null;
             UnitType researchBuilding = null;
             int upgradeLevel = 1;
 
@@ -910,6 +915,7 @@ public class ProductionManager {
                     if(pi.getUpgradeType() == upgrade) {
                         researchBuilding = pi.getTechBuilding();
                         upgradeLevel = pi.getUpgradeLevel();
+                        existingItem = pi;
                         existingUpgrade = true;
                         break;
                     }
@@ -917,8 +923,15 @@ public class ProductionManager {
             }
 
             if(existingUpgrade) {
-                productionQueue.removeIf(pi -> pi.getUpgradeType() != null && pi.getUpgradeType() == upgrade);
-                productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE,  researchBuilding, upgradeLevel,1));
+                if(existingItem.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                    productionQueue.removeIf(pi -> pi.getUpgradeType() != null && pi.getUpgradeType() == upgrade);
+                    productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE,  researchBuilding, upgradeLevel,1));
+                }
+            }
+            else {
+                if(game.self().getUpgradeLevel(upgrade) < upgradeLevel) {
+                    productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, researchBuilding, upgradeLevel,1));
+                }
             }
         }
     }

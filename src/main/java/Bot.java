@@ -130,6 +130,11 @@ public class Bot extends DefaultBWListener {
         enemyInformation.onUnitRenegade(unit);
     }
 
+    @Override
+    public void onEnd(boolean isWinner) {
+        painters.onEnd();
+    }
+
     public static void main(String[] args) {
         Bot bot = new Bot();
         bot.bwClient = new BWClient(bot);
