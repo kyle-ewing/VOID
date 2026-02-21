@@ -5,6 +5,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import information.BaseInfo;
 import information.enemy.EnemyInformation;
+import util.Time;
 
 public class Wraith extends CombatUnits {
     private EnemyInformation enemyInformation;
@@ -17,8 +18,11 @@ public class Wraith extends CombatUnits {
         unitStatus = UnitStatus.HUNTING;
         priorityTargets.add(UnitType.Protoss_Shuttle);
         priorityTargets.add(UnitType.Protoss_Probe);
+        priorityTargets.add(UnitType.Zerg_Drone);
         priorityTargets.add(UnitType.Zerg_Guardian);
+        priorityTargets.add(UnitType.Zerg_Queen);
         priorityTargets.add(UnitType.Terran_Dropship);
+        priorityTargets.add(UnitType.Terran_SCV);
     }
 
     @Override
@@ -54,7 +58,7 @@ public class Wraith extends CombatUnits {
 
     @Override
     public void hunting() {
-        if(enemyUnit != null) {
+        if(priorityEnemyUnit != null) {
             attack();
         }
         else {
