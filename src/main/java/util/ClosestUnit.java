@@ -96,12 +96,13 @@ public class ClosestUnit {
 
     public static void priorityTargets(CombatUnits combatUnit, HashSet<UnitType> priorityUnit, HashSet<EnemyUnits> enemyUnits, int range) {
         HashSet<EnemyUnits> priorityEnemies = new HashSet<>();
+        combatUnit.setPriorityTargetExists(false);
 
         if(!enemyUnits.contains(combatUnit.getPriorityEnemyUnit())) {
             combatUnit.setPriorityEnemyUnit(null);
         }
 
-        if (combatUnit.priorityTargetLock()) {
+        if(combatUnit.priorityTargetLock()) {
             return;
         }
 
@@ -119,6 +120,7 @@ public class ClosestUnit {
         EnemyUnits closestEnemy = findClosestEnemyUnit(combatUnit, priorityEnemies, range);
 
         combatUnit.setPriorityEnemyUnit(closestEnemy);
+        combatUnit.setEnemyUnit(closestEnemy);
     }
 
     //Closest worker to build position

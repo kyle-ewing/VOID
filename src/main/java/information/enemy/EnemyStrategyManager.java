@@ -46,6 +46,7 @@ public class EnemyStrategyManager {
         enemyTechUnits.add(new BattleCruiser());
         enemyTechUnits.add(new Mutalisk());
         enemyTechUnits.add(new Guardian());
+        enemyTechUnits.add(new Queen());
     }
 
     public HashSet<EnemyStrategy> getEnemyStrategies() {

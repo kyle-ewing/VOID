@@ -651,7 +651,7 @@ public class ProductionManager {
         }
 
         if(turretPosition != null) {
-            addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretPosition, 2);
+            addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretPosition, 4);
         }
     }
 
@@ -890,7 +890,7 @@ public class ProductionManager {
                         else {
                             for(TilePosition turretTile : gameState.getBuildTiles().getMainTurrets()) {
                                 if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
-                                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 2);
+                                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 4);
                                     break;
                                 }
                             }
