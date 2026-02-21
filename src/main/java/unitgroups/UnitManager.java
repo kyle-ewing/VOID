@@ -132,11 +132,7 @@ public class UnitManager {
             }
 
             if(gameState.moveOutConditionsMet()) {
-                if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.LOAD || unitStatus == UnitStatus.SIEGEDEF) {
-                    if(bunker != null) {
-                        unLoadBunker(combatUnit);
-                    }
-
+                if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF) {
                     if(combatUnit instanceof SiegeTank) {
                         if(((SiegeTank) combatUnit).isSieged()) {
                             combatUnit.getUnit().unsiege();
@@ -148,6 +144,9 @@ public class UnitManager {
                     }
 
                     combatUnit.setUnitStatus(UnitStatus.ATTACK);
+                }
+                else if(unitStatus == UnitStatus.LOAD && !enemyNearBunker()) {
+                    unLoadBunker(combatUnit);
                 }
             }
             else {
@@ -313,14 +312,12 @@ public class UnitManager {
     }
 
     private void unLoadBunker(CombatUnits combatUnit) {
-        for(Unit unit : game.self().getUnits()) {
-            if(unit.getType() != UnitType.Terran_Bunker) {
-                continue;
-            }
-            unit.unloadAll();
+        if(bunker != null) {
+            bunker.unloadAll();
         }
         bunkerLoad = 0;
         combatUnit.setInBunker(false);
+        combatUnit.setUnitStatus(UnitStatus.ATTACK);
     }
 
     private void bunkerStatus(CombatUnits combatUnit) {
@@ -329,6 +326,27 @@ public class UnitManager {
 
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
+
+        if(bunker != null && enemyNearBunker() && bunkerLoad < 4 && combatUnit.getUnit().getDistance(bunker.getPosition()) < 200) {
+            combatUnit.setUnitStatus(UnitStatus.LOAD);
+        }
+    }
+
+    private boolean enemyNearBunker() {
+        if(bunker == null) {
+            return false;
+        }
+
+        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if(enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if(enemyUnit.getEnemyPosition().getDistance(bunker.getPosition()) < 192) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void assignScouts(CombatUnits combatUnit) {
