@@ -155,10 +155,12 @@ public class ClosestUnit {
         int closestDistance = range;
         EnemyUnits closestEnemy = null;
 
-        //Priority tracking for sunks over creep colonies
-        EnemyUnits prioritySunk = null;
+
 
         for(EnemyUnits enemyUnit : enemyUnits) {
+            //Priority tracking for sunks over creep colonies
+            EnemyUnits prioritySunk = null;
+
             if(enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
@@ -238,6 +240,7 @@ public class ClosestUnit {
             else if(distance < closestDistance
                     && (closestEnemy == null
                     || !closestEnemy.getEnemyType().isBuilding()
+                    || !enemyUnit.getEnemyType().isBuilding()
                     || !isStaticDefense(closestEnemy.getEnemyType())
                     || isStaticDefense(enemyUnit.getEnemyType()))) {
 
