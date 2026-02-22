@@ -31,7 +31,7 @@ public class WorkerManager {
     private HashMap<Base, HashSet<Workers>> mineralSaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
     private boolean openerResponse = false;
-    private boolean startingMineralsAssigned = false;
+    private boolean initialMineralAssignmentDone = false;
 
     public WorkerManager(BaseInfo baseInfo, Player player, Game game, GameState gameState) {
         this.baseInfo = baseInfo;
@@ -42,10 +42,10 @@ public class WorkerManager {
         workers = gameState.getWorkers();
 
         enemyScoutResponse = new EnemyScoutResponse(game, gameState, this, baseInfo);
+
     }
 
     public void onFrame() {
-        startingMineralAssignment();
         gatherGas();
         workerBuildClock();
         buildingHealthCheck();
@@ -170,6 +170,11 @@ public class WorkerManager {
                     //do nothing
             }
         }
+
+        if(!initialMineralAssignmentDone) {
+            startingMineralAssignment();
+        }
+
     }
 
     private void gatherMinerals(Workers worker) {
@@ -224,16 +229,20 @@ public class WorkerManager {
         }
     }
 
+    //Can't be set on start because nothing is moving/set yet
     private void startingMineralAssignment() {
-        if(startingMineralsAssigned) {
+        if(game.getFrameCount() == 0 || game.getFrameCount() == 1) {
+            return;
+        }
+
+        if(workers.isEmpty()) {
             return;
         }
 
         Base mainBase = baseInfo.getStartingBase();
 
-        HashSet<Unit> minerals = new HashSet<>(mainBase.getMinerals().stream()
-                .map(Mineral::getUnit)
-                .collect(java.util.stream.Collectors.toList()));
+        HashSet<Unit> minerals = mainBase.getMinerals().stream()
+                .map(Mineral::getUnit).collect(java.util.stream.Collectors.toCollection(HashSet::new));
 
         for(Workers worker : workers) {
             if(!minerals.isEmpty()) {
@@ -242,7 +251,7 @@ public class WorkerManager {
                 minerals.remove(mineralPatch);
             }
         }
-        startingMineralsAssigned = true;
+        initialMineralAssignmentDone = true;
     }
 
     //
@@ -516,13 +525,16 @@ public class WorkerManager {
         }
     }
 
+    //TODO: turn into a switch
     public void onUnitComplete(Unit unit) {
-        if(unit.getType() == UnitType.Terran_SCV) {
+        if(unit.getType() == UnitType.Terran_SCV && workers.stream().noneMatch(w -> w.getUnit() == unit)) {
             workers.add(new Workers(game, unit));
+            return;
         }
 
         if(unit.getType() == UnitType.Terran_Refinery) {
             refinerySaturation.put(unit, new HashSet<>());
+            return;
         }
 
         if(unit.getType() == UnitType.Terran_Command_Center) {
