@@ -302,6 +302,10 @@ public class UnitManager {
     }
 
     private void loadBunker(CombatUnits combatUnit) {
+        if(bunker == null) {
+            return;
+        }
+
         combatUnit.getUnit().load(bunker);
 
         if(!combatUnit.isInBunker()) {
@@ -321,13 +325,27 @@ public class UnitManager {
     }
 
     private void bunkerStatus(CombatUnits combatUnit) {
-        if(!combatUnit.isInBunker() && (bunker != null && bunkerLoad < 4 && priorityTarget == null)
+        if(bunker == null || !bunker.exists()) {
+            if(combatUnit.getUnitStatus() == UnitStatus.LOAD) {
+                combatUnit.setUnitStatus(UnitStatus.RALLY);
+                combatUnit.setInBunker(false);
+                bunkerLoad--;
+            }
+
+            return;
+        }
+
+        if(bunkerLoad >= 4 ) {
+            return;
+        }
+
+        if(!combatUnit.isInBunker() && priorityTarget == null
                 && (combatUnit.getUnitStatus() == UnitStatus.RALLY || combatUnit.getUnitStatus() == UnitStatus.DEFEND)) {
 
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
 
-        if(bunker != null && enemyNearBunker() && bunkerLoad < 4 && combatUnit.getUnit().getDistance(bunker.getPosition()) < 200) {
+        if(enemyNearBunker() && combatUnit.getUnit().getDistance(bunker.getPosition()) < 200) {
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
     }
