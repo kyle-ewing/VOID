@@ -139,7 +139,7 @@ public class WorkerManager {
                     }
                     break;
                 case REPAIRING:
-                    //worker.repair(worker.getRepairTarget());
+                    worker.repair(worker.getRepairTarget());
 
                     if(obstructingBuild(worker)) {
                         moveFromObstruction(worker);
