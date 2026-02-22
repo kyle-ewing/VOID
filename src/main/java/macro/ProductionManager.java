@@ -384,7 +384,12 @@ public class ProductionManager {
                 return true;
             }
             else if(pi.getPlannedItemType() == PlannedItemType.UPGRADE && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && researchBuildingAvailable(pi.getTechBuilding())) {
-                return true;
+                if(pi.getUpgradeType() != null && canUpgrade(pi.getUpgradeType())) {
+                    return true;
+                }
+                else if(pi.getTechUpgrade() != null) {
+                    return true;
+                }
             }
         }
         return false;
