@@ -65,6 +65,7 @@ public class OneBaseLurker extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Factory);
         getBuildingResponse().add(UnitType.Terran_Machine_Shop);
         getBuildingResponse().add(UnitType.Terran_Starport);
+        getBuildingResponse().add(UnitType.Terran_Science_Facility);
     }
 
     public void upgradeResponse() {

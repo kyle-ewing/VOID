@@ -128,20 +128,25 @@ public class ClosestUnit {
         Workers closestWorker = null;
         int closestDistance = Integer.MAX_VALUE;
 
+        Position walkableGoal = pathFinding.findNearestWalkable(position);
+        if (walkableGoal == null) {
+            return null;
+        }
+
         for(Workers worker : workers) {
             if(worker.getWorkerStatus() != WorkerStatus.MINERALS) {
                 continue;
             }
 
             Position workerPos = worker.getUnit().getPosition();
-            List<Position> path = pathFinding.findPath(workerPos, position);
+            List<Position> path = pathFinding.findPath(workerPos, walkableGoal);
 
-            if (path == null || path.isEmpty()) {
+            if(path == null || path.isEmpty()) {
                 continue;
             }
 
             int pathLen = path.size();
-            if (pathLen < closestDistance) {
+            if(pathLen < closestDistance) {
                 closestDistance = pathLen;
                 closestWorker = worker;
             }
@@ -154,12 +159,11 @@ public class ClosestUnit {
     public static EnemyUnits findClosestEnemyUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {
         int closestDistance = range;
         EnemyUnits closestEnemy = null;
-
+        EnemyUnits prioritySunk = null;
 
 
         for(EnemyUnits enemyUnit : enemyUnits) {
             //Priority tracking for sunks over creep colonies
-            EnemyUnits prioritySunk = null;
 
             if(enemyUnit.getEnemyPosition() == null) {
                 continue;
