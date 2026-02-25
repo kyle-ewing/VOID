@@ -168,6 +168,11 @@ public class ProductionManager {
                         }
                     }
                     else if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                        if(!meetsRequirements(pi.getUnitType())) {
+                            priorityStop = false;
+                            blockedByHigherPriority = false;
+                        }
+
                         if(pi.getBuildPosition() == null) {
                             if (pi.getUnitType() == UnitType.Terran_Refinery) {
                                 setRefineryPosition(pi);
@@ -185,12 +190,14 @@ public class ProductionManager {
                             }
                         }
 
-                        if(pi.getBuildPosition() != null) {
+                        if(pi.getBuildPosition() != null && pi.getAssignedBuilder() == null) {
                             worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), baseInfo.getPathFinding());
                             pi.setAssignedBuilder(worker);
                         }
 
                         if(pi.getAssignedBuilder() != null) {
+                            worker = pi.getAssignedBuilder();
+
                             if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
                                 worker.build(pi, gameState.getResourceTracking());
                             }
@@ -581,6 +588,39 @@ public class ProductionManager {
 
                     if(gameState.getResourceTracking().getAvailableMinerals() > 500 && unitTypeCount.get(UnitType.Terran_Factory) < 5 && !hasUnitInQueue(UnitType.Terran_Factory)) {
                         addProductionBuilding(UnitType.Terran_Factory, 3);
+                    }
+                }
+                break;
+            case GOLIATHFE:
+                for(Unit productionBuilding : productionBuildings) {
+                    if(!gameState.getTechUnitResponse().isEmpty()) {
+                        for(UnitType unitType: gameState.getTechUnitResponse()) {
+                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
+                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
+                                    if(unitTypeCount.get(unitType) < 6) {
+                                        addToQueue(unitType, PlannedItemType.UNIT, 2);
+                                    }
+                                     else {
+                                        addToQueue(unitType, PlannedItemType.UNIT, 3);
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
+                        if(isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && productionBuilding.getAddon() != null
+                                && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
+                                && (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) < 4
+                                || (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) >= 2
+                                && unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath) >= 7))) {
+                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
+                        }
+                        else if(isRecruitable(UnitType.Terran_Goliath) && !hasUnitInQueue(UnitType.Terran_Goliath)) {
+                            addToQueue(UnitType.Terran_Goliath, PlannedItemType.UNIT, 3);
+
+                        }
                     }
                 }
                 break;

@@ -1,12 +1,14 @@
 package macro.buildorders;
 
 import bwapi.Race;
+import information.enemy.EnemyInformation;
 import macro.buildorders.buildtransitions.BuildTransition;
 import macro.buildorders.buildtransitions.TvZBio;
 
 import java.util.HashSet;
 
 public class BuildOrderManager {
+    private EnemyInformation enemyInformation;
     private HashSet<BuildOrder> protossOpeners = new HashSet<>();
     private HashSet<BuildOrder> terranOpeners = new HashSet<>();
     private HashSet<BuildOrder> zergOpeners = new HashSet<>();
@@ -28,8 +30,9 @@ public class BuildOrderManager {
         //protossOpeners.add(new TwoFac());
 
         //TvT
-        terranOpeners.add(new TwoRaxAcademy());
+        //terranOpeners.add(new TwoRaxAcademy());
         //terranOpeners.add(new OneFacFE());
+        terranOpeners.add(new GoliathFE());
 
         //TvZ
         zergOpeners.add(new TwoRaxAcademy());

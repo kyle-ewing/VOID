@@ -35,7 +35,7 @@ public class Scouting {
     }
 
     public void sendScout() {
-        if(scoutingAttempts >= 3) {
+        if(scoutingAttempts >= 2) {
             attemptsMaxed = true;
             return;
         }
@@ -120,7 +120,7 @@ public class Scouting {
     public void onFrame() {
         time = new Time(game.getFrameCount());
 
-        if(player.supplyUsed() / 2 >= 10 && gameState.getStartingEnemyBase() == null) {
+        if(player.supplyUsed() / 2 >= gameState.getStartingOpener().getScoutSupply() && gameState.getStartingEnemyBase() == null) {
             sendScout();
         }
 

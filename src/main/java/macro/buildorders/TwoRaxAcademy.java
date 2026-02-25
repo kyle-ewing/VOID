@@ -3,6 +3,7 @@ package macro.buildorders;
 import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import information.enemy.EnemyUnits;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
@@ -55,7 +56,7 @@ public class TwoRaxAcademy extends BuildOrder {
         return BuildType.BIO;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if(time.lessThanOrEqual(new Time(10,0))) {

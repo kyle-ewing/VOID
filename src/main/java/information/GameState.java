@@ -107,7 +107,7 @@ public class GameState {
         for(BuildOrder bo : openingBuildOrders) {
             startingOpener = bo;
             productionQueue.addAll(bo.getBuildOrder());
-            openerMoveOutCondition = bo.getMoveOutCondition(time);
+            openerMoveOutCondition = bo.getMoveOutCondition(time, knownEnemyUnits);
             liftableBuildings.addAll(bo.getLiftableBuildings());
 
             if(bunkerPosition == null) {
@@ -120,6 +120,10 @@ public class GameState {
         buildTransition = buildOrderManager.getBuildTransitions();
 
         for(BuildTransition bt : buildTransition) {
+            if(!bt.transitionsFrom(startingOpener)) {
+                continue;
+            }
+
             for(PlannedItem pi : bt.getOptionalBuildings()) {
                 if(unitTypeCount.getOrDefault(pi.getUnitType(), 0) == 0) {
                     productionQueue.add(pi);
@@ -182,14 +186,14 @@ public class GameState {
             HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(startingOpener.buildType(), time);
 
             if(enemyMoveOutCondition.isEmpty()) {
-                openerMoveOutCondition = startingOpener.getMoveOutCondition(time);
+                openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits);
                 return;
             }
 
             openerMoveOutCondition = enemyMoveOutCondition;
         }
         else {
-            openerMoveOutCondition = startingOpener.getMoveOutCondition(time);
+            openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits);
         }
     }
 
