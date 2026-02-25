@@ -211,6 +211,10 @@ public class ClosestUnit {
                 continue;
             }
 
+            if(enemyUnit.getEnemyUnit().isLifted() && !combatUnit.getUnit().getType().airWeapon().targetsAir()) {
+                continue;
+            }
+
             //TODO: this doesn't actually skip these units, fix that
             if(((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && !enemyUnit.getEnemyUnit().isDetected())
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord

@@ -194,7 +194,8 @@ public class SiegeTank extends CombatUnits {
                     super.setUnitStatus(UnitStatus.RETREAT);
                 }
 
-                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
+                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64
+                        && !enemyUnit.getEnemyUnit().isLifted()) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
@@ -228,12 +229,14 @@ public class SiegeTank extends CombatUnits {
                 break;
         }
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64 && canSiege()) {
+        if(enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64
+                && canSiege() && !enemyUnit.getEnemyType().isWorker()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             unit.siege();
         }
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE && isSieged()) {
+        if(enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE && isSieged()
+                && !enemyUnit.getEnemyUnit().isLifted()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
             unit.unsiege();
         }
