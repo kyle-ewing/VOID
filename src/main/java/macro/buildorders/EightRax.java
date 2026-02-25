@@ -1,6 +1,7 @@
 package macro.buildorders;
 
 import bwapi.UnitType;
+import information.enemy.EnemyUnits;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
@@ -36,7 +37,7 @@ public class EightRax extends BuildOrder {
         return BuildType.BIO;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         return moveOutCondition;
     }
