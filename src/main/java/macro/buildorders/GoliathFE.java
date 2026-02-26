@@ -45,7 +45,7 @@ public class GoliathFE extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3));
-        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 7, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
+        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 30, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Charon_Boosters, 42, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Factory, 1, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 6));
@@ -95,6 +95,6 @@ public class GoliathFE extends BuildOrder {
 
     @Override
     public int getScoutSupply() {
-        return 13;
+        return 12;
     }
 }

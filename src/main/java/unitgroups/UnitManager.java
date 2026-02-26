@@ -156,6 +156,7 @@ public class UnitManager {
             }
 
             if((scouting.isCompletedScout() || scouting.attemptsMaxed()) && !gameState.isEnemyBuildingDiscovered()
+                    && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Vulture || combatUnit.getUnitType() == UnitType.Terran_Goliath)
                     && scouts < baseInfo.getMapBases().size()) {
                 combatUnit.setUnitStatus(UnitStatus.SCOUT);
