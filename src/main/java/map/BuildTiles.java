@@ -27,6 +27,7 @@ public class BuildTiles {
     private HashSet<TilePosition> backBaseTiles = new HashSet<>();
     private HashSet<TilePosition> mainTurrets = new HashSet<>();
     private HashMap<Base, TilePosition> mineralLineTurrets = new HashMap<>();
+    private Queue<Base> pendingBaseTiles = new ArrayDeque<>();
     private TilePosition mainChokeBunker;
     private TilePosition naturalChokeBunker;
     private TilePosition closeBunkerTile;
@@ -85,6 +86,28 @@ public class BuildTiles {
         }
         else if(baseInfo.getMinBaseTiles().isEmpty()) {
             minOnlyTilesGenerated = true;
+        }
+
+        if(!pendingBaseTiles.isEmpty()) {
+            if(largeBuildTiles.isEmpty() || mediumBuildTiles.isEmpty()) {
+                Base pendingBase = pendingBaseTiles.peek();
+                mineralExclusionZone(pendingBase);
+                geyserExclusionZone(pendingBase);
+                ccExclusionZone(pendingBase);
+                chokeExclusionZone(pendingBase);
+                HashSet<TilePosition> newBaseTiles = baseInfo.getTilesForBase(pendingBase);
+
+                if(mediumBuildTiles.isEmpty()) {
+                    generateMediumTiles(newBaseTiles);
+                }
+
+                if(largeBuildTiles.isEmpty()) {
+                    generateLargeTiles(newBaseTiles);
+                }
+
+                pendingBaseTiles.poll();
+            }
+
         }
     }
 
@@ -1219,6 +1242,17 @@ public class BuildTiles {
     public void onUnitComplete(Unit unit) {
         if(!unit.getType().isBuilding()) {
             return;
+        }
+
+        if(unit.getType() == UnitType.Terran_Command_Center) {
+            for(Base base : baseInfo.getOwnedBases()) {
+                if(unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
+                    if(base != baseInfo.getStartingBase() && base != baseInfo.getNaturalBase()) {
+                        pendingBaseTiles.add(base);
+                    }
+                    break;
+                }
+            }
         }
 
         for(TilePosition tilePosition : largeBuildTiles) {
