@@ -39,6 +39,7 @@ public class BaseInfo {
     private HashSet<TilePosition> backupMainSiegeTiles = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private HashMap<Base, List<Position>> allPathsMap;
+    private HashMap<Base, HashSet<TilePosition>> baseTilesAllBases = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
@@ -82,6 +83,7 @@ public class BaseInfo {
         setNaturalChokeEdge();
         combineTankTiles();
         backupMainSiegeTiles();
+        setAllBaseTiles();
 
         //Handle edge cases where bases are split into multiple areas
         combineBaseAreas();
@@ -538,8 +540,18 @@ public class BaseInfo {
             HashSet<TilePosition> secondAreaTiles = getTilesForBase(secondArea.getBases().get(0));
             minBaseTiles.addAll(secondAreaTiles);
         }
+    }
 
+    private void setAllBaseTiles() {
 
+        for(Base base : mapBases) {
+            if(base == startingBase || base == naturalBase || (minOnlyBase != null && base == minOnlyBase)) {
+                continue;
+            }
+
+            HashSet<TilePosition> tiles = getTilesForBase(base);
+            baseTilesAllBases.put(base, tiles);
+        }
     }
 
     public HashSet<Base> getStartingBases() {
@@ -640,6 +652,10 @@ public class BaseInfo {
 
     public void setEnemyMain(Base enemyMain) {
         this.enemyMain = enemyMain;
+    }
+
+    public HashMap<Base, HashSet<TilePosition>> getBaseTilesAllBases() {
+        return baseTilesAllBases;
     }
 
     public void onUnitCreate(Unit unit) {
