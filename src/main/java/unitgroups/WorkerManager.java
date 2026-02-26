@@ -340,7 +340,7 @@ public class WorkerManager {
             }
 
             TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
-            if (baseInfo.getBaseTiles().contains(enemyTile)) {
+            if(baseInfo.getBaseTiles().contains(enemyTile)) {
                 return true;
             }
         }
@@ -352,6 +352,11 @@ public class WorkerManager {
             case "Cannon Rush":
                 createDefenseForce(6);
                 break;
+            case "Four Rax":
+                if(gameState.getKnownEnemyUnits().stream().anyMatch(unit -> unit.getEnemyType() == UnitType.Terran_Marine && unit.getEnemyPosition() != null
+                        && baseInfo.getBaseTiles().contains(unit.getEnemyPosition().toTilePosition()))) {
+                    createDefenseForce(3);
+                }
         }
     }
 
