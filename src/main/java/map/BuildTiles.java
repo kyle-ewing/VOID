@@ -1095,6 +1095,17 @@ public class BuildTiles {
                 || ccExclusionTiles.contains(tilePosition) || chokeExclusionTiles.contains(tilePosition);
     }
 
+    public boolean isAddonPositionBlocked(TilePosition buildingTile) {
+        int addonX = buildingTile.getX() + 4;
+        for(int dy = 0; dy < 3; dy++) {
+            TilePosition addonTile = new TilePosition(addonX, buildingTile.getY() + dy);
+            if(largeBuildTilesNoGap.contains(addonTile)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void generateFrontBaseTiles() {
         HashSet<TilePosition> baseTiles = new HashSet<>(baseInfo.getBaseTiles());
         TilePosition chokePos = baseInfo.getMainChoke().getCenter().toTilePosition();

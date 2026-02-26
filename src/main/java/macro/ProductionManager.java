@@ -218,6 +218,10 @@ public class ProductionManager {
                                     continue;
                                 }
 
+                                if(buildTiles.isAddonPositionBlocked(productionBuilding.getTilePosition())) {
+                                    continue;
+                                }
+
                                 productionBuilding.buildAddon(pi.getUnitType());
                                 pi.setAddOnParent(productionBuilding);
                                 pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
@@ -383,6 +387,10 @@ public class ProductionManager {
 
     private void addToQueue(UnitType unitType, PlannedItemType plannedItemType,  TilePosition buildPosition, int priority) {
         productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, plannedItemType, buildPosition, priority));
+    }
+
+    private void addToQueue(UnitType unitType, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
+        productionQueue.add(new PlannedItem(unitType, PlannedItemStatus.NOT_STARTED, plannedItemType, priority , needsAddon));
     }
 
     private void addAddOn(UnitType unitType, int priority) {
@@ -683,7 +691,7 @@ public class ProductionManager {
 
     private void addExpansion() {
         if(gameState.getCanExpand()) {
-            addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 3);
+            addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 4);
             gameState.setCanExpand(false);
         }
     }
@@ -795,7 +803,7 @@ public class ProductionManager {
                 return;
             }
 
-            if(pi.getUnitType().canBuildAddon() || buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
+            if((pi.getUnitType().canBuildAddon() && pi.needsAddon()) || buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
                 for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
                     if(tileTaken(tilePosition)) {
                         continue;
@@ -965,7 +973,12 @@ public class ProductionManager {
                         addToQueue(building, PlannedItemType.UNIT, 1);
                     }
                     else {
-                        addToQueue(building, PlannedItemType.BUILDING, 1);
+                        if(building.canBuildAddon()) {
+                            addToQueue(building, PlannedItemType.BUILDING, 1, true);
+                        }
+                        else {
+                            addToQueue(building, PlannedItemType.BUILDING, 1);
+                        }
                     }
                 }
             }
@@ -1028,7 +1041,12 @@ public class ProductionManager {
                     addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
                 }
                 else {
-                    addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                    if(buildingResponse.canBuildAddon()) {
+                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1, true);
+                    }
+                    else {
+                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                    }
                 }
 
 
@@ -1398,10 +1416,10 @@ public class ProductionManager {
         if(unit.getType() == UnitType.Terran_Command_Center
                 && !(baseInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10)
                 && !(baseInfo.getStartingBase().getLocation().getDistance(unit.getTilePosition()) < 10)) {
-            addToQueue(UnitType.Terran_Refinery, PlannedItemType.BUILDING, 2);
+            addToQueue(UnitType.Terran_Refinery, PlannedItemType.BUILDING, 3);
         }
 
-        if(unit.canTrain()) {
+        if(unit.canTrain() || unit.getType() == UnitType.Terran_Science_Facility) {
             productionBuildings.add(unit);
         }
         buildTiles.onUnitComplete(unit);

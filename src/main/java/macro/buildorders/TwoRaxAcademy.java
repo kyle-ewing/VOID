@@ -35,7 +35,7 @@ public class TwoRaxAcademy extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 33, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Weapons, 32, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 34, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 34, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 38, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 1));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 38, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 3));
