@@ -13,6 +13,7 @@ import macro.buildorders.BuildOrderManager;
 import macro.buildorders.BunkerLocation;
 import macro.buildorders.buildtransitions.BuildTransition;
 import planner.PlannedItemStatus;
+import planner.PlannedItemType;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.Workers;
 import map.BuildTiles;
@@ -205,7 +206,7 @@ public class GameState {
     }
 
     private boolean shouldTransition() {
-        return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0);
+        return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0 && pi.getPlannedItemType() == PlannedItemType.BUILDING);
     }
 
 

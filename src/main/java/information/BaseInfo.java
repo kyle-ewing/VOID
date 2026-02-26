@@ -243,12 +243,7 @@ public class BaseInfo {
 
     private void setOrderedExpansions() {
         for(Base base : mapBases) {
-            if(base == startingBase) {
-                continue;
-            }
-
-            if(base == naturalBase) {
-                orderedExpansions.add(0, base);
+            if(base == startingBase || base == naturalBase) {
                 continue;
             }
 
@@ -266,12 +261,12 @@ public class BaseInfo {
             else {
                 boolean inserted = false;
 
-                for(int i = 1; i < orderedExpansions.size(); i++) {
+                for(int i = 0; i < orderedExpansions.size(); i++) {
                     Base currentBase = orderedExpansions.get(i);
                     List<Position> currentPath = allPathsMap.get(currentBase);
                     int currentDistance = currentPath.size();
 
-                    if(currentDistance > distance) {
+                    if(distance < currentDistance) {
                         orderedExpansions.add(i, base);
                         inserted = true;
                         break;
@@ -282,6 +277,10 @@ public class BaseInfo {
                     orderedExpansions.add(base);
                 }
             }
+        }
+
+        if(naturalBase != null) {
+            orderedExpansions.add(0, naturalBase);
         }
     }
 

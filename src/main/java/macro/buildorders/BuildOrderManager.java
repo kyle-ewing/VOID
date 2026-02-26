@@ -3,6 +3,7 @@ package macro.buildorders;
 import bwapi.Race;
 import information.enemy.EnemyInformation;
 import macro.buildorders.buildtransitions.BuildTransition;
+import macro.buildorders.buildtransitions.TvTMech;
 import macro.buildorders.buildtransitions.TvZBio;
 
 import java.util.HashSet;
@@ -44,6 +45,7 @@ public class BuildOrderManager {
 
     private void initBuildTransitions() {
         buildTransitions.add(new TvZBio());
+        buildTransitions.add(new TvTMech());
     }
 
     public HashSet<BuildOrder> getOpenersForRace() {

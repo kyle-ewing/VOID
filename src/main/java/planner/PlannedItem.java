@@ -16,6 +16,7 @@ public class PlannedItem {
     private UpgradeType upgradeType;
     private Unit addOnParent = null;
     private Unit productionBuilding;
+    private boolean needsAddon = false;
 
     //priority 1-5, 1 being the highest
     private int priority;
@@ -111,6 +112,27 @@ public class PlannedItem {
         this.techBuilding = techBuilding;
         this.upgradeLevel = upgradeLevel;
         this.priority = priority;
+    }
+
+    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
+        this.unitType = unitType;
+        this.supply = supply;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.priority = priority;
+        this.needsAddon = needsAddon;
+        assignedBuilder = null;
+        buildPosition = null;
+    }
+
+    public PlannedItem(UnitType unitType, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
+        this.unitType = unitType;
+        this.plannedItemStatus = plannedItemStatus;
+        this.plannedItemType = plannedItemType;
+        this.priority = priority;
+        this.needsAddon = needsAddon;
+        assignedBuilder = null;
+        buildPosition = null;
     }
 
     public PlannedItemStatus getPlannedItemStatus() {
@@ -223,5 +245,9 @@ public class PlannedItem {
 
     public void setResetCounter(int resetCounter) {
         this.resetCounter = resetCounter;
+    }
+
+    public boolean needsAddon() {
+        return needsAddon;
     }
 }
