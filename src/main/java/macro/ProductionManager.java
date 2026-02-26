@@ -630,6 +630,14 @@ public class ProductionManager {
 
                         }
                     }
+
+                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Starport)) {
+                        if(isRecruitable(UnitType.Terran_Battlecruiser) && productionBuilding.getAddon() != null
+                                && !hasUnitInQueue(UnitType.Terran_Battlecruiser)
+                                && (unitTypeCount.get(UnitType.Terran_Battlecruiser) < 5)) {
+                            addToQueue(UnitType.Terran_Battlecruiser, PlannedItemType.UNIT, 2);
+                        }
+                    }
                 }
                 break;
         }
@@ -759,10 +767,13 @@ public class ProductionManager {
         return false;
     }
 
-    //this might break if a natural has no geyser
     private void setRefineryPosition(PlannedItem pi) {
         for(Base base : baseInfo.getOwnedBases()) {
             if(!baseInfo.getGeyserTiles().containsKey(base)) {
+                continue;
+            }
+
+            if(base.getGeysers().isEmpty()) {
                 continue;
             }
 
@@ -1383,6 +1394,12 @@ public class ProductionManager {
 
     public void onUnitComplete(Unit unit) {
         addUnitTypeCount(unit);
+
+        if(unit.getType() == UnitType.Terran_Command_Center
+                && !(baseInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10)
+                && !(baseInfo.getStartingBase().getLocation().getDistance(unit.getTilePosition()) < 10)) {
+            addToQueue(UnitType.Terran_Refinery, PlannedItemType.BUILDING, 2);
+        }
 
         if(unit.canTrain()) {
             productionBuildings.add(unit);
