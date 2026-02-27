@@ -51,6 +51,7 @@ public class GameState {
     private boolean enemyOpenerIdentified = false;
     private boolean moveOutConditionsMet = false;
     private boolean hasTransitioned = false;
+    private boolean beingSieged = false;
 
     private HashSet<CombatUnits> combatUnits = new HashSet<>();
     private HashSet<Unit> productionBuildings = new HashSet<>();
@@ -344,5 +345,13 @@ public class GameState {
 
     public boolean hasTransitioned() {
         return hasTransitioned;
+    }
+
+    public boolean isBeingSieged() {
+        return beingSieged;
+    }
+
+    public void setBeingSieged(boolean beingSieged) {
+        this.beingSieged = beingSieged;
     }
 }

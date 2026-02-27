@@ -250,8 +250,24 @@ public class EnemyInformation {
                 openerDefenseTimer = 1440;
             }
         }
+    }
 
-
+    public boolean beingSieged() {
+        for(EnemyUnits enemyUnit : enemyUnits) {
+            if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+                if(baseInfo.isNaturalOwned()) {
+                    if(enemyUnit.getEnemyUnit().getDistance(baseInfo.getNaturalBase().getCenter()) < 700) {
+                        return true;
+                    }
+                }
+                else {
+                    if(enemyUnit.getEnemyUnit().getDistance(baseInfo.getStartingBase().getCenter()) < 800) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void onFrame() {
@@ -260,6 +276,7 @@ public class EnemyInformation {
         enemyInNatural();
         checkOpenerDefense(currentTime);
         checkTechUnits();
+        gameState.setBeingSieged(beingSieged());
 
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyUnit().isVisible()) {

@@ -150,6 +150,17 @@ public class UnitManager {
                 }
             }
             else {
+                if(gameState.isBeingSieged()) {
+                    if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF) {
+                        combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
+                    }
+                    else if(unitStatus == UnitStatus.LOAD && !enemyNearBunker()) {
+                        combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
+                        unLoadBunker(combatUnit);
+                    }
+
+                }
+
                 if(combatUnit.getUnitType() == UnitType.Terran_Vulture) {
                     ((Vulture) combatUnit).setLobotomyOverride(false);
                 }
@@ -164,12 +175,8 @@ public class UnitManager {
                 scouts++;
             }
 
-            if(hasTankSupport(combatUnit)) {
-                combatUnit.setHasTankSupport(true);
-            }
-            else {
-                combatUnit.setHasTankSupport(false);
-            }
+            combatUnit.setHasTankSupport(hasTankSupport(combatUnit));
+            combatUnit.setEnemyInBase(gameState.isEnemyInBase());
 
             unitStatus = combatUnit.getUnitStatus();
 
@@ -300,6 +307,15 @@ public class UnitManager {
                 case AVOID:
                     combatUnit.avoid();
                     avoidThreat(combatUnit);
+                    break;
+                case SALLYOUT:
+                    if(!gameState.isBeingSieged()) {
+                        combatUnit.setUnitStatus(UnitStatus.RALLY);
+                    }
+                    else {
+                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 600);
+                        combatUnit.sallyOut();
+                    }
             }
         }
     }

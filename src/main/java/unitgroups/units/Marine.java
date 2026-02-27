@@ -85,7 +85,7 @@ public class Marine extends CombatUnits {
     private void attackUnit() {
         kite();
 
-        if(minimnumThreshold()) {
+        if(minimnumThreshold() && enemyUnit.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode) {
             return;
         }
 
@@ -124,6 +124,13 @@ public class Marine extends CombatUnits {
         Position enemyPosition = enemyUnit.getEnemyPosition();
         Position unitPosition = unit.getPosition();
         double distanceToEnemy = unitPosition.getDistance(enemyPosition);
+
+        if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+            if(distanceToEnemy > 32) {
+                unit.move(enemyPosition);
+            }
+            return;
+        }
 
         if(distanceToEnemy < kiteThreshold) {
             double dx = unitPosition.getX() - enemyPosition.getX();
