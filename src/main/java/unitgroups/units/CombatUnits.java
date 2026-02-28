@@ -150,20 +150,9 @@ public class CombatUnits {
                 return;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-                if(unit.getDistance(enemyUnit.getEnemyPosition()) > 32) {
-                    unit.move(enemyUnit.getEnemyPosition());
-                    return;
-                }
-            }
-
             if(enemyInBase) {
                 setUnitStatus(UnitStatus.DEFEND);
                 return;
-            }
-
-            if(!unit.isStimmed() && unit.isAttacking()) {
-                unit.useTech(TechType.Stim_Packs);
             }
 
             if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {

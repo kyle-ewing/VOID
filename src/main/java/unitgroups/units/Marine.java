@@ -82,10 +82,31 @@ public class Marine extends CombatUnits {
         }
     }
 
+    @Override
+    public void sallyOut() {
+        if(enemyUnit == null) {
+            unit.move(rallyPoint.toPosition());
+            return;
+        }
+
+        if(enemyInBase) {
+            setUnitStatus(UnitStatus.DEFEND);
+            return;
+        }
+
+        if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode
+                && unit.getPosition().getDistance(enemyUnit.getEnemyPosition()) > 48) {
+            unit.move(enemyUnit.getEnemyPosition());
+            return;
+        }
+
+        attackUnit();
+    }
+
     private void attackUnit() {
         kite();
 
-        if(minimnumThreshold() && enemyUnit.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode) {
+        if(minimnumThreshold()) {
             return;
         }
 
@@ -119,18 +140,15 @@ public class Marine extends CombatUnits {
             return;
         }
 
+        if(unitStatus == UnitStatus.SALLYOUT && enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+            return;
+        }
+
         int maxRange = weaponRange();
         double kiteThreshold = maxRange * 0.9;
         Position enemyPosition = enemyUnit.getEnemyPosition();
         Position unitPosition = unit.getPosition();
         double distanceToEnemy = unitPosition.getDistance(enemyPosition);
-
-        if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-            if(distanceToEnemy > 32) {
-                unit.move(enemyPosition);
-            }
-            return;
-        }
 
         if(distanceToEnemy < kiteThreshold) {
             double dx = unitPosition.getX() - enemyPosition.getX();
@@ -147,6 +165,10 @@ public class Marine extends CombatUnits {
     }
 
     private boolean minimnumThreshold() {
+        if(unitStatus == UnitStatus.SALLYOUT) {
+            return false;
+        }
+
         double halfRange = weaponRange() * 0.25;
         Position enemyPosition = enemyUnit.getEnemyPosition();
         Position unitPosition = unit.getPosition();

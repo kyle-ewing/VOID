@@ -28,7 +28,7 @@ public class EnemyInformation {
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
     private int openerDefenseTimer = 0;
-    private static final int OPENER_DEFENSE_TIME = 6480;
+    private static final int OPENER_DEFENSE_TIME = 4320;
 
     public EnemyInformation(BaseInfo baseInfo, Game game, GameState gameState) {
         this.baseInfo = baseInfo;
@@ -231,23 +231,25 @@ public class EnemyInformation {
         if (enemyOpener != null && !enemyOpener.isStrategyDefended()) {
             openerDefenseTimer++;
 
-            //add specific strategy checks later
-            if (openerDefenseTimer >= OPENER_DEFENSE_TIME) {
-                switch(enemyOpener.getStrategyName()) {
-                    case "Dark Templar":
-                        if(!hasType(UnitType.Protoss_Dark_Templar)) {
-                            enemyOpener.setDefendedStrategy(true);
-                            return;
-                        }
-                    default:
-                        if(!gameState.isEnemyInBase()) {
-                            enemyOpener.setDefendedStrategy(true);
-                            return;
-                        }
-                        break;
-                }
-                //Check again in 2 minutes
-                openerDefenseTimer = 1440;
+            switch(enemyOpener.getStrategyName()) {
+                case "Dark Templar":
+                    if(currentTime.greaterThan(new Time(6,0))) {
+                        enemyOpener.setDefendedStrategy(true);
+                        return;
+                    }
+                    break;
+                case "Two Fac Tank":
+                    if(currentTime.greaterThan(new Time(7,0))) {
+                        enemyOpener.setDefendedStrategy(true);
+                        return;
+                    }
+                    break;
+                default:
+                    if(!gameState.isEnemyInBase() && currentTime.greaterThan(new Time(5,0))) {
+                        enemyOpener.setDefendedStrategy(true);
+                        return;
+                    }
+                    break;
             }
         }
     }
@@ -255,13 +257,13 @@ public class EnemyInformation {
     public boolean beingSieged() {
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-                if(baseInfo.isNaturalOwned()) {
-                    if(enemyUnit.getEnemyUnit().getDistance(baseInfo.getNaturalBase().getCenter()) < 700) {
+                if(baseInfo.hasBunkerInNatural()) {
+                    if(enemyUnit.getEnemyUnit().getDistance(gameState.getBunkerPosition().toPosition()) < 450) {
                         return true;
                     }
                 }
                 else {
-                    if(enemyUnit.getEnemyUnit().getDistance(baseInfo.getStartingBase().getCenter()) < 800) {
+                    if(enemyUnit.getEnemyUnit().getDistance(gameState.getBunkerPosition().toPosition()) < 800) {
                         return true;
                     }
                 }
@@ -310,6 +312,7 @@ public class EnemyInformation {
                 enemyOpener = enemyStrategy;
                 gameState.setEnemyOpener(enemyOpener);
                 game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
+                System.out.println("Potential enemy opener detected: " + enemyStrategy.getStrategyName() + " at " + currentTime);
                 break;
             }
         }

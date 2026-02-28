@@ -340,7 +340,13 @@ public class UnitManager {
         }
         bunkerLoad = 0;
         combatUnit.setInBunker(false);
-        combatUnit.setUnitStatus(UnitStatus.ATTACK);
+
+        if(gameState.isBeingSieged()) {
+            combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
+        }
+        else {
+            combatUnit.setUnitStatus(UnitStatus.ATTACK);
+        }
     }
 
     private void bunkerStatus(CombatUnits combatUnit) {
@@ -718,15 +724,15 @@ public class UnitManager {
 
     private void liftBuilding(CombatUnits building) {
         if(gameState.getLiftableBuildings().contains(building.getUnitType())) {
-            if(gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn && building.getUnitType().canProduce()) {
+            if(gameState.getEnemyOpener() != null && !gameState.getEnemyOpener().isStrategyDefended()
+                    && gameState.getEnemyOpener().overrideBuildingLift()
+                    && building.getUnitType().canProduce()) {
                 return;
             }
 
             if(building.getUnitType() == UnitType.Terran_Barracks && combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)) {
                 return;
             }
-
-
 
             //Don't lift if cannot build goliaths and air threats are seen
             if(building.getUnitType() == UnitType.Terran_Barracks
@@ -741,7 +747,9 @@ public class UnitManager {
     }
 
     private void landBuilding(CombatUnits building) {
-        if(gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
+        if(gameState.getEnemyOpener() != null
+                && gameState.getEnemyOpener().overrideBuildingLift()
+                && !gameState.getEnemyOpener().isStrategyDefended()) {
             building.getUnit().land(building.getUnit().getInitialTilePosition());
         }
 
