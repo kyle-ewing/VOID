@@ -625,6 +625,24 @@ public class ProductionManager {
                         }
                     }
 
+                    if(gameState.getEnemyOpener() != null
+                            && !gameState.getEnemyOpener().getUnitResponse().isEmpty()
+                            && !gameState.getEnemyOpener().isStrategyDefended()) {
+                        for(UnitType unitType: gameState.getEnemyOpener().getUnitResponse()) {
+                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
+                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
+                                    if(unitTypeCount.get(unitType) < 6) {
+                                        addToQueue(unitType, PlannedItemType.UNIT, 2);
+                                    }
+                                    else {
+                                        addToQueue(unitType, PlannedItemType.UNIT, 3);
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
                     if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
                         if(isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && productionBuilding.getAddon() != null
                                 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
@@ -981,6 +999,12 @@ public class ProductionManager {
                         }
                     }
                 }
+            }
+        }
+
+        if(!gameState.getEnemyOpener().additionalBuildings().isEmpty()) {
+            for(UnitType building : gameState.getEnemyOpener().additionalBuildings()) {
+                addToQueue(building, PlannedItemType.BUILDING, 1);
             }
         }
 

@@ -127,6 +127,20 @@ public class SiegeTank extends CombatUnits {
 
     }
 
+    public void sallyOut() {
+        if(enemyUnit == null) {
+            return;
+        }
+
+        if(enemyInBase) {
+            super.setUnitStatus(UnitStatus.DEFEND);
+            return;
+        }
+
+        siegeLogic();
+        unit.attack(enemyUnit.getEnemyPosition());
+    }
+
     public void siegeDef() {
         if(siegeTile == null) {
             setSiegeTile();

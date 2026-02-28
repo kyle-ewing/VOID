@@ -144,6 +144,22 @@ public class CombatUnits {
             }
     }
 
+    public void sallyOut() {
+        	if(enemyUnit == null) {
+                unit.move(rallyPoint.toPosition());
+                return;
+            }
+
+            if(enemyInBase) {
+                setUnitStatus(UnitStatus.DEFEND);
+                return;
+            }
+
+            if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+                unit.attack(enemyUnit.getEnemyPosition());
+            }
+    }
+
 
     public void hunting() {
 

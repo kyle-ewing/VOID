@@ -40,6 +40,15 @@ public abstract class EnemyStrategy {
         return upgradeResponse;
     }
 
+    public HashSet<UnitType> getUnitResponse() {
+        return new HashSet<>();
+    }
+
+    //Buildings that are fine to have more than one of
+    public HashSet<UnitType> additionalBuildings() {
+        return new HashSet<>();
+    }
+
     public boolean isStrategyDefended() {
         return defendedStrategy;
     }
@@ -54,5 +63,9 @@ public abstract class EnemyStrategy {
 
     public void setPriorityEnemyUnit(EnemyUnits priorityEnemyUnit) {
         this.priorityEnemyUnit = priorityEnemyUnit;
+    }
+
+    public boolean overrideBuildingLift() {
+        return false;
     }
 }

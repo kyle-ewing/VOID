@@ -188,6 +188,8 @@ public class Painters {
             case AVOID:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Black, true);
                 break;
+            case SALLYOUT:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Cyan, true);
         }
     }
 

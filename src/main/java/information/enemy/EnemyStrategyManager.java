@@ -24,11 +24,12 @@ public class EnemyStrategyManager {
 
     private void addEnemyStrategies() {
         enemyStrategies.add(new FourPool(baseInfo));
-        //enemyStrategies.add(new NinePool(baseInfo));
+//        enemyStrategies.add(new NinePool(baseInfo));
         enemyStrategies.add(new CannonRush(baseInfo));
         enemyStrategies.add(new GasSteal(baseInfo));
-        enemyStrategies.add(new CCFirst(baseInfo));
+//        enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new FourRax(baseInfo));
+        enemyStrategies.add(new TwoFacTank());
         enemyStrategies.add(new SCVRush(baseInfo));
         enemyStrategies.add(new OneBaseMuta(baseInfo));
         enemyStrategies.add(new OneBaseLurker(baseInfo));
