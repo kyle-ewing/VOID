@@ -65,11 +65,17 @@ public class WorkerManager {
                 if(worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
                     //Stop worker defense after the early game
                     if(baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened()) {
-                        createDefenseForce(7);
+                        if(workers.size() > 12) {
+                            createDefenseForce(6);
+                        }
+                        else {
+                            createDefenseForce(4);
+                        }
+
                     }
                 }
 
-                //temp, clean up later
+                //TODO: move to enemystratresponse
                 if(gameState.getEnemyOpener() != null
                         && gameState.getEnemyOpener().getStrategyName().equals("Gas Steal")
                         && gameState.isEnemyInBase()) {
@@ -122,7 +128,9 @@ public class WorkerManager {
                         worker.selfDefense();
                     }
 
-                    if((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()) {
+                    if((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()
+                            || (!baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())
+                            && !baseInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition()))) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         worker.setAttackClock(0);
                         worker.setAssignedToBase(false);
@@ -357,6 +365,11 @@ public class WorkerManager {
                         && baseInfo.getBaseTiles().contains(unit.getEnemyPosition().toTilePosition()))) {
                     createDefenseForce(3);
                 }
+            case "SCV Rush":
+                if(gameState.isEnemyInBase()) {
+                    createDefenseForce(3);
+                }
+                break;
         }
     }
 
@@ -576,6 +589,12 @@ public class WorkerManager {
     }
 
     private boolean gasImbalance() {
+        if(gameState.getEnemyOpener() != null) {
+            if(gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase() && workers.size() < 13 ) {
+                return true;
+            }
+        }
+
         return workers.size() <= 10 && gameState.getResourceTracking().getAvailableGas() > 300 && gameState.getResourceTracking().getAvailableMinerals() < 300;
     }
 

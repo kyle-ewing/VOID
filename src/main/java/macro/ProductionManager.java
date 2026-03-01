@@ -254,9 +254,10 @@ public class ProductionManager {
                         worker.buildReset(pi, gameState.getResourceTracking());
                     }
 
-                    if(worker.getWorkerStatus() == WorkerStatus.STUCK) {
+                    if(worker.getWorkerStatus() == WorkerStatus.STUCK || worker.getWorkerStatus() == WorkerStatus.REPAIRING || worker.getWorkerStatus() == WorkerStatus.DEFEND) {
                         gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                        pi.setAssignedBuilder(null);
                     }
 
                     if(!worker.getUnit().exists()) {
@@ -612,14 +613,10 @@ public class ProductionManager {
                     if(!gameState.getTechUnitResponse().isEmpty()) {
                         for(UnitType unitType: gameState.getTechUnitResponse()) {
                             if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
-                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
+                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType) && unitTypeCount.get(unitType) < 8) {
                                     if(unitTypeCount.get(unitType) < 6) {
                                         addToQueue(unitType, PlannedItemType.UNIT, 2);
                                     }
-                                     else {
-                                        addToQueue(unitType, PlannedItemType.UNIT, 3);
-                                    }
-
                                 }
                             }
                         }
@@ -1006,6 +1003,10 @@ public class ProductionManager {
             for(UnitType building : gameState.getEnemyOpener().additionalBuildings()) {
                 addToQueue(building, PlannedItemType.BUILDING, 1);
             }
+        }
+
+        if(!gameState.getEnemyOpener().getUnitResponse().isEmpty()) {
+            productionQueue.removeIf(pi -> gameState.getEnemyOpener().getUnitResponse().contains(pi.getUnitType()));
         }
 
         for(UpgradeType upgrade : gameState.getEnemyOpener().getUpgradeResponse()) {
