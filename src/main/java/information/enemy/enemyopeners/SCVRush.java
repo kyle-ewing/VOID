@@ -17,6 +17,8 @@ public class SCVRush extends EnemyStrategy {
     public SCVRush(BaseInfo baseInfo) {
         super("SCV Rush");
         this.baseInfo = baseInfo;
+
+        buildingResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
@@ -45,9 +47,17 @@ public class SCVRush extends EnemyStrategy {
     }
 
     public void buildingResponse() {
+        getBuildingResponse().add(UnitType.Terran_Bunker);
     }
 
     public void upgradeResponse() {
+    }
+
+    @Override
+    public HashSet<UnitType> getUnitResponse() {
+        HashSet<UnitType> response = new HashSet<>();
+        response.add(UnitType.Terran_Marine);
+        return response;
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
@@ -56,5 +66,10 @@ public class SCVRush extends EnemyStrategy {
 
     public HashSet<UnitType> removeBuildings() {
         return new HashSet<>();
+    }
+
+    @Override
+    public boolean overrideBuildingLift() {
+        return true;
     }
 }

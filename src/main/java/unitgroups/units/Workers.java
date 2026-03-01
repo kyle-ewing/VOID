@@ -33,7 +33,7 @@ public class Workers extends CombatUnits {
     }
 
     public void selfDefense() {
-        if (enemyUnit == null) {
+        if (enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
             return;
         }
 
