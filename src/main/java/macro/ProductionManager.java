@@ -17,6 +17,7 @@ import util.ClosestUnit;
 import util.Time;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ProductionManager {
     private Game game;
@@ -190,6 +191,7 @@ public class ProductionManager {
 
                             //Skip over if out of tiles
                             if(pi.getBuildPosition() == null) {
+                                hasHighPriorityBuilding = false;
                                 continue;
                             }
                         }
@@ -384,6 +386,10 @@ public class ProductionManager {
 
     private void addToQueue(UnitType unitType, PlannedItemType plannedItemType, int priority) {
         productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, plannedItemType, priority));
+    }
+
+    private void addToQueue(UnitType unitType, int supply, PlannedItemType plannedItemType, int priority) {
+        productionQueue.add(new PlannedItem(unitType, supply, PlannedItemStatus.NOT_STARTED, plannedItemType, priority));
     }
 
     private void addToQueue(UnitType unitType, PlannedItemType plannedItemType,  TilePosition buildPosition, int priority) {
@@ -629,7 +635,7 @@ public class ProductionManager {
                             if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
                                 if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
                                     if(unitTypeCount.get(unitType) < 6) {
-                                        addToQueue(unitType, PlannedItemType.UNIT, 2);
+                                        addToQueue(unitType, PlannedItemType.UNIT, 1);
                                     }
                                     else {
                                         addToQueue(unitType, PlannedItemType.UNIT, 3);
@@ -953,7 +959,16 @@ public class ProductionManager {
         }
 
         productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
-        productionQueue.removeIf(pi -> pi.getUnitType() != null && gameState.getEnemyOpener().removeBuildings().contains(pi.getUnitType()));
+
+        for(UnitType buildingType : gameState.getEnemyOpener().removeBuildings()) {
+            List<PlannedItem> queueSnapshot = new ArrayList<>(productionQueue);
+            Optional<PlannedItem> toRemove = queueSnapshot.stream()
+                    .filter(pi -> pi.getUnitType() == buildingType
+                            && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)
+                    .max(Comparator.comparingInt(PlannedItem::getSupply));
+
+            toRemove.ifPresent(productionQueue::remove);
+        }
 
         for(UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             boolean alreadyInProgress = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == building && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED);
@@ -1001,7 +1016,13 @@ public class ProductionManager {
 
         if(!gameState.getEnemyOpener().additionalBuildings().isEmpty()) {
             for(UnitType building : gameState.getEnemyOpener().additionalBuildings()) {
-                addToQueue(building, PlannedItemType.BUILDING, 1);
+                if(building.canProduce()) {
+                    addToQueue(building, PlannedItemType.BUILDING, 1);
+                }
+                else {
+                    addToQueue(building, 20, PlannedItemType.BUILDING, 2);
+                }
+
             }
         }
 
@@ -1439,8 +1460,9 @@ public class ProductionManager {
         addUnitTypeCount(unit);
 
         if(unit.getType() == UnitType.Terran_Command_Center
-                && !(baseInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10)
-                && !(baseInfo.getStartingBase().getLocation().getDistance(unit.getTilePosition()) < 10)) {
+                && productionQueue.stream()
+                .noneMatch(pi -> pi.getUnitType() == UnitType.Terran_Refinery
+                        && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)) {
             addToQueue(UnitType.Terran_Refinery, PlannedItemType.BUILDING, 3);
         }
 
