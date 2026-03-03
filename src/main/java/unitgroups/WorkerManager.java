@@ -590,7 +590,8 @@ public class WorkerManager {
 
     private boolean gasImbalance() {
         if(gameState.getEnemyOpener() != null) {
-            if(gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase() && workers.size() < 13 ) {
+            if(gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase() && workers.size() < 13
+                    && gameState.getResourceTracking().getAvailableMinerals() > 300) {
                 return true;
             }
         }

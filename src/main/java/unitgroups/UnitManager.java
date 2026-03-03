@@ -360,6 +360,15 @@ public class UnitManager {
             return;
         }
 
+        //temp to allow early marines to clean up inside the base
+        if(gameState.getEnemyOpener() != null) {
+            if(gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase()) {
+                if(bunkerLoad >= 1) {;
+                    return;
+                }
+            }
+        }
+
         if(bunkerLoad >= 4 ) {
             return;
         }

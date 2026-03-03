@@ -47,7 +47,10 @@ public class SCVRush extends EnemyStrategy {
     }
 
     public void buildingResponse() {
+        getBuildingResponse().add(UnitType.Terran_Barracks);
         getBuildingResponse().add(UnitType.Terran_Bunker);
+        getBuildingResponse().add(UnitType.Terran_Vulture);
+        getBuildingResponse().add(UnitType.Terran_Vulture);
     }
 
     public void upgradeResponse() {
@@ -61,11 +64,26 @@ public class SCVRush extends EnemyStrategy {
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
-        return new HashMap<>();
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+        moveOutCondition.put(UnitType.Terran_Goliath, 2);
+        return moveOutCondition;
     }
 
     public HashSet<UnitType> removeBuildings() {
-        return new HashSet<>();
+        HashSet<UnitType> removeBuildings = new HashSet<>();
+        removeBuildings.add(UnitType.Terran_Command_Center);
+        removeBuildings.add(UnitType.Terran_Refinery);
+        removeBuildings.add(UnitType.Terran_Factory);
+        removeBuildings.add(UnitType.Terran_Engineering_Bay);
+        return removeBuildings;
+    }
+
+    //Avoids supply block since CC is being removed
+    @Override
+    public HashSet<UnitType> additionalBuildings() {
+        HashSet<UnitType> additionalBuildings = new HashSet<>();
+        additionalBuildings.add(UnitType.Terran_Supply_Depot);
+        return additionalBuildings;
     }
 
     @Override
