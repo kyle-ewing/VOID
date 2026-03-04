@@ -14,10 +14,8 @@ import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 import util.ClosestUnit;
-import util.Time;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ProductionManager {
     private Game game;
@@ -32,6 +30,7 @@ public class ProductionManager {
     private HashSet<TilePosition> reservedTurretPositions = new HashSet<>();
     private PriorityQueue<PlannedItem> productionQueue;
     private BuildOrder startingOpener;
+    private UnitProduction unitProduction;
     private TilePosition bunkerPosition = null;
     private boolean openerResponse = false;
     private boolean priorityStop = false;
@@ -53,6 +52,7 @@ public class ProductionManager {
         bunkerPosition = gameState.getBunkerPosition();
 
         tilePositionValidator = new TilePositionValidator(game);
+        unitProduction = new UnitProduction(gameState, game);
 
         initialize();
     }
@@ -423,253 +423,6 @@ public class ProductionManager {
             }
         }
         return false;
-    }
-
-
-    private void addUnitProduction() {
-        switch(startingOpener.getBuildOrderName()) {
-            case EIGHTRAX:
-                for(Unit productionBuilding : productionBuildings) {
-                    if(productionBuilding.getType() == UnitType.Terran_Barracks && !productionBuilding.isTraining() && gameState.getResourceTracking().getAvailableMinerals() >= 50) {
-                        productionBuilding.train(UnitType.Terran_Marine);
-                    }
-                }
-                break;
-            case TWORAXACADEMY:
-                for(Unit productionBuilding : productionBuildings) {
-                    if(!gameState.getTechUnitResponse().isEmpty()) {
-                        for(UnitType unitType: gameState.getTechUnitResponse()) {
-                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
-                                if(isRecruitable(UnitType.Terran_Science_Vessel, 1) && !hasUnitInQueue(unitType)) {
-                                    if(unitType == UnitType.Terran_Science_Vessel) {
-                                        if(unitTypeCount.get(unitType) < 1) {
-                                            addToQueue(unitType, PlannedItemType.UNIT, 1);
-                                        }
-                                        else if(unitTypeCount.get(unitType) < 5) {
-                                            addToQueue(unitType, PlannedItemType.UNIT, 2);
-                                        }
-                                    }
-                                    else {
-                                        addToQueue(unitType, PlannedItemType.UNIT, 2);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
-                        if(productionBuilding.canTrain(UnitType.Terran_Medic) && isRecruitable(UnitType.Terran_Medic)
-                                && unitTypeCount.get(UnitType.Terran_Medic) < 4 && !hasUnitInQueue(UnitType.Terran_Medic)
-                                && unitTypeCount.get(UnitType.Terran_Marine) > 8) {
-                                addToQueue(UnitType.Terran_Medic, PlannedItemType.UNIT,2);
-                        }
-                        else if(isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
-
-                            //temp fix
-                            if(gameState.getEnemyOpener() != null) {
-                                if(gameState.getEnemyOpener().getStrategyName().equals("Gas Steal")) {
-                                    addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,2);
-                                }
-                                else {
-                                    addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
-                                }
-                            }
-                            else {
-                                addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT,3);
-                            }
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        int tankCount = unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
-                        if(isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && tankCount < 7 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
-                            if(gameState.hasTransitioned()) {
-                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 3);
-                            }
-                            //TODO: remove this when techunits takes in more than one resonse unit
-                            else if(gameState.getTechUnitResponse().contains(UnitType.Zerg_Lurker)) {
-                                if(tankCount < 2) {
-                                    addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 1);
-                                }
-                                else {
-                                    addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                                }
-                            }
-                            //TODO: extract to own class
-                            else if(gameState.getEnemyOpener() != null) {
-                                switch(gameState.getEnemyOpener().getStrategyName()) {
-                                    case "One Hatch Lurker":
-                                        if(tankCount < 2) {
-                                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 1);
-                                            }
-                                            else {
-                                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                                        }
-                                        break;
-                                    case "Two Hatch Lurker":
-                                        if(tankCount < 2) {
-                                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 1);
-                                        }
-                                        else {
-                                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                                        }
-                                        break;
-                                    case "One Base Muta":
-                                        addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 4);
-                                        break;
-                                    default:
-                                        addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                                }
-                            }
-                            else {
-                                addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                            }
-                        }
-                    }
-
-
-
-                }
-                //TODO: remove when transitions are added
-                if(gameState.getResourceTracking().getAvailableMinerals() > 500 && !buildTiles.getLargeBuildTiles().isEmpty() && unitTypeCount.get(UnitType.Terran_Barracks) < 6 && !hasUnitInQueue(UnitType.Terran_Barracks)) {
-                    addToQueue(UnitType.Terran_Barracks, PlannedItemType.BUILDING, 3);
-                }
-                break;
-            case ONERAXFE:
-                for(Unit productionBuilding : productionBuildings) {
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks)) {
-                        if (isRecruitable(UnitType.Terran_Marine)) {
-                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT, 3);
-                        }
-                    }
-                }
-                break;
-            case TWOFAC:
-                for(Unit productionBuilding : productionBuildings) {
-                    if(!gameState.getTechUnitResponse().isEmpty()) {
-                        for(UnitType unitType: gameState.getTechUnitResponse()) {
-                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
-                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
-                                    addToQueue(unitType, PlannedItemType.UNIT, 2);
-                                }
-                            }
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks) && unitTypeCount.get(UnitType.Terran_Factory) < 1) {
-                        if (isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
-                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT, 3);
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) < 4 && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
-                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                        }
-                        else if(isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
-                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 3);
-
-                        }
-                    }
-
-                    if(gameState.getResourceTracking().getAvailableMinerals() > 500 && unitTypeCount.get(UnitType.Terran_Factory) < 4 && !hasUnitInQueue(UnitType.Terran_Factory)) {
-                        addProductionBuilding(UnitType.Terran_Factory, 3);
-                    }
-                }
-                break;
-            case ONEFACFE:
-                for(Unit productionBuilding : productionBuildings) {
-                    if(!gameState.getTechUnitResponse().isEmpty()) {
-                        for(UnitType unitType: gameState.getTechUnitResponse()) {
-                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
-                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
-                                    addToQueue(unitType, PlannedItemType.UNIT, 2);
-                                }
-                            }
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Barracks) && unitTypeCount.get(UnitType.Terran_Factory) < 1) {
-                        if (isRecruitable(UnitType.Terran_Marine) && !hasUnitInQueue(UnitType.Terran_Marine)) {
-                            addToQueue(UnitType.Terran_Marine, PlannedItemType.UNIT, 3);
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        if(isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && productionBuilding.getAddon() != null
-                                && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
-                                && (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) < 4
-                                || (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) >= 2
-                                && unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath) >= 7))) {
-                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                        }
-                        else if(isRecruitable(UnitType.Terran_Vulture) && !hasUnitInQueue(UnitType.Terran_Vulture)) {
-                            addToQueue(UnitType.Terran_Vulture, PlannedItemType.UNIT, 3);
-
-                        }
-                    }
-
-                    if(gameState.getResourceTracking().getAvailableMinerals() > 500 && unitTypeCount.get(UnitType.Terran_Factory) < 5 && !hasUnitInQueue(UnitType.Terran_Factory)) {
-                        addProductionBuilding(UnitType.Terran_Factory, 3);
-                    }
-                }
-                break;
-            case GOLIATHFE:
-                for(Unit productionBuilding : productionBuildings) {
-                    if(!gameState.getTechUnitResponse().isEmpty()) {
-                        for(UnitType unitType: gameState.getTechUnitResponse()) {
-                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
-                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType) && unitTypeCount.get(unitType) < 8) {
-                                    if(unitTypeCount.get(unitType) < 6) {
-                                        addToQueue(unitType, PlannedItemType.UNIT, 2);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if(gameState.getEnemyOpener() != null
-                            && !gameState.getEnemyOpener().getUnitResponse().isEmpty()
-                            && !gameState.getEnemyOpener().isStrategyDefended()) {
-                        for(UnitType unitType: gameState.getEnemyOpener().getUnitResponse()) {
-                            if(isCurrentlyTraining(productionBuilding, unitType.whatBuilds().getKey())) {
-                                if(isRecruitable(unitType) && !hasUnitInQueue(unitType)) {
-                                    if(unitTypeCount.get(unitType) < 6) {
-                                        addToQueue(unitType, PlannedItemType.UNIT, 1);
-                                    }
-                                    else {
-                                        addToQueue(unitType, PlannedItemType.UNIT, 3);
-                                    }
-
-                                }
-                            }
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Factory)) {
-                        if(isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode) && productionBuilding.getAddon() != null
-                                && !hasUnitInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
-                                && (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) < 4
-                                || (unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) >= 2
-                                && unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath) >= 7))) {
-                            addToQueue(UnitType.Terran_Siege_Tank_Tank_Mode, PlannedItemType.UNIT, 2);
-                        }
-                        else if(isRecruitable(UnitType.Terran_Goliath) && !hasUnitInQueue(UnitType.Terran_Goliath)) {
-                            addToQueue(UnitType.Terran_Goliath, PlannedItemType.UNIT, 3);
-
-                        }
-                    }
-
-                    if(isCurrentlyTraining(productionBuilding, UnitType.Terran_Starport)) {
-                        if(isRecruitable(UnitType.Terran_Battlecruiser) && productionBuilding.getAddon() != null
-                                && !hasUnitInQueue(UnitType.Terran_Battlecruiser)
-                                && (unitTypeCount.get(UnitType.Terran_Battlecruiser) < 5)) {
-                            addToQueue(UnitType.Terran_Battlecruiser, PlannedItemType.UNIT, 2);
-                        }
-                    }
-                }
-                break;
-        }
     }
 
     //Unplanned depot additions to the queue
@@ -1193,39 +946,6 @@ public class ProductionManager {
         }
     }
 
-    //rename this to something less confusing (its checking for the opposite)
-    private boolean isCurrentlyTraining(Unit unit, UnitType unitType) {
-        return unit.getType() == unitType && !unit.isTraining();
-    }
-
-    //TODO: replace sections of buildprodduction with this
-    private boolean isRecruitable(UnitType unitType) {
-        int usedSupply = game.self().supplyUsed() / 2;
-        int totalSupply = game.self().supplyTotal() / 2;
-        int freeSupply = totalSupply - usedSupply;
-
-        if(gameState.getResourceTracking().getAvailableMinerals() >= unitType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isRecruitable(UnitType unitType, int priority) {
-        int usedSupply = game.self().supplyUsed() / 2;
-        int totalSupply = game.self().supplyTotal() / 2;
-        int freeSupply = totalSupply - usedSupply;
-
-        if(gameState.getResourceTracking().getAvailableMinerals() >= unitType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= unitType.gasPrice() && freeSupply >= unitType.supplyRequired() / 2) {
-            return true;
-        }
-
-        if(priority == 1 && freeSupply >= unitType.supplyRequired() / 2 && gameState.getResourceTracking().getAvailableGas() <= unitType.gasPrice()) {
-            return true;
-        }
-
-        return false;
-    }
-
     private boolean isUpgrading(UpgradeType upgradeType) {
         for(Unit researchBuilding : allBuildings) {
             if(researchBuilding.getAddon() != null && researchBuilding.getAddon().getUpgrade() == upgradeType) {
@@ -1417,19 +1137,16 @@ public class ProductionManager {
         return unitTypeCount.get(unitType) > 0;
     }
 
-    private boolean hasUnitInQueue(UnitType unitType) {
-        return productionQueue.stream().anyMatch(pi -> pi.getUnitType() == unitType && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
-    }
-
     private boolean hasPositionInQueue(TilePosition tilePosition) {
         return productionQueue.stream().anyMatch(pi -> pi.getBuildPosition() != null && pi.getBuildPosition().equals(tilePosition) && pi.getPlannedItemStatus() != PlannedItemStatus.COMPLETE);
     }
 
     public void onFrame() {
         scvProduction();
+        unitProduction.onFrame();
         production();
         addSupplyDepot();
-        addUnitProduction();
+
         addExpansion();
 
         if(gameState.getEnemyOpener() != null && !openerResponse) {
