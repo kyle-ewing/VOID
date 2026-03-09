@@ -14,6 +14,7 @@ import unitgroups.units.Workers;
 import util.ClosestUnit;
 import util.Time;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -635,7 +636,7 @@ public class WorkerManager {
         }
 
         if(unit.getType() == UnitType.Terran_Refinery) {
-            for(Workers worker : refinerySaturation.get(unit)) {
+            for(Workers worker : refinerySaturation.getOrDefault(unit, new HashSet<>())) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
             }
             refinerySaturation.remove(unit);
