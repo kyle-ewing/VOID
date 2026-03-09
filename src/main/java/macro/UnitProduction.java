@@ -160,6 +160,9 @@ public class UnitProduction {
 
     private List<PlannedItem> getMechUnits() {
         List<PlannedItem> items = new ArrayList<>();
+        int tankCount = unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
+        int mechCount = unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath);
+        boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 4;
         int factoryCap = buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC ? 4 : 5;
 
         for (Unit building : productionBuildings) {
@@ -167,6 +170,11 @@ public class UnitProduction {
                 if (canBuild(building, unitType.whatBuilds().getKey())
                         && isRecruitable(unitType)
                         && !hasInQueue(unitType)) {
+
+                    if (unitType == UnitType.Terran_Goliath && ratioOverMaximum) {
+                        continue;
+                    }
+
                     items.add(plannedUnit(unitType, 2));
                 }
             }
@@ -184,10 +192,6 @@ public class UnitProduction {
             }
 
             if (canBuild(building, UnitType.Terran_Factory)) {
-                int tankCount = unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
-                int mechCount = unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath);
-                boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 4;
-
                 // 2.5 : 1 gol/vulture : tank ratio minimum, or 4:1 cap exceeded
                 if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && building.getAddon() != null

@@ -33,7 +33,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new SCVRush(baseInfo));
         enemyStrategies.add(new OneBaseMuta(baseInfo));
         enemyStrategies.add(new OneBaseLurker(baseInfo));
-        enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
+        // enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
         enemyStrategies.add(new TwoBaseLurker(baseInfo));
         enemyStrategies.add(new DTRush());
     }
@@ -46,6 +46,7 @@ public class EnemyStrategyManager {
         enemyTechUnits.add(new Lurker());
         enemyTechUnits.add(new Wraith());
         enemyTechUnits.add(new BattleCruiser());
+        enemyTechUnits.add(new SiegeTank());
         enemyTechUnits.add(new Mutalisk());
         enemyTechUnits.add(new Guardian());
         enemyTechUnits.add(new Queen());

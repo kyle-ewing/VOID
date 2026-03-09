@@ -105,7 +105,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitDiscover(Unit unit) {
-        if(unit.getPlayer() == game.self() || unit.getPlayer() == game.neutral()) {
+        if(unit.getPlayer() == game.self()) {
             return;
         }
 

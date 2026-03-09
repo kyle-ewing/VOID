@@ -84,7 +84,7 @@ public class GoliathFE extends BuildOrder {
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 3);
         }
         else {
-            moveOutCondition.put(UnitType.Terran_Goliath, 10);
+            moveOutCondition.put(UnitType.Terran_Goliath, 8);
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
         }
 
