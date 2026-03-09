@@ -290,6 +290,10 @@ public class EnemyInformation {
                 enemyUnit.setBurrowed(enemyUnit.getEnemyUnit().isBurrowed());
             }
 
+            if(enemyUnit.getEnemyType() == UnitType.Spell_Scanner_Sweep) {
+                enemyUnit.setSweepTimer();
+            }
+
             //Remove irradiated units that die out of view
             if(enemyUnit.getEnemyUnit().isIrradiated()) {
                 enemyUnit.setIrradiateTimer();
@@ -300,7 +304,7 @@ public class EnemyInformation {
                 && eu.getEnemyPosition() == null
                  && !eu.getEnemyUnit().canLift());
 
-        enemyUnits.removeIf(eu -> eu.getIrradiateTimer() > 240);
+        enemyUnits.removeIf(eu -> eu.getIrradiateTimer() > 240 || eu.getSweepTimer() > 224);
         validThreats.removeIf(eu -> eu.getIrradiateTimer() > 240);
 
         if(enemyOpener != null) {
@@ -318,6 +322,10 @@ public class EnemyInformation {
     }
 
     public void onUnitDiscover(Unit unit) {
+        if (unit.getPlayer() == game.neutral() && unit.getType() != UnitType.Spell_Scanner_Sweep) {
+            return;
+        }
+
         if(!previouslyDiscovered(unit)) {
             addEnemyUnit(unit);
 

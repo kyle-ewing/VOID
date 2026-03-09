@@ -8,6 +8,7 @@ import bwapi.UnitType;
 public class EnemyUnits {
     private int enemyID;
     private int irradiateTimer = 0;
+    private int sweepTimer = 0;
     private Unit enemyUnit;
     private UnitType enemyType;
     private Position enemyPosition;
@@ -69,4 +70,14 @@ public class EnemyUnits {
     public void setIrradiateTimer() {
         this.irradiateTimer = irradiateTimer + 1;
     }
+
+    public int getSweepTimer() {
+        return sweepTimer;
+    }
+
+    public void setSweepTimer() {
+        this.sweepTimer = sweepTimer + 1;
+    }
+
+    
 }
