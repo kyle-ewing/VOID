@@ -600,7 +600,6 @@ public class WorkerManager {
         return workers.size() <= 10 && gameState.getResourceTracking().getAvailableGas() > 300 && gameState.getResourceTracking().getAvailableMinerals() < 300;
     }
 
-    //TODO: turn into a switch
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_SCV && workers.stream().noneMatch(w -> w.getUnit() == unit)) {
             workers.add(new Workers(game, unit));
@@ -612,14 +611,17 @@ public class WorkerManager {
             return;
         }
 
-        if(unit.getType() == UnitType.Terran_Command_Center) {
-            for(Base base : baseInfo.getOwnedBases()) {
-                if(unit.getPosition().getApproxDistance(base.getCenter()) < 100) {
-                    mineralSaturation.put(base, new HashSet<>());
-                }
+    }
+
+    public void onUnitCreate(Unit unit) {
+        if(unit.getType() != UnitType.Terran_Command_Center) {
+            return;
+        }
+        for(Base base : baseInfo.getOwnedBases()) {
+            if(unit.getPosition().getApproxDistance(base.getCenter()) < 100) {
+                mineralSaturation.put(base, new HashSet<>());
             }
         }
-
     }
 
     public void onUnitDestroy(Unit unit) {

@@ -65,6 +65,7 @@ public class Bot extends DefaultBWListener {
         }
         baseInfo.onUnitCreate(unit);
         productionManager.onUnitCreate(unit);
+        workerManager.onUnitCreate(unit);
     }
 
     @Override
