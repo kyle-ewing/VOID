@@ -664,19 +664,25 @@ public class ProductionManager {
     }
 
     private void setCommandCenterPosition(PlannedItem pi) {
-        for(Base base : baseInfo.getOrderedExpansions()) {
-            if(!tilePositionValidator.isBuildable(base.getLocation(), UnitType.Terran_Command_Center)) {
-                continue;
+        if (!baseInfo.getOrderedExpansions().isEmpty() && baseInfo.getOrderedExpansions().get(0) == baseInfo.getNaturalBase()) {
+            Base natural = baseInfo.getNaturalBase();
+
+            if (!tilePositionValidator.isBuildable(natural.getLocation(), UnitType.Terran_Command_Center)) {
+                return;
             }
-
-
-            TilePosition tilePosition = base.getLocation();
-
-            pi.setBuildPosition(tilePosition);
-            baseInfo.getOrderedExpansions().removeIf(base1 -> base1.getLocation() == tilePosition);
-            break;
+            pi.setBuildPosition(natural.getLocation());
+            baseInfo.getOrderedExpansions().remove(natural);
+            return;
         }
 
+        Base best = baseInfo.scoredBestExpansion(startingOpener.buildType(), gameState.getKnownEnemyUnits());
+        if (best == null) {
+            return;
+        }
+        if (!tilePositionValidator.isBuildable(best.getLocation(), UnitType.Terran_Command_Center)) {
+            return;
+        }
+        pi.setBuildPosition(best.getLocation());
     }
 
     private TilePosition setBunkerPosition() {

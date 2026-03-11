@@ -2,6 +2,8 @@ package information;
 
 import bwapi.*;
 import bwem.*;
+import information.enemy.EnemyUnits;
+import macro.buildorders.BuildType;
 import map.PathFinding;
 import map.AllBasePaths;
 
@@ -43,7 +45,6 @@ public class BaseInfo {
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
-    //TODO: save paths so operation only needs to be calculated once
     public BaseInfo(BWEM bwem, Game game) {
         this.bwem = bwem;
         this.game = game;
@@ -554,6 +555,64 @@ public class BaseInfo {
         }
     }
 
+    public Base scoredBestExpansion(BuildType buildType, HashSet<EnemyUnits> knownEnemyUnits) {
+        Base bestBase = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+
+        for (Base base : mapBases) {
+            if (base == startingBase || base == naturalBase) {
+                continue;
+            }
+
+            if (ownedBases.contains(base)) {
+                continue;
+            }
+
+            List<Position> path = allPathsMap.get(base);
+            if (path == null || path.isEmpty()) {
+                continue;
+            }
+
+            boolean enemyOwned = false;
+            for (EnemyUnits enemyUnit : knownEnemyUnits) {
+                if (enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyPosition().getDistance(base.getLocation().toPosition()) < 200) {
+                    enemyOwned = true;
+                    break;
+                }
+            }
+
+            if (enemyOwned) {
+                continue;
+            }
+
+            double distFromMain = base.getCenter().getDistance(startingBase.getCenter());
+
+            
+            double distFromEnemy = 0.0;
+
+            if (ownedBases.contains(naturalBase)) {
+                distFromMain = base.getCenter().getDistance(naturalBase.getCenter());
+            }
+
+            if (enemyMain != null) {
+                distFromEnemy = base.getCenter().getDistance(enemyMain.getCenter());
+            }
+
+            double score = distFromEnemy - distFromMain;
+
+            if (buildType == BuildType.MECH && base.getGeysers().isEmpty()) {
+                score -= 5000;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestBase = base;
+            }
+        }
+
+        return bestBase;
+    }
+
     public HashSet<Base> getStartingBases() {
         return startingBases;
     }
@@ -663,6 +722,13 @@ public class BaseInfo {
             return;
         }
 
+        for (Base base : mapBases) {
+            if (unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
+                ownedBases.add(base);
+                break;
+            }
+        }
+
         if(unit.getDistance(naturalBase.getCenter()) < 100) {
             baseTiles.addAll(naturalTiles);
             naturalOwned = true;
@@ -670,12 +736,7 @@ public class BaseInfo {
     }
 
     public void onUnitComplete(Unit unit) {
-        for(Base base : mapBases) {
-            if(unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
-                ownedBases.add(base);
-                break;
-            }
-        }
+
     }
 
     public void onUnitDestroy(Unit unit) {
