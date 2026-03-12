@@ -243,11 +243,20 @@ public class ProductionManager {
                     worker = pi.getAssignedBuilder();
                     if(worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                         if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
-                            worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
+                            if(pi.getUnitType() == UnitType.Terran_Command_Center
+                                    && worker.getIdleClock() > 24) {
+                                gameState.scanPosition(pi.getBuildPosition().toPosition());
+                                worker.setWorkerStatus(WorkerStatus.CLEARINGMINE);
+                                worker.setIdleClock(0);
+                            }
+                            else {
+                                worker.getUnit().build(pi.getUnitType(), pi.getBuildPosition());
+                            }
                         }
 
                         //TODO: ignore if building CC (or other long distance builds)
-                        if(worker.getBuildFrameCount() > 420) {
+                        if(worker.getBuildFrameCount() > 420 && mapInfo.getStartingBase().getCenter().getDistance(pi.getBuildPosition().toPosition()) < 1000
+                                && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }
                     }
@@ -464,10 +473,19 @@ public class ProductionManager {
     }
 
     private void addExpansion() {
-        if(gameState.getCanExpand()) {
-            addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 4);
-            gameState.setCanExpand(false);
+        if(!gameState.getCanExpand()) {
+            return;
         }
+
+        boolean ccAlreadyQueued = productionQueue.stream()
+                .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Command_Center
+                        && pi.getPlannedItemStatus() != PlannedItemStatus.COMPLETE);
+
+        if(!ccAlreadyQueued) {
+            addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 4);
+        }
+
+        gameState.setCanExpand(false);
     }
 
     private void addCCTurret(Unit unit) {

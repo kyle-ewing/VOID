@@ -204,6 +204,21 @@ public class GameState {
         }
     }
 
+    public void scanPosition(Position pos) {
+        CombatUnits scanner = combatUnits.stream()
+                .filter(cu -> cu.getUnitType() == UnitType.Terran_Comsat_Station
+                        && cu.getUnit().isCompleted()
+                        && cu.getUnit().getEnergy() >= 50)
+                .findFirst()
+                .orElse(null);
+
+        if (scanner == null) {
+            return;
+        }
+
+        scanner.getUnit().useTech(TechType.Scanner_Sweep, pos);
+    }
+
     private boolean shouldTransition() {
         return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0 && pi.getPlannedItemType() == PlannedItemType.BUILDING);
     }

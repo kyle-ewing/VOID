@@ -179,6 +179,33 @@ public class WorkerManager {
                 case MOVING_TO_BUILD:
                     worker.pulseCheck();
                     break;
+                case CLEARINGMINE:
+                    Position buildPos = worker.getBuildingPosition();
+
+                    if (buildPos == null) {
+                        worker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
+                        break;
+                    }
+
+                    Unit mineTarget = null;
+                    for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                        if (!enemyUnit.getEnemyUnit().exists() || !enemyUnit.getEnemyUnit().isDetected()) {
+                            continue;
+                        }
+
+                        if (enemyUnit.getEnemyUnit().getPosition().getDistance(buildPos) < 160) {
+                            mineTarget = enemyUnit.getEnemyUnit();
+                            break;
+                        }
+                    }
+
+                    if (mineTarget != null) {
+                        worker.getUnit().attack(mineTarget);
+                    }
+                    else {
+                        worker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
+                    }
+                    break;
                 default:
                     //do nothing
             }
