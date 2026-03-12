@@ -1,7 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class GasSteal extends EnemyStrategy{
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public GasSteal(BaseInfo baseInfo) {
+    public GasSteal(MapInfo mapInfo) {
         super("Gas Steal");
 
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
@@ -29,7 +29,7 @@ public class GasSteal extends EnemyStrategy{
             }
 
             if(enemyUnit.getEnemyType().isRefinery()) {
-                if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
+                if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
                     priorityEnemyUnit = enemyUnit;
                     return true;
                 }

@@ -11,7 +11,7 @@ import util.Time;
 public class Scouting {
     private Game game;
     private GameState gameState;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private Player player;
 
     private Workers scout;
@@ -25,9 +25,9 @@ public class Scouting {
 
     private Time time;
 
-    public Scouting(Game game, BaseInfo baseInfo, GameState gameState) {
+    public Scouting(Game game, MapInfo mapInfo, GameState gameState) {
         this.game = game;
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
         this.gameState = gameState;
         this.player = game.self();
 
@@ -44,12 +44,12 @@ public class Scouting {
             selectScout();
         }
 
-        for(Base startingBase : baseInfo.getStartingBases()) {
-            if(startingBase == baseInfo.getStartingBase()) {
+        for(Base startingBase : mapInfo.getStartingBases()) {
+            if(startingBase == mapInfo.getStartingBase()) {
                 continue;
             }
 
-            if(!baseInfo.isExplored(startingBase)) {
+            if(!mapInfo.isExplored(startingBase)) {
                 scout.getUnit().move(startingBase.getCenter());
             }
         }

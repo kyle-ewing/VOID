@@ -2,7 +2,7 @@ package util;
 
 import bwapi.Position;
 import bwem.Base;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import information.enemy.enemyopeners.EnemyStrategy;
 import unitgroups.units.CombatUnits;
@@ -13,27 +13,27 @@ import java.util.List;
 public class RallyPoint {
     private PathFinding pathFinding;
     private GameState gameState;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private EnemyStrategy enemyStrategy = null;
     private Base startingBase;
     private Base naturalBase;
     private Position mainRallyPoint;
     private Position naturalRallyPoint;
 
-    public RallyPoint(PathFinding pathFinding, GameState gameState, BaseInfo baseInfo) {
+    public RallyPoint(PathFinding pathFinding, GameState gameState, MapInfo mapInfo) {
         this.pathFinding = pathFinding;
         this.gameState = gameState;
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
-        this.startingBase = baseInfo.getStartingBase();
-        this.naturalBase = baseInfo.getNaturalBase();
+        this.startingBase = mapInfo.getStartingBase();
+        this.naturalBase = mapInfo.getNaturalBase();
         setInitialRallyPoints();
 
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
-        if(enemyStrategy == null || enemyStrategy.isStrategyDefended() || baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) {
-            if(baseInfo.hasBunkerInNatural() || baseInfo.isNaturalOwned()) {
+        if(enemyStrategy == null || enemyStrategy.isStrategyDefended() || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
+            if(mapInfo.hasBunkerInNatural() || mapInfo.isNaturalOwned()) {
                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             }
             else {
@@ -85,8 +85,8 @@ public class RallyPoint {
     }
 
     private void setInitialRallyPoints() {
-        mainRallyPoint = rallyPath(startingBase.getCenter(), baseInfo.getMainChoke().getCenter().toPosition(), 0.62);
-        naturalRallyPoint = rallyPath(naturalBase.getCenter(), baseInfo.getNaturalChoke().getCenter().toPosition(), 0.62);
+        mainRallyPoint = rallyPath(startingBase.getCenter(), mapInfo.getMainChoke().getCenter().toPosition(), 0.62);
+        naturalRallyPoint = rallyPath(naturalBase.getCenter(), mapInfo.getNaturalChoke().getCenter().toPosition(), 0.62);
     }
 
     public void onFrame() {

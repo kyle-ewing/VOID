@@ -425,6 +425,9 @@ public class Painters {
                 case STUCK:
                     paintCircle(worker.getUnit(), 8, Color.Black);
                     break;
+                case REMOVINGBLOCKER:
+                    paintCircle(worker.getUnit(), 8, Color.Red);
+                    break;    
             }
         }
     }

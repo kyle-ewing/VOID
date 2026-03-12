@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class BaseInfo {
+public class MapInfo {
     private BWEM bwem;
     private Game game;
     private PathFinding pathFinding;
@@ -42,10 +42,11 @@ public class BaseInfo {
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private HashMap<Base, List<Position>> allPathsMap;
     private HashMap<Base, HashSet<TilePosition>> baseTilesAllBases = new HashMap<>();
+    private HashMap<Unit, Position> blockingMineralFields = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
-    public BaseInfo(BWEM bwem, Game game) {
+    public MapInfo(BWEM bwem, Game game) {
         this.bwem = bwem;
         this.game = game;
 
@@ -85,6 +86,7 @@ public class BaseInfo {
         combineTankTiles();
         backupMainSiegeTiles();
         setAllBaseTiles();
+        setBlockingMinerals();
 
         //Handle edge cases where bases are split into multiple areas
         combineBaseAreas();
@@ -555,6 +557,24 @@ public class BaseInfo {
         }
     }
 
+    private void setBlockingMinerals() {
+        for (Unit unit : game.getNeutralUnits()) {
+            if(unit.getType() != UnitType.Resource_Mineral_Field) {
+                continue;
+            }
+
+            List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), naturalBase.getLocation().toPosition());
+
+            if (path.isEmpty()) {
+                continue;
+            }
+
+            if (unit.getResources() == 0 && naturalBase.getCenter().getDistance(unit.getPosition()) < 1000) {
+                blockingMineralFields.put(unit, unit.getPosition());
+            }
+        }
+    }
+
     public Base scoredBestExpansion(BuildType buildType, HashSet<EnemyUnits> knownEnemyUnits) {
         Base bestBase = null;
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -685,6 +705,10 @@ public class BaseInfo {
         return backupMainSiegeTiles;
     }
 
+    public HashMap<Unit, Position> getBlockingMineralFields() {
+        return blockingMineralFields;
+    }
+
     public boolean isNaturalOwned() {
         return naturalOwned;
     }
@@ -735,22 +759,24 @@ public class BaseInfo {
         }
     }
 
-    public void onUnitComplete(Unit unit) {
-
-    }
-
     public void onUnitDestroy(Unit unit) {
-        for(Base base : ownedBases) {
-            if(unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
-                ownedBases.remove(base);
-                break;
+        if(unit.getType() == UnitType.Terran_Command_Center) {
+            for (Base base : ownedBases) {
+                if (unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
+                    ownedBases.remove(base);
+                    break;
+                }
             }
+
+            if (unit.getPosition().getApproxDistance(naturalBase.getCenter()) < 100) {
+                baseTiles.removeAll(naturalTiles);
+                naturalOwned = false;
+            }
+            return;
         }
 
-        if(unit.getPosition().getApproxDistance(naturalBase.getCenter()) < 100) {
-            baseTiles.removeAll(naturalTiles);
-            naturalOwned = false;
+        if (blockingMineralFields.containsKey(unit)) {
+            blockingMineralFields.remove(unit);
         }
-
     }
 }

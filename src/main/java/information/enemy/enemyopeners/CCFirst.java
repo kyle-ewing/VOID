@@ -2,22 +2,21 @@ package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
 import bwem.Base;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
-import planner.PlannedItem;
 import util.Time;
 
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class CCFirst extends  EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private boolean isStartingBase = false;
 
-    public CCFirst(BaseInfo baseInfo) {
+    public CCFirst(MapInfo mapInfo) {
         super("CC First");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
@@ -27,7 +26,7 @@ public class CCFirst extends  EnemyStrategy {
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Terran_Command_Center) {
-                for(Base base : baseInfo.getMapBases()) {
+                for(Base base : mapInfo.getMapBases()) {
                     if(base.isStartingLocation()) {
                         if(base.getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 10) {
                             isStartingBase = true;

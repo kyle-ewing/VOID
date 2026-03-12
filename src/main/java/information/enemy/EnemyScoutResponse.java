@@ -1,7 +1,7 @@
 package information.enemy;
 
 import bwapi.Game;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import unitgroups.WorkerManager;
 import unitgroups.units.WorkerStatus;
@@ -12,16 +12,16 @@ public class EnemyScoutResponse {
     private Game game;
     private GameState gameState;
     private WorkerManager workerManager;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private EnemyUnits enemyScout;
     private Workers counterScout;
     private boolean initiallyScouted = false;
 
-    public EnemyScoutResponse(Game game, GameState gameState, WorkerManager workerManager, BaseInfo baseInfo) {
+    public EnemyScoutResponse(Game game, GameState gameState, WorkerManager workerManager, MapInfo mapInfo) {
         this.game = game;
         this.gameState = gameState;
         this.workerManager = workerManager;
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
     }
 
     private void initialScoutInBase() {

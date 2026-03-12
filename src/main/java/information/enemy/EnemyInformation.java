@@ -5,12 +5,10 @@ import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
-import planner.PlannedItemStatus;
-import unitgroups.units.CombatUnits;
 import util.Time;
 
 import java.util.HashSet;
@@ -21,7 +19,7 @@ public class EnemyInformation {
     private HashSet<EnemyUnits> validThreats;
     private HashSet<EnemyTechUnits> enemyTechUnits;
     private HashSet<UnitType> techunitResponse;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private Game game;
     private GameState gameState;
     private EnemyUnits startingEnemyBase;
@@ -30,8 +28,8 @@ public class EnemyInformation {
     private int openerDefenseTimer = 0;
     private static final int OPENER_DEFENSE_TIME = 4320;
 
-    public EnemyInformation(BaseInfo baseInfo, Game game, GameState gameState) {
-        this.baseInfo = baseInfo;
+    public EnemyInformation(MapInfo mapInfo, Game game, GameState gameState) {
+        this.mapInfo = mapInfo;
         this.game = game;
         this.gameState = gameState;
 
@@ -41,7 +39,7 @@ public class EnemyInformation {
         techunitResponse = gameState.getTechUnitResponse();
         startingEnemyBase = gameState.getStartingEnemyBase();
 
-        enemyStrategyManager = new EnemyStrategyManager(baseInfo);
+        enemyStrategyManager = new EnemyStrategyManager(mapInfo);
     }
 
     private boolean previouslyDiscovered(Unit unit) {
@@ -63,16 +61,16 @@ public class EnemyInformation {
     }
 
     private Base setEnemyNatural() {
-        if(baseInfo.getEnemyMain() == null) {
+        if(mapInfo.getEnemyMain() == null) {
             return null;
         }
 
-        Base enemyMain = baseInfo.getEnemyMain();
+        Base enemyMain = mapInfo.getEnemyMain();
         Base closestBase = null;
 
         int shortestPathLength = Integer.MAX_VALUE;
 
-        for(Base base : baseInfo.getMapBases()) {
+        for(Base base : mapInfo.getMapBases()) {
             if(base.equals(enemyMain)) {
                 continue;
             }
@@ -81,7 +79,7 @@ public class EnemyInformation {
                 continue;
             }
 
-            List<Position> path = baseInfo.getPathFinding().findPath(
+            List<Position> path = mapInfo.getPathFinding().findPath(
                     enemyMain.getLocation().toPosition(),
                     base.getLocation().toPosition()
             );
@@ -103,15 +101,15 @@ public class EnemyInformation {
 
             Position enemyPos = enemyUnit.getEnemyUnit().getPosition();
 
-            if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+            if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 gameState.setEnemyInBase(true);
                 return;
             }
-            else if(baseInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+            else if(mapInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 gameState.setEnemyInBase(true);
                 return;
             }
-            else if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && (baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural())) {
+            else if(mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural())) {
                 gameState.setEnemyInBase(true);
                 return;
             }
@@ -119,19 +117,19 @@ public class EnemyInformation {
                 int mainChokeLeash = 700;
                 int naturalChokeLeash = 250;
 
-                if(baseInfo.getMainChoke() != null) {
-                     mainChokeLeash = (int) baseInfo.getMainChoke().getCenter().toPosition().getDistance(baseInfo.getStartingBase().getCenter()) + 32;
+                if(mapInfo.getMainChoke() != null) {
+                     mainChokeLeash = (int) mapInfo.getMainChoke().getCenter().toPosition().getDistance(mapInfo.getStartingBase().getCenter()) + 32;
                 }
 
 
-                if(baseInfo.getNaturalChoke() != null ) {
-                    naturalChokeLeash = (int) baseInfo.getNaturalChoke().getCenter().toPosition().getDistance(baseInfo.getNaturalBase().getCenter()) + 32;
+                if(mapInfo.getNaturalChoke() != null ) {
+                    naturalChokeLeash = (int) mapInfo.getNaturalChoke().getCenter().toPosition().getDistance(mapInfo.getNaturalBase().getCenter()) + 32;
                 }
 
-                boolean inMainBase = enemyPos.getDistance(baseInfo.getStartingBase().getCenter()) < mainChokeLeash;
-                boolean inNaturalBase = enemyPos.getDistance(baseInfo.getStartingBase().getCenter()) < naturalChokeLeash;
+                boolean inMainBase = enemyPos.getDistance(mapInfo.getStartingBase().getCenter()) < mainChokeLeash;
+                boolean inNaturalBase = enemyPos.getDistance(mapInfo.getStartingBase().getCenter()) < naturalChokeLeash;
 
-                if(inMainBase || (baseInfo.getNaturalBase() != null && inNaturalBase && baseInfo.isNaturalOwned())) {
+                if(inMainBase || (mapInfo.getNaturalBase() != null && inNaturalBase && mapInfo.isNaturalOwned())) {
                     gameState.setEnemyInBase(true);
                     return;
                 }
@@ -141,7 +139,7 @@ public class EnemyInformation {
     }
 
     private void enemyInNatural() {
-        if(baseInfo.getNaturalBase() == null) {
+        if(mapInfo.getNaturalBase() == null) {
             return;
         }
 
@@ -156,12 +154,12 @@ public class EnemyInformation {
 
             Position enemyPos = enemyUnit.getEnemyUnit().getPosition();
 
-            if(baseInfo.getNaturalTiles().contains(enemyUnit.getEnemyTilePosition())) {
+            if(mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyTilePosition())) {
                 gameState.setEnemyInNatural(true);
                 return;
             }
             else if(enemyUnit.getEnemyType().isFlyer()) {
-                if(enemyPos.getDistance(baseInfo.getNaturalBase().getCenter()) < 400 && baseInfo.isNaturalOwned()) {
+                if(enemyPos.getDistance(mapInfo.getNaturalBase().getCenter()) < 400 && mapInfo.isNaturalOwned()) {
                     gameState.setEnemyInNatural(true);
                     gameState.setEnemyFlyerInBase(true);
                     return;
@@ -257,7 +255,7 @@ public class EnemyInformation {
     public boolean beingSieged() {
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-                if(baseInfo.hasBunkerInNatural()) {
+                if(mapInfo.hasBunkerInNatural()) {
                     if(enemyUnit.getEnemyUnit().getDistance(gameState.getBunkerPosition().toPosition()) < 450) {
                         return true;
                     }
@@ -338,10 +336,10 @@ public class EnemyInformation {
             if(unit.getType().isResourceDepot()) {
                 for(EnemyUnits enemyUnit : enemyUnits) {
                     if(enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyID() == unit.getID()
-                    && baseInfo.getStartingBases().stream().anyMatch(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10)) {
+                    && mapInfo.getStartingBases().stream().anyMatch(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10)) {
                         gameState.setStartingEnemyBase(enemyUnit);
-                        baseInfo.setEnemyMain(baseInfo.getStartingBases().stream().filter(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10).findAny().orElse(null));
-                        baseInfo.setEnemyNatural(setEnemyNatural());
+                        mapInfo.setEnemyMain(mapInfo.getStartingBases().stream().filter(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10).findAny().orElse(null));
+                        mapInfo.setEnemyNatural(setEnemyNatural());
                         break;
                     }
                 }
@@ -434,8 +432,8 @@ public class EnemyInformation {
         return gameState.getStartingEnemyBase();
     }
 
-    public BaseInfo getBaseInfo() {
-        return baseInfo;
+    public MapInfo getBaseInfo() {
+        return mapInfo;
     }
 
     public HashSet<EnemyTechUnits> getEnemyTechUnits() {

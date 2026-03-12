@@ -12,7 +12,6 @@ import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
 import macro.buildorders.BunkerLocation;
 import macro.buildorders.buildtransitions.BuildTransition;
-import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.Workers;
@@ -21,7 +20,6 @@ import planner.BuildComparator;
 import planner.PlannedItem;
 import util.Time;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -30,7 +28,7 @@ public class GameState {
     private Game game;
     private BWEM bwem;
     private Config config;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private Player player;
     private BuildTiles buildTiles;
     private ResourceTracking resourceTracking;
@@ -70,15 +68,15 @@ public class GameState {
 
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
 
-    public GameState(Game game, BWEM bwem, BaseInfo baseInfo) {
+    public GameState(Game game, BWEM bwem, MapInfo mapInfo) {
         this.game = game;
         this.bwem = bwem;
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
         this.config = new Config();
 
         player = game.self();
 
-        buildTiles = new BuildTiles(game, baseInfo, this);
+        buildTiles = new BuildTiles(game, mapInfo, this);
         buildOrderManager = new BuildOrderManager(game.enemy().getRace());
         resourceTracking = new ResourceTracking(player);
         expansionCriteria = new ExpansionCriteria(game, player, this);
@@ -211,8 +209,8 @@ public class GameState {
     }
 
 
-    public BaseInfo getBaseInfo() {
-        return baseInfo;
+    public MapInfo getBaseInfo() {
+        return mapInfo;
     }
 
     public BuildTiles getBuildTiles() {

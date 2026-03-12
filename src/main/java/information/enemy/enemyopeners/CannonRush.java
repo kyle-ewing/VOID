@@ -1,7 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class CannonRush extends EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public CannonRush(BaseInfo baseInfo) {
+    public CannonRush(MapInfo mapInfo) {
         super("Cannon Rush");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
     }
@@ -25,12 +25,12 @@ public class CannonRush extends EnemyStrategy {
                 continue;
             }
 
-            if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
+            if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
                 if(new Time(3, 30).greaterThan(time)) {
                     return true;
                 }
             }
-            else if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
+            else if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
                 if(new Time(3, 30).greaterThan(time)) {
                     return true;
                 }

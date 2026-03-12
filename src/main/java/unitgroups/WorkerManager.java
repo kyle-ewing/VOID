@@ -3,25 +3,23 @@ package unitgroups;
 import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
-import unitgroups.units.CombatUnits;
-import unitgroups.units.UnitStatus;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.ClosestUnit;
 import util.Time;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class WorkerManager {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private Player player;
     private Game game;
     private GameState gameState;
@@ -34,16 +32,17 @@ public class WorkerManager {
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
     private boolean openerResponse = false;
     private boolean initialMineralAssignmentDone = false;
+    private boolean mineralBlockersCleared = false;
 
-    public WorkerManager(BaseInfo baseInfo, Player player, Game game, GameState gameState) {
-        this.baseInfo = baseInfo;
+    public WorkerManager(MapInfo mapInfo, Player player, Game game, GameState gameState) {
+        this.mapInfo = mapInfo;
         this.player = player;
         this.gameState = gameState;
         this.game = game;
 
         workers = gameState.getWorkers();
 
-        enemyScoutResponse = new EnemyScoutResponse(game, gameState, this, baseInfo);
+        enemyScoutResponse = new EnemyScoutResponse(game, gameState, this, mapInfo);
 
     }
 
@@ -61,11 +60,15 @@ public class WorkerManager {
             openerResponse = true;
         }
 
+        if (gameState.hasTransitioned() && !mineralBlockersCleared) {
+            removeMineralBlockers();
+        }
+
         for(Workers worker : workers) {
             if(new Time(frameCount).lessThanOrEqual(new Time(6,0))) {
                 if(worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
                     //Stop worker defense after the early game
-                    if(baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened()) {
+                    if(mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened()) {
                         if(workers.size() > 12) {
                             createDefenseForce(6);
                         }
@@ -130,8 +133,8 @@ public class WorkerManager {
                     }
 
                     if((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()
-                            || (!baseInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())
-                            && !baseInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition()))) {
+                            || (!mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())
+                            && !mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition()))) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         worker.setAttackClock(0);
                         worker.setAssignedToBase(false);
@@ -225,7 +228,7 @@ public class WorkerManager {
 
         for(Unit geyser : refinerySaturation.keySet()) {
             if(refinerySaturation.get(geyser).size() < 3) {
-                scv = ClosestUnit.findClosestWorker(geyser.getPosition(), workers, baseInfo.getPathFinding());
+                scv = ClosestUnit.findClosestWorker(geyser.getPosition(), workers, mapInfo.getPathFinding());
 
                 if(scv == null) {
                     continue;
@@ -239,7 +242,7 @@ public class WorkerManager {
     }
 
     private void assignMineralSaturation(Workers worker) {
-        for(Base base : baseInfo.getOwnedBases()) {
+        for(Base base : mapInfo.getOwnedBases()) {
             if(mineralSaturation.get(base).size() < 24) {
                 mineralSaturation.get(base).add(worker);
                 worker.setAssignedToBase(true);
@@ -267,7 +270,7 @@ public class WorkerManager {
             return;
         }
 
-        Base mainBase = baseInfo.getStartingBase();
+        Base mainBase = mapInfo.getStartingBase();
 
         HashSet<Unit> minerals = mainBase.getMinerals().stream()
                 .map(Mineral::getUnit).collect(java.util.stream.Collectors.toCollection(HashSet::new));
@@ -330,12 +333,12 @@ public class WorkerManager {
                     continue;
                 }
 
-                if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                     enemyWorkerCount++;
                     continue;
                 }
             }
-            if(baseInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+            if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 return true;
             }
         }
@@ -349,7 +352,7 @@ public class WorkerManager {
             }
 
             TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
-            if(baseInfo.getBaseTiles().contains(enemyTile)) {
+            if(mapInfo.getBaseTiles().contains(enemyTile)) {
                 return true;
             }
         }
@@ -363,7 +366,7 @@ public class WorkerManager {
                 break;
             case "Four Rax":
                 if(gameState.getKnownEnemyUnits().stream().anyMatch(unit -> unit.getEnemyType() == UnitType.Terran_Marine && unit.getEnemyPosition() != null
-                        && baseInfo.getBaseTiles().contains(unit.getEnemyPosition().toTilePosition()))) {
+                        && mapInfo.getBaseTiles().contains(unit.getEnemyPosition().toTilePosition()))) {
                     createDefenseForce(3);
                 }
             case "SCV Rush":
@@ -417,7 +420,7 @@ public class WorkerManager {
                 continue;
             }
 
-            if(baseInfo.hasBunkerInNatural() && baseInfo.getNaturalTiles().contains(unit.getTilePosition())) {
+            if(mapInfo.hasBunkerInNatural() && mapInfo.getNaturalTiles().contains(unit.getTilePosition())) {
                 bunker = unit;
                 break;
             }
@@ -434,12 +437,12 @@ public class WorkerManager {
             if(enemyInRange()) {
                 createRepairForce(bunker, 3);
             }
-            else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 650
+            else if(!enemyInRange() && bunker.getDistance(mapInfo.getStartingBase().getCenter()) > 650
                     && new Time(game.getFrameCount()).greaterThan(new Time(5,30))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
                 createRepairForce(bunker, 2);
             }
-            else if(!enemyInRange() && bunker.getDistance(baseInfo.getStartingBase().getCenter()) > 250
+            else if(!enemyInRange() && bunker.getDistance(mapInfo.getStartingBase().getCenter()) > 250
                     && new Time(game.getFrameCount()).greaterThan(new Time(5,0))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
                 createRepairForce(bunker, 1);
@@ -475,7 +478,7 @@ public class WorkerManager {
         HashSet<Workers> availableWorkers = (HashSet<Workers>) new HashSet<>(workers).stream()
                 .filter(worker -> worker.getWorkerStatus() == WorkerStatus.MINERALS).collect(Collectors.toSet());
 
-        Workers repairWorker = ClosestUnit.findClosestWorker(bunker.getPosition(), availableWorkers, baseInfo.getPathFinding());
+        Workers repairWorker = ClosestUnit.findClosestWorker(bunker.getPosition(), availableWorkers, mapInfo.getPathFinding());
 
         if(repairWorker != null) {
             repairWorker.setWorkerStatus(WorkerStatus.REPAIRING);
@@ -600,6 +603,55 @@ public class WorkerManager {
         return workers.size() <= 10 && gameState.getResourceTracking().getAvailableGas() > 300 && gameState.getResourceTracking().getAvailableMinerals() < 300;
     }
 
+    private void removeMineralBlockers() {
+        if (mapInfo.getBlockingMineralFields().isEmpty()) {
+            mineralBlockersCleared = true;
+
+            if (workers.stream().anyMatch(worker -> worker.getWorkerStatus() == WorkerStatus.REMOVINGBLOCKER)) {
+                for (Workers worker : workers) {
+                    if (worker.getWorkerStatus() == WorkerStatus.REMOVINGBLOCKER) {
+                        worker.setWorkerStatus(WorkerStatus.IDLE);
+                    }
+                }
+            }
+
+            return;
+        }
+
+        Workers blockRemover = workers.stream()
+            .filter(worker -> worker.getWorkerStatus() == WorkerStatus.REMOVINGBLOCKER)
+            .findAny().orElse(null);
+
+        if (blockRemover == null) {
+            blockRemover = workers.stream()
+                .filter(worker -> worker.getWorkerStatus() == WorkerStatus.MINERALS && !worker.getUnit().isCarrying())
+                .findAny().orElse(null);
+
+            if (blockRemover != null) {
+                removeMineralSaturation(blockRemover);
+                blockRemover.setAssignedToBase(false);
+                blockRemover.setWorkerStatus(WorkerStatus.REMOVINGBLOCKER);
+            }
+        }
+
+        Entry<Unit,Position> blocker = mapInfo.getBlockingMineralFields().entrySet().stream()
+            .findAny().orElse(null);
+
+        if (blockRemover != null && blocker != null) {
+            if (blockRemover.getUnit().getDistance(blocker.getKey()) > 200) {
+                blockRemover.getUnit().move(blocker.getValue());
+            }
+            else {
+                if (!blockRemover.getUnit().isGatheringMinerals()) {
+                    blockRemover.getUnit().rightClick(blocker.getKey());
+                }
+
+            }
+
+
+        }
+    }
+
     public void onUnitComplete(Unit unit) {
         if(unit.getType() == UnitType.Terran_SCV && workers.stream().noneMatch(w -> w.getUnit() == unit)) {
             workers.add(new Workers(game, unit));
@@ -617,7 +669,7 @@ public class WorkerManager {
         if(unit.getType() != UnitType.Terran_Command_Center) {
             return;
         }
-        for(Base base : baseInfo.getOwnedBases()) {
+        for(Base base : mapInfo.getOwnedBases()) {
             if(unit.getPosition().getApproxDistance(base.getCenter()) < 100) {
                 mineralSaturation.put(base, new HashSet<>());
             }

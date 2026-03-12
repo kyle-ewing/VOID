@@ -1,7 +1,7 @@
 package unitgroups.units;
 
 import bwapi.*;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyInformation;
 
 import java.util.HashSet;
@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class SiegeTank extends CombatUnits {
     private EnemyInformation enemyInformation;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private UnitType defaultMode = UnitType.Terran_Siege_Tank_Tank_Mode;
     private HashSet<TilePosition> mainEdgeTiles = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
@@ -22,10 +22,10 @@ public class SiegeTank extends CombatUnits {
     public SiegeTank(Game game, EnemyInformation enemyInformation, Unit unit) {
         super(game, unit);
         this.enemyInformation = enemyInformation;
-        baseInfo = enemyInformation.getBaseInfo();
-        mainEdgeTiles = baseInfo.getMainCliffEdge();
-        combinedTankTiles = baseInfo.getCombinedTankTiles();
-        backupSiegeTiles = baseInfo.getBackupMainSiegeTiles();
+        mapInfo = enemyInformation.getBaseInfo();
+        mainEdgeTiles = mapInfo.getMainCliffEdge();
+        combinedTankTiles = mapInfo.getCombinedTankTiles();
+        backupSiegeTiles = mapInfo.getBackupMainSiegeTiles();
     }
 
     @Override
@@ -166,7 +166,7 @@ public class SiegeTank extends CombatUnits {
     }
 
     private void setSiegeTile() {
-        if(!combinedTankTiles.isEmpty() && baseInfo.isNaturalOwned()) {
+        if(!combinedTankTiles.isEmpty() && mapInfo.isNaturalOwned()) {
             pickSiegeDefTile(combinedTankTiles);
         }
         else if(!mainEdgeTiles.isEmpty()) {
