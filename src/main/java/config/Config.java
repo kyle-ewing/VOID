@@ -13,10 +13,12 @@ public final class Config {
     // Map
     public boolean debugBases = false;
     public boolean debugChokes = false;
+    public boolean debugAreaTiles = false;
     public boolean debugBaseTiles = false;
     public boolean debugMineralExclusionZone = false;
     public boolean debugGeyserExclusionZone = false;
     public boolean debugCCExclusionZone = false;
+    public boolean debugOwnedTiles = false;
 
     // Bases and buildings
     public boolean debugBuildTiles = true;
@@ -44,9 +46,11 @@ public final class Config {
         // Map and pathfinding
         this.debugBaseTiles = getBooleanOrDefault("DEBUG_BASE_TILES", this.debugBaseTiles);
         this.debugChokes = getBooleanOrDefault("DEBUG_CHOKES", this.debugChokes);
+        this.debugAreaTiles = getBooleanOrDefault("DEBUG_AREA_TILES", this.debugAreaTiles);
         this.debugMineralExclusionZone = getBooleanOrDefault("DEBUG_MINERAL_EXCLUSION_ZONE", this.debugMineralExclusionZone);
         this.debugGeyserExclusionZone = getBooleanOrDefault("DEBUG_GEYSER_EXCLUSION_ZONE", this.debugGeyserExclusionZone);
         this.debugCCExclusionZone = getBooleanOrDefault("DEBUG_CC_EXCLUSION_ZONE", this.debugCCExclusionZone);
+        this.debugOwnedTiles = getBooleanOrDefault("DEBUG_OWNED_TILES", this.debugOwnedTiles);
 
         // Bases and buildings
         this.debugBases = getBooleanOrDefault("DEBUG_BASES", this.debugBases);

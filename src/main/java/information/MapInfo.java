@@ -42,9 +42,11 @@ public class MapInfo {
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private HashMap<Base, List<Position>> allPathsMap;
     private HashMap<Base, HashSet<TilePosition>> baseTilesAllBases = new HashMap<>();
+    private HashMap<Area, HashSet<TilePosition>> areaTiles = new HashMap<>();
     private HashMap<Unit, Position> blockingMineralFields = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
+    private boolean naturalAreaAdded = false;
 
     public MapInfo(BWEM bwem, Game game) {
         this.bwem = bwem;
@@ -86,6 +88,7 @@ public class MapInfo {
         combineTankTiles();
         backupMainSiegeTiles();
         setAllBaseTiles();
+        setAreaTiles();
         setBlockingMinerals();
 
         //Handle edge cases where bases are split into multiple areas
@@ -545,6 +548,36 @@ public class MapInfo {
         }
     }
 
+    private void addAreaTiles(Base newBase) {
+        HashSet<Area> areasToAdd = new HashSet<>();
+        HashSet<ChokePoint> chokePointsToCheck = new HashSet<>();
+
+        for (ChokePoint choke : newBase.getArea().getChokePoints()) {
+            chokePointsToCheck.add(choke);
+        }
+
+        for (ChokePoint choke : chokePointsToCheck) {
+            Area firstArea = choke.getAreas().getFirst();
+            Area secondArea = choke.getAreas().getSecond();
+
+            if (firstArea != null && areaTiles.containsKey(firstArea)) {
+                areasToAdd.add(firstArea);
+            }
+
+            if (secondArea != null && areaTiles.containsKey(secondArea)) {
+                areasToAdd.add(secondArea);
+            }
+        }
+
+        for (Area area : areasToAdd) {
+            HashSet<TilePosition> tiles = areaTiles.get(area);
+            if (tiles != null) {
+                baseTiles.addAll(tiles);
+            }
+        }
+
+    }
+    
     private void setAllBaseTiles() {
 
         for(Base base : mapBases) {
@@ -554,6 +587,22 @@ public class MapInfo {
 
             HashSet<TilePosition> tiles = getTilesForBase(base);
             baseTilesAllBases.put(base, tiles);
+        }
+    }
+
+    private void setAreaTiles() {
+        int mapWidth = game.mapWidth();
+        int mapHeight = game.mapHeight();
+
+        for (int x = 0; x < mapWidth; x++) {
+            for (int y = 0; y < mapHeight; y++) {
+                TilePosition tile = new TilePosition(x, y);
+                Area tileArea = bwem.getMap().getArea(tile);
+                if (tileArea == null) {
+                    continue;
+                }
+                areaTiles.computeIfAbsent(tileArea, k -> new HashSet<>()).add(tile);
+            }
         }
     }
 
@@ -741,14 +790,21 @@ public class MapInfo {
         return baseTilesAllBases;
     }
 
+    public HashMap<Area, HashSet<TilePosition>> getAreaTiles() {
+        return areaTiles;
+    }
+
     public void onUnitCreate(Unit unit) {
         if(unit.getType() != UnitType.Terran_Command_Center) {
             return;
         }
 
+        Base baseTaken = null;
+
         for (Base base : mapBases) {
             if (unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
                 ownedBases.add(base);
+                baseTaken = base;
                 break;
             }
         }
@@ -756,6 +812,16 @@ public class MapInfo {
         if(unit.getDistance(naturalBase.getCenter()) < 100) {
             baseTiles.addAll(naturalTiles);
             naturalOwned = true;
+            return;
+        }
+
+        if (naturalOwned && baseTaken != null) {
+            addAreaTiles(baseTaken);
+
+            if (!naturalAreaAdded) {
+                addAreaTiles(naturalBase);
+                naturalAreaAdded = true;
+            }
         }
     }
 

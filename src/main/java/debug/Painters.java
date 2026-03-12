@@ -1,6 +1,7 @@
 package debug;
 
 import bwapi.*;
+import bwem.Area;
 import bwem.Base;
 import bwem.ChokePoint;
 import config.Config;
@@ -99,6 +100,14 @@ public class Painters {
 
         if(config.debugChokes) {
             paintNaturalChoke(gameState.getBaseInfo().getNaturalChoke());
+        }
+
+        if (config.debugOwnedTiles) {
+            paintTileZone(gameState.getBaseInfo().getBaseTiles(), Color.Green);
+        }
+
+        if(config.debugAreaTiles) {
+            paintAreaTiles(gameState.getBaseInfo().getAreaTiles());
         }
 
         if(config.debugBaseTiles) {
@@ -569,6 +578,22 @@ public class Painters {
 
             int distance = expansion.getCenter().getApproxDistance(startingBase.getCenter());
             game.drawTextMap(expansion.getCenter().getX(), expansion.getCenter().getY() + 10, "Distance from main: " + distance);
+        }
+    }
+
+    private void paintAreaTiles(HashMap<Area, HashSet<TilePosition>> areaTiles) {
+        Color[] colors = {
+            Color.Red, Color.Blue, Color.Teal, Color.Purple,
+            Color.Orange, Color.Yellow, Color.Green, Color.Cyan,
+            Color.White, Color.Grey
+        };
+        int colorIndex = 0;
+        for (HashSet<TilePosition> tiles : areaTiles.values()) {
+            Color color = colors[colorIndex % colors.length];
+            colorIndex++;
+            for (TilePosition tile : tiles) {
+                game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
+            }
         }
     }
 
