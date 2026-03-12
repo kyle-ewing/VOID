@@ -527,24 +527,31 @@ public class ProductionManager {
             }
         }
 
-        if(unitTypeCount.get(UnitType.Terran_SCV) < workerCap) {
-            boolean scvInQueue = productionQueue.stream()
-                    .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_SCV);
+        if(unitTypeCount.get(UnitType.Terran_SCV) >= workerCap) {
+            return;
+        }
 
-            if (!scvInQueue) {
-                for(int i = 0; i < ownedBases; i++) {
-                    if(ownedBases == 1) {
-                        addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
-                    }
-                    else {
-                        if(unitTypeCount.get(UnitType.Terran_SCV) < 48) {
-                            addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
-                        }
-                        else {
-                            addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 4);
-                        }
-                    }
+        long notStartedSCVs = productionQueue.stream()
+                .filter(pi -> pi.getUnitType() == UnitType.Terran_SCV
+                        && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)
+                .count();
 
+        long idleCCs = productionBuildings.stream()
+                .filter(b -> b.getType() == UnitType.Terran_Command_Center && !b.isTraining())
+                .count();
+
+        long scvsToQueue = idleCCs - notStartedSCVs;
+
+        for(long i = 0; i < scvsToQueue; i++) {
+            if(ownedBases == 1) {
+                addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
+            }
+            else {
+                if(unitTypeCount.get(UnitType.Terran_SCV) < 48) {
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
+                }
+                else {
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 4);
                 }
             }
         }

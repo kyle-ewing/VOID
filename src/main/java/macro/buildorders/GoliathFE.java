@@ -43,11 +43,11 @@ public class GoliathFE extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 52, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 29, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 3));
-        buildOrder.add(new PlannedItem(UpgradeType.Charon_Boosters, 42, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Factory, 1, 3));
-        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
-        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 6));
-//        buildOrder.add(new PlannedItem(TechType.Spider_Mines, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 4));
-        buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,5));
+        buildOrder.add(new PlannedItem(UpgradeType.Charon_Boosters, 60, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Factory, 1, 3));
+        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 46, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
+        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 46, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 6));
+        // buildOrder.add(new PlannedItem(TechType.Spider_Mines, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 4));
+        // buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,5));
         return buildOrder;
     }
 
