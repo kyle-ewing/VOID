@@ -43,6 +43,7 @@ public class MapInfo {
     private HashMap<Base, List<Position>> allPathsMap;
     private HashMap<Base, HashSet<TilePosition>> baseTilesAllBases = new HashMap<>();
     private HashMap<Area, HashSet<TilePosition>> areaTiles = new HashMap<>();
+    private HashMap<Base, HashSet<Area>> baseAddedAreas = new HashMap<>();
     private HashMap<Unit, Position> blockingMineralFields = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
@@ -569,13 +570,35 @@ public class MapInfo {
             }
         }
 
+        baseAddedAreas.put(newBase, areasToAdd);
+
         for (Area area : areasToAdd) {
             HashSet<TilePosition> tiles = areaTiles.get(area);
             if (tiles != null) {
                 baseTiles.addAll(tiles);
             }
         }
+    }
 
+    private void removeAreaTiles(Base removedBase) {
+        HashSet<Area> areasToRemove = baseAddedAreas.remove(removedBase);
+        if (areasToRemove == null) {
+            return;
+        }
+
+        HashSet<Area> stillNeededAreas = new HashSet<>();
+        for (HashSet<Area> areas : baseAddedAreas.values()) {
+            stillNeededAreas.addAll(areas);
+        }
+
+        for (Area area : areasToRemove) {
+            if (!stillNeededAreas.contains(area)) {
+                HashSet<TilePosition> tiles = areaTiles.get(area);
+                if (tiles != null) {
+                    baseTiles.removeAll(tiles);
+                }
+            }
+        }
     }
     
     private void setAllBaseTiles() {
@@ -827,17 +850,42 @@ public class MapInfo {
 
     public void onUnitDestroy(Unit unit) {
         if(unit.getType() == UnitType.Terran_Command_Center) {
+            Base destroyedBase = null;
             for (Base base : ownedBases) {
                 if (unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
-                    ownedBases.remove(base);
+                    destroyedBase = base;
                     break;
                 }
             }
 
+            if (destroyedBase != null) {
+                ownedBases.remove(destroyedBase);
+            }
+
             if (unit.getPosition().getApproxDistance(naturalBase.getCenter()) < 100) {
+                removeAreaTiles(naturalBase);
                 baseTiles.removeAll(naturalTiles);
                 naturalOwned = false;
+                naturalAreaAdded = false;
+                return;
             }
+
+            if (destroyedBase != null) {
+                removeAreaTiles(destroyedBase);
+            }
+
+            boolean hasOtherExpansion = false;
+            for (Base base : ownedBases) {
+                if (base != startingBase && base != naturalBase) {
+                    hasOtherExpansion = true;
+                    break;
+                }
+            }
+
+            if (!hasOtherExpansion) {
+                naturalAreaAdded = false;
+            }
+
             return;
         }
 
