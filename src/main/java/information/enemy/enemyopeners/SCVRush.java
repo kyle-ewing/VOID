@@ -1,8 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import bwem.Base;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -12,11 +11,11 @@ import java.util.HashSet;
 
 //Stone Cold Steve Austin's favorite strategy
 public class SCVRush extends EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public SCVRush(BaseInfo baseInfo) {
+    public SCVRush(MapInfo mapInfo) {
         super("SCV Rush");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
     }
@@ -30,7 +29,7 @@ public class SCVRush extends EnemyStrategy {
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Terran_SCV) {
-                if(baseInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 500) {
+                if(mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 500) {
                     scvAtBase++;
                 }
             }

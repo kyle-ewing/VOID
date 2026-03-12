@@ -1,8 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import bwem.Base;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -12,12 +11,12 @@ import java.util.HashSet;
 
 //Why Dave?
 public class FourRax extends  EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private boolean isStartingBase = false;
 
-    public FourRax(BaseInfo baseInfo) {
+    public FourRax(MapInfo mapInfo) {
         super("Four Rax");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
     }
@@ -35,7 +34,7 @@ public class FourRax extends  EnemyStrategy {
             if(enemyUnit.getEnemyType() == UnitType.Terran_Marine
                     && enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_SCV).count() <= 10
                     && (time.lessThanOrEqual(new Time(2, 20))
-                    || (enemyUnit.getEnemyUnit().getDistance(baseInfo.getStartingBase().getCenter()) < 1500) && time.lessThanOrEqual(new Time(2, 50))
+                    || (enemyUnit.getEnemyUnit().getDistance(mapInfo.getStartingBase().getCenter()) < 1500) && time.lessThanOrEqual(new Time(2, 50))
                     || enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Marine).count() >= 2 && time.lessThanOrEqual(new Time(2, 45))
                     || enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Marine).count() >= 3 && time.lessThanOrEqual(new Time(3, 5)))) {
                     return true;

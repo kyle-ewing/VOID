@@ -1,7 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class FourPool extends EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public FourPool(BaseInfo baseInfo) {
+    public FourPool(MapInfo mapInfo) {
         super("Four Pool");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
     }
@@ -42,7 +42,7 @@ public class FourPool extends EnemyStrategy {
                 }
 
                 else if(time.lessThanOrEqual(new Time(2,40))) {
-                    if(enemyUnit.getEnemyPosition().getDistance(baseInfo.getStartingBase().getCenter()) < 2000) {
+                    if(enemyUnit.getEnemyPosition().getDistance(mapInfo.getStartingBase().getCenter()) < 2000) {
                         return true;
                     }
                 }

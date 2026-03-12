@@ -1,7 +1,6 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.BaseInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;

@@ -9,14 +9,14 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwapi.WeaponType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import util.Time;
 
 public class Wraith extends CombatUnits {
     private EnemyInformation enemyInformation;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private HashSet<EnemyUnits> enemyUnits;
     private int decloakTimer = 0;
     private int weaponRange = unit.getType().airWeapon().maxRange();
@@ -29,7 +29,7 @@ public class Wraith extends CombatUnits {
         this.enemyInformation = enemyInformation;
         this.enemyUnits = enemyInformation.getEnemyUnits();
 
-        baseInfo = enemyInformation.getBaseInfo();
+        mapInfo = enemyInformation.getBaseInfo();
         unitStatus = UnitStatus.HUNTING;
         priorityTargets.add(UnitType.Protoss_Shuttle);
         priorityTargets.add(UnitType.Protoss_Probe);

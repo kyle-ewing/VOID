@@ -1,18 +1,18 @@
 package information.enemy;
 
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.enemyopeners.*;
 import information.enemy.enemytechunits.*;
 
 import java.util.HashSet;
 
 public class EnemyStrategyManager {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private HashSet<EnemyStrategy> enemyStrategies = new HashSet<>();
     private HashSet<EnemyTechUnits> enemyTechUnits = new HashSet<>();
 
-    public EnemyStrategyManager(BaseInfo baseInfo) {
-        this.baseInfo = baseInfo;
+    public EnemyStrategyManager(MapInfo mapInfo) {
+        this.mapInfo = mapInfo;
 
         init();
     }
@@ -23,18 +23,18 @@ public class EnemyStrategyManager {
     }
 
     private void addEnemyStrategies() {
-        enemyStrategies.add(new FourPool(baseInfo));
+        enemyStrategies.add(new FourPool(mapInfo));
 //        enemyStrategies.add(new NinePool(baseInfo));
-        enemyStrategies.add(new CannonRush(baseInfo));
-        enemyStrategies.add(new GasSteal(baseInfo));
+        enemyStrategies.add(new CannonRush(mapInfo));
+        enemyStrategies.add(new GasSteal(mapInfo));
 //        enemyStrategies.add(new CCFirst(baseInfo));
-        enemyStrategies.add(new FourRax(baseInfo));
+        enemyStrategies.add(new FourRax(mapInfo));
         enemyStrategies.add(new TwoFacTank());
-        enemyStrategies.add(new SCVRush(baseInfo));
-        enemyStrategies.add(new OneBaseMuta(baseInfo));
-        enemyStrategies.add(new OneBaseLurker(baseInfo));
+        enemyStrategies.add(new SCVRush(mapInfo));
+        enemyStrategies.add(new OneBaseMuta(mapInfo));
+        enemyStrategies.add(new OneBaseLurker(mapInfo));
         // enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
-        enemyStrategies.add(new TwoBaseLurker(baseInfo));
+        enemyStrategies.add(new TwoBaseLurker(mapInfo));
         enemyStrategies.add(new DTRush());
     }
 

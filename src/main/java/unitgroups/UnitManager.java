@@ -2,7 +2,7 @@ package unitgroups;
 
 import bwapi.*;
 import bwem.Base;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
@@ -21,7 +21,7 @@ import java.util.Iterator;
 public class UnitManager {
 
     private EnemyInformation enemyInformation;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private Game game;
     private GameState gameState;
     private CombatUnitCreator combatUnitCreator;
@@ -40,15 +40,15 @@ public class UnitManager {
     private boolean defendedAllIn = false;
 
 
-    public UnitManager(EnemyInformation enemyInformation, GameState gameState, BaseInfo baseInfo, Game game, Scouting scouting) {
+    public UnitManager(EnemyInformation enemyInformation, GameState gameState, MapInfo mapInfo, Game game, Scouting scouting) {
         this.enemyInformation = enemyInformation;
         this.gameState = gameState;
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
         this.game = game;
         this.scouting = scouting;
         this.combatUnitCreator = new CombatUnitCreator(game, enemyInformation);
-        this.pathFinding = baseInfo.getPathFinding();
-        this.rallyPoint = new RallyPoint(pathFinding, gameState, baseInfo);
+        this.pathFinding = mapInfo.getPathFinding();
+        this.rallyPoint = new RallyPoint(pathFinding, gameState, mapInfo);
 
         combatUnits = gameState.getCombatUnits();
         unitCount = gameState.getUnitTypeCount();
@@ -95,8 +95,8 @@ public class UnitManager {
             inRangeOfThreat(combatUnit);
 
             //Set rally point if not set
-            if(combatUnit.getRallyPoint() == null || (baseInfo.getNaturalBase() != null && !combatUnit.isNaturalRallySet())) {
-                if(baseInfo.getOwnedBases().contains(baseInfo.getNaturalBase())) {
+            if(combatUnit.getRallyPoint() == null || (mapInfo.getNaturalBase() != null && !combatUnit.isNaturalRallySet())) {
+                if(mapInfo.getOwnedBases().contains(mapInfo.getNaturalBase())) {
                     combatUnit.setNaturalRallySet(true);
                 }
 
@@ -116,9 +116,9 @@ public class UnitManager {
                     break;
             }
 
-            combatUnit.setInBase(baseInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())
-                    || (baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) && baseInfo.getNaturalTiles().contains(combatUnit.getUnit().getTilePosition())
-                    || combatUnit.getUnit().getDistance(baseInfo.getNaturalBase().getCenter()) < naturalBunkerLeashRange());
+            combatUnit.setInBase(mapInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())
+                    || (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && mapInfo.getNaturalTiles().contains(combatUnit.getUnit().getTilePosition())
+                    || combatUnit.getUnit().getDistance(mapInfo.getNaturalBase().getCenter()) < naturalBunkerLeashRange());
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
@@ -169,7 +169,7 @@ public class UnitManager {
             if((scouting.isCompletedScout() || scouting.attemptsMaxed()) && !gameState.isEnemyBuildingDiscovered()
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Vulture || combatUnit.getUnitType() == UnitType.Terran_Goliath)
-                    && scouts < baseInfo.getMapBases().size()) {
+                    && scouts < mapInfo.getMapBases().size()) {
                 combatUnit.setUnitStatus(UnitStatus.SCOUT);
                 assignScouts(combatUnit);
                 scouts++;
@@ -402,7 +402,7 @@ public class UnitManager {
     }
 
     private void assignScouts(CombatUnits combatUnit) {
-        for(Base base : baseInfo.getMapBases()) {
+        for(Base base : mapInfo.getMapBases()) {
             if(designatedScouts.containsKey(base)) {
                 continue;
             }
@@ -769,8 +769,8 @@ public class UnitManager {
     }
 
     public int naturalBunkerLeashRange() {
-        if(baseInfo.hasBunkerInNatural() && baseInfo.getNaturalBase() != null && bunker != null) {
-            return bunker.getDistance(baseInfo.getNaturalBase().getCenter()) + 32;
+        if(mapInfo.hasBunkerInNatural() && mapInfo.getNaturalBase() != null && bunker != null) {
+            return bunker.getDistance(mapInfo.getNaturalBase().getCenter()) + 32;
         }
         return 10000;
     }

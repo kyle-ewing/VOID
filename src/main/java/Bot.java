@@ -1,5 +1,5 @@
 import debug.Painters;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import information.enemy.EnemyInformation;
 import information.Scouting;
@@ -15,7 +15,7 @@ public class Bot extends DefaultBWListener {
     private BWEM bwem;
     private Player player;
     private GameState gameState;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private EnemyInformation enemyInformation;
     private WorkerManager workerManager;
     private ProductionManager productionManager;
@@ -33,13 +33,13 @@ public class Bot extends DefaultBWListener {
         bwem = new BWEM(game);
         bwem.initialize();
 
-        baseInfo = new BaseInfo(bwem, game);
-        gameState = new GameState(game, bwem, baseInfo);
-        enemyInformation = new EnemyInformation(baseInfo, game, gameState);
-        workerManager = new WorkerManager(baseInfo, player, game, gameState);
-        productionManager = new ProductionManager(game, player, baseInfo, gameState);
-        scouting = new Scouting(game, baseInfo, gameState);
-        unitManager = new UnitManager(enemyInformation, gameState, baseInfo, game, scouting);
+        mapInfo = new MapInfo(bwem, game);
+        gameState = new GameState(game, bwem, mapInfo);
+        enemyInformation = new EnemyInformation(mapInfo, game, gameState);
+        workerManager = new WorkerManager(mapInfo, player, game, gameState);
+        productionManager = new ProductionManager(game, player, mapInfo, gameState);
+        scouting = new Scouting(game, mapInfo, gameState);
+        unitManager = new UnitManager(enemyInformation, gameState, mapInfo, game, scouting);
 
         painters = new Painters(game, gameState, gameState.getConfig(), scouting);
     }
@@ -63,7 +63,7 @@ public class Bot extends DefaultBWListener {
         if(unit.getPlayer() != game.self()) {
             return;
         }
-        baseInfo.onUnitCreate(unit);
+        mapInfo.onUnitCreate(unit);
         productionManager.onUnitCreate(unit);
         workerManager.onUnitCreate(unit);
     }
@@ -74,10 +74,6 @@ public class Bot extends DefaultBWListener {
             return;
         }
 
-        if(unit.getType() == UnitType.Terran_Command_Center) {
-            baseInfo.onUnitComplete(unit);
-        }
-
         productionManager.onUnitComplete(unit);
         workerManager.onUnitComplete(unit);
         unitManager.onUnitComplete(unit);
@@ -85,7 +81,6 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitDestroy(Unit unit) {
-
         workerManager.onUnitDestroy(unit);
         enemyInformation.onUnitDestroy(unit);
 
@@ -97,8 +92,8 @@ public class Bot extends DefaultBWListener {
             productionManager.onUnitDestroy(unit);
         }
 
-        if(unit.getType() == UnitType.Terran_Command_Center) {
-            baseInfo.onUnitDestroy(unit);
+        if(unit.getType() == UnitType.Terran_Command_Center || unit.getType() == UnitType.Resource_Mineral_Field) {
+            mapInfo.onUnitDestroy(unit);
         }
 
         scouting.onEnemyDestroy(unit);

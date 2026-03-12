@@ -1,7 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class NinePool extends EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public NinePool(BaseInfo baseInfo) {
+    public NinePool(MapInfo mapInfo) {
         super("Nine Pool");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
     }
@@ -34,7 +34,7 @@ public class NinePool extends EnemyStrategy {
 //                }
 //            }
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if(baseInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1200
+                if(mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1200
                 && time.lessThanOrEqual(new Time(3,0))) {
                     return true;
                 }

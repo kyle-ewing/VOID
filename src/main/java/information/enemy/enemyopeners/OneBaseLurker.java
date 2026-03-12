@@ -1,9 +1,8 @@
 package information.enemy.enemyopeners;
 
-import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -12,11 +11,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class OneBaseLurker extends EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public OneBaseLurker(BaseInfo baseInfo) {
+    public OneBaseLurker(MapInfo mapInfo) {
         super("One Base Lurker");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
         upgradeResponse();
@@ -24,10 +23,10 @@ public class OneBaseLurker extends EnemyStrategy {
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         boolean hasNaturalHatch = false;
-        if(baseInfo.getEnemyNatural() != null) {
+        if(mapInfo.getEnemyNatural() != null) {
             hasNaturalHatch = enemyUnits.stream()
                     .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
-                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(baseInfo.getEnemyNatural().getCenter()) < 50);
+                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getCenter()) < 50);
         }
 
         for(EnemyUnits enemyUnit : enemyUnits) {

@@ -5,7 +5,7 @@ import bwem.Base;
 import bwem.ChokePoint;
 import bwem.Geyser;
 import bwem.Mineral;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import util.PositionInterpolator;
 
@@ -14,7 +14,7 @@ import java.util.*;
 public class BuildTiles {
     private Game game;
     private GameState gameState;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private TilePositionValidator tilePositionValidator;
     private HashSet<TilePosition> mediumBuildTiles = new HashSet<>();
     private HashSet<TilePosition> largeBuildTiles = new HashSet<>();
@@ -37,14 +37,14 @@ public class BuildTiles {
     private boolean naturalTilesGenerated = false;
     private boolean minOnlyTilesGenerated = false;
 
-    public BuildTiles(Game game, BaseInfo baseInfo, GameState gameState) {
+    public BuildTiles(Game game, MapInfo mapInfo, GameState gameState) {
         this.game = game;
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
         this.gameState = gameState;
 
         tilePositionValidator = new TilePositionValidator(game);
 
-        startingBase = baseInfo.getStartingBase();
+        startingBase = mapInfo.getStartingBase();
         generateBuildTiles();
     }
 
@@ -52,16 +52,16 @@ public class BuildTiles {
         mineralExclusionZone(startingBase);
         geyserExclusionZone(startingBase);
         ccExclusionZone(startingBase);
-        mineralExclusionZone(baseInfo.getNaturalBase());
-        geyserExclusionZone(baseInfo.getNaturalBase());
-        ccExclusionZone(baseInfo.getNaturalBase());
+        mineralExclusionZone(mapInfo.getNaturalBase());
+        geyserExclusionZone(mapInfo.getNaturalBase());
+        ccExclusionZone(mapInfo.getNaturalBase());
         chokeExclusionZone(startingBase);
         generateFrontBaseTiles();
         generateBackBaseTiles();
         generateChokeBunkerTiles();
         generateCloseBunkerTile();
         mainChokeTurret = generateChokeTurretTile(mainChokeBunker, startingBase);
-        naturalChokeTurret = generateChokeTurretTile(naturalChokeBunker, baseInfo.getNaturalBase());
+        naturalChokeTurret = generateChokeTurretTile(naturalChokeBunker, mapInfo.getNaturalBase());
         //generateChokeTurretTiles();
         generateLargeTiles(frontBaseTiles);
         generateMediumTiles(backBaseTiles);
@@ -70,21 +70,21 @@ public class BuildTiles {
 
     private void regenerateBuildTiles() {
         if(!naturalTilesGenerated && mediumBuildTiles.isEmpty() || mediumBuildTiles.size() == 1) {
-            chokeExclusionZone(baseInfo.getNaturalBase());
+            chokeExclusionZone(mapInfo.getNaturalBase());
             //generateMediumTiles(frontBaseTiles);
-            generateMediumTiles(baseInfo.getNaturalTiles());
+            generateMediumTiles(mapInfo.getNaturalTiles());
             naturalTilesGenerated = true;
         }
 
-        if(!baseInfo.getMinBaseTiles().isEmpty() && baseInfo.getMinOnlyBase() != null && !minOnlyTilesGenerated) {
+        if(!mapInfo.getMinBaseTiles().isEmpty() && mapInfo.getMinOnlyBase() != null && !minOnlyTilesGenerated) {
             chokeExclusionTiles.clear();
-            mineralExclusionZone(baseInfo.getMinOnlyBase());
-            geyserExclusionZone(baseInfo.getMinOnlyBase());
-            ccExclusionZone(baseInfo.getMinOnlyBase());
-            generateLargeTiles(baseInfo.getMinBaseTiles());
+            mineralExclusionZone(mapInfo.getMinOnlyBase());
+            geyserExclusionZone(mapInfo.getMinOnlyBase());
+            ccExclusionZone(mapInfo.getMinOnlyBase());
+            generateLargeTiles(mapInfo.getMinBaseTiles());
             minOnlyTilesGenerated = true;
         }
-        else if(baseInfo.getMinBaseTiles().isEmpty()) {
+        else if(mapInfo.getMinBaseTiles().isEmpty()) {
             minOnlyTilesGenerated = true;
         }
 
@@ -95,7 +95,7 @@ public class BuildTiles {
                 geyserExclusionZone(pendingBase);
                 ccExclusionZone(pendingBase);
                 chokeExclusionZone(pendingBase);
-                HashSet<TilePosition> newBaseTiles = baseInfo.getTilesForBase(pendingBase);
+                HashSet<TilePosition> newBaseTiles = mapInfo.getTilesForBase(pendingBase);
 
                 if(mediumBuildTiles.isEmpty()) {
                     generateMediumTiles(newBaseTiles);
@@ -114,11 +114,11 @@ public class BuildTiles {
     //TODO: I hate all of this
     // Final pass still not generating enough on some maps
     private void generateLargeTiles(HashSet<TilePosition> baseTiles) {
-        TilePosition ccPos = baseInfo.getStartingBase().getLocation();
+        TilePosition ccPos = mapInfo.getStartingBase().getLocation();
 
         //Sort tiles to favor closer to CC
         List<TilePosition> ccOrderedTiles = new ArrayList<>(baseTiles);
-        TilePosition chokeCenter = baseInfo.getMainChoke().getCenter().toTilePosition();
+        TilePosition chokeCenter = mapInfo.getMainChoke().getCenter().toTilePosition();
         Comparator<TilePosition> comparator = Comparator.comparingInt(TilePosition::getY);
 
         if(ccPos.getX() <= chokeCenter.getX()) {
@@ -528,8 +528,8 @@ public class BuildTiles {
     }
 
     private void generateCloseBunkerTile() {
-        TilePosition chokePos = baseInfo.getMainChoke().getCenter().toTilePosition();
-        TilePosition basePos = baseInfo.getStartingBase().getLocation();
+        TilePosition chokePos = mapInfo.getMainChoke().getCenter().toTilePosition();
+        TilePosition basePos = mapInfo.getStartingBase().getLocation();
 
         int firstMidX = (chokePos.getX() + basePos.getX()) / 2;
         int firstMidY = (chokePos.getY() + basePos.getY()) / 2;
@@ -576,18 +576,18 @@ public class BuildTiles {
     }
 
     private void generateChokeBunkerTiles() {
-        ChokePoint mainChoke = baseInfo.getMainChoke();
+        ChokePoint mainChoke = mapInfo.getMainChoke();
 
         if(mainChoke != null) {
             TilePosition chokeTile = mainChoke.getCenter().toTilePosition();
-            TilePosition baseTile = baseInfo.getStartingBase().getLocation();
+            TilePosition baseTile = mapInfo.getStartingBase().getLocation();
             double percent = 0.90;
 
             //temp solution fix later
-            if(baseInfo.getMinOnlyBase() != null) {
+            if(mapInfo.getMinOnlyBase() != null) {
                 ChokePoint otherChoke = null;
 
-                for(ChokePoint cp : baseInfo.getMinOnlyBase().getArea().getChokePoints()) {
+                for(ChokePoint cp : mapInfo.getMinOnlyBase().getArea().getChokePoints()) {
                     if(cp.equals(mainChoke)) {
                         continue;
                     }
@@ -596,13 +596,13 @@ public class BuildTiles {
                 }
 
                 if(otherChoke != null) {
-                    TilePosition minOnlyLocation = baseInfo.getMinOnlyBase().getLocation();
+                    TilePosition minOnlyLocation = mapInfo.getMinOnlyBase().getLocation();
                     TilePosition otherChokePos = otherChoke.getCenter().toTilePosition();
                     int midX = (minOnlyLocation.getX() + otherChokePos.getX()) / 2;
                     int midY = (minOnlyLocation.getY() + otherChokePos.getY()) / 2;
                     baseTile = new TilePosition(midX, midY);
                 } else {
-                    baseTile = baseInfo.getMinOnlyBase().getLocation();
+                    baseTile = mapInfo.getMinOnlyBase().getLocation();
                 }
                 percent = 0.80;
             }
@@ -614,8 +614,8 @@ public class BuildTiles {
 
             int minDist = Integer.MAX_VALUE;
 
-            if(!baseInfo.getMinBaseTiles().isEmpty()) {
-                for(TilePosition candidate : baseInfo.getMinBaseTiles()) {
+            if(!mapInfo.getMinBaseTiles().isEmpty()) {
+                for(TilePosition candidate : mapInfo.getMinBaseTiles()) {
                     if (tilePositionValidator.isBuildable(candidate, UnitType.Terran_Bunker) && !intersectsExclusionZones(candidate)
                             && !intersectsExistingBuildTiles(candidate, UnitType.Terran_Bunker, 0)) {
                         int dist = candidate.getApproxDistance(closerMain);
@@ -626,7 +626,7 @@ public class BuildTiles {
                     }
                 }
 
-                if(mainBunker != null && (baseInfo.getMinBaseTiles().contains(mainBunker))) {
+                if(mainBunker != null && (mapInfo.getMinBaseTiles().contains(mainBunker))) {
                     mainChokeBunker = mainBunker;
                 }
 
@@ -649,11 +649,11 @@ public class BuildTiles {
             }
         }
 
-        ChokePoint naturalChoke = baseInfo.getNaturalChoke();
+        ChokePoint naturalChoke = mapInfo.getNaturalChoke();
 
         if(naturalChoke != null) {
             TilePosition chokeTile = naturalChoke.getCenter().toTilePosition();
-            TilePosition baseTile = baseInfo.getNaturalBase().getLocation();
+            TilePosition baseTile = mapInfo.getNaturalBase().getLocation();
             TilePosition closerNatural = PositionInterpolator.interpolate(chokeTile, baseTile, 0.10);
             TilePosition naturalBunker = findValidTileNear(closerNatural, UnitType.Terran_Bunker);
 
@@ -725,7 +725,7 @@ public class BuildTiles {
     }
 
     private void generateTurretTiles() {
-        for(Base base : baseInfo.getMapBases()) {
+        for(Base base : mapInfo.getMapBases()) {
             if(base == null || base.getMinerals().isEmpty()) {
                 continue;
             }
@@ -738,7 +738,7 @@ public class BuildTiles {
             int midY = (ccTile.getY() + mineralPatch.getY()) / 2;
             TilePosition midPoint = new TilePosition(midX, midY);
 
-            HashSet<TilePosition> baseTiles = baseInfo.getTilesForBase(base);
+            HashSet<TilePosition> baseTiles = mapInfo.getTilesForBase(base);
 
             int searchRadius = 6;
             TilePosition bestTurret = null;
@@ -870,7 +870,7 @@ public class BuildTiles {
         int endX = newX + unitType.tileWidth() + gap;
         int endY = newY + unitType.tileHeight();
 
-        TilePosition ccPosition = baseInfo.getStartingBase().getLocation();
+        TilePosition ccPosition = mapInfo.getStartingBase().getLocation();
         int ccX = ccPosition.getX();
         int ccY = ccPosition.getY();
         int ccWidth = UnitType.Terran_Command_Center.tileWidth();
@@ -1130,9 +1130,9 @@ public class BuildTiles {
     }
 
     private void generateFrontBaseTiles() {
-        HashSet<TilePosition> baseTiles = new HashSet<>(baseInfo.getBaseTiles());
-        TilePosition chokePos = baseInfo.getMainChoke().getCenter().toTilePosition();
-        TilePosition ccPos = baseInfo.getStartingBase().getLocation();
+        HashSet<TilePosition> baseTiles = new HashSet<>(mapInfo.getBaseTiles());
+        TilePosition chokePos = mapInfo.getMainChoke().getCenter().toTilePosition();
+        TilePosition ccPos = mapInfo.getStartingBase().getLocation();
 
         int xDiff = Math.abs(chokePos.getX() - ccPos.getX());
         int yDiff = Math.abs(chokePos.getY() - ccPos.getY());
@@ -1161,7 +1161,7 @@ public class BuildTiles {
     }
 
     private void generateBackBaseTiles() {
-        HashSet<TilePosition> baseTiles = new HashSet<>(baseInfo.getBaseTiles());
+        HashSet<TilePosition> baseTiles = new HashSet<>(mapInfo.getBaseTiles());
 
         for(TilePosition tilePosition : baseTiles) {
             if(geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition) || frontBaseTiles.contains(tilePosition)) {
@@ -1245,9 +1245,9 @@ public class BuildTiles {
         }
 
         if(unit.getType() == UnitType.Terran_Command_Center) {
-            for(Base base : baseInfo.getOwnedBases()) {
+            for(Base base : mapInfo.getOwnedBases()) {
                 if(unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {
-                    if(base != baseInfo.getStartingBase() && base != baseInfo.getNaturalBase()) {
+                    if(base != mapInfo.getStartingBase() && base != mapInfo.getNaturalBase()) {
                         pendingBaseTiles.add(base);
                     }
                     break;

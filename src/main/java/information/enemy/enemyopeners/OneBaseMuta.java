@@ -1,7 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class OneBaseMuta extends EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public OneBaseMuta(BaseInfo baseInfo) {
+    public OneBaseMuta(MapInfo mapInfo) {
         super("One Base Muta");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
     }

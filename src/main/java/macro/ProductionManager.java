@@ -2,7 +2,7 @@ package macro;
 
 import bwapi.*;
 import bwem.Base;
-import information.BaseInfo;
+import information.MapInfo;
 import information.GameState;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.*;
@@ -21,7 +21,7 @@ public class ProductionManager {
     private Game game;
     private GameState gameState;
     private Player player;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private TilePositionValidator tilePositionValidator;
     private BuildTiles buildTiles;
     private HashMap<UnitType, Integer> unitTypeCount;
@@ -37,10 +37,10 @@ public class ProductionManager {
 
 
 
-    public ProductionManager(Game game, Player player, BaseInfo baseInfo, GameState gameState) {
+    public ProductionManager(Game game, Player player, MapInfo mapInfo, GameState gameState) {
         this.game = game;
         this.player = player;
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
         this.gameState = gameState;
 
         productionQueue = gameState.getProductionQueue();
@@ -90,7 +90,7 @@ public class ProductionManager {
                 }
             }
 
-            if(gameState.isEnemyInNatural() && (pi.getBuildPosition() != null && !baseInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
+            if(gameState.isEnemyInNatural() && (pi.getBuildPosition() != null && !mapInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
                 priorityStop = false;
                 hasHighPriorityBuilding = false;
                 continue;
@@ -197,7 +197,7 @@ public class ProductionManager {
                         }
 
                         if(pi.getBuildPosition() != null && pi.getAssignedBuilder() == null) {
-                            worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), baseInfo.getPathFinding());
+                            worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), mapInfo.getPathFinding());
                             pi.setAssignedBuilder(worker);
                         }
 
@@ -474,7 +474,7 @@ public class ProductionManager {
         TilePosition turretPosition = null;
         Base newBase = null;
 
-        for(Base base : baseInfo.getMapBases()) {
+        for(Base base : mapInfo.getMapBases()) {
             if(base.getLocation().getDistance(unit.getTilePosition()) < 10) {
                 newBase = base;
                 break;
@@ -482,10 +482,10 @@ public class ProductionManager {
         }
 
         if(newBase != null) {
-            if(newBase == baseInfo.getStartingBase()) {
+            if(newBase == mapInfo.getStartingBase()) {
                 return;
             }
-            else if(newBase == baseInfo.getNaturalBase() && !tileTaken(buildTiles.getNaturalChokeTurret())) {
+            else if(newBase == mapInfo.getNaturalBase() && !tileTaken(buildTiles.getNaturalChokeTurret())) {
                 turretPosition = buildTiles.getNaturalChokeTurret();
             }
             else {
@@ -499,7 +499,7 @@ public class ProductionManager {
     }
 
     private void scvProduction() {
-        int ownedBases = baseInfo.getOwnedBases().size();
+        int ownedBases = mapInfo.getOwnedBases().size();
         int workerCap = 24 * ownedBases;
 
         //temp fix
@@ -550,8 +550,8 @@ public class ProductionManager {
     }
 
     private void setRefineryPosition(PlannedItem pi) {
-        for(Base base : baseInfo.getOwnedBases()) {
-            if(!baseInfo.getGeyserTiles().containsKey(base)) {
+        for(Base base : mapInfo.getOwnedBases()) {
+            if(!mapInfo.getGeyserTiles().containsKey(base)) {
                 continue;
             }
 
@@ -559,12 +559,12 @@ public class ProductionManager {
                 continue;
             }
 
-            if(baseInfo.getUsedGeysers().contains(baseInfo.getGeyserTiles().get(base))) {
+            if(mapInfo.getUsedGeysers().contains(mapInfo.getGeyserTiles().get(base))) {
                 continue;
             }
 
-            baseInfo.getUsedGeysers().add(baseInfo.getGeyserTiles().get(base));
-            pi.setBuildPosition(baseInfo.getGeyserTiles().get(base));
+            mapInfo.getUsedGeysers().add(mapInfo.getGeyserTiles().get(base));
+            pi.setBuildPosition(mapInfo.getGeyserTiles().get(base));
         }
     }
 
@@ -583,7 +583,7 @@ public class ProductionManager {
                         continue;
                     }
 
-                    int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
+                    int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                     if(distance < distanceFromSCV) {
                         distanceFromSCV = distance;
@@ -598,7 +598,7 @@ public class ProductionManager {
                             continue;
                         }
 
-                        int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
+                        int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                         if(distance < distanceFromSCV) {
                             distanceFromSCV = distance;
@@ -613,7 +613,7 @@ public class ProductionManager {
                         continue;
                     }
 
-                    int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
+                    int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                     if(distance < distanceFromSCV) {
                         distanceFromSCV = distance;
@@ -639,7 +639,7 @@ public class ProductionManager {
                     continue;
                 }
 
-                int distance = tilePosition.getApproxDistance(baseInfo.getStartingBase().getLocation());
+                int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                 if(distance < distanceFromSCV) {
                     distanceFromSCV = distance;
@@ -649,7 +649,7 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
         }
         else {
-            if((baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+            if((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
                 reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                 pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
             }
@@ -664,18 +664,18 @@ public class ProductionManager {
     }
 
     private void setCommandCenterPosition(PlannedItem pi) {
-        if (!baseInfo.getOrderedExpansions().isEmpty() && baseInfo.getOrderedExpansions().get(0) == baseInfo.getNaturalBase()) {
-            Base natural = baseInfo.getNaturalBase();
+        if (!mapInfo.getOrderedExpansions().isEmpty() && mapInfo.getOrderedExpansions().get(0) == mapInfo.getNaturalBase()) {
+            Base natural = mapInfo.getNaturalBase();
 
             if (!tilePositionValidator.isBuildable(natural.getLocation(), UnitType.Terran_Command_Center)) {
                 return;
             }
             pi.setBuildPosition(natural.getLocation());
-            baseInfo.getOrderedExpansions().remove(natural);
+            mapInfo.getOrderedExpansions().remove(natural);
             return;
         }
 
-        Base best = baseInfo.scoredBestExpansion(startingOpener.buildType(), gameState.getKnownEnemyUnits());
+        Base best = mapInfo.scoredBestExpansion(startingOpener.buildType(), gameState.getKnownEnemyUnits());
         if (best == null) {
             return;
         }
@@ -738,7 +738,7 @@ public class ProductionManager {
                 }
                 else {
                     if(building == UnitType.Terran_Missile_Turret) {
-                        if((baseInfo.isNaturalOwned() || baseInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null
+                        if((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null
                                 && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
                             reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getNaturalChokeTurret(),1);
@@ -859,7 +859,7 @@ public class ProductionManager {
 
             //Spam turrets if flyers are detected
             if(techUnit.isFlyer()) {
-                for(Base base : baseInfo.getOwnedBases()) {
+                for(Base base : mapInfo.getOwnedBases()) {
                     TilePosition turretTile = buildTiles.getMineralLineTurrets().get(base);
                     if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
                         addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,2);
@@ -881,7 +881,7 @@ public class ProductionManager {
 
                 if(naturalChokeTurret != null && !hasTurretAtBase(naturalChokeTurret)
                         && !hasPositionInQueue(naturalChokeTurret) && !tileTaken(naturalChokeTurret)
-                        && baseInfo.isNaturalOwned() && !gameState.isEnemyInNatural()) {
+                        && mapInfo.isNaturalOwned() && !gameState.isEnemyInNatural()) {
                     addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, naturalChokeTurret,2);
                 }
             }
@@ -1172,7 +1172,7 @@ public class ProductionManager {
             addCCTurret(unit);
             addToQueue(UnitType.Terran_Comsat_Station, PlannedItemType.ADDON, 2);
 
-            if(baseInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10 && !baseInfo.hasBunkerInNatural()
+            if(mapInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10 && !mapInfo.hasBunkerInNatural()
                     && (gameState.getStartingOpener().buildType() == BuildType.BIO || gameState.getEnemyOpener() != null)) {
                 addToQueue(UnitType.Terran_Bunker, PlannedItemType.BUILDING, buildTiles.getNaturalChokeBunker(), 3);
             }
@@ -1226,11 +1226,11 @@ public class ProductionManager {
             else if(unit.getType().isAddon()){
                 addToQueue(unit.getType(), PlannedItemType.ADDON, 2);
             }
-            else if(unit.getType() == UnitType.Terran_Command_Center && baseInfo.isNaturalOwned()) {
+            else if(unit.getType() == UnitType.Terran_Command_Center && mapInfo.isNaturalOwned()) {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 4);
             }
             else {
-                if(baseInfo.getBaseTiles().contains(unit.getTilePosition())) {
+                if(mapInfo.getBaseTiles().contains(unit.getTilePosition())) {
                     addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
                 }
                 else {
@@ -1242,7 +1242,7 @@ public class ProductionManager {
 
             if(unit.getType().tileHeight() == 3 && unit.getType().tileWidth() == 4) {
                 if(unit.getType() == UnitType.Terran_Command_Center) {
-                    baseInfo.readdExpansion(unit);
+                    mapInfo.readdExpansion(unit);
                     return;
                 }
 

@@ -1,7 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
@@ -10,25 +10,25 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class ThreeHatchBeforePool extends EnemyStrategy {
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
 
-    public ThreeHatchBeforePool(BaseInfo baseInfo) {
+    public ThreeHatchBeforePool(MapInfo mapInfo) {
         super("Three Hatch Before Pool");
-        this.baseInfo = baseInfo;
+        this.mapInfo = mapInfo;
 
         buildingResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         boolean hasNaturalHatch = false;
-        if(baseInfo.getEnemyNatural() != null) {
+        if(mapInfo.getEnemyNatural() != null) {
             hasNaturalHatch = enemyUnits.stream()
                     .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
-                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(baseInfo.getEnemyNatural().getCenter()) < 50);
+                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getCenter()) < 50);
         }
 
         EnemyUnits mainHatch = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
-                .filter(eu -> baseInfo.getEnemyMain() != null && eu.getEnemyPosition().getDistance(baseInfo.getEnemyMain().getCenter()) < 50)
+                .filter(eu -> mapInfo.getEnemyMain() != null && eu.getEnemyPosition().getDistance(mapInfo.getEnemyMain().getCenter()) < 50)
                 .findFirst().orElse(null);
 
         if(mainHatch == null) {

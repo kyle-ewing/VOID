@@ -3,7 +3,7 @@ package unitgroups.units;
 import bwapi.*;
 import bwem.Base;
 import bwem.ChokePoint;
-import information.BaseInfo;
+import information.MapInfo;
 import information.enemy.EnemyInformation;
 import util.Time;
 
@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Vulture extends CombatUnits {
     private EnemyInformation enemyInformation;
-    private BaseInfo baseInfo;
+    private MapInfo mapInfo;
     private List<Position> minePositions = new ArrayList<>();
     private Position currentMinePos = null;
     private int mineCount = 3;
@@ -30,7 +30,7 @@ public class Vulture extends CombatUnits {
     public Vulture(Game game, EnemyInformation enemyInformation, Unit unit) {
         super(game, unit);
         this.enemyInformation = enemyInformation;
-        baseInfo = enemyInformation.getBaseInfo();
+        mapInfo = enemyInformation.getBaseInfo();
         unitStatus = UnitStatus.ATTACK;
         mineCycle = game.getFrameCount();
         calculateMinePositions();
@@ -209,16 +209,16 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        ChokePoint mainChoke = baseInfo.getMainChoke();
-        ChokePoint naturalChoke = baseInfo.getNaturalChoke();
+        ChokePoint mainChoke = mapInfo.getMainChoke();
+        ChokePoint naturalChoke = mapInfo.getNaturalChoke();
 
         if(mainChoke == null || naturalChoke == null) {
             return;
         }
 
-        for(Base base : baseInfo.getAllBasePaths().getChokePathLists().keySet()) {
+        for(Base base : mapInfo.getAllBasePaths().getChokePathLists().keySet()) {
             if(enemyInformation.getStartingEnemyBase().getEnemyPosition().equals(base.getCenter())) {
-                List<Position> allPositions = baseInfo.getAllBasePaths().getChokePathLists().get(base);
+                List<Position> allPositions = mapInfo.getAllBasePaths().getChokePathLists().get(base);
 
                 for(Position position : allPositions) {
                     boolean nearMainChoke = position.getDistance(mainChoke.getCenter().toPosition()) < 175;
@@ -258,7 +258,7 @@ public class Vulture extends CombatUnits {
                     int randY = pos.getY() - 200 + random.nextInt(400);
                     Position testPos = new Position(randX, randY);
 
-                    if(baseInfo.getPathFinding().getTilePositionValidator().isWalkable(testPos.toTilePosition())) {
+                    if(mapInfo.getPathFinding().getTilePositionValidator().isWalkable(testPos.toTilePosition())) {
                         currentMinePos = testPos;
                         break;
                     }
@@ -276,9 +276,9 @@ public class Vulture extends CombatUnits {
     }
 
     private void layMinesAnyWhere() {
-        if(baseInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())
-                || baseInfo.getNaturalTiles().contains(unit.getPosition().toTilePosition())
-                || baseInfo.getMinBaseTiles().contains(unit.getPosition().toTilePosition())) {
+        if(mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())
+                || mapInfo.getNaturalTiles().contains(unit.getPosition().toTilePosition())
+                || mapInfo.getMinBaseTiles().contains(unit.getPosition().toTilePosition())) {
             return;
         }
 
@@ -311,7 +311,7 @@ public class Vulture extends CombatUnits {
 
         if(unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
             //Don't lay mines in the main
-            if(baseInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())) {
+            if(mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())) {
                 return;
             }
 
