@@ -42,9 +42,6 @@ public class GoliathFE extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 42, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 52, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3, false));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3, false));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3, true));
         buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 29, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Charon_Boosters, 42, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Factory, 1, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 44, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));

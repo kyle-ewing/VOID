@@ -23,8 +23,11 @@ public class TvTMech extends BuildTransition {
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 3, 4));
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 3, 5));
         transitionItems.add(new PlannedItem(UnitType.Terran_Command_Center, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 4));
-        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 7, false));
-        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 7, false));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3, true));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3, false));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3, false));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 80,PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 7, false));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 80, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 7, false));
         transitionItems.add(new PlannedItem(UnitType.Terran_Machine_Shop, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 6));
         return transitionItems;
     }

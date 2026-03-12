@@ -136,7 +136,7 @@ public class Painters {
     }
 
     private void timeStamp() {
-        if(game.getFrameCount() % 2880 == 0) {
+        if(game.getFrameCount() % 1440 == 0) {
             printProductionQueue(gameState.getProductionQueue());
         }
     }
@@ -427,6 +427,9 @@ public class Painters {
                     break;
                 case REMOVINGBLOCKER:
                     paintCircle(worker.getUnit(), 8, Color.Red);
+                    break;    
+                case CLEARINGMINE:
+                    paintCircle(worker.getUnit(), 8, Color.Orange);
                     break;    
             }
         }

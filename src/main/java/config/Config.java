@@ -30,7 +30,7 @@ public final class Config {
     public boolean debugDetailedUnitInfo = false;
 
     //Enemy Units
-    public boolean debugEnemyUnits = true;
+    public boolean debugEnemyUnits = false;
 
     // Production and planning
     public boolean debugProductionQueue = true;
