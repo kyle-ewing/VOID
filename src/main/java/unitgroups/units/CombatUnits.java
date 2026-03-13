@@ -2,6 +2,7 @@ package unitgroups.units;
 
 import bwapi.*;
 import information.enemy.EnemyUnits;
+import javafx.geometry.Pos;
 
 import java.util.HashSet;
 
@@ -31,6 +32,7 @@ public class CombatUnits {
     protected boolean hasStaticStatus = false;
     protected boolean ignoreCurrentPriorityTarget = false;
     protected boolean priorityTargetLock = false;
+    protected boolean notNeeded = false;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -60,6 +62,17 @@ public class CombatUnits {
         this.unitStatus = unitStatus;
         this.inBunker = false;
         this.hasStaticStatus = true;
+    }
+
+    public CombatUnits(Game game, Unit unit, UnitStatus unitStatus, boolean hasStaticStatus) {
+        this.game = game;
+        this.unit = unit;
+        this.unitType = unit.getType();
+        this.unitID = unit.getID();
+        this.rallyPoint = null;
+        this.unitStatus = unitStatus;
+        this.inBunker = false;
+        this.hasStaticStatus = hasStaticStatus;
     }
 
 
@@ -163,6 +176,32 @@ public class CombatUnits {
 
     public void hunting() {
 
+    }
+
+    public void liftedBuildings(Position bunkerPosition, Position naturalBaseCenter) {
+        if (!notNeeded || !unit.isLifted()) {
+            return;
+        }
+
+        if (unit.isUnderAttack()) {
+            unit.move(bunkerPosition);
+            return;
+        }
+
+        double dx = bunkerPosition.x - naturalBaseCenter.x;
+        double dy = bunkerPosition.y - naturalBaseCenter.y;
+        double length = Math.sqrt(dx * dx + dy * dy);
+
+        if (length == 0) {
+            return;
+        }
+
+        Position target = new Position(
+            (int)(bunkerPosition.x + (dx / length) * 160),
+            (int)(bunkerPosition.y + (dy / length) * 160)
+        );
+
+        unit.move(target);
     }
 
     public void onFrame() {
@@ -320,5 +359,13 @@ public class CombatUnits {
 
     public void setPriorityTargetLock(boolean priorityTargetLock) {
         this.priorityTargetLock = priorityTargetLock;
+    }
+
+    public boolean notNeeded() {
+        return notNeeded;
+    }
+
+    public void setNotNeeded(boolean notNeeded) {
+        this.notNeeded = notNeeded;
     }
 }

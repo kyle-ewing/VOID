@@ -125,7 +125,10 @@ public class GameState {
             }
 
             for(PlannedItem pi : bt.getOptionalBuildings()) {
-                if(unitTypeCount.getOrDefault(pi.getUnitType(), 0) == 0) {
+                boolean alreadyBuiltOrQueued = unitTypeCount.getOrDefault(pi.getUnitType(), 0) > 0
+                        || productionQueue.stream().anyMatch(queued -> queued.getUnitType() == pi.getUnitType());
+                
+                        if (!alreadyBuiltOrQueued) {
                     productionQueue.add(pi);
                 }
             }

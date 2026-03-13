@@ -79,10 +79,10 @@ public class UnitManager {
 
         //TODO: this is all horrible
         for(CombatUnits combatUnit : combatUnits) {
-            if(combatUnit.getUnitStatus() == UnitStatus.BUILDING && combatUnit.getUnit().canLift() && !combatUnit.getUnit().isLifted()) {
+            if(combatUnit.getUnitStatus() == UnitStatus.LIFTABLE  && !combatUnit.getUnit().isLifted()) {
                 liftBuilding(combatUnit);
             }
-            else if(combatUnit.getUnitStatus() == UnitStatus.BUILDING && combatUnit.getUnit().isLifted()) {
+            else if(combatUnit.getUnitStatus() == UnitStatus.LIFTABLE && combatUnit.getUnit().isLifted()) {
                 landBuilding(combatUnit);
             }
 
@@ -316,6 +316,14 @@ public class UnitManager {
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 600);
                         combatUnit.sallyOut();
                     }
+                    break;
+                case LIFTABLE:
+                    if (combatUnit.getUnitType() == UnitType.Terran_Engineering_Bay) {
+                        if (gameState.getBunkerPosition() != null && mapInfo.getNaturalBase() != null) {
+                            combatUnit.liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -731,12 +739,16 @@ public class UnitManager {
         return gameState.getKnownEnemyUnits().contains(priorityTarget);
     }
 
-    private void liftBuilding(CombatUnits building) {
+    private void liftBuilding(CombatUnits building) {       
         if(gameState.getLiftableBuildings().contains(building.getUnitType())) {
             if(gameState.getEnemyOpener() != null && !gameState.getEnemyOpener().isStrategyDefended()
                     && gameState.getEnemyOpener().overrideBuildingLift()
                     && building.getUnitType().canProduce()) {
                 return;
+            }
+
+            if (!building.getUnitType().canProduce()) {
+                building.setNotNeeded(true);
             }
 
             if(building.getUnitType() == UnitType.Terran_Barracks && combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)) {
@@ -745,17 +757,23 @@ public class UnitManager {
 
             //Don't lift if cannot build goliaths and air threats are seen
             if(building.getUnitType() == UnitType.Terran_Barracks
+                    && !building.notNeeded()
                     && gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer)
                     && gameState.getUnitTypeCount().getOrDefault(UnitType.Terran_Armory, 0) == 0
                     && combatUnits.stream().anyMatch(cu -> cu.getUnitType() == UnitType.Terran_Goliath)) {
                 return;
             }
 
+            building.setNotNeeded(true);
             building.getUnit().lift();
         }
     }
 
     private void landBuilding(CombatUnits building) {
+        if (building.notNeeded()) {
+            return;
+        }
+        
         if(gameState.getEnemyOpener() != null
                 && gameState.getEnemyOpener().overrideBuildingLift()
                 && !gameState.getEnemyOpener().isStrategyDefended()) {
@@ -804,7 +822,16 @@ public class UnitManager {
                 return;
             }
 
-            CombatUnits combatUnit = new CombatUnits(game, unit, UnitStatus.BUILDING);
+            CombatUnits combatUnit;
+
+            if (UnitType.Terran_Missile_Turret == unit.getType()) {
+                combatUnit = new CombatUnits(game, unit, UnitStatus.BUILDING);
+            }
+            else {
+                combatUnit = new CombatUnits(game, unit, UnitStatus.LIFTABLE, false);
+            }
+
+
             combatUnits.add(combatUnit);
             return;
         }
