@@ -108,23 +108,13 @@ public class UnitProduction {
             }
         }
 
-        // Extra Barracks when floating too much
-        if (gameState.getResourceTracking().getAvailableMinerals() > 500
-                && !buildTiles.getLargeBuildTiles().isEmpty()
-                && unitTypeCount.get(UnitType.Terran_Barracks) < 6
-                && !hasInQueue(UnitType.Terran_Barracks)) {
-            PlannedItem extra = productionBuilding(UnitType.Terran_Barracks, 3);
-            if (extra != null) items.add(extra);
-        }
-
         return items;
     }
 
     private List<PlannedItem> getBioTankItems() {
         int tankCount = unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode)
                 + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
-
-        if (!shouldBuildTanks()
+        if ((!shouldBuildTanks() && !isLurkerOpener())
                 || !isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode)
                 || tankCount >= 7
                 || hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
@@ -153,6 +143,7 @@ public class UnitProduction {
         for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {
             if (TANK_TRIGGERS.contains(enemy.getEnemyType())) return true;
         }
+
         return false;
     }
 
@@ -293,5 +284,11 @@ public class UnitProduction {
         return priority == 1
                 && freeSupply >= unitType.supplyRequired() / 2
                 && gameState.getResourceTracking().getAvailableGas() <= unitType.gasPrice();
+    }
+
+    private boolean isLurkerOpener() {
+        return enemyOpener != null &&
+                (enemyOpener.getStrategyName().equals("One Base Lurker") ||
+                        enemyOpener.getStrategyName().equals("Two Base Lurker"));
     }
 }

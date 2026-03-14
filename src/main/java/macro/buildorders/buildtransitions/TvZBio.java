@@ -21,8 +21,12 @@ public class TvZBio extends BuildTransition {
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 2, 5));
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Infantry_Weapons, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 3, 4));
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 3, 5));
-        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 5));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Barracks, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 5));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Barracks, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 5));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 75, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 5));
         transitionItems.add(new PlannedItem(UnitType.Terran_Machine_Shop, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 5));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Barracks, 80, PlannedItemStatus.NOT_STARTED,PlannedItemType.BUILDING, 5));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Barracks, 80, PlannedItemStatus.NOT_STARTED,PlannedItemType.BUILDING, 5));
         return transitionItems;
     }
 
