@@ -60,8 +60,8 @@ public class MapInfo {
 
     public void init() {
 
-        for(Unit unit : game.self().getUnits()) {
-            if(unit.getType() == UnitType.Terran_Command_Center) {
+        for (Unit unit : game.self().getUnits()) {
+            if (unit.getType() == UnitType.Terran_Command_Center) {
                 initalCC = unit;
             }
         }
@@ -100,24 +100,24 @@ public class MapInfo {
     }
 
     private void addAllBases() {
-        for(Base base : bwem.getMap().getBases()) {
+        for (Base base : bwem.getMap().getBases()) {
             mapBases.add(base);
         }
     }
 
     private void addStartingBases() {
-        for(Base base : mapBases) {
-            if(base.getLocation() == startingBase.getLocation()) {
+        for (Base base : mapBases) {
+            if (base.getLocation() == startingBase.getLocation()) {
                 continue;
             }
-            if(base.isStartingLocation()) {
+            if (base.isStartingLocation()) {
                 startingBases.add(base);
             }
         }
     }
 
     public boolean isExplored(Base base) {
-        if(game.isExplored(base.getLocation())) {
+        if (game.isExplored(base.getLocation())) {
             return true;
         }
 
@@ -125,12 +125,12 @@ public class MapInfo {
     }
 
     private void setGeyserTiles() {
-        for(Base base : mapBases) {
-            if(base.getGeysers().isEmpty()) {
+        for (Base base : mapBases) {
+            if (base.getGeysers().isEmpty()) {
                 continue;
             }
 
-            for(Geyser geyser : base.getGeysers()) {
+            for (Geyser geyser : base.getGeysers()) {
                 geyserTiles.put(base, geyser.getUnit().getTilePosition());
             }
         }
@@ -158,7 +158,7 @@ public class MapInfo {
 
     //Tiles around choke added for rally jank
     private void extendNaturalTiles() {
-        if(naturalChokePoint == null) {
+        if (naturalChokePoint == null) {
             return;
         }
 
@@ -168,12 +168,12 @@ public class MapInfo {
         int mapWidth = game.mapWidth();
         int mapHeight = game.mapHeight();
 
-        for(int x = 0; x < mapWidth; x++) {
-            for(int y = 0; y < mapHeight; y++) {
+        for (int x = 0; x < mapWidth; x++) {
+            for (int y = 0; y < mapHeight; y++) {
                 TilePosition tile = new TilePosition(x, y);
                 Position tilePos = tile.toPosition();
 
-                if(chokeCenter.getApproxDistance(tilePos) <= maxDistance) {
+                if (chokeCenter.getApproxDistance(tilePos) <= maxDistance) {
                     naturalTiles.add(tile);
                 }
             }
@@ -189,13 +189,13 @@ public class MapInfo {
     }
 
     private void setStartingMineralPatches() {
-        for(Mineral mineral : startingBase.getMinerals()) {
+        for (Mineral mineral : startingBase.getMinerals()) {
             startingMinerals.add(mineral);
         }
     }
 
     private void setStartingGeysers() {
-        for(Geyser geyser : startingBase.getGeysers()) {
+        for (Geyser geyser : startingBase.getGeysers()) {
             startingGeysers.add(geyser);
         }
     }
@@ -208,10 +208,10 @@ public class MapInfo {
         Base closestStartingBase = null;
         int closestDistance = Integer.MAX_VALUE;
 
-        for(Base base : mapBases) {
-            if(base.isStartingLocation()) {
+        for (Base base : mapBases) {
+            if (base.isStartingLocation()) {
                 int distance = initalCC.getDistance(base.getLocation().toPosition());
-                if(closestDistance > distance) {
+                if (closestDistance > distance) {
                     closestStartingBase = base;
                     closestDistance = distance;
                     startingBase = closestStartingBase;
@@ -224,11 +224,11 @@ public class MapInfo {
         Base closestBase = null;
         int closestDistance = Integer.MAX_VALUE;
 
-        for(Base base : mapBases) {
-            if(base != startingBase) {
+        for (Base base : mapBases) {
+            if (base != startingBase) {
                 List<Position> path = allPathsMap.get(base);
 
-                if(path == null || path.isEmpty()) {
+                if (path == null || path.isEmpty()) {
                     continue;
                 }
 
@@ -236,11 +236,11 @@ public class MapInfo {
 
 
 
-                if(base.getGeysers().isEmpty()) {
+                if (base.getGeysers().isEmpty()) {
                     continue;
                 }
 
-                if(distance < closestDistance) {
+                if (distance < closestDistance) {
                     //pathTest = path;
                     closestBase = base;
                     closestDistance = distance;
@@ -251,44 +251,44 @@ public class MapInfo {
     }
 
     private void setOrderedExpansions() {
-        for(Base base : mapBases) {
-            if(base == startingBase || base == naturalBase) {
+        for (Base base : mapBases) {
+            if (base == startingBase || base == naturalBase) {
                 continue;
             }
 
             List<Position> path = allPathsMap.get(base);
 
-            if(path == null || path.isEmpty()) {
+            if (path == null || path.isEmpty()) {
                 continue;
             }
 
             int distance = path.size();
 
-            if(orderedExpansions.isEmpty()) {
+            if (orderedExpansions.isEmpty()) {
                 orderedExpansions.add(base);
             }
             else {
                 boolean inserted = false;
 
-                for(int i = 0; i < orderedExpansions.size(); i++) {
+                for (int i = 0; i < orderedExpansions.size(); i++) {
                     Base currentBase = orderedExpansions.get(i);
                     List<Position> currentPath = allPathsMap.get(currentBase);
                     int currentDistance = currentPath.size();
 
-                    if(distance < currentDistance) {
+                    if (distance < currentDistance) {
                         orderedExpansions.add(i, base);
                         inserted = true;
                         break;
                     }
                 }
 
-                if(!inserted) {
+                if (!inserted) {
                     orderedExpansions.add(base);
                 }
             }
         }
 
-        if(naturalBase != null) {
+        if (naturalBase != null) {
             orderedExpansions.add(0, naturalBase);
         }
     }
@@ -297,19 +297,19 @@ public class MapInfo {
         Base closestBase = null;
         int closestDistance = Integer.MAX_VALUE;
 
-        for(Base base : mapBases) {
+        for (Base base : mapBases) {
             int distance = unit.getPosition().getApproxDistance(base.getLocation().toPosition());
-            if(distance < closestDistance) {
+            if (distance < closestDistance) {
                 closestBase = base;
                 closestDistance = distance;
             }
         }
 
-        if(closestBase == null) {
+        if (closestBase == null) {
             return;
         }
 
-        if(!orderedExpansions.contains(closestBase)) {
+        if (!orderedExpansions.contains(closestBase)) {
             orderedExpansions.add(0, closestBase);
         }
     }
@@ -319,33 +319,33 @@ public class MapInfo {
         ChokePoint naturalChoke = getNaturalChoke();
         HashSet<TilePosition> actualCliffEdge = new HashSet<>();
 
-        if(mainChoke == null || naturalChoke == null) {
+        if (mainChoke == null || naturalChoke == null) {
             return;
         }
 
-        for(TilePosition tile : baseTiles) {
+        for (TilePosition tile : baseTiles) {
             int distanceToMainChoke = mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
             int distanceToNaturalChoke = naturalChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
 
-            if(distanceToMainChoke < 160 || distanceToMainChoke > 256 || distanceToNaturalChoke > 400) {
+            if (distanceToMainChoke < 160 || distanceToMainChoke > 256 || distanceToNaturalChoke > 400) {
                 continue;
             }
 
             boolean isCliffEdge = false;
-            for(int dx = -1; dx <= 1 && !isCliffEdge; dx++) {
-                for(int dy = -1; dy <= 1 && !isCliffEdge; dy++) {
-                    if(dx == 0 && dy == 0) {
+            for (int dx = -1; dx <= 1 && !isCliffEdge; dx++) {
+                for (int dy = -1; dy <= 1 && !isCliffEdge; dy++) {
+                    if (dx == 0 && dy == 0) {
                         continue;
                     }
 
                     TilePosition adj = new TilePosition(tile.getX() + dx, tile.getY() + dy);
-                    if(!baseTiles.contains(adj)) {
+                    if (!baseTiles.contains(adj)) {
                         isCliffEdge = true;
                     }
                 }
             }
 
-            if(isCliffEdge) {
+            if (isCliffEdge) {
                 actualCliffEdge.add(tile);
             }
         }
@@ -375,11 +375,11 @@ public class MapInfo {
         int minDistance = 96;
         int maxDistance = 188;
 
-        for(TilePosition tile : naturalTiles) {
+        for (TilePosition tile : naturalTiles) {
             int distanceToChoke = chokeCenter.getApproxDistance(tile.toPosition());
 
-            if(distanceToChoke >= minDistance && distanceToChoke <= maxDistance) {
-                if(pathFinding.getTilePositionValidator().isWalkable(tile)) {
+            if (distanceToChoke >= minDistance && distanceToChoke <= maxDistance) {
+                if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
                     naturalChokeEdge.add(tile);
                 }
             }
@@ -397,33 +397,33 @@ public class MapInfo {
         ChokePoint naturalChoke = getNaturalChoke();
         HashSet<TilePosition> actualCliffEdge = new HashSet<>();
 
-        if(mainChoke == null || naturalChoke == null) {
+        if (mainChoke == null || naturalChoke == null) {
             return;
         }
 
-        for(TilePosition tile : baseTiles) {
+        for (TilePosition tile : baseTiles) {
             int distanceToMainChoke = mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
             int distanceToNaturalChoke = naturalChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
 
-            if(distanceToMainChoke < 160 || distanceToMainChoke > 256) {
+            if (distanceToMainChoke < 160 || distanceToMainChoke > 256) {
                 continue;
             }
 
             boolean isCliffEdge = false;
-            for(int dx = -1; dx <= 1 && !isCliffEdge; dx++) {
-                for(int dy = -1; dy <= 1 && !isCliffEdge; dy++) {
-                    if(dx == 0 && dy == 0) {
+            for (int dx = -1; dx <= 1 && !isCliffEdge; dx++) {
+                for (int dy = -1; dy <= 1 && !isCliffEdge; dy++) {
+                    if (dx == 0 && dy == 0) {
                         continue;
                     }
 
                     TilePosition adj = new TilePosition(tile.getX() + dx, tile.getY() + dy);
-                    if(!baseTiles.contains(adj)) {
+                    if (!baseTiles.contains(adj)) {
                         isCliffEdge = true;
                     }
                 }
             }
 
-            if(isCliffEdge) {
+            if (isCliffEdge) {
                 actualCliffEdge.add(tile);
             }
         }
@@ -447,26 +447,26 @@ public class MapInfo {
     }
 
     private void setMainChoke() {
-        if(startingBase == null || naturalBase == null) {
+        if (startingBase == null || naturalBase == null) {
             return;
         }
 
         List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), naturalBase.getLocation().toPosition()
         );
 
-        if(path.isEmpty()) {
+        if (path.isEmpty()) {
             return;
         }
 
         mainChokePoint = null;
         int minDistance = Integer.MAX_VALUE;
 
-        for(ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
+        for (ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
             Position chokePos = chokePoint.getCenter().toPosition();
 
-            for(Position pathPos : path) {
+            for (Position pathPos : path) {
                 int distance = chokePos.getApproxDistance(pathPos);
-                if(distance < minDistance) {
+                if (distance < minDistance) {
                     minDistance = distance;
                     mainChokePoint = chokePoint;
                 }
@@ -475,12 +475,12 @@ public class MapInfo {
     }
 
     public boolean hasBunkerInNatural() {
-        for(Unit building : game.self().getUnits()) {
-            if(!building.getType().isBuilding()) {
+        for (Unit building : game.self().getUnits()) {
+            if (!building.getType().isBuilding()) {
                 continue;
             }
 
-            if(building.getType() == UnitType.Terran_Bunker && getNaturalTiles().contains(building.getTilePosition())) {
+            if (building.getType() == UnitType.Terran_Bunker && getNaturalTiles().contains(building.getTilePosition())) {
                 return true;
             }
         }
@@ -492,7 +492,7 @@ public class MapInfo {
     }
 
     public void setNaturalChoke() {
-        if(naturalBase == null) {
+        if (naturalBase == null) {
             return;
         }
 
@@ -505,16 +505,16 @@ public class MapInfo {
         Base potentialEnemyBase = startingBases.iterator().next();
 
         //Handles maps where there are multiple chokes leading out of the natural and tries to idenifty the correct choke for the bunker/rally
-        for(ChokePoint choke : naturalChokes) {
-            if(choke == getMainChoke()) {
+        for (ChokePoint choke : naturalChokes) {
+            if (choke == getMainChoke()) {
                 continue;
             }
 
             chokeDistances.put(choke, choke.getCenter().toPosition().getDistance(potentialEnemyBase.getCenter()));
         }
 
-        for(ChokePoint choke : chokeDistances.keySet()) {
-            if(chokeDistances.get(choke) < closestDistance) {
+        for (ChokePoint choke : chokeDistances.keySet()) {
+            if (chokeDistances.get(choke) < closestDistance) {
                 naturalChokePoint = choke;
                 closestDistance = chokeDistances.get(choke).intValue();
             }
@@ -524,7 +524,7 @@ public class MapInfo {
 
     //WIP, hacky solution for Andromeda
     private void combineBaseAreas() {
-        if(naturalBase == null || mainChokePoint == null || startingBase == null) {
+        if (naturalBase == null || mainChokePoint == null || startingBase == null) {
             return;
         }
 
@@ -532,17 +532,17 @@ public class MapInfo {
         Area secondArea = mainChokePoint.getAreas().getSecond();
 
         //If starting base is in either area of the main choke point ignore this (Andromeda edge case)
-        if(firstArea.getBases().contains(startingBase) || secondArea.getBases().contains(startingBase)) {
+        if (firstArea.getBases().contains(startingBase) || secondArea.getBases().contains(startingBase)) {
             return;
         }
 
-        if(firstArea.getBases().isEmpty() || !firstArea.getBases().get(0).equals(naturalBase)) {
+        if (firstArea.getBases().isEmpty() || !firstArea.getBases().get(0).equals(naturalBase)) {
             minOnlyBase = firstArea.getBases().get(0);
             HashSet<TilePosition> firstAreaTiles = getTilesForBase(firstArea.getBases().get(0));
             minBaseTiles.addAll(firstAreaTiles);
         }
 
-        if(secondArea.getBases().isEmpty() || !secondArea.getBases().get(0).equals(naturalBase)) {
+        if (secondArea.getBases().isEmpty() || !secondArea.getBases().get(0).equals(naturalBase)) {
             minOnlyBase = secondArea.getBases().get(0);
             HashSet<TilePosition> secondAreaTiles = getTilesForBase(secondArea.getBases().get(0));
             minBaseTiles.addAll(secondAreaTiles);
@@ -603,8 +603,8 @@ public class MapInfo {
     
     private void setAllBaseTiles() {
 
-        for(Base base : mapBases) {
-            if(base == startingBase || base == naturalBase || (minOnlyBase != null && base == minOnlyBase)) {
+        for (Base base : mapBases) {
+            if (base == startingBase || base == naturalBase || (minOnlyBase != null && base == minOnlyBase)) {
                 continue;
             }
 
@@ -631,7 +631,7 @@ public class MapInfo {
 
     private void setBlockingMinerals() {
         for (Unit unit : game.getNeutralUnits()) {
-            if(unit.getType() != UnitType.Resource_Mineral_Field) {
+            if (unit.getType() != UnitType.Resource_Mineral_Field) {
                 continue;
             }
 
@@ -822,7 +822,7 @@ public class MapInfo {
     }
 
     public void onUnitCreate(Unit unit) {
-        if(unit.getType() != UnitType.Terran_Command_Center) {
+        if (unit.getType() != UnitType.Terran_Command_Center) {
             return;
         }
 
@@ -836,7 +836,7 @@ public class MapInfo {
             }
         }
 
-        if(unit.getDistance(naturalBase.getCenter()) < 100) {
+        if (unit.getDistance(naturalBase.getCenter()) < 100) {
             baseTiles.addAll(naturalTiles);
             naturalOwned = true;
             return;
@@ -853,7 +853,7 @@ public class MapInfo {
     }
 
     public void onUnitDestroy(Unit unit) {
-        if(unit.getType() == UnitType.Terran_Command_Center) {
+        if (unit.getType() == UnitType.Terran_Command_Center) {
             Base destroyedBase = null;
             for (Base base : ownedBases) {
                 if (unit.getPosition().getApproxDistance(base.getLocation().toPosition()) < 100) {

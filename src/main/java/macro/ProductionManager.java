@@ -66,13 +66,13 @@ public class ProductionManager {
         boolean blockedByHigherPriority = false;
         Workers worker = null;
 
-        for(PlannedItem pi : new PriorityQueue<>(productionQueue)) {
-            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
+        for (PlannedItem pi : new PriorityQueue<>(productionQueue)) {
+            if (pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
 
             //Override stop of floating too much
-            if(gameState.getResourceTracking().getAvailableMinerals() >= 800) {
+            if (gameState.getResourceTracking().getAvailableMinerals() >= 800) {
                 priorityStop = false;
                 blockedByHigherPriority = false;
             }
@@ -82,26 +82,26 @@ public class ProductionManager {
             }
 
             //Throttle gas units but allow mineral only if enough is banked (Vessels very gas heavy and only unit worth prioritizing)
-            if(pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
+            if (pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
                     && pi.getPlannedItemType() == PlannedItemType.UNIT && meetsRequirements(pi.getUnitType())
                     && pi.getSupply() > player.supplyUsed() / 2) {
-                if(gameState.getResourceTracking().getAvailableMinerals() >= pi.getUnitType().mineralPrice() && gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice()) {
+                if (gameState.getResourceTracking().getAvailableMinerals() >= pi.getUnitType().mineralPrice() && gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice()) {
                     priorityStop = true;
                 }
             }
 
-            if(gameState.isEnemyInNatural() && (pi.getBuildPosition() != null && !mapInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
+            if (gameState.isEnemyInNatural() && (pi.getBuildPosition() != null && !mapInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
                 priorityStop = false;
                 hasHighPriorityBuilding = false;
                 continue;
             }
 
-            if(priorityStop && pi.getPriority() != 1 && (pi.getPlannedItemType() == PlannedItemType.BUILDING || pi.getPlannedItemType() == PlannedItemType.ADDON)
+            if (priorityStop && pi.getPriority() != 1 && (pi.getPlannedItemType() == PlannedItemType.BUILDING || pi.getPlannedItemType() == PlannedItemType.ADDON)
                     && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                 continue;
             }
 
-            if(hasHighPriorityBuilding && pi.getPlannedItemType() == PlannedItemType.UNIT
+            if (hasHighPriorityBuilding && pi.getPlannedItemType() == PlannedItemType.UNIT
                     && pi.getPriority() != 1
                     && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                 continue;
@@ -109,11 +109,11 @@ public class ProductionManager {
 
             switch (pi.getPlannedItemStatus()) {
                 case NOT_STARTED:
-                    if(pi.getSupply() > player.supplyUsed() / 2) {
+                    if (pi.getSupply() > player.supplyUsed() / 2) {
                         continue;
                     }
 
-                    if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
+                    if (pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
                         if (pi.getUpgradeType() != null && game.self().getUpgradeLevel(pi.getUpgradeType()) >= pi.getUpgradeLevel()) {
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             continue;
@@ -124,17 +124,17 @@ public class ProductionManager {
                             continue;
                         }
 
-                        if(!canBeResearched(pi.getTechBuilding()) || !researchBuildingAvailable(pi.getTechBuilding())) {
+                        if (!canBeResearched(pi.getTechBuilding()) || !researchBuildingAvailable(pi.getTechBuilding())) {
                             continue;
                         }
 
-                        if(pi.getTechUpgrade() != null) {
-                            if(gameState.getResourceTracking().getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
+                        if (pi.getTechUpgrade() != null) {
+                            if (gameState.getResourceTracking().getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
                                 blockedByHigherPriority = true;
                                 continue;
                             }
 
-                            if(game.self().hasResearched(pi.getTechUpgrade())) {
+                            if (game.self().hasResearched(pi.getTechUpgrade())) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                                 continue;
                             }
@@ -142,23 +142,23 @@ public class ProductionManager {
                             researchTech(pi.getTechUpgrade());
                             pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                         }
-                        else if(pi.getUpgradeType() != null) {
-                            if(!canUpgrade(pi.getUpgradeType())) {
+                        else if (pi.getUpgradeType() != null) {
+                            if (!canUpgrade(pi.getUpgradeType())) {
                                 continue;
                             }
 
-                            if(gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice()
+                            if (gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice()
                                     || gameState.getResourceTracking().getAvailableGas() < pi.getUpgradeType().gasPrice()) {
                                 blockedByHigherPriority = true;
                                 continue;
                             }
 
-                            if(game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeLevel()) {
+                            if (game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeLevel()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                                 continue;
                             }
 
-                            if(canUpgrade(pi.getUpgradeType())) {
+                            if (canUpgrade(pi.getUpgradeType())) {
                                 researchUpgrade(pi.getUpgradeType());
                                 pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                             }
@@ -166,15 +166,15 @@ public class ProductionManager {
                         continue;
                     }
 
-                    if((gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice())
+                    if ((gameState.getResourceTracking().getAvailableMinerals() < pi.getUnitType().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getUnitType().gasPrice())
                         && meetsRequirements(pi.getUnitType()) && pi.getPlannedItemType() != PlannedItemType.ADDON) {
                         blockedByHigherPriority = true;
                         continue;
                     }
 
-                    if(pi.getPlannedItemType() == PlannedItemType.UNIT) {
-                        for(Unit productionBuilding : productionBuildings) {
-                            if(productionBuilding.canTrain(pi.getUnitType()) && !productionBuilding.isTraining()) {
+                    if (pi.getPlannedItemType() == PlannedItemType.UNIT) {
+                        for (Unit productionBuilding : productionBuildings) {
+                            if (productionBuilding.canTrain(pi.getUnitType()) && !productionBuilding.isTraining()) {
                                 productionBuilding.train(pi.getUnitType());
                                 pi.setProductionBuilding(productionBuilding);
                                 pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
@@ -182,13 +182,13 @@ public class ProductionManager {
                             }
                         }
                     }
-                    else if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
-                        if(!meetsRequirements(pi.getUnitType())) {
+                    else if (pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                        if (!meetsRequirements(pi.getUnitType())) {
                             priorityStop = false;
                             blockedByHigherPriority = false;
                         }
 
-                        if(pi.getBuildPosition() == null) {
+                        if (pi.getBuildPosition() == null) {
                             if (pi.getUnitType() == UnitType.Terran_Refinery) {
                                 setRefineryPosition(pi);
                             }
@@ -200,37 +200,37 @@ public class ProductionManager {
                             }
 
                             //Skip over if out of tiles
-                            if(pi.getBuildPosition() == null) {
+                            if (pi.getBuildPosition() == null) {
                                 hasHighPriorityBuilding = false;
                                 continue;
                             }
                         }
 
-                        if(pi.getBuildPosition() != null && pi.getAssignedBuilder() == null) {
+                        if (pi.getBuildPosition() != null && pi.getAssignedBuilder() == null) {
                             worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), mapInfo.getPathFinding());
                             pi.setAssignedBuilder(worker);
                         }
 
-                        if(pi.getAssignedBuilder() != null) {
+                        if (pi.getAssignedBuilder() != null) {
                             worker = pi.getAssignedBuilder();
 
-                            if(worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
+                            if (worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
                                 worker.build(pi, gameState.getResourceTracking());
                             }
-                            else if(worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+                            else if (worker.getWorkerStatus() != WorkerStatus.MINERALS) {
                                 pi.setAssignedBuilder(null);
                                 continue;
                             }
                         }
                     }
-                    else if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
-                        for(Unit productionBuilding : productionBuildings) {
-                            if(productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
-                                if(productionQueue.stream().anyMatch(plannedItem -> plannedItem.getAddOnParent() == productionBuilding)) {
+                    else if (pi.getPlannedItemType() == PlannedItemType.ADDON) {
+                        for (Unit productionBuilding : productionBuildings) {
+                            if (productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
+                                if (productionQueue.stream().anyMatch(plannedItem -> plannedItem.getAddOnParent() == productionBuilding)) {
                                     continue;
                                 }
 
-                                if(buildTiles.isAddonPositionBlocked(productionBuilding.getTilePosition())) {
+                                if (buildTiles.isAddonPositionBlocked(productionBuilding.getTilePosition())) {
                                     continue;
                                 }
 
@@ -243,7 +243,7 @@ public class ProductionManager {
                     }
 
                     //check requirements again in case tiles run out before building starts
-                    if((pi.getPriority() == 1 && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED) || (pi.getPlannedItemType() == PlannedItemType.BUILDING && !meetsRequirements(pi.getUnitType()))) {
+                    if ((pi.getPriority() == 1 && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED) || (pi.getPlannedItemType() == PlannedItemType.BUILDING && !meetsRequirements(pi.getUnitType()))) {
                         priorityStop = false;
                     }
 
@@ -251,9 +251,9 @@ public class ProductionManager {
 
                 case SCV_ASSIGNED:
                     worker = pi.getAssignedBuilder();
-                    if(worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
-                        if(worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
-                            if(pi.getUnitType() == UnitType.Terran_Command_Center
+                    if (worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                        if (worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
+                            if (pi.getUnitType() == UnitType.Terran_Command_Center
                                     && worker.getIdleClock() > 24) {
                                 gameState.scanPosition(pi.getBuildPosition().toPosition());
                                 worker.setWorkerStatus(WorkerStatus.CLEARINGMINE);
@@ -265,7 +265,7 @@ public class ProductionManager {
                         }
 
                         //TODO: ignore if building CC (or other long distance builds)
-                        if(worker.getBuildFrameCount() > 420 && mapInfo.getStartingBase().getCenter().getDistance(pi.getBuildPosition().toPosition()) < 1000
+                        if (worker.getBuildFrameCount() > 420 && mapInfo.getStartingBase().getCenter().getDistance(pi.getBuildPosition().toPosition()) < 1000
                                 && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }
@@ -275,11 +275,11 @@ public class ProductionManager {
                         }
                     }
 
-                    if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                    if (worker.getWorkerStatus() == WorkerStatus.MINERALS) {
                         worker.buildReset(pi, gameState.getResourceTracking());
                     }
 
-                    if(worker.getWorkerStatus() == WorkerStatus.STUCK || worker.getWorkerStatus() == WorkerStatus.REPAIRING || worker.getWorkerStatus() == WorkerStatus.DEFEND) {
+                    if (worker.getWorkerStatus() == WorkerStatus.STUCK || worker.getWorkerStatus() == WorkerStatus.REPAIRING || worker.getWorkerStatus() == WorkerStatus.DEFEND) {
                         gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                         pi.setAssignedBuilder(null);
@@ -289,7 +289,7 @@ public class ProductionManager {
                         }
                     }
 
-                    if(!worker.getUnit().exists()) {
+                    if (!worker.getUnit().exists()) {
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
 
                         if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
@@ -297,27 +297,27 @@ public class ProductionManager {
                         }
                     }
 
-                    if(buildingInProduction(pi.getBuildPosition(), pi.getUnitType())) {
+                    if (buildingInProduction(pi.getBuildPosition(), pi.getUnitType())) {
                         gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
 
-                        if(worker.getUnitID() == pi.getAssignedBuilder().getUnitID() ) {
+                        if (worker.getUnitID() == pi.getAssignedBuilder().getUnitID() ) {
                             worker.setWorkerStatus(WorkerStatus.BUILDING);
                         }
                     }
                     break;
 
                 case IN_PROGRESS:
-                    if(pi.getPlannedItemType() == PlannedItemType.BUILDING) {
-                        if(pi.getAssignedBuilder() != null) {
+                    if (pi.getPlannedItemType() == PlannedItemType.BUILDING) {
+                        if (pi.getAssignedBuilder() != null) {
                             worker = pi.getAssignedBuilder();
                         }
 
-                        for(Unit building : allBuildings) {
-                            if(building.getType() == pi.getUnitType() && building.getTilePosition().equals(pi.getBuildPosition()) && building.isCompleted()) {
+                        for (Unit building : allBuildings) {
+                            if (building.getType() == pi.getUnitType() && building.getTilePosition().equals(pi.getBuildPosition()) && building.isCompleted()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
 
-                                if(worker.getWorkerStatus() == WorkerStatus.BUILDING) {
+                                if (worker.getWorkerStatus() == WorkerStatus.BUILDING) {
                                     worker.setBuildingPosition(null);
                                     worker.setWorkerStatus(WorkerStatus.IDLE);
                                 }
@@ -327,16 +327,16 @@ public class ProductionManager {
                         }
 
                         boolean builderHasDied = true;
-                        for(Workers workers : gameState.getWorkers()) {
-                            if(workers == pi.getAssignedBuilder()) {
+                        for (Workers workers : gameState.getWorkers()) {
+                            if (workers == pi.getAssignedBuilder()) {
                                 builderHasDied = false;
                                 break;
                             }
                         }
 
-                        if(builderHasDied) {
-                            for(Workers newWorker : gameState.getWorkers()) {
-                                if(newWorker.getWorkerStatus() == WorkerStatus.MINERALS) {
+                        if (builderHasDied) {
+                            for (Workers newWorker : gameState.getWorkers()) {
+                                if (newWorker.getWorkerStatus() == WorkerStatus.MINERALS) {
                                     pi.setAssignedBuilder(newWorker);
                                     newWorker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
                                     break;
@@ -344,14 +344,14 @@ public class ProductionManager {
                             }
                         }
 
-                        for(Unit building : player.getUnits()) {
-                            if(!building.isCompleted() && building.getType() == pi.getUnitType() && !building.isBeingConstructed()) {
+                        for (Unit building : player.getUnits()) {
+                            if (!building.isCompleted() && building.getType() == pi.getUnitType() && !building.isBeingConstructed()) {
                                 pi.getAssignedBuilder().getUnit().rightClick(building);
                                 break;
                             }
 
-                            if(building.isBeingConstructed() && pi.getAssignedBuilder().getUnit().isConstructing()) {
-                                if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
+                            if (building.isBeingConstructed() && pi.getAssignedBuilder().getUnit().isConstructing()) {
+                                if (worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
                                     worker.setWorkerStatus(WorkerStatus.BUILDING);
                                     break;
                                 }
@@ -360,46 +360,46 @@ public class ProductionManager {
                         }
                     }
 
-                    if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
-                        if(pi.getUpgradeType() != null) {
-                            if(game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeLevel()) {
+                    if (pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
+                        if (pi.getUpgradeType() != null) {
+                            if (game.self().getUpgradeLevel(pi.getUpgradeType()) == pi.getUpgradeLevel()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             }
 
-                            if(!isUpgrading(pi.getUpgradeType()) && game.self().getUpgradeLevel(pi.getUpgradeType()) < pi.getUpgradeLevel()) {
+                            if (!isUpgrading(pi.getUpgradeType()) && game.self().getUpgradeLevel(pi.getUpgradeType()) < pi.getUpgradeLevel()) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                             }
                         }
-                        else if(pi.getTechUpgrade() != null) {
-                            if(game.self().hasResearched(pi.getTechUpgrade())) {
+                        else if (pi.getTechUpgrade() != null) {
+                            if (game.self().hasResearched(pi.getTechUpgrade())) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             }
 
-                            if(!researchBuildingAvailable(pi.getTechUpgrade()) && !game.self().hasResearched(pi.getTechUpgrade())) {
+                            if (!researchBuildingAvailable(pi.getTechUpgrade()) && !game.self().hasResearched(pi.getTechUpgrade())) {
                                 pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                             }
                         }
                     }
 
-                    if(pi.getPlannedItemType() == PlannedItemType.ADDON) {
-                        if(pi.getAddOnParent() == null || pi.getAddOnParent().getAddon() == null) {
+                    if (pi.getPlannedItemType() == PlannedItemType.ADDON) {
+                        if (pi.getAddOnParent() == null || pi.getAddOnParent().getAddon() == null) {
                             pi.setResetCounter(pi.getResetCounter() + 1);
 
-                            if(pi.getResetCounter() > 64) {
+                            if (pi.getResetCounter() > 64) {
                                 pi.setResetCounter(0);
                                 pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                             }
                             continue;
                         }
 
-                        if(pi.getAddOnParent() != null && pi.getAddOnParent().getAddon().isCompleted()) {
+                        if (pi.getAddOnParent() != null && pi.getAddOnParent().getAddon().isCompleted()) {
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             break;
                         }
                     }
 
-                    for(Unit productionBuilding : productionBuildings) {
-                        if(pi.getProductionBuilding() == productionBuilding && !productionBuilding.isTraining()) {
+                    for (Unit productionBuilding : productionBuildings) {
+                        if (pi.getProductionBuilding() == productionBuilding && !productionBuilding.isTraining()) {
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             break;
                         }
@@ -436,19 +436,19 @@ public class ProductionManager {
     }
 
     private boolean hasHigherPriorityBuilding() {
-        for(PlannedItem pi : productionQueue) {
-            if((pi.getPlannedItemType() == PlannedItemType.BUILDING) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && meetsRequirements(pi.getUnitType()) && pi.getPriority() < 3) {
-                if(gameState.isEnemyInNatural() && pi.getUnitType() == UnitType.Terran_Command_Center) {
+        for (PlannedItem pi : productionQueue) {
+            if ((pi.getPlannedItemType() == PlannedItemType.BUILDING) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && meetsRequirements(pi.getUnitType()) && pi.getPriority() < 3) {
+                if (gameState.isEnemyInNatural() && pi.getUnitType() == UnitType.Terran_Command_Center) {
                     continue;
                 }
 
                 return true;
             }
-            else if(pi.getPlannedItemType() == PlannedItemType.UPGRADE && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && researchBuildingAvailable(pi.getTechBuilding())) {
-                if(pi.getUpgradeType() != null && canUpgrade(pi.getUpgradeType())) {
+            else if (pi.getPlannedItemType() == PlannedItemType.UPGRADE && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() <= player.supplyUsed() / 2 && researchBuildingAvailable(pi.getTechBuilding())) {
+                if (pi.getUpgradeType() != null && canUpgrade(pi.getUpgradeType())) {
                     return true;
                 }
-                else if(pi.getTechUpgrade() != null) {
+                else if (pi.getTechUpgrade() != null) {
                     return true;
                 }
             }
@@ -459,35 +459,35 @@ public class ProductionManager {
     //Unplanned depot additions to the queue
     private void addSupplyDepot() {
 
-        if(!isDepotInQueue()) {
+        if (!isDepotInQueue()) {
 
             int usedSupply = game.self().supplyUsed() / 2;
             int totalSupply = game.self().supplyTotal() / 2;
             int freeSupply = totalSupply - usedSupply;
 
-            if(totalSupply >= 200) {
+            if (totalSupply >= 200) {
                 return;
             }
 
-            if(freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() >= 2) {
+            if (freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() >= 2) {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
             }
 
-            if(freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() == 1) {
+            if (freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() == 1) {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
             }
         }
     }
 
     private void addProductionBuilding(UnitType unitType, int priority) {
-        if(buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
+        if (buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
             return;
         }
 
         int currentlyBuilding = (int) productionQueue.stream().filter(pi -> pi.getUnitType() != null && pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4 && (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED || pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS)).count();
 
-        if(buildTiles.getLargeBuildTiles().size() + buildTiles.getLargeBuildTilesNoGap().size() == currentlyBuilding) {
+        if (buildTiles.getLargeBuildTiles().size() + buildTiles.getLargeBuildTilesNoGap().size() == currentlyBuilding) {
             return;
         }
 
@@ -495,7 +495,7 @@ public class ProductionManager {
     }
 
     private void addExpansion() {
-        if(!gameState.getCanExpand()) {
+        if (!gameState.getCanExpand()) {
             return;
         }
 
@@ -503,7 +503,7 @@ public class ProductionManager {
                 .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Command_Center
                         && pi.getPlannedItemStatus() != PlannedItemStatus.COMPLETE);
 
-        if(!ccAlreadyQueued) {
+        if (!ccAlreadyQueued) {
             addToQueue(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 4);
         }
 
@@ -514,18 +514,18 @@ public class ProductionManager {
         TilePosition turretPosition = null;
         Base newBase = null;
 
-        for(Base base : mapInfo.getMapBases()) {
-            if(base.getLocation().getDistance(unit.getTilePosition()) < 10) {
+        for (Base base : mapInfo.getMapBases()) {
+            if (base.getLocation().getDistance(unit.getTilePosition()) < 10) {
                 newBase = base;
                 break;
             }
         }
 
-        if(newBase != null) {
-            if(newBase == mapInfo.getStartingBase()) {
+        if (newBase != null) {
+            if (newBase == mapInfo.getStartingBase()) {
                 return;
             }
-            else if(newBase == mapInfo.getNaturalBase() && !tileTaken(buildTiles.getNaturalChokeTurret())) {
+            else if (newBase == mapInfo.getNaturalBase() && !tileTaken(buildTiles.getNaturalChokeTurret())) {
                 turretPosition = buildTiles.getNaturalChokeTurret();
             }
             else {
@@ -533,7 +533,7 @@ public class ProductionManager {
             }
         }
 
-        if(turretPosition != null) {
+        if (turretPosition != null) {
             addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretPosition, 4);
         }
     }
@@ -543,13 +543,13 @@ public class ProductionManager {
         int workerCap = 24 * ownedBases;
 
         //temp fix
-        if(gameState.getEnemyOpener() != null) {
-            if(gameState.getEnemyOpener().getStrategyName().equals("Gas Steal") && !gameState.moveOutConditionsMet()) {
+        if (gameState.getEnemyOpener() != null) {
+            if (gameState.getEnemyOpener().getStrategyName().equals("Gas Steal") && !gameState.moveOutConditionsMet()) {
                 workerCap = 12;
             }
         }
 
-        if(unitTypeCount.get(UnitType.Terran_SCV) >= workerCap) {
+        if (unitTypeCount.get(UnitType.Terran_SCV) >= workerCap) {
             return;
         }
 
@@ -564,12 +564,12 @@ public class ProductionManager {
 
         long scvsToQueue = idleCCs - notStartedSCVs;
 
-        for(long i = 0; i < scvsToQueue; i++) {
-            if(ownedBases == 1) {
+        for (long i = 0; i < scvsToQueue; i++) {
+            if (ownedBases == 1) {
                 addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
             }
             else {
-                if(unitTypeCount.get(UnitType.Terran_SCV) < 48) {
+                if (unitTypeCount.get(UnitType.Terran_SCV) < 48) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
                 else {
@@ -580,16 +580,16 @@ public class ProductionManager {
     }
 
     private boolean isDepotInQueue() {
-        if(buildTiles.getMediumBuildTiles().isEmpty()) {
+        if (buildTiles.getMediumBuildTiles().isEmpty()) {
             return true;
         }
 
-        for(PlannedItem pi : productionQueue) {
-            if(pi.getUnitType() == UnitType.Terran_Supply_Depot) {
+        for (PlannedItem pi : productionQueue) {
+            if (pi.getUnitType() == UnitType.Terran_Supply_Depot) {
                 return true;
             }
 
-//            if(pi.getUnitType() == UnitType.Terran_Command_Center) {
+//            if (pi.getUnitType() == UnitType.Terran_Command_Center) {
 //                return true;
 //            }
         }
@@ -597,16 +597,16 @@ public class ProductionManager {
     }
 
     private void setRefineryPosition(PlannedItem pi) {
-        for(Base base : mapInfo.getOwnedBases()) {
-            if(!mapInfo.getGeyserTiles().containsKey(base)) {
+        for (Base base : mapInfo.getOwnedBases()) {
+            if (!mapInfo.getGeyserTiles().containsKey(base)) {
                 continue;
             }
 
-            if(base.getGeysers().isEmpty()) {
+            if (base.getGeysers().isEmpty()) {
                 continue;
             }
 
-            if(mapInfo.getUsedGeysers().contains(mapInfo.getGeyserTiles().get(base))) {
+            if (mapInfo.getUsedGeysers().contains(mapInfo.getGeyserTiles().get(base))) {
                 continue;
             }
 
@@ -619,35 +619,35 @@ public class ProductionManager {
         TilePosition cloestBuildTile = null;
         int distanceFromSCV = Integer.MAX_VALUE;
 
-        if(pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4) {
-            if(buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty() && pi.getUnitType().canBuildAddon()) {
+        if (pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4) {
+            if (buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty() && pi.getUnitType().canBuildAddon()) {
                 return;
             }
 
-            if((pi.getUnitType().canBuildAddon() && pi.needsAddon()) || buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
-                for(TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
-                    if(tileTaken(tilePosition)) {
+            if ((pi.getUnitType().canBuildAddon() && pi.needsAddon()) || buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
+                for (TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
+                    if (tileTaken(tilePosition)) {
                         continue;
                     }
 
                     int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
-                    if(distance < distanceFromSCV) {
+                    if (distance < distanceFromSCV) {
                         distanceFromSCV = distance;
                         cloestBuildTile = tilePosition;
                     }
                 }
 
                 //Use no gap tiles if no other large tiles are available
-                if(cloestBuildTile == null) {
-                    for(TilePosition tilePosition : buildTiles.getLargeBuildTilesNoGap()) {
-                        if(tileTaken(tilePosition)) {
+                if (cloestBuildTile == null) {
+                    for (TilePosition tilePosition : buildTiles.getLargeBuildTilesNoGap()) {
+                        if (tileTaken(tilePosition)) {
                             continue;
                         }
 
                         int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
-                        if(distance < distanceFromSCV) {
+                        if (distance < distanceFromSCV) {
                             distanceFromSCV = distance;
                             cloestBuildTile = tilePosition;
                         }
@@ -655,14 +655,14 @@ public class ProductionManager {
                 }
             }
             else {
-                for(TilePosition tilePosition : buildTiles.getLargeBuildTilesNoGap()) {
-                    if(tileTaken(tilePosition)) {
+                for (TilePosition tilePosition : buildTiles.getLargeBuildTilesNoGap()) {
+                    if (tileTaken(tilePosition)) {
                         continue;
                     }
 
                     int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
-                    if(distance < distanceFromSCV) {
+                    if (distance < distanceFromSCV) {
                         distanceFromSCV = distance;
                         cloestBuildTile = tilePosition;
                     }
@@ -671,24 +671,24 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
 
         }
-        else if(pi.getUnitType().tileHeight() == 2 && pi.getUnitType().tileWidth() == 3) {
-            if(buildTiles.getMediumBuildTiles().isEmpty()) {
+        else if (pi.getUnitType().tileHeight() == 2 && pi.getUnitType().tileWidth() == 3) {
+            if (buildTiles.getMediumBuildTiles().isEmpty()) {
                 return;
             }
 
-            if(pi.getUnitType() == UnitType.Terran_Bunker) {
+            if (pi.getUnitType() == UnitType.Terran_Bunker) {
                 pi.setBuildPosition(setBunkerPosition());
                 return;
             }
 
-            for(TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
-                if(tileTaken(tilePosition)) {
+            for (TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
+                if (tileTaken(tilePosition)) {
                     continue;
                 }
 
                 int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
-                if(distance < distanceFromSCV) {
+                if (distance < distanceFromSCV) {
                     distanceFromSCV = distance;
                     cloestBuildTile = tilePosition;
                 }
@@ -696,11 +696,11 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
         }
         else {
-            if((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+            if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
                 reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                 pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
             }
-            else if(buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
+            else if (buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
                 reservedTurretPositions.add(buildTiles.getMainChokeTurret());
                 pi.setBuildPosition(buildTiles.getMainChokeTurret());
             }
@@ -733,12 +733,12 @@ public class ProductionManager {
     }
 
     private TilePosition setBunkerPosition() {
-        if(buildTiles.getCloseBunkerTile() == null) {
+        if (buildTiles.getCloseBunkerTile() == null) {
             return null;
         }
 
-        if(gameState.getEnemyOpener() != null) {
-            switch(gameState.getEnemyOpener().getStrategyName()) {
+        if (gameState.getEnemyOpener() != null) {
+            switch (gameState.getEnemyOpener().getStrategyName()) {
                 case "Cannon Rush":
                 case "Four Rax":
                 case "DT Rush":
@@ -749,7 +749,7 @@ public class ProductionManager {
             }
         }
 
-        if(bunkerPosition != null) {
+        if (bunkerPosition != null) {
            return bunkerPosition;
         }
 
@@ -760,13 +760,13 @@ public class ProductionManager {
         openerResponse = true;
 
         Map<UnitType, Integer> buildingCounts = new HashMap<>();
-        for(UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
+        for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             buildingCounts.merge(building, 1, Integer::sum);
         }
 
         productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
 
-        for(UnitType buildingType : gameState.getEnemyOpener().removeBuildings()) {
+        for (UnitType buildingType : gameState.getEnemyOpener().removeBuildings()) {
             List<PlannedItem> queueSnapshot = new ArrayList<>(productionQueue);
             Optional<PlannedItem> toRemove = queueSnapshot.stream()
                     .filter(pi -> pi.getUnitType() == buildingType
@@ -776,27 +776,27 @@ public class ProductionManager {
             toRemove.ifPresent(productionQueue::remove);
         }
 
-        for(UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
+        for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             boolean alreadyInProgress = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == building && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED);
 
-            if(unitTypeCount.get(building) == 0 && !alreadyInProgress) {
-                if(building.isAddon()) {
+            if (unitTypeCount.get(building) == 0 && !alreadyInProgress) {
+                if (building.isAddon()) {
                     addToQueue(building, PlannedItemType.ADDON, 1);
                 }
                 else {
-                    if(building == UnitType.Terran_Missile_Turret) {
-                        if((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null
+                    if (building == UnitType.Terran_Missile_Turret) {
+                        if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null
                                 && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
                             reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getNaturalChokeTurret(),1);
                         }
-                        else if(buildTiles.getMainChokeTurret() != null && !hasTurretAtBase(buildTiles.getMainChokeTurret()) && !hasPositionInQueue(buildTiles.getMainChokeTurret())) {
+                        else if (buildTiles.getMainChokeTurret() != null && !hasTurretAtBase(buildTiles.getMainChokeTurret()) && !hasPositionInQueue(buildTiles.getMainChokeTurret())) {
                             reservedTurretPositions.add(buildTiles.getMainChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getMainChokeTurret(),1);
                         }
                         else {
-                            for(TilePosition turretTile : gameState.getBuildTiles().getMainTurrets()) {
-                                if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
+                            for (TilePosition turretTile : gameState.getBuildTiles().getMainTurrets()) {
+                                if (turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
                                     addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 3);
                                     break;
                                 }
@@ -805,11 +805,11 @@ public class ProductionManager {
 
                     }
                     //TODO: add separate list for units
-                    else if(!building.isBuilding()){
+                    else if (!building.isBuilding()){
                         addToQueue(building, PlannedItemType.UNIT, 1);
                     }
                     else {
-                        if(building.canBuildAddon()) {
+                        if (building.canBuildAddon()) {
                             addToQueue(building, PlannedItemType.BUILDING, 1, true);
                         }
                         else {
@@ -820,9 +820,9 @@ public class ProductionManager {
             }
         }
 
-        if(!gameState.getEnemyOpener().additionalBuildings().isEmpty()) {
-            for(UnitType building : gameState.getEnemyOpener().additionalBuildings()) {
-                if(building.canProduce()) {
+        if (!gameState.getEnemyOpener().additionalBuildings().isEmpty()) {
+            for (UnitType building : gameState.getEnemyOpener().additionalBuildings()) {
+                if (building.canProduce()) {
                     addToQueue(building, PlannedItemType.BUILDING, 1);
                 }
                 else {
@@ -832,19 +832,19 @@ public class ProductionManager {
             }
         }
 
-        if(!gameState.getEnemyOpener().getUnitResponse().isEmpty()) {
+        if (!gameState.getEnemyOpener().getUnitResponse().isEmpty()) {
             productionQueue.removeIf(pi -> gameState.getEnemyOpener().getUnitResponse().contains(pi.getUnitType()));
         }
 
-        for(UpgradeType upgrade : gameState.getEnemyOpener().getUpgradeResponse()) {
+        for (UpgradeType upgrade : gameState.getEnemyOpener().getUpgradeResponse()) {
             boolean existingUpgrade = false;
             PlannedItem existingItem = null;
             UnitType researchBuilding = null;
             int upgradeLevel = 1;
 
-            for(PlannedItem pi : productionQueue) {
-                if(pi.getUpgradeType() != null && upgrade != null) {
-                    if(pi.getUpgradeType() == upgrade) {
+            for (PlannedItem pi : productionQueue) {
+                if (pi.getUpgradeType() != null && upgrade != null) {
+                    if (pi.getUpgradeType() == upgrade) {
                         researchBuilding = pi.getTechBuilding();
                         upgradeLevel = pi.getUpgradeLevel();
                         existingItem = pi;
@@ -854,14 +854,14 @@ public class ProductionManager {
                 }
             }
 
-            if(existingUpgrade) {
-                if(existingItem.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+            if (existingUpgrade) {
+                if (existingItem.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                     productionQueue.removeIf(pi -> pi.getUpgradeType() != null && pi.getUpgradeType() == upgrade);
                     productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE,  researchBuilding, upgradeLevel,1));
                 }
             }
             else {
-                if(game.self().getUpgradeLevel(upgrade) < upgradeLevel) {
+                if (game.self().getUpgradeLevel(upgrade) < upgradeLevel) {
                     productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, researchBuilding, upgradeLevel,1));
                 }
             }
@@ -869,12 +869,12 @@ public class ProductionManager {
     }
 
     private void enemyTechResponse() {
-        if(gameState.getKnownEnemyTechUnits().isEmpty()) {
+        if (gameState.getKnownEnemyTechUnits().isEmpty()) {
             return;
         }
 
-        for(EnemyTechUnits techUnit : gameState.getKnownEnemyTechUnits()) {
-            if(techUnit.getFriendlyBuildingResponse().isEmpty()) {
+        for (EnemyTechUnits techUnit : gameState.getKnownEnemyTechUnits()) {
+            if (techUnit.getFriendlyBuildingResponse().isEmpty()) {
                 continue;
             }
 
@@ -886,14 +886,14 @@ public class ProductionManager {
                     productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
                             && (pi.getPriority() == 1 || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
 
-            for(UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
+            for (UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
                 productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() != 1);
 
-                if(buildingResponse.isAddon()) {
+                if (buildingResponse.isAddon()) {
                     addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
                 }
                 else {
-                    if(buildingResponse.canBuildAddon()) {
+                    if (buildingResponse.canBuildAddon()) {
                         addToQueue(buildingResponse, PlannedItemType.BUILDING, 1, true);
                     }
                     else {
@@ -905,10 +905,10 @@ public class ProductionManager {
             }
 
             //Spam turrets if flyers are detected
-            if(techUnit.isFlyer()) {
-                for(Base base : mapInfo.getOwnedBases()) {
+            if (techUnit.isFlyer()) {
+                for (Base base : mapInfo.getOwnedBases()) {
                     TilePosition turretTile = buildTiles.getMineralLineTurrets().get(base);
-                    if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
+                    if (turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
                         addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,2);
                     }
                 }
@@ -933,53 +933,53 @@ public class ProductionManager {
                 TilePosition mainChokeTurret = buildTiles.getMainChokeTurret();
                 TilePosition naturalChokeTurret = buildTiles.getNaturalChokeTurret();
 
-                if(mainChokeTurret != null && !hasTurretAtBase(mainChokeTurret) && !hasPositionInQueue(mainChokeTurret) && !tileTaken(mainChokeTurret)) {
+                if (mainChokeTurret != null && !hasTurretAtBase(mainChokeTurret) && !hasPositionInQueue(mainChokeTurret) && !tileTaken(mainChokeTurret)) {
                     addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, mainChokeTurret,2);
                 }
 
-                if(naturalChokeTurret != null && !hasTurretAtBase(naturalChokeTurret)
+                if (naturalChokeTurret != null && !hasTurretAtBase(naturalChokeTurret)
                         && !hasPositionInQueue(naturalChokeTurret) && !tileTaken(naturalChokeTurret)
                         && mapInfo.isNaturalOwned() && !gameState.isEnemyInNatural()) {
                     addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, naturalChokeTurret,2);
                 }
             }
 
-            if(techUnit.getFriendlyUpgradeResponse().isEmpty()) {
+            if (techUnit.getFriendlyUpgradeResponse().isEmpty()) {
                 continue;
             }
 
-            for(PlannedItem upgradeResponse : techUnit.getFriendlyUpgradeResponse()) {
+            for (PlannedItem upgradeResponse : techUnit.getFriendlyUpgradeResponse()) {
                 boolean existingUpgrade = false;
 
-                for(PlannedItem pi : productionQueue) {
-                    if(pi.getTechUpgrade() != null && upgradeResponse.getTechUpgrade() != null) {
-                        if(pi.getTechUpgrade() == upgradeResponse.getTechUpgrade()) {
+                for (PlannedItem pi : productionQueue) {
+                    if (pi.getTechUpgrade() != null && upgradeResponse.getTechUpgrade() != null) {
+                        if (pi.getTechUpgrade() == upgradeResponse.getTechUpgrade()) {
                             existingUpgrade = true;
                             break;
                         }
                     }
 
-                    if(pi.getUpgradeType() != null && upgradeResponse.getUpgradeType() != null) {
-                        if(pi.getUpgradeType() == upgradeResponse.getUpgradeType()) {
+                    if (pi.getUpgradeType() != null && upgradeResponse.getUpgradeType() != null) {
+                        if (pi.getUpgradeType() == upgradeResponse.getUpgradeType()) {
                             existingUpgrade = true;
                             break;
                         }
                     }
                 }
 
-                if(upgradeResponse.getTechUpgrade() != null) {
-                    if(game.self().hasResearched(upgradeResponse.getTechUpgrade())) {
+                if (upgradeResponse.getTechUpgrade() != null) {
+                    if (game.self().hasResearched(upgradeResponse.getTechUpgrade())) {
                         existingUpgrade = true;
                     }
                 }
 
-                if(upgradeResponse.getUpgradeType() != null) {
-                    if(game.self().getUpgradeLevel(upgradeResponse.getUpgradeType()) >= upgradeResponse.getUpgradeLevel()) {
+                if (upgradeResponse.getUpgradeType() != null) {
+                    if (game.self().getUpgradeLevel(upgradeResponse.getUpgradeType()) >= upgradeResponse.getUpgradeLevel()) {
                         existingUpgrade = true;
                     }
                 }
 
-                if(!existingUpgrade) {
+                if (!existingUpgrade) {
                     productionQueue.add(upgradeResponse);
                 }
             }
@@ -988,8 +988,8 @@ public class ProductionManager {
     }
 
     private boolean hasTurretAtBase(TilePosition location) {
-        for(Unit unit : game.self().getUnits()) {
-            if(unit.getType() == UnitType.Terran_Missile_Turret &&
+        for (Unit unit : game.self().getUnits()) {
+            if (unit.getType() == UnitType.Terran_Missile_Turret &&
                     unit.getTilePosition().equals(location)) {
                 return true;
             }
@@ -1003,20 +1003,20 @@ public class ProductionManager {
     }
 
     private void initUnitCounts()  {
-        for(UnitType unitType : UnitType.values()) {
-            if(unitType.getRace().toString().equals("Terran") && !unitType.isCritter() && !unitType.isHero() && !unitType.isBeacon() && !unitType.isSpecialBuilding()) {
+        for (UnitType unitType : UnitType.values()) {
+            if (unitType.getRace().toString().equals("Terran") && !unitType.isCritter() && !unitType.isHero() && !unitType.isBeacon() && !unitType.isSpecialBuilding()) {
                 unitTypeCount.put(unitType, 0);
             }
         }
     }
 
     private boolean isUpgrading(UpgradeType upgradeType) {
-        for(Unit researchBuilding : allBuildings) {
-            if(researchBuilding.getAddon() != null && researchBuilding.getAddon().getUpgrade() == upgradeType) {
+        for (Unit researchBuilding : allBuildings) {
+            if (researchBuilding.getAddon() != null && researchBuilding.getAddon().getUpgrade() == upgradeType) {
                 return true;
             }
 
-            if(researchBuilding.getUpgrade() == upgradeType) {
+            if (researchBuilding.getUpgrade() == upgradeType) {
                 return true;
             }
         }
@@ -1024,12 +1024,12 @@ public class ProductionManager {
     }
 
     private boolean researchBuildingAvailable(TechType techType) {
-        for(Unit researchBuilding : allBuildings) {
-            if(researchBuilding.getAddon() != null && researchBuilding.getAddon().getTech() == techType) {
+        for (Unit researchBuilding : allBuildings) {
+            if (researchBuilding.getAddon() != null && researchBuilding.getAddon().getTech() == techType) {
                 return true;
             }
 
-            if(researchBuilding.getTech() == techType) {
+            if (researchBuilding.getTech() == techType) {
                 return true;
             }
         }
@@ -1037,9 +1037,9 @@ public class ProductionManager {
     }
 
     private void researchUpgrade(UpgradeType upgradeType) {
-        if(gameState.getResourceTracking().getAvailableMinerals() >= upgradeType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= upgradeType.gasPrice()) {
-            for(Unit researchBuilding : allBuildings) {
-                if(researchBuilding.canUpgrade(upgradeType) && !researchBuilding.isUpgrading()) {
+        if (gameState.getResourceTracking().getAvailableMinerals() >= upgradeType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= upgradeType.gasPrice()) {
+            for (Unit researchBuilding : allBuildings) {
+                if (researchBuilding.canUpgrade(upgradeType) && !researchBuilding.isUpgrading()) {
                     researchBuilding.upgrade(upgradeType);
                     break;
                 }
@@ -1048,9 +1048,9 @@ public class ProductionManager {
     }
 
     private void researchTech(TechType techType) {
-        if(gameState.getResourceTracking().getAvailableMinerals() >= techType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= techType.gasPrice()) {
-            for(Unit researchBuilding : allBuildings) {
-                if(researchBuilding.canResearch(techType) && !researchBuilding.isUpgrading()) {
+        if (gameState.getResourceTracking().getAvailableMinerals() >= techType.mineralPrice() && gameState.getResourceTracking().getAvailableGas() >= techType.gasPrice()) {
+            for (Unit researchBuilding : allBuildings) {
+                if (researchBuilding.canResearch(techType) && !researchBuilding.isUpgrading()) {
                     researchBuilding.research(techType);
                     break;
                 }
@@ -1060,8 +1060,8 @@ public class ProductionManager {
     }
 
     private boolean canUpgrade(UpgradeType upgradeType) {
-        for(Unit researchBuilding : allBuildings) {
-            if(researchBuilding.canUpgrade(upgradeType) && !researchBuilding.isUpgrading() && !researchBuilding.isResearching()) {
+        for (Unit researchBuilding : allBuildings) {
+            if (researchBuilding.canUpgrade(upgradeType) && !researchBuilding.isUpgrading() && !researchBuilding.isResearching()) {
                 return true;
             }
         }
@@ -1070,8 +1070,8 @@ public class ProductionManager {
 
     private boolean researchBuildingAvailable(UnitType unitType) {
         int availableBuildings = 0;
-        for(Unit researchBuilding : allBuildings) {
-            if(researchBuilding.getType() == unitType && researchBuilding.isCompleted() && !(researchBuilding.isResearching() || researchBuilding.isUpgrading())) {
+        for (Unit researchBuilding : allBuildings) {
+            if (researchBuilding.getType() == unitType && researchBuilding.isCompleted() && !(researchBuilding.isResearching() || researchBuilding.isUpgrading())) {
                 availableBuildings++;
             }
         }
@@ -1079,11 +1079,11 @@ public class ProductionManager {
     }
 
     private boolean buildingInProduction(TilePosition tilePosition, UnitType unitType) {
-        if(tilePosition == null) {
+        if (tilePosition == null) {
             return false;
         }
 
-        for(Unit building : allBuildings) {
+        for (Unit building : allBuildings) {
             if (building.getType() == unitType && building.getTilePosition().getX() == tilePosition.getX() && building.getTilePosition().getY() == tilePosition.getY()) {
                 return true;
             }
@@ -1092,8 +1092,8 @@ public class ProductionManager {
     }
 
     private void resetUnitInProduction(Unit destroyedBuilding) {
-        for(PlannedItem pi : productionQueue) {
-            if(pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getPlannedItemType() == PlannedItemType.UNIT && pi.getProductionBuilding() == destroyedBuilding) {
+        for (PlannedItem pi : productionQueue) {
+            if (pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getPlannedItemType() == PlannedItemType.UNIT && pi.getProductionBuilding() == destroyedBuilding) {
                 pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                 pi.setProductionBuilding(null);
             }
@@ -1114,18 +1114,18 @@ public class ProductionManager {
     }
 
     private void resetBuilding(Unit unit) {
-        for(PlannedItem pi : productionQueue) {
-            if(pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getUnitType() == unit.getType()) {
-                for(Workers worker : gameState.getWorkers()) {
-                    if(!worker.getUnit().exists()) {
+        for (PlannedItem pi : productionQueue) {
+            if (pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS && pi.getUnitType() == unit.getType()) {
+                for (Workers worker : gameState.getWorkers()) {
+                    if (!worker.getUnit().exists()) {
                         continue;
                     }
 
-                    if(worker.getUnit() == null || pi.getAssignedBuilder() == null) {
+                    if (worker.getUnit() == null || pi.getAssignedBuilder() == null) {
                         continue;
                     }
 
-                    if(worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
+                    if (worker.getUnit().getID() == pi.getAssignedBuilder().getUnitID()) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         break;
                     }
@@ -1142,41 +1142,41 @@ public class ProductionManager {
     private boolean meetsRequirements(UnitType unitType) {
         Map<UnitType, Integer> requiredUnits = unitType.requiredUnits();
 
-        if(requiredUnits.isEmpty()) {
+        if (requiredUnits.isEmpty()) {
             return true;
         }
 
-        if(requiredUnits.size() == 1 && requiredUnits.containsKey(UnitType.Terran_SCV)) {
+        if (requiredUnits.size() == 1 && requiredUnits.containsKey(UnitType.Terran_SCV)) {
             return true;
         }
 
-        if(unitType.isBuilding()) {
-            if(unitType.tileHeight() == 3 && unitType.tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty()) {
+        if (unitType.isBuilding()) {
+            if (unitType.tileHeight() == 3 && unitType.tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty()) {
                 return false;
             }
-            if(unitType.tileHeight() == 2 && unitType.tileWidth() == 3 && buildTiles.getMediumBuildTiles().isEmpty()) {
+            if (unitType.tileHeight() == 2 && unitType.tileWidth() == 3 && buildTiles.getMediumBuildTiles().isEmpty()) {
                 return false;
             }
 
             //Check if refinery exists so gas buildings don't deadlock build
-            if(unitType.gasPrice() > 0 && unitTypeCount.get(UnitType.Terran_Refinery) == 0) {
+            if (unitType.gasPrice() > 0 && unitTypeCount.get(UnitType.Terran_Refinery) == 0) {
                 return false;
             }
         }
 
-        if(unitType.gasPrice() > 0 && unitTypeCount.get(UnitType.Terran_Refinery) == 0) {
+        if (unitType.gasPrice() > 0 && unitTypeCount.get(UnitType.Terran_Refinery) == 0) {
             return false;
         }
 
-        for(Map.Entry<UnitType, Integer> requirement : requiredUnits.entrySet()) {
+        for (Map.Entry<UnitType, Integer> requirement : requiredUnits.entrySet()) {
             UnitType requiredUnit = requirement.getKey();
             int requiredCount = requirement.getValue();
 
-            if(!requiredUnit.isBuilding()) {
+            if (!requiredUnit.isBuilding()) {
                 continue;
             }
 
-            if(unitTypeCount.get(requiredUnit) < requiredCount) {
+            if (unitTypeCount.get(requiredUnit) < requiredCount) {
                 return false;
             }
         }
@@ -1185,12 +1185,12 @@ public class ProductionManager {
     }
 
     private boolean tileTaken(TilePosition tilePosition) {
-        for(PlannedItem pi : productionQueue) {
-            if(pi.getBuildPosition() == null) {
+        for (PlannedItem pi : productionQueue) {
+            if (pi.getBuildPosition() == null) {
                 continue;
             }
 
-            if(pi.getBuildPosition() == tilePosition) {
+            if (pi.getBuildPosition() == tilePosition) {
                 return true;
             }
         }
@@ -1213,7 +1213,7 @@ public class ProductionManager {
 
         addExpansion();
 
-        if(gameState.getEnemyOpener() != null && !openerResponse) {
+        if (gameState.getEnemyOpener() != null && !openerResponse) {
             openerResponse();
         }
 
@@ -1222,15 +1222,15 @@ public class ProductionManager {
     }
 
     public void onUnitCreate(Unit unit) {
-        if(unit.getType().isBuilding()) {
+        if (unit.getType().isBuilding()) {
             allBuildings.add(unit);
         }
 
-        if(unit.getType() == UnitType.Terran_Command_Center) {
+        if (unit.getType() == UnitType.Terran_Command_Center) {
             addCCTurret(unit);
             addToQueue(UnitType.Terran_Comsat_Station, PlannedItemType.ADDON, 2);
 
-            if(mapInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10 && !mapInfo.hasBunkerInNatural()
+            if (mapInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10 && !mapInfo.hasBunkerInNatural()
                     && (gameState.getStartingOpener().buildType() == BuildType.BIO || gameState.getEnemyOpener() != null)) {
                 addToQueue(UnitType.Terran_Bunker, PlannedItemType.BUILDING, buildTiles.getNaturalChokeBunker(), 3);
             }
@@ -1240,14 +1240,14 @@ public class ProductionManager {
     public void onUnitComplete(Unit unit) {
         addUnitTypeCount(unit);
 
-        if(unit.getType() == UnitType.Terran_Command_Center
+        if (unit.getType() == UnitType.Terran_Command_Center
                 && productionQueue.stream()
                 .noneMatch(pi -> pi.getUnitType() == UnitType.Terran_Refinery
                         && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)) {
             addToQueue(UnitType.Terran_Refinery, PlannedItemType.BUILDING, 3);
         }
 
-        if(unit.canTrain() || unit.getType() == UnitType.Terran_Science_Facility) {
+        if (unit.canTrain() || unit.getType() == UnitType.Terran_Science_Facility) {
             productionBuildings.add(unit);
         }
         buildTiles.onUnitComplete(unit);
@@ -1257,20 +1257,20 @@ public class ProductionManager {
         removeUnitTypeCount(unit);
         removeBuilding(unit);
 
-        if(unit.getType().isBuilding()) {
-            if(unit.getType() == UnitType.Terran_Refinery) {
+        if (unit.getType().isBuilding()) {
+            if (unit.getType() == UnitType.Terran_Refinery) {
                 return;
             }
 
-            if(unit.getType() == UnitType.Terran_Bunker && gameState.getStartingOpener().buildType() != BuildType.BIO) {
+            if (unit.getType() == UnitType.Terran_Bunker && gameState.getStartingOpener().buildType() != BuildType.BIO) {
                 return;
             }
 
-            if(unit.getType() == UnitType.Terran_Missile_Turret) {
+            if (unit.getType() == UnitType.Terran_Missile_Turret) {
                 reservedTurretPositions.remove(unit.getTilePosition());
                 addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, unit.getTilePosition(), 3);
 
-                if(!unit.isCompleted()) {
+                if (!unit.isCompleted()) {
                     resetBuilding(unit);
                 }
 
@@ -1278,17 +1278,17 @@ public class ProductionManager {
             }
 
             //Readd everything as P1 except CCs after the natural
-            if(!unit.isCompleted()) {
+            if (!unit.isCompleted()) {
                 resetBuilding(unit);
             }
-            else if(unit.getType().isAddon()){
+            else if (unit.getType().isAddon()){
                 addToQueue(unit.getType(), PlannedItemType.ADDON, 2);
             }
-            else if(unit.getType() == UnitType.Terran_Command_Center && mapInfo.isNaturalOwned()) {
+            else if (unit.getType() == UnitType.Terran_Command_Center && mapInfo.isNaturalOwned()) {
                 addToQueue(unit.getType(), PlannedItemType.BUILDING, 4);
             }
             else {
-                if(mapInfo.getBaseTiles().contains(unit.getTilePosition())) {
+                if (mapInfo.getBaseTiles().contains(unit.getTilePosition())) {
                     addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
                 }
                 else {
@@ -1298,16 +1298,16 @@ public class ProductionManager {
 
             resetUnitInProduction(unit);
 
-            if(unit.getType().tileHeight() == 3 && unit.getType().tileWidth() == 4) {
-                if(unit.getType() == UnitType.Terran_Command_Center) {
+            if (unit.getType().tileHeight() == 3 && unit.getType().tileWidth() == 4) {
+                if (unit.getType() == UnitType.Terran_Command_Center) {
                     mapInfo.readdExpansion(unit);
                     return;
                 }
 
                 buildTiles.getLargeBuildTiles().add(unit.getTilePosition());
             }
-            else if(unit.getType().tileHeight() == 2 && unit.getType().tileWidth() == 3) {
-                if(unit.getType() == UnitType.Terran_Bunker) {
+            else if (unit.getType().tileHeight() == 2 && unit.getType().tileWidth() == 3) {
+                if (unit.getType() == UnitType.Terran_Bunker) {
                     return;
                 }
 
@@ -1318,14 +1318,14 @@ public class ProductionManager {
     }
 
     public void onUnitMorph(Unit unit) {
-        if(unit.getType().isBuilding()) {
+        if (unit.getType().isBuilding()) {
             allBuildings.add(unit);
         }
 
-        if(unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+        if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
             removeUnitTypeCount(UnitType.Terran_Siege_Tank_Tank_Mode);
         }
-        else if(unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
+        else if (unit.getType() == UnitType.Terran_Siege_Tank_Tank_Mode) {
             removeUnitTypeCount(UnitType.Terran_Siege_Tank_Siege_Mode);
         }
     }

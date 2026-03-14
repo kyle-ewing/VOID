@@ -32,23 +32,23 @@ public class Painters {
     }
 
     private void gameSpeed() {
-        if(config.gameSpeed) {
+        if (config.gameSpeed) {
             game.setLocalSpeed(5);
             game.enableFlag(Flag.UserInput);
         }
     }
 
     public void onFrame() {
-        if(config.debugHud) {
+        if (config.debugHud) {
             drawHud();
         }
 
-        if(config.debugProductionQueue) {
+        if (config.debugProductionQueue) {
             paintProductionQueueReadout(gameState.getProductionQueue());
         }
 
-        if(config.debugCombatUnits) {
-            for(CombatUnits unit : gameState.getCombatUnits()) {
+        if (config.debugCombatUnits) {
+            for (CombatUnits unit : gameState.getCombatUnits()) {
                 paintUnitStatus(unit);
                 paintClosestEnemy(unit);
                 paintMedicTarget(unit);
@@ -57,40 +57,40 @@ public class Painters {
             }
         }
 
-        if(config.debugWorkers) {
+        if (config.debugWorkers) {
             paintWorker(gameState.getWorkers());
             paintWorkerText(gameState.getWorkers());
         }
 
-        if(config.debugEnemyUnits) {
+        if (config.debugEnemyUnits) {
             enemyRangePainter();
             paintThreatUnitsToScreen();
             paintEnemyBuildingsToScreen();
         }
 
-        if(config.debugDetailedUnitInfo) {
+        if (config.debugDetailedUnitInfo) {
             paintCombatUnitValues();
         }
 
-        if(config.debugBuildTiles) {
+        if (config.debugBuildTiles) {
             paintLargeBuildTiles(gameState.getBuildTiles().getLargeBuildTiles(), Color.Green);
             paintLargeBuildTiles(gameState.getBuildTiles().getLargeBuildTilesNoGap(), Color.Yellow);
             paintMediumBuildTiles(gameState.getBuildTiles().getMediumBuildTiles(), Color.Blue);
         }
 
-        if(config.debugBunkerTiles) {
+        if (config.debugBunkerTiles) {
             paintPaintBunkerTile(gameState.getBunkerPosition());
             paintPaintBunkerTile(gameState.getBuildTiles().getCloseBunkerTile());
         }
 
-        if(config.debugTurretTiles) {
+        if (config.debugTurretTiles) {
             paintMissileTile(gameState.getBuildTiles().getMainChokeTurret());
             paintMissileTile(gameState.getBuildTiles().getNaturalChokeTurret());
             paintMineralLineTurrets(gameState.getBuildTiles().getMineralLineTurrets());
             paintMainTurrets(gameState.getBuildTiles().getMainTurrets());
         }
 
-        if(config.debugBases) {
+        if (config.debugBases) {
             paintNatural(gameState.getBaseInfo().getNaturalBase());
             paintExpansionOrdering(gameState.getBaseInfo().getOrderedExpansions());
             paintExpansionDistances(gameState.getBaseInfo().getOrderedExpansions(), gameState.getBaseInfo().getStartingBase());
@@ -98,7 +98,7 @@ public class Painters {
 //            paintdistanceFromCC(gameState.getBaseInfo().getNaturalBase(), 400, Color.Red);
         }
 
-        if(config.debugChokes) {
+        if (config.debugChokes) {
             paintNaturalChoke(gameState.getBaseInfo().getNaturalChoke());
         }
 
@@ -106,46 +106,46 @@ public class Painters {
             paintTileZone(gameState.getBaseInfo().getBaseTiles(), Color.Green);
         }
 
-        if(config.debugAreaTiles) {
+        if (config.debugAreaTiles) {
             paintAreaTiles(gameState.getBaseInfo().getAreaTiles());
         }
 
-        if(config.debugBaseTiles) {
+        if (config.debugBaseTiles) {
             paintTileZone(gameState.getBuildTiles().getFrontBaseTiles(), Color.Purple);
             paintTileZone(gameState.getBuildTiles().getBackBaseTiles(), Color.Orange);
             paintTileZone(gameState.getBaseInfo().getNaturalTiles(),  Color.Teal);
             paintTileZone(gameState.getBaseInfo().getMinBaseTiles(), Color.Grey);
         }
 
-        if(config.debugCCExclusionZone) {
+        if (config.debugCCExclusionZone) {
             paintTileZone(gameState.getBuildTiles().getCcExclusionTiles(), Color.Red);
         }
-        if(config.debugMineralExclusionZone) {
+        if (config.debugMineralExclusionZone) {
             paintTileZone(gameState.getBuildTiles().getMineralExlusionTiles(), Color.Blue);
         }
-        if(config.debugGeyserExclusionZone) {
+        if (config.debugGeyserExclusionZone) {
             paintTileZone(gameState.getBuildTiles().getGeyserExlusionTiles(), Color.Green);
         }
 
-        if(config.debugScout) {
+        if (config.debugScout) {
             paintRescoutCriteria();
-            if(scouting.getScout() != null)
+            if (scouting.getScout() != null)
                 paintScoutPath(scouting.getScout().getUnit());
         }
 
-        if(config.debugProdQueueOutput) {
+        if (config.debugProdQueueOutput) {
             timeStamp();
         }
     }
 
     public void onEnd() {
-        if(config.debugProdQueueOutput) {
+        if (config.debugProdQueueOutput) {
             printProductionQueue(gameState.getProductionQueue());
         }
     }
 
     private void timeStamp() {
-        if(game.getFrameCount() % 1440 == 0) {
+        if (game.getFrameCount() % 1440 == 0) {
             printProductionQueue(gameState.getProductionQueue());
         }
     }
@@ -166,7 +166,7 @@ public class Painters {
 
     //Unit Painters
     private void paintUnitStatus(CombatUnits unit) {
-        switch(unit.getUnitStatus()) {
+        switch (unit.getUnitStatus()) {
             case RALLY:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.White, true);
                 break;
@@ -203,7 +203,7 @@ public class Painters {
     }
 
     private void paintClosestEnemy(CombatUnits unit) {
-        if(unit.getEnemyUnit() != null && unit.getEnemyUnit().getEnemyPosition() != null) {
+        if (unit.getEnemyUnit() != null && unit.getEnemyUnit().getEnemyPosition() != null) {
             game.drawLineMap(unit.getUnit().getPosition(), unit.getEnemyUnit().getEnemyPosition(), Color.Yellow);
         }
 
@@ -214,23 +214,23 @@ public class Painters {
     }
 
     private void paintStimStatus(CombatUnits unit) {
-        if(unit.getUnit().isStimmed()) {
+        if (unit.getUnit().isStimmed()) {
             game.drawTextMap(unit.getUnit().getPosition(), "STIMMED" );
         }
     }
 
     private void paintCombatScouts(CombatUnits unit) {
-        if(unit.getUnitStatus() == UnitStatus.SCOUT) {
+        if (unit.getUnitStatus() == UnitStatus.SCOUT) {
             game.drawLineMap(unit.getUnit().getPosition(), unit.getUnit().getTargetPosition(), Color.Purple);
         }
     }
 
     private void paintMedicTarget(CombatUnits unit) {
-        if(unit.getUnitType() != UnitType.Terran_Medic) {
+        if (unit.getUnitType() != UnitType.Terran_Medic) {
             return;
         }
 
-        if(unit.getFriendlyUnit() != null) {
+        if (unit.getFriendlyUnit() != null) {
             game.drawLineMap(unit.getUnit().getPosition(), unit.getFriendlyUnit().getUnit().getPosition(), Color.Green);
         }
     }
@@ -240,14 +240,14 @@ public class Painters {
         UnitType desiredUnitToTrack = UnitType.Terran_Marine;
         CombatUnits trackedUnit = null;
 
-        for(CombatUnits unit : gameState.getCombatUnits()) {
-            if(unit.getUnitType() == desiredUnitToTrack) {
+        for (CombatUnits unit : gameState.getCombatUnits()) {
+            if (unit.getUnitType() == desiredUnitToTrack) {
                 trackedUnit = unit;
                 break;
             }
         }
 
-        if(trackedUnit == null) {
+        if (trackedUnit == null) {
             return;
         }
 
@@ -315,7 +315,7 @@ public class Painters {
 //        game.drawTextScreen(xStart, yOffset, "Priority Enemy: " + (trackedUnit.getPriorityEnemyUnit() != null ? trackedUnit.getPriorityEnemyUnit().getEnemyType() : "null"));
 //        yOffset += lineHeight;
 
-        if(trackedUnit.getUnit().getOrderTarget() != null) {
+        if (trackedUnit.getUnit().getOrderTarget() != null) {
             game.drawTextScreen(xStart, yOffset, "Target Unit: " + trackedUnit.getUnit().getOrderTarget().getType());
             yOffset += lineHeight;
         }
@@ -327,22 +327,22 @@ public class Painters {
     }
 
     private void enemyRangePainter() {
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             //Change condition to paint specific unit types
-            if(enemyUnit.getEnemyType() != UnitType.Zerg_Lurker && enemyUnit.getEnemyType() != UnitType.Terran_Bunker && enemyUnit.getEnemyType() != UnitType.Protoss_Photon_Cannon) {
+            if (enemyUnit.getEnemyType() != UnitType.Zerg_Lurker && enemyUnit.getEnemyType() != UnitType.Terran_Bunker && enemyUnit.getEnemyType() != UnitType.Protoss_Photon_Cannon) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyPosition() != null) {
+            if (enemyUnit.getEnemyPosition() != null) {
                 UnitType enemyType = enemyUnit.getEnemyType();
-                if(enemyType.groundWeapon() != null) {
+                if (enemyType.groundWeapon() != null) {
                     int range = enemyType.groundWeapon().maxRange();
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), range, Color.Red);
 
                     //Optional threat range
                     int threatRange = enemyType.groundWeapon().maxRange() + 150;
 
-                    if(enemyUnit.getEnemyType() == UnitType.Terran_Bunker) {
+                    if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker) {
                         threatRange = UnitType.Terran_Marine.groundWeapon().maxRange() + 200;
                     }
                     game.drawCircleMap(enemyUnit.getEnemyPosition(), threatRange, Color.Orange);
@@ -359,8 +359,8 @@ public class Painters {
 
         game.setTextSize(Text.Size.Small);
 
-        for(EnemyUnits enemyUnit : gameState.getKnownValidThreats()) {
-            if(enemyUnit.getEnemyPosition() == null) {
+        for (EnemyUnits enemyUnit : gameState.getKnownValidThreats()) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
@@ -379,12 +379,12 @@ public class Painters {
 
         game.setTextSize(Text.Size.Small);
 
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            if(!enemyUnit.getEnemyType().isBuilding()) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (!enemyUnit.getEnemyType().isBuilding()) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyPosition() == null) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 game.drawTextScreen(xStart, yOffset, "Unknown Enemy Unit: " + enemyUnit.getEnemyType());
                 yOffset += lineHeight;
                 continue;
@@ -402,7 +402,7 @@ public class Painters {
 
     //Worker Painters
     private void paintWorker(HashSet<Workers> workers) {
-        for(Workers worker : workers) {
+        for (Workers worker : workers) {
             switch (worker.getWorkerStatus()) {
                 case MINERALS:
                     paintCircle(worker.getUnit(), 8, Color.Blue);
@@ -445,7 +445,7 @@ public class Painters {
     }
 
     private void paintWorkerText(HashSet<Workers> workers) {
-        for(Workers worker : workers) {
+        for (Workers worker : workers) {
             game.drawTextMap(worker.getUnit().getPosition(), worker.getWorkerStatus().toString());
         }
     }
@@ -465,7 +465,7 @@ public class Painters {
     }
 
     private void paintLargeBuildTiles(HashSet<TilePosition> buildTiles, Color color) {
-        for(TilePosition tilePosition : buildTiles) {
+        for (TilePosition tilePosition : buildTiles) {
             game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
             Position start = tilePosition.toPosition();
             Position end = new Position(
@@ -477,7 +477,7 @@ public class Painters {
     }
 
     private void paintMediumBuildTiles(HashSet<TilePosition> buildTiles, Color color) {
-        for(TilePosition tilePosition : buildTiles) {
+        for (TilePosition tilePosition : buildTiles) {
             game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
             Position depotStart = tilePosition.toPosition();
             Position depotEnd = new Position(
@@ -489,7 +489,7 @@ public class Painters {
     }
 
     private void paintPaintBunkerTile(TilePosition tilePosition) {
-        if(tilePosition == null) {
+        if (tilePosition == null) {
             return;
         }
 
@@ -503,7 +503,7 @@ public class Painters {
     }
 
     private void paintMissileTile(TilePosition tilePosition) {
-        if(tilePosition == null) {
+        if (tilePosition == null) {
             return;
         }
 
@@ -517,7 +517,7 @@ public class Painters {
     }
 
     private void paintMineralLineTurrets(HashMap<Base, TilePosition> mineralLineTurrets) {
-        for(Map.Entry<Base, TilePosition> entry : mineralLineTurrets.entrySet()) {
+        for (Map.Entry<Base, TilePosition> entry : mineralLineTurrets.entrySet()) {
             TilePosition tilePosition = entry.getValue();
 
             game.drawTextMap(tilePosition.toPosition(), String.valueOf(tilePosition));
@@ -531,7 +531,7 @@ public class Painters {
     }
 
     private void paintMainTurrets(HashSet<TilePosition> turretTiles) {
-        for(TilePosition turretTile : turretTiles) {
+        for (TilePosition turretTile : turretTiles) {
 
             game.drawTextMap(turretTile.toPosition(), String.valueOf(turretTile));
             Position start = turretTile.toPosition();
@@ -554,25 +554,25 @@ public class Painters {
     }
 
     private void paintBasePosition(HashSet<Base> bases) {
-        for(Base base : bases) {
+        for (Base base : bases) {
             game.drawTextMap(base.getCenter(), String.valueOf(base.getCenter()));
         }
     }
 
     private void paintExpansionOrdering(List<Base> orderedExpansions) {
-        for(int i = 0; i < orderedExpansions.size(); i++) {
+        for (int i = 0; i < orderedExpansions.size(); i++) {
             game.drawTextMap(orderedExpansions.get(i).getCenter(), "Expansion: " + i);
             game.drawCircleMap(orderedExpansions.get(i).getCenter(), 40, Color.Purple);
         }
     }
 
     private void paintExpansionDistances(List<Base> orderedExpansions, Base startingBase) {
-        if(orderedExpansions.size() < 2) {
+        if (orderedExpansions.size() < 2) {
             return;
         }
 
-        for(Base expansion : orderedExpansions) {
-            if(expansion == null) {
+        for (Base expansion : orderedExpansions) {
+            if (expansion == null) {
                 continue;
             }
 
@@ -598,13 +598,13 @@ public class Painters {
     }
 
     private void paintTileZone(HashSet<TilePosition> buildTiles, Color color) {
-        for(TilePosition tile : buildTiles) {
+        for (TilePosition tile : buildTiles) {
             game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
         }
     }
 
     private void paintdistanceFromCC(Base base, int distance, Color color) {
-        if(base == null) {
+        if (base == null) {
             return;
         }
         game.drawCircleMap(base.getCenter(), distance, color);
@@ -612,14 +612,14 @@ public class Painters {
 
     //Generic Painters
     private void paintCircle(Unit unit, int radius, Color color) {
-        if(unit == null) {
+        if (unit == null) {
             return;
         }
         game.drawCircleMap(unit.getPosition(), radius, color);
     }
 
     private void paintCircle(Position position, int radius, Color color) {
-        if(position == null) {
+        if (position == null) {
             return;
         }
         game.drawCircleMap(position, radius, color);
@@ -627,7 +627,7 @@ public class Painters {
 
     //Scouting Painters
     private void paintScoutPath(Unit unit) {
-        if(unit == null) {
+        if (unit == null) {
             return;
         }
 
@@ -662,18 +662,18 @@ public class Painters {
         Collections.sort(safeQueue, Comparator.comparingInt(PlannedItem::getSupply));
         int readoutAmount = 0;
         game.setTextSize(Text.Size.Small);
-        for(PlannedItem pi : safeQueue) {
-            if(readoutAmount < 10) {
+        for (PlannedItem pi : safeQueue) {
+            if (readoutAmount < 10) {
 
-                if(pi.getUnitType() != null) {
+                if (pi.getUnitType() != null) {
                     game.drawTextScreen(350, 20 + (15 * readoutAmount), "\u0004 Supply: " + pi.getSupply() + " " + "Type: " + pi.getUnitType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
                     readoutAmount++;
                 }
-                else if(pi.getUpgradeType() != null) {
+                else if (pi.getUpgradeType() != null) {
                     game.drawTextScreen(350, 20 + (15 * readoutAmount), "\u000E Supply: " + pi.getSupply() + " " + "Type: " + pi.getUpgradeType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
                     readoutAmount++;
                 }
-                else if(pi.getTechUpgrade() != null) {
+                else if (pi.getTechUpgrade() != null) {
                     game.drawTextScreen(350, 20 + (15 * readoutAmount), "\u000E Supply: " + pi.getSupply() + " " + "Type: " + pi.getTechUpgrade().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
                     readoutAmount++;
                 }
@@ -689,14 +689,14 @@ public class Painters {
 
         List<PlannedItem> safeQueue = new ArrayList<>(productionQueue);
             safeQueue.sort(Comparator.comparing(PlannedItem::getPlannedItemType));
-            for(PlannedItem pi : safeQueue) {
-                if(pi.getUnitType() != null) {
+            for (PlannedItem pi : safeQueue) {
+                if (pi.getUnitType() != null) {
                     System.out.println("Supply: " + pi.getSupply() + " " + "Type: " + pi.getUnitType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
                 }
-                else if(pi.getUpgradeType() != null) {
+                else if (pi.getUpgradeType() != null) {
                     System.out.println("Supply: " + pi.getSupply() + " " + "Type: " + pi.getUpgradeType().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority() + " Upgrade level: " + pi.getUpgradeLevel());
                 }
-                else if(pi.getTechUpgrade() != null) {
+                else if (pi.getTechUpgrade() != null) {
                     System.out.println("Supply: " + pi.getSupply() + " " + "Type: " + pi.getTechUpgrade().toString() + " " + pi.getPlannedItemStatus().toString() + " " + pi.getPriority());
                 }
             }

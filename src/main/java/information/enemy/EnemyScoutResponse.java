@@ -25,8 +25,8 @@ public class EnemyScoutResponse {
     }
 
     private void initialScoutInBase() {
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            if(enemyUnit.getEnemyType().isWorker() && gameState.isEnemyInBase()) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType().isWorker() && gameState.isEnemyInBase()) {
                 setEnemyScout(enemyUnit);
                 initiallyScouted = true;
             }
@@ -34,8 +34,8 @@ public class EnemyScoutResponse {
     }
 
     private void followScout() {
-        if(counterScout != null) {
-            if(enemyScout.getEnemyPosition() != null) {
+        if (counterScout != null) {
+            if (enemyScout.getEnemyPosition() != null) {
                 counterScout.getUnit().attack(enemyScout.getEnemyUnit());
             }
 
@@ -43,9 +43,9 @@ public class EnemyScoutResponse {
     }
 
     private void assignCounterScout() {
-        if(counterScout == null) {
-            for(Workers worker : workerManager.getWorkers()) {
-                if(!worker.getUnit().isCarryingMinerals() && worker.getWorkerStatus() == WorkerStatus.MINERALS) {
+        if (counterScout == null) {
+            for (Workers worker : workerManager.getWorkers()) {
+                if (!worker.getUnit().isCarryingMinerals() && worker.getWorkerStatus() == WorkerStatus.MINERALS) {
                     worker.setWorkerStatus(WorkerStatus.COUNTERSCOUT);
                     counterScout = worker;
                     return;
@@ -55,12 +55,12 @@ public class EnemyScoutResponse {
     }
 
     private void clearCounterScout() {
-       if(counterScout == null) {
+       if (counterScout == null) {
            return;
        }
 
-        if(enemyScout != null) {
-            if(!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase()) {
+        if (enemyScout != null) {
+            if (!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase()) {
                 counterScout.setWorkerStatus(WorkerStatus.IDLE);
                 counterScout = null;
             }
@@ -72,7 +72,7 @@ public class EnemyScoutResponse {
     }
 
     private void clearEnemyScout() {
-        if(!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase()) {
+        if (!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase()) {
             enemyScout = null;
         }
     }
@@ -82,8 +82,8 @@ public class EnemyScoutResponse {
     }
 
     public void onFrame() {
-        if(new Time(game.getFrameCount()).greaterThan(new Time(3,30))) {
-            if(counterScout == null) {
+        if (new Time(game.getFrameCount()).greaterThan(new Time(3,30))) {
+            if (counterScout == null) {
                 return;
             }
 
@@ -91,16 +91,16 @@ public class EnemyScoutResponse {
             return;
         }
 
-        if(!initiallyScouted) {
+        if (!initiallyScouted) {
             initialScoutInBase();
         }
 
-        if(enemyScout == null && initiallyScouted) {
+        if (enemyScout == null && initiallyScouted) {
             clearCounterScout();;
         }
 
 
-        if(enemyScout != null) {
+        if (enemyScout != null) {
             assignCounterScout();
             followScout();
             clearEnemyScout();

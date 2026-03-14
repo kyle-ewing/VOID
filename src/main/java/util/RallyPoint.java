@@ -32,8 +32,8 @@ public class RallyPoint {
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
-        if(enemyStrategy == null || enemyStrategy.isStrategyDefended() || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
-            if(mapInfo.hasBunkerInNatural() || mapInfo.isNaturalOwned()) {
+        if (enemyStrategy == null || enemyStrategy.isStrategyDefended() || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
+            if (mapInfo.hasBunkerInNatural() || mapInfo.isNaturalOwned()) {
                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             }
             else {
@@ -44,15 +44,15 @@ public class RallyPoint {
             combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
         }
 
-        if(gameState.getEnemyOpener() == null) {
+        if (gameState.getEnemyOpener() == null) {
             return;
         }
 
-        if(enemyStrategy.isStrategyDefended()) {
+        if (enemyStrategy.isStrategyDefended()) {
             return;
         }
 
-        switch(enemyStrategy.getStrategyName()) {
+        switch (enemyStrategy.getStrategyName()) {
             case "Four Pool":
                 combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
                 break;
@@ -69,7 +69,7 @@ public class RallyPoint {
         Position nearestWalkableToEnd = pathFinding.findNearestWalkable(endPoint);
         List<Position> path;
 
-        if(nearestWalkable != null && nearestWalkableToEnd != null) {
+        if (nearestWalkable != null && nearestWalkableToEnd != null) {
             path = pathFinding.findPath(nearestWalkable, nearestWalkableToEnd);
         }
         else {
@@ -77,7 +77,7 @@ public class RallyPoint {
         }
 
 
-        if(path == null || path.isEmpty()) {
+        if (path == null || path.isEmpty()) {
             return endPoint;
         }
 

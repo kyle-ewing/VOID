@@ -35,21 +35,21 @@ public class Scouting {
     }
 
     public void sendScout() {
-        if(scoutingAttempts >= 2) {
+        if (scoutingAttempts >= 2) {
             attemptsMaxed = true;
             return;
         }
 
-        if(scout == null) {
+        if (scout == null) {
             selectScout();
         }
 
-        for(Base startingBase : mapInfo.getStartingBases()) {
-            if(startingBase == mapInfo.getStartingBase()) {
+        for (Base startingBase : mapInfo.getStartingBases()) {
+            if (startingBase == mapInfo.getStartingBase()) {
                 continue;
             }
 
-            if(!mapInfo.isExplored(startingBase)) {
+            if (!mapInfo.isExplored(startingBase)) {
                 scout.getUnit().move(startingBase.getCenter());
             }
         }
@@ -57,8 +57,8 @@ public class Scouting {
 
 
     private void selectScout() {
-        for(Workers scv: gameState.getWorkers()) {
-            if(scv.getWorkerStatus() == WorkerStatus.MINERALS) {
+        for (Workers scv: gameState.getWorkers()) {
+            if (scv.getWorkerStatus() == WorkerStatus.MINERALS) {
                 scoutingAttempts++;
                 scout = scv;
                 scv.setWorkerStatus(WorkerStatus.SCOUTING);
@@ -68,7 +68,7 @@ public class Scouting {
     }
 
     private void scoutEnemyPerimeter() {
-        if(scout == null) {
+        if (scout == null) {
             return;
         }
 
@@ -97,17 +97,17 @@ public class Scouting {
     }
 
     private void scanEnemyBase() {
-        if(gameState.getStartingEnemyBase() == null) {
+        if (gameState.getStartingEnemyBase() == null) {
             return;
         }
 
         CombatUnits scanner = gameState.getCombatUnits().stream().filter(cu -> cu.getUnitType() == UnitType.Terran_Comsat_Station).findFirst().orElse(null);
 
-        if(scanner == null || !scanner.getUnit().isCompleted()) {
+        if (scanner == null || !scanner.getUnit().isCompleted()) {
             return;
         }
 
-        if(scanner.getUnit().getEnergy() < 50) {
+        if (scanner.getUnit().getEnergy() < 50) {
             return;
         }
 
@@ -120,30 +120,30 @@ public class Scouting {
     public void onFrame() {
         time = new Time(game.getFrameCount());
 
-        if(player.supplyUsed() / 2 >= gameState.getStartingOpener().getScoutSupply() && gameState.getStartingEnemyBase() == null) {
+        if (player.supplyUsed() / 2 >= gameState.getStartingOpener().getScoutSupply() && gameState.getStartingEnemyBase() == null) {
             sendScout();
         }
 
-        if(gameState.getStartingEnemyBase() != null) {
+        if (gameState.getStartingEnemyBase() != null) {
             scoutEnemyPerimeter();
             completedScout = true;
         }
 
-        if(gameState.getEnemyOpener() != null) {
+        if (gameState.getEnemyOpener() != null) {
             completedScout = true;
         }
 
-        if(gameState.getEnemyOpener() == null && !mainScanned && time.greaterThan(new Time(5,0))) {
+        if (gameState.getEnemyOpener() == null && !mainScanned && time.greaterThan(new Time(5,0))) {
             scanEnemyBase();
         }
     }
 
     public void onEnemyDestroy(Unit unit) {
-        if(scout == null) {
+        if (scout == null) {
             return;
         }
 
-        if(unit.getID() == scout.getUnit().getID()) {
+        if (unit.getID() == scout.getUnit().getID()) {
             scout = null;
         }
     }

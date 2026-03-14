@@ -60,7 +60,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitCreate(Unit unit) {
-        if(unit.getPlayer() != game.self()) {
+        if (unit.getPlayer() != game.self()) {
             return;
         }
         mapInfo.onUnitCreate(unit);
@@ -70,7 +70,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitComplete(Unit unit) {
-        if(unit.getPlayer() != game.self()) {
+        if (unit.getPlayer() != game.self()) {
             return;
         }
 
@@ -84,15 +84,15 @@ public class Bot extends DefaultBWListener {
         workerManager.onUnitDestroy(unit);
         enemyInformation.onUnitDestroy(unit);
 
-        if(unit.getPlayer() == game.self()) {
-            if(unit.getType() != UnitType.Terran_SCV) {
+        if (unit.getPlayer() == game.self()) {
+            if (unit.getType() != UnitType.Terran_SCV) {
                 unitManager.onUnitDestroy(unit);
             }
 
             productionManager.onUnitDestroy(unit);
         }
 
-        if(unit.getType() == UnitType.Terran_Command_Center || unit.getType() == UnitType.Resource_Mineral_Field) {
+        if (unit.getType() == UnitType.Terran_Command_Center || unit.getType() == UnitType.Resource_Mineral_Field) {
             mapInfo.onUnitDestroy(unit);
         }
 
@@ -101,7 +101,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitDiscover(Unit unit) {
-        if(unit.getPlayer() == game.self()) {
+        if (unit.getPlayer() == game.self()) {
             return;
         }
 
@@ -115,7 +115,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitMorph(Unit unit) {
-        if(unit.getPlayer() != game.self()) {
+        if (unit.getPlayer() != game.self()) {
             return;
         }
         productionManager.onUnitMorph(unit);

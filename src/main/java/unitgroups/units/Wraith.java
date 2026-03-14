@@ -43,34 +43,34 @@ public class Wraith extends CombatUnits {
     public void attack() {
         int frameCount = game.getFrameCount();
 
-        if(frameCount % 4 != 0) {
+        if (frameCount % 4 != 0) {
             return;
         }
 
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
-        if(enemyUnit.getEnemyPosition() == null) {
+        if (enemyUnit.getEnemyPosition() == null) {
             return;
         }
 
-        if(priorityTargetExists) {
+        if (priorityTargetExists) {
             setUnitStatus(UnitStatus.HUNTING);
         }
         else {
             setUnitStatus(UnitStatus.ATTACK);
         }
 
-        if(game.self().hasResearched(TechType.Cloaking_Field)) {
-            if(inUnitAntiAirRange() && unit.getEnergy() > 50) {
+        if (game.self().hasResearched(TechType.Cloaking_Field)) {
+            if (inUnitAntiAirRange() && unit.getEnergy() > 50) {
                 unit.cloak();
             }
             else {
-                if(unit.isCloaked()) {
+                if (unit.isCloaked()) {
                     decloakTimer += 4;
 
-                    if(decloakTimer >= 192) {
+                    if (decloakTimer >= 192) {
                         unit.decloak();
                         decloakTimer = 0;
                     }
@@ -83,7 +83,7 @@ public class Wraith extends CombatUnits {
 
     @Override
     public void hunting() {
-        if(priorityEnemyUnit != null) {
+        if (priorityEnemyUnit != null) {
             attack();
         }
         else {
@@ -100,7 +100,7 @@ public class Wraith extends CombatUnits {
             }
         }
 
-        if(target.getEnemyPosition() == null) {
+        if (target.getEnemyPosition() == null) {
             return;
         }
         
@@ -158,11 +158,11 @@ public class Wraith extends CombatUnits {
             
             UnitType type = enemy.getEnemyType();
 
-            if(workerPosKnown && type.isBuilding()) {
+            if (workerPosKnown && type.isBuilding()) {
                 continue;
             }
 
-            if(dist > 400) {
+            if (dist > 400) {
                 continue;
             }
 

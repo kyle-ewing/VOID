@@ -78,30 +78,30 @@ public class CombatUnits {
 
 
     public void attack() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
-        if(!unit.isStimmed() && unit.isAttacking()) {
+        if (!unit.isStimmed() && unit.isAttacking()) {
             unit.useTech(TechType.Stim_Packs);
         }
 
-        if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+        if (!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
             unit.attack(enemyUnit.getEnemyPosition());
         }
     }
 
     public void rally() {
-        if(rallyPoint == null) {
+        if (rallyPoint == null) {
             return;
         }
 
-        if(priorityEnemyUnit != null) {
+        if (priorityEnemyUnit != null) {
             setEnemyUnit(priorityEnemyUnit);
             setUnitStatus(UnitStatus.DEFEND);
         }
 
-        if(enemyUnit != null) {
+        if (enemyUnit != null) {
             setUnitStatus(UnitStatus.DEFEND);
         }
 
@@ -110,65 +110,65 @@ public class CombatUnits {
     }
 
     public void defend() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
-        if(!inBase) {
+        if (!inBase) {
             setUnitStatus(UnitStatus.RETREAT);
             return;
         }
 
-        if(!enemyInBase) {
+        if (!enemyInBase) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
-        if(!unit.isStimmed() && unit.isAttacking()) {
+        if (!unit.isStimmed() && unit.isAttacking()) {
             unit.useTech(TechType.Stim_Packs);
         }
 
-        if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+        if (!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
             unit.attack(enemyUnit.getEnemyPosition());
         }
 
     }
 
     public void retreat() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
         enemyUnit = null;
 
-        if(!inRangeOfThreat) {
+        if (!inRangeOfThreat) {
             setUnitStatus(UnitStatus.RALLY);
         }
     }
 
     public void avoid() {
-        	if(enemyUnit == null) {
+        	if (enemyUnit == null) {
                 return;
             }
 
-            if(!inRangeOfThreat) {
+            if (!inRangeOfThreat) {
                 setUnitStatus(UnitStatus.RALLY);
             }
     }
 
     public void sallyOut() {
-        	if(enemyUnit == null) {
+        	if (enemyUnit == null) {
                 unit.move(rallyPoint.toPosition());
                 return;
             }
 
-            if(enemyInBase) {
+            if (enemyInBase) {
                 setUnitStatus(UnitStatus.DEFEND);
                 return;
             }
 
-            if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+            if (!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
                 unit.attack(enemyUnit.getEnemyPosition());
             }
     }

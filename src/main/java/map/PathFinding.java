@@ -78,7 +78,7 @@ public class PathFinding {
 
                 TilePosition neighborTile = new TilePosition(tilePosition.getX() + dx, tilePosition.getY() + dy);
 
-                if(tilePositionValidator.isValid(neighborTile)) {
+                if (tilePositionValidator.isValid(neighborTile)) {
                     if (bwem.getMap().getTile(neighborTile).isWalkable()) {
                         neighbors.add(neighborTile.toPosition());
                     }
@@ -92,16 +92,16 @@ public class PathFinding {
     public Position findNearestWalkable(Position position) {
         TilePosition centerTile = position.toTilePosition();
 
-        if(tilePositionValidator.isWalkable(centerTile)) {
+        if (tilePositionValidator.isWalkable(centerTile)) {
             return centerTile.toPosition();
         }
 
-        for(int radius = 1; radius <= 10; radius++) {
-            for(int dx = -radius; dx <= radius; dx++) {
-                for(int dy = -radius; dy <= radius; dy++) {
-                    if(Math.abs(dx) == radius || Math.abs(dy) == radius) {
+        for (int radius = 1; radius <= 10; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dy = -radius; dy <= radius; dy++) {
+                    if (Math.abs(dx) == radius || Math.abs(dy) == radius) {
                         TilePosition checkTile = new TilePosition(centerTile.getX() + dx, centerTile.getY() + dy);
-                        if(tilePositionValidator.isValid(checkTile) && tilePositionValidator.isWalkable(checkTile)) {
+                        if (tilePositionValidator.isValid(checkTile) && tilePositionValidator.isWalkable(checkTile)) {
                             return checkTile.toPosition();
                         }
                     }

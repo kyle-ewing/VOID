@@ -59,7 +59,7 @@ public class TwoRaxAcademy extends BuildOrder {
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
-        if(time.lessThanOrEqual(new Time(10,0))) {
+        if (time.lessThanOrEqual(new Time(10,0))) {
             moveOutCondition.put(UnitType.Terran_Marine, 10);
             moveOutCondition.put(UnitType.Terran_Medic, 3);
         }

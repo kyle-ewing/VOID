@@ -11,17 +11,17 @@ public class Medic extends CombatUnits {
 
     @Override
     public void attack() {
-        if(friendlyUnit == null) {
+        if (friendlyUnit == null) {
             super.setTargetRange(200);
             super.setUnitStatus(UnitStatus.RETREAT);
             return;
         }
 
-        if(super.getTargetRange() > 200) {
+        if (super.getTargetRange() > 200) {
             super.setTargetRange(200);
         }
 
-        if(inBase) {
+        if (inBase) {
             unstick();
             return;
         }
@@ -31,11 +31,11 @@ public class Medic extends CombatUnits {
 
     @Override
     public void rally() {
-        if(rallyPoint == null) {
+        if (rallyPoint == null) {
             return;
         }
 
-        if(enemyInBase) {
+        if (enemyInBase) {
             super.setTargetRange(800);
             super.setUnitStatus(UnitStatus.DEFEND);
         }
@@ -45,7 +45,7 @@ public class Medic extends CombatUnits {
 
     @Override
     public void defend() {
-        if(friendlyUnit == null || !enemyInBase) {
+        if (friendlyUnit == null || !enemyInBase) {
             super.setTargetRange(200);
             super.setUnitStatus(UnitStatus.RALLY);
             return;
@@ -56,11 +56,11 @@ public class Medic extends CombatUnits {
 
     @Override
     public void retreat() {
-        if(rallyPoint == null) {
+        if (rallyPoint == null) {
             return;
         }
 
-        if(friendlyUnit != null) {
+        if (friendlyUnit != null) {
             super.setUnitStatus(UnitStatus.ATTACK);
             return;
         }
@@ -70,7 +70,7 @@ public class Medic extends CombatUnits {
 
     @Override
     public void avoid() {
-        if(!inRangeOfThreat) {
+        if (!inRangeOfThreat) {
             setUnitStatus(UnitStatus.RALLY);
         }
     }
@@ -89,17 +89,17 @@ public class Medic extends CombatUnits {
 
         double dist = myPos.getDistance(friendPos);
 
-        if(dist > 40) {
+        if (dist > 40) {
             unit.attack(friendPos);
             return;
         }
 
-        if(dist < 40 && dist > 0) {
+        if (dist < 40 && dist > 0) {
             int dx = myPos.getX() - friendPos.getX();
             int dy = myPos.getY() - friendPos.getY();
 
             double len = Math.sqrt(dx * dx + dy * dy);
-            if(len > 0) {
+            if (len > 0) {
                 double scale = 32.0 / len;
                 int newX = myPos.getX() + (int) (dx * scale);
                 int newY = myPos.getY() + (int) (dy * scale);

@@ -16,7 +16,7 @@ public class TwoFacTank extends  EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        if(enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Factory).count() >= 2
+        if (enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Factory).count() >= 2
                 && time.lessThanOrEqual(new Time(4, 40))) {
             return true;
         }

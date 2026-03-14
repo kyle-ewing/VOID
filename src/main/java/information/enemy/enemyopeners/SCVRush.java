@@ -23,19 +23,19 @@ public class SCVRush extends EnemyStrategy {
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         int scvAtBase = 0;
 
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null || enemyUnit.getEnemyPosition() == null ) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null || enemyUnit.getEnemyPosition() == null ) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_SCV) {
-                if(mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 500) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_SCV) {
+                if (mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 500) {
                     scvAtBase++;
                 }
             }
         }
 
-        if(scvAtBase >= 3 && time.lessThanOrEqual(new Time(3, 0))) {
+        if (scvAtBase >= 3 && time.lessThanOrEqual(new Time(3, 0))) {
             return true;
         }
         else {

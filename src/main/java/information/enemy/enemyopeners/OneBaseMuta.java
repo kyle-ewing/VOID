@@ -27,13 +27,13 @@ public class OneBaseMuta extends EnemyStrategy {
                     .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getCenter()) < 50);
         }
        
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyPosition() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Spire) {
-                if(time.lessThanOrEqual(new Time(5,10))
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Spire) {
+                if (time.lessThanOrEqual(new Time(5,10))
                     && !hasNaturalHatch
                     && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair ).count() == 1) {
                     return true;
