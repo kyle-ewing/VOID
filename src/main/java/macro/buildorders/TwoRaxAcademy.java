@@ -64,8 +64,8 @@ public class TwoRaxAcademy extends BuildOrder {
             moveOutCondition.put(UnitType.Terran_Medic, 3);
         }
         else {
-            moveOutCondition.put(UnitType.Terran_Marine, 13);
-            moveOutCondition.put(UnitType.Terran_Medic, 4);
+            moveOutCondition.put(UnitType.Terran_Marine, 16);
+            moveOutCondition.put(UnitType.Terran_Medic, 5);
         }
 
         return moveOutCondition;

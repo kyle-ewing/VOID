@@ -177,12 +177,22 @@ public class GameState {
                     return false;
                 }
             }
+            else if (unitType == UnitType.Terran_Marine) {
+                int marineCount = unitTypeCount.getOrDefault(UnitType.Terran_Marine, 0);
+                int firebatCount = unitTypeCount.getOrDefault(UnitType.Terran_Firebat, 0);
+                int total = marineCount + firebatCount;
+
+                if(total < requiredCount) {
+                    return false;
+                }
+            }
             else {
                 if(!unitTypeCount.containsKey(unitType) || unitTypeCount.get(unitType) < requiredCount) {
                     return false;
                 }
             }
         }
+        
         return true;
     }
 

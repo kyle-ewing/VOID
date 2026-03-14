@@ -91,7 +91,7 @@ public class UnitProduction {
 
             if (canBuild(building, UnitType.Terran_Barracks)) {
                 int marineCount = unitTypeCount.get(UnitType.Terran_Marine);
-                int medicCap = marineCount > 20 ? 12 : 4;
+                int medicCap = marineCount > 20 ? 10 : 4;
 
                 if (building.canTrain(UnitType.Terran_Medic)
                         && isRecruitable(UnitType.Terran_Medic)
