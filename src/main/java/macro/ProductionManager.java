@@ -114,6 +114,16 @@ public class ProductionManager {
                     }
 
                     if(pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
+                        if (pi.getUpgradeType() != null && game.self().getUpgradeLevel(pi.getUpgradeType()) >= pi.getUpgradeLevel()) {
+                            pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                            continue;
+                        }
+
+                        if (pi.getTechUpgrade() != null && game.self().hasResearched(pi.getTechUpgrade())) {
+                            pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
+                            continue;
+                        }
+
                         if(!canBeResearched(pi.getTechBuilding()) || !researchBuildingAvailable(pi.getTechBuilding())) {
                             continue;
                         }
@@ -780,14 +790,14 @@ public class ProductionManager {
                             reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getNaturalChokeTurret(),1);
                         }
-                        else if(buildTiles.getMainChokeTurret() != null && !hasTurretAtBase(buildTiles.getMainChokeTurret())) {
+                        else if(buildTiles.getMainChokeTurret() != null && !hasTurretAtBase(buildTiles.getMainChokeTurret()) && !hasPositionInQueue(buildTiles.getMainChokeTurret())) {
                             reservedTurretPositions.add(buildTiles.getMainChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getMainChokeTurret(),1);
                         }
                         else {
                             for(TilePosition turretTile : gameState.getBuildTiles().getMainTurrets()) {
                                 if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
-                                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 4);
+                                    addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 3);
                                     break;
                                 }
                             }
@@ -903,9 +913,20 @@ public class ProductionManager {
                     }
                 }
 
-                for(TilePosition turretTile : buildTiles.getMainTurrets()) {
-                    if(turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
-                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile,3);
+                int mainTurretsBuilt = (int) buildTiles.getMainTurrets().stream().filter(t -> hasTurretAtBase(t)).count();
+                int mainTurretsInQueue = (int) buildTiles.getMainTurrets().stream().filter(t -> hasPositionInQueue(t)).count();
+                int mainTurretsToAdd = buildTiles.getMainTurrets().size() - mainTurretsBuilt - mainTurretsInQueue;
+                int mainTurretsAdded = 0;
+
+                for (TilePosition turretTile : buildTiles.getMainTurrets()) {
+                    if (mainTurretsAdded >= mainTurretsToAdd) {
+                        break;
+                    }
+                    
+                    if (turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile)
+                            && !tileTaken(turretTile)) {
+                        addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 3);
+                        mainTurretsAdded++;
                     }
                 }
 

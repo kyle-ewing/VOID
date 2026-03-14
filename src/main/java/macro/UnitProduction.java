@@ -135,8 +135,8 @@ public class UnitProduction {
         }
         if (enemyOpener != null) {
             switch (enemyOpener.getStrategyName()) {
-                case "One Hatch Lurker":
-                case "Two Hatch Lurker":
+                case "One Base Lurker":
+                case "Two Base Lurker":
                     return Collections.singletonList(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, tankCount < 2 ? 1 : 2));
                 default:
                     return Collections.singletonList(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 2));

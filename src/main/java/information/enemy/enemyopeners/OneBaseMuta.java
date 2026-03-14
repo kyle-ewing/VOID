@@ -20,14 +20,22 @@ public class OneBaseMuta extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        boolean hasNaturalHatch = false;
+        if (mapInfo.getEnemyNatural() != null) {
+            hasNaturalHatch = enemyUnits.stream()
+                    .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
+                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getCenter()) < 50);
+        }
+       
         for(EnemyUnits enemyUnit : enemyUnits) {
             if(enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
             if(enemyUnit.getEnemyType() == UnitType.Zerg_Spire) {
-                if(time.lessThanOrEqual(new Time(5,0))
-                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Hatchery || et == UnitType.Zerg_Lair ).count() == 1) {
+                if(time.lessThanOrEqual(new Time(5,10))
+                    && !hasNaturalHatch
+                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair ).count() == 1) {
                     return true;
                 }
             }
