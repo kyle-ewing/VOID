@@ -5,6 +5,8 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import information.GameState;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyarmycomposition.EnemyArmyCompManager;
+import information.enemy.enemyarmycomposition.EnemyArmyCompResponse;
 import information.enemy.enemyopeners.EnemyStrategy;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderName;
@@ -24,6 +26,7 @@ public class UnitProduction {
     private final HashMap<UnitType, Integer> unitTypeCount;
     private final BuildTiles buildTiles;
     private final PriorityQueue<PlannedItem> productionQueue;
+    private final EnemyArmyCompManager armyCompositionManager;
     private EnemyStrategy enemyOpener = null;
 
     private static final Set<UnitType> TANK_TRIGGERS = new HashSet<>(Arrays.asList(
@@ -46,6 +49,7 @@ public class UnitProduction {
         this.unitTypeCount = gameState.getUnitTypeCount();
         this.buildTiles = gameState.getBuildTiles();
         this.productionQueue = gameState.getProductionQueue();
+        this.armyCompositionManager = gameState.getArmyCompositionManager();
     }
 
     public void onFrame() {
@@ -87,7 +91,7 @@ public class UnitProduction {
 
             if (canBuild(building, UnitType.Terran_Barracks)) {
                 int marineCount = unitTypeCount.get(UnitType.Terran_Marine);
-                int medicCap = marineCount > 20 ? 8 : 4;
+                int medicCap = marineCount > 20 ? 12 : 4;
 
                 if (building.canTrain(UnitType.Terran_Medic)
                         && isRecruitable(UnitType.Terran_Medic)
@@ -106,6 +110,8 @@ public class UnitProduction {
             if (canBuild(building, UnitType.Terran_Factory)) {
                 items.addAll(getBioTankItems());
             }
+
+            items.addAll(getCompositionResponseUnits(building));
         }
 
         return items;
@@ -116,7 +122,7 @@ public class UnitProduction {
                 + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
         if ((!shouldBuildTanks() && !isLurkerOpener())
                 || !isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode)
-                || tankCount >= 7
+                || tankCount >= 6
                 || hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)) {
             return Collections.emptyList();
         }
@@ -210,6 +216,8 @@ public class UnitProduction {
                     && unitTypeCount.get(UnitType.Terran_Battlecruiser) < 5) {
                 items.add(plannedUnit(UnitType.Terran_Battlecruiser, 2));
             }
+
+            items.addAll(getCompositionResponseUnits(building));
         }
 
         if (gameState.getResourceTracking().getAvailableMinerals() > 500
@@ -244,6 +252,34 @@ public class UnitProduction {
         }
 
         return plannedBuilding(unitType, priority);
+    }
+
+    private List<PlannedItem> getCompositionResponseUnits(Unit building) {
+        List<PlannedItem> items = new ArrayList<>();
+        for (EnemyArmyCompResponse response : armyCompositionManager.getTriggeredResponses(gameState.getKnownEnemyUnits())) {
+            UnitType responseUnit = response.getResponseUnitType();
+            
+            if (!canBuild(building, responseUnit.whatBuilds().getKey())) {
+                continue;
+            }
+
+            if (!building.canTrain(responseUnit)) {
+                continue;
+            }
+
+            int enemyAmount = response.countMatchingUnits(gameState.getKnownEnemyUnits());
+            int desiredCount = response.getDesiredResponseCount(enemyAmount);
+            
+            if (unitTypeCount.getOrDefault(responseUnit, 0) >= desiredCount) {
+                continue;
+            }
+            
+            if (!isRecruitable(responseUnit) || hasInQueue(responseUnit)) {
+                continue;
+            }
+            items.add(plannedUnit(responseUnit, response.getPriority(enemyAmount)));
+        }
+        return items;
     }
 
     private PlannedItem plannedUnit(UnitType unitType, int priority) {

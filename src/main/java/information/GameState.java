@@ -4,6 +4,7 @@ import bwapi.*;
 import bwem.BWEM;
 import config.Config;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyarmycomposition.EnemyArmyCompManager;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.ExpansionCriteria;
@@ -67,6 +68,7 @@ public class GameState {
     private HashMap<UnitType, Integer> openerMoveOutCondition = new HashMap<>();
 
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
+    private EnemyArmyCompManager armyCompositionManager = new EnemyArmyCompManager();
 
     public GameState(Game game, BWEM bwem, MapInfo mapInfo) {
         this.game = game;
@@ -369,5 +371,9 @@ public class GameState {
 
     public void setBeingSieged(boolean beingSieged) {
         this.beingSieged = beingSieged;
+    }
+
+    public EnemyArmyCompManager getArmyCompositionManager() {
+        return armyCompositionManager;
     }
 }
