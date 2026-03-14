@@ -313,6 +313,7 @@ public class EnemyInformation {
             if(enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
                 enemyOpener = enemyStrategy;
                 gameState.setEnemyOpener(enemyOpener);
+                System.out.println("Potential enemy opener detected: " + enemyStrategy.getStrategyName() + " at " + new Time(game.getFrameCount()));
                 game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
                 break;
             }

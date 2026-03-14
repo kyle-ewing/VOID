@@ -66,9 +66,18 @@ public class TwoBaseLurker extends EnemyStrategy {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if(buildType == BuildType.BIO) {
-            moveOutCondition.put(UnitType.Terran_Marine, 12);
-            moveOutCondition.put(UnitType.Terran_Medic, 4);
-            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
+            if(time.lessThanOrEqual(new Time(10,0))) {
+                moveOutCondition.put(UnitType.Terran_Marine, 12);
+                moveOutCondition.put(UnitType.Terran_Medic, 4);
+                moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 1);
+                moveOutCondition.put(UnitType.Terran_Science_Vessel, 1);
+            }
+            else {
+                moveOutCondition.put(UnitType.Terran_Marine, 16);
+                moveOutCondition.put(UnitType.Terran_Medic, 5);
+                moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
+            }
+
         }
 
         return moveOutCondition;
