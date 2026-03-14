@@ -19,17 +19,17 @@ public class GasSteal extends EnemyStrategy{
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        if(time.greaterThan(new Time(2,30))) {
+        if (time.greaterThan(new Time(2,30))) {
             return false;
         }
 
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyPosition() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType().isRefinery()) {
-                if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
+            if (enemyUnit.getEnemyType().isRefinery()) {
+                if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
                     priorityEnemyUnit = enemyUnit;
                     return true;
                 }
@@ -45,10 +45,10 @@ public class GasSteal extends EnemyStrategy{
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
-        if(time.lessThanOrEqual(new Time(3,30))) {
+        if (time.lessThanOrEqual(new Time(3,30))) {
             moveOutCondition.put(UnitType.Terran_Marine, 2);
         }
-        else if(time.lessThanOrEqual(new Time(5,0))) {
+        else if (time.lessThanOrEqual(new Time(5,0))) {
             moveOutCondition.put(UnitType.Terran_Marine, 4);
         }
 

@@ -12,20 +12,20 @@ public class Marine extends CombatUnits {
 
     @Override
     public void rally() {
-        if(rallyPoint == null) {
+        if (rallyPoint == null) {
             return;
         }
 
-        if(priorityEnemyUnit != null) {
+        if (priorityEnemyUnit != null) {
             setEnemyUnit(priorityEnemyUnit);
             setUnitStatus(UnitStatus.DEFEND);
         }
 
-        if(enemyUnit != null && enemyInBase) {
+        if (enemyUnit != null && enemyInBase) {
             setUnitStatus(UnitStatus.DEFEND);
         }
 
-        if(inBase) {
+        if (inBase) {
             unit.attack(rallyPoint.toPosition());
         }
         else {
@@ -36,11 +36,11 @@ public class Marine extends CombatUnits {
 
     @Override
     public void attack() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
-        if(super.isInBunker()) {
+        if (super.isInBunker()) {
             inBunker = false;
         }
 
@@ -49,17 +49,17 @@ public class Marine extends CombatUnits {
 
     @Override
     public void defend() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
-        if(!inBase) {
+        if (!inBase) {
             setUnitStatus(UnitStatus.RETREAT);
             return;
         }
 
-        if(!enemyInBase) {
+        if (!enemyInBase) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
@@ -70,31 +70,31 @@ public class Marine extends CombatUnits {
 
     @Override
     public void retreat() {
-        if(enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
+        if (enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
             return;
         }
 
         enemyUnit = null;
         unit.move(rallyPoint.toPosition());
 
-        if(inBase || hasTankSupport) {
+        if (inBase || hasTankSupport) {
             setUnitStatus(UnitStatus.RALLY);
         }
     }
 
     @Override
     public void sallyOut() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             unit.move(rallyPoint.toPosition());
             return;
         }
 
-        if(enemyInBase) {
+        if (enemyInBase) {
             setUnitStatus(UnitStatus.DEFEND);
             return;
         }
 
-        if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode
+        if (enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode
                 && unit.getPosition().getDistance(enemyUnit.getEnemyPosition()) > 48) {
             unit.move(enemyUnit.getEnemyPosition());
             return;
@@ -106,27 +106,27 @@ public class Marine extends CombatUnits {
     private void attackUnit() {
         kite();
 
-        if(minimnumThreshold()) {
+        if (minimnumThreshold()) {
             return;
         }
 
-        if(!unit.isStimmed() && unit.isAttacking()) {
+        if (!unit.isStimmed() && unit.isAttacking()) {
             unit.useTech(TechType.Stim_Packs);
         }
 
-        if(unit.getOrderTarget() != null && unit.getOrderTarget().getID() != enemyUnit.getEnemyID() && unit.isAttacking()) {
-            if(badTargetID == null || badTargetID != unit.getTarget().getID()) {
+        if (unit.getOrderTarget() != null && unit.getOrderTarget().getID() != enemyUnit.getEnemyID() && unit.isAttacking()) {
+            if (badTargetID == null || badTargetID != unit.getTarget().getID()) {
                 unit.stop();
                 return;
             }
         }
 
-        if(unit.getOrderTarget() != null && unit.getOrderTarget().getID() == enemyUnit.getEnemyID()) {
+        if (unit.getOrderTarget() != null && unit.getOrderTarget().getID() == enemyUnit.getEnemyID()) {
             badTargetID = null;
         }
 
-        if(!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
-            if(enemyUnit.getEnemyUnit().isVisible()) {
+        if (!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+            if (enemyUnit.getEnemyUnit().isVisible()) {
                 unit.attack(enemyUnit.getEnemyUnit());
             }
             else {
@@ -136,11 +136,11 @@ public class Marine extends CombatUnits {
     }
 
     private void kite() {
-        if(enemyUnit.getEnemyType().isBuilding()) {
+        if (enemyUnit.getEnemyType().isBuilding()) {
             return;
         }
 
-        if(unitStatus == UnitStatus.SALLYOUT && enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+        if (unitStatus == UnitStatus.SALLYOUT && enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
             return;
         }
 
@@ -150,7 +150,7 @@ public class Marine extends CombatUnits {
         Position unitPosition = unit.getPosition();
         double distanceToEnemy = unitPosition.getDistance(enemyPosition);
 
-        if(distanceToEnemy < kiteThreshold) {
+        if (distanceToEnemy < kiteThreshold) {
             double dx = unitPosition.getX() - enemyPosition.getX();
             double dy = unitPosition.getY() - enemyPosition.getY();
             double length = Math.sqrt(dx * dx + dy * dy);
@@ -165,7 +165,7 @@ public class Marine extends CombatUnits {
     }
 
     private boolean minimnumThreshold() {
-        if(unitStatus == UnitStatus.SALLYOUT) {
+        if (unitStatus == UnitStatus.SALLYOUT) {
             return false;
         }
 
@@ -180,7 +180,7 @@ public class Marine extends CombatUnits {
     private int weaponRange() {
         WeaponType weaponType = unit.getType().groundWeapon();
 
-        if(this.game.self().getUpgradeLevel(UpgradeType.U_238_Shells) > 0) {
+        if (this.game.self().getUpgradeLevel(UpgradeType.U_238_Shells) > 0) {
             return weaponType.maxRange() + UPGRADE_RANGE;
         }
         else {

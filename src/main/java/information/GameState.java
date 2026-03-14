@@ -95,7 +95,7 @@ public class GameState {
         amendMoveOutCondition();
         moveOutConditionsMet();
 
-        if(!hasTransitioned && shouldTransition()) {
+        if (!hasTransitioned && shouldTransition()) {
             addBuildTransition();
             hasTransitioned = true;
         }
@@ -106,13 +106,13 @@ public class GameState {
     private void addOpeningBuildOrders() {
         openingBuildOrders = buildOrderManager.getOpenersForRace();
 
-        for(BuildOrder bo : openingBuildOrders) {
+        for (BuildOrder bo : openingBuildOrders) {
             startingOpener = bo;
             productionQueue.addAll(bo.getBuildOrder());
             openerMoveOutCondition = bo.getMoveOutCondition(time, knownEnemyUnits);
             liftableBuildings.addAll(bo.getLiftableBuildings());
 
-            if(bunkerPosition == null) {
+            if (bunkerPosition == null) {
                 setBunkerPosition(bo.getBunkerLocation());
             }
         }
@@ -121,12 +121,12 @@ public class GameState {
     private void addBuildTransition() {
         buildTransition = buildOrderManager.getBuildTransitions();
 
-        for(BuildTransition bt : buildTransition) {
-            if(!bt.transitionsFrom(startingOpener)) {
+        for (BuildTransition bt : buildTransition) {
+            if (!bt.transitionsFrom(startingOpener)) {
                 continue;
             }
 
-            for(PlannedItem pi : bt.getOptionalBuildings()) {
+            for (PlannedItem pi : bt.getOptionalBuildings()) {
                 boolean alreadyBuiltOrQueued = unitTypeCount.getOrDefault(pi.getUnitType(), 0) > 0
                         || productionQueue.stream().anyMatch(queued -> queued.getUnitType() == pi.getUnitType());
                 
@@ -140,7 +140,7 @@ public class GameState {
     }
 
     private void setBunkerPosition(BunkerLocation bunkerLocation) {
-        switch(bunkerLocation) {
+        switch (bunkerLocation) {
             case MAIN:
                 bunkerPosition = buildTiles.getMainChokeBunker();
                 break;
@@ -154,26 +154,26 @@ public class GameState {
     }
 
     public boolean moveOutConditionsMet() {
-        for(UnitType unitType : openerMoveOutCondition.keySet()) {
+        for (UnitType unitType : openerMoveOutCondition.keySet()) {
             int requiredCount = openerMoveOutCondition.get(unitType);
 
             //Handle both tanks modes
-            if(unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Terran_Siege_Tank_Siege_Mode) {
+            if (unitType == UnitType.Terran_Siege_Tank_Tank_Mode || unitType == UnitType.Terran_Siege_Tank_Siege_Mode) {
                 int tankModeCount = unitTypeCount.getOrDefault(UnitType.Terran_Siege_Tank_Tank_Mode, 0);
                 int siegeModeCount = unitTypeCount.getOrDefault(UnitType.Terran_Siege_Tank_Siege_Mode, 0);
                 int totalTanks = tankModeCount + siegeModeCount;
 
-                if(totalTanks < requiredCount) {
+                if (totalTanks < requiredCount) {
                     return false;
                 }
             }
             //Group goliaths and vultures together
-            else if(unitType == UnitType.Terran_Vulture) {
+            else if (unitType == UnitType.Terran_Vulture) {
                 int vultureCount = unitTypeCount.getOrDefault(UnitType.Terran_Vulture, 0);
                 int goliathCount = unitTypeCount.getOrDefault(UnitType.Terran_Goliath, 0);
                 int total = vultureCount + goliathCount;
 
-                if(total < requiredCount) {
+                if (total < requiredCount) {
                     return false;
                 }
             }
@@ -182,12 +182,12 @@ public class GameState {
                 int firebatCount = unitTypeCount.getOrDefault(UnitType.Terran_Firebat, 0);
                 int total = marineCount + firebatCount;
 
-                if(total < requiredCount) {
+                if (total < requiredCount) {
                     return false;
                 }
             }
             else {
-                if(!unitTypeCount.containsKey(unitType) || unitTypeCount.get(unitType) < requiredCount) {
+                if (!unitTypeCount.containsKey(unitType) || unitTypeCount.get(unitType) < requiredCount) {
                     return false;
                 }
             }
@@ -197,10 +197,10 @@ public class GameState {
     }
 
     private void amendMoveOutCondition() {
-        if(enemyOpener != null) {
+        if (enemyOpener != null) {
             HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(startingOpener.buildType(), time);
 
-            if(enemyMoveOutCondition.isEmpty()) {
+            if (enemyMoveOutCondition.isEmpty()) {
                 openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits);
                 return;
             }
@@ -214,7 +214,7 @@ public class GameState {
 
     //Temp fix for Jade high ground bunker
     private void jadeBunkerPosition() {
-        if(game.mapFileName().contains("Jade")) {
+        if (game.mapFileName().contains("Jade")) {
             bunkerPosition = buildTiles.getNaturalChokeBunker();
         }
     }

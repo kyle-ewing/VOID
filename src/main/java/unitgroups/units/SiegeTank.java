@@ -30,7 +30,7 @@ public class SiegeTank extends CombatUnits {
 
     @Override
     public void attack() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
@@ -40,23 +40,23 @@ public class SiegeTank extends CombatUnits {
 
     @Override
     public void retreat() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) > 128) {
+        if (enemyUnit.getEnemyUnit().getDistance(unit) > 128) {
             super.setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
-        if(super.getRallyPoint().toPosition().getApproxDistance(unit.getPosition()) < 128) {
+        if (super.getRallyPoint().toPosition().getApproxDistance(unit.getPosition()) < 128) {
             super.setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
-        if(kiteThreshold()) {
-            if(unit.getGroundWeaponCooldown() == 0) {
+        if (kiteThreshold()) {
+            if (unit.getGroundWeaponCooldown() == 0) {
                 unit.attack(super.rallyPoint.toPosition());
                 return;
             }
@@ -70,26 +70,26 @@ public class SiegeTank extends CombatUnits {
 
     @Override
     public void defend() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
-        if(!inBase) {
+        if (!inBase) {
             setUnitStatus(UnitStatus.RETREAT);
             return;
         }
 
-        if(!enemyInBase) {
+        if (!enemyInBase) {
             setUnitStatus(UnitStatus.RALLY);
             return;
         }
 
-        if(kiteThreshold()) {
+        if (kiteThreshold()) {
             int maxRange = weaponRange();
             Position kitePos = getKitePos(maxRange);
 
-            if(unit.getGroundWeaponCooldown() == 0) {
+            if (unit.getGroundWeaponCooldown() == 0) {
                 unit.attack(enemyUnit.getEnemyPosition());
                 return;
             }
@@ -105,21 +105,21 @@ public class SiegeTank extends CombatUnits {
 
     @Override
     public void rally() {
-        if(rallyPoint == null) {
+        if (rallyPoint == null) {
             return;
         }
 
-        if(isSieged()) {
+        if (isSieged()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
             unit.unsiege();
         }
 
-        if(super.getRallyPoint().getApproxDistance(unit.getTilePosition()) < 128 && enemyUnit != null ) {
+        if (super.getRallyPoint().getApproxDistance(unit.getTilePosition()) < 128 && enemyUnit != null ) {
             super.setUnitStatus(UnitStatus.DEFEND);
             return;
         }
 
-        if(!super.enemyInBase && canSiege()) {
+        if (!super.enemyInBase && canSiege()) {
             super.setUnitStatus(UnitStatus.SIEGEDEF);
         }
 
@@ -128,11 +128,11 @@ public class SiegeTank extends CombatUnits {
     }
 
     public void sallyOut() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
-        if(enemyInBase) {
+        if (enemyInBase) {
             super.setUnitStatus(UnitStatus.DEFEND);
             return;
         }
@@ -142,20 +142,20 @@ public class SiegeTank extends CombatUnits {
     }
 
     public void siegeDef() {
-        if(siegeTile == null) {
+        if (siegeTile == null) {
             setSiegeTile();
         }
 
-        if(foundSiegeTile) {
-            if(game.getFrameCount() % 24 != 0) {
+        if (foundSiegeTile) {
+            if (game.getFrameCount() % 24 != 0) {
                 return;
             }
 
-            if(unit.getDistance(siegeTile.toPosition()) > 64) {
+            if (unit.getDistance(siegeTile.toPosition()) > 64) {
                 unit.move(siegeTile.toPosition());
             }
             else {
-                if(!isSieged() && canSiege()) {
+                if (!isSieged() && canSiege()) {
                     super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
                     unit.siege();
                 }
@@ -166,10 +166,10 @@ public class SiegeTank extends CombatUnits {
     }
 
     private void setSiegeTile() {
-        if(!combinedTankTiles.isEmpty() && mapInfo.isNaturalOwned()) {
+        if (!combinedTankTiles.isEmpty() && mapInfo.isNaturalOwned()) {
             pickSiegeDefTile(combinedTankTiles);
         }
-        else if(!mainEdgeTiles.isEmpty()) {
+        else if (!mainEdgeTiles.isEmpty()) {
             pickSiegeDefTile(mainEdgeTiles);
         }
         else {
@@ -184,31 +184,31 @@ public class SiegeTank extends CombatUnits {
         int index = rand.nextInt(tileSet.size());
         TilePosition targetTile = null;
         int i = 0;
-        for(TilePosition tile : tileSet) {
+        for (TilePosition tile : tileSet) {
             if (i == index) {
                 targetTile = tile;
                 break;
             }
             i++;
         }
-        if(targetTile != null) {
+        if (targetTile != null) {
             siegeTile = targetTile;
             foundSiegeTile = true;
         }
     }
 
     private void siegeLogic() {
-        if(enemyUnit == null) {
+        if (enemyUnit == null) {
             return;
         }
 
-        switch(super.getUnitStatus()) {
+        switch (super.getUnitStatus()) {
             case ATTACK:
-                if(!isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
+                if (!isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                 }
 
-                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64
+                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64
                         && !enemyUnit.getEnemyUnit().isLifted()) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
@@ -216,26 +216,26 @@ public class SiegeTank extends CombatUnits {
                 }
                 break;
             case DEFEND:
-                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
+                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
                 break;
             case RETREAT:
-                if(isSieged()) {
+                if (isSieged()) {
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
                 break;
             case SIEGEDEF:
-                if(isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
+                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
 
-                if(isSieged() && super.enemyInBase && enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE) {
+                if (isSieged() && super.enemyInBase && enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE) {
                     super.setUnitStatus(UnitStatus.DEFEND);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
@@ -243,13 +243,13 @@ public class SiegeTank extends CombatUnits {
                 break;
         }
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64
+        if (enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64
                 && canSiege() && !enemyUnit.getEnemyType().isWorker()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             unit.siege();
         }
 
-        if(enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE && isSieged()
+        if (enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE && isSieged()
                 && !enemyUnit.getEnemyUnit().isLifted()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
             unit.unsiege();
@@ -284,14 +284,14 @@ public class SiegeTank extends CombatUnits {
 
 
     private boolean canSiege() {
-        if(this.game.self().hasResearched(TechType.Tank_Siege_Mode)) {
+        if (this.game.self().hasResearched(TechType.Tank_Siege_Mode)) {
             return true;
         }
         return false;
     }
 
     public boolean isSieged() {
-        if(unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+        if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
             return true;
         }
         return false;

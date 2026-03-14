@@ -22,16 +22,16 @@ public class FourRax extends  EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null || enemyUnit.getEnemyPosition() == null ) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null || enemyUnit.getEnemyPosition() == null ) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_Barracks && enemyUnit.getEnemyUnit().isCompleted() && time.lessThanOrEqual(new Time(2, 0))) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Barracks && enemyUnit.getEnemyUnit().isCompleted() && time.lessThanOrEqual(new Time(2, 0))) {
                 return true;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_Marine
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Marine
                     && enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_SCV).count() <= 10
                     && (time.lessThanOrEqual(new Time(2, 20))
                     || (enemyUnit.getEnemyUnit().getDistance(mapInfo.getStartingBase().getCenter()) < 1500) && time.lessThanOrEqual(new Time(2, 50))

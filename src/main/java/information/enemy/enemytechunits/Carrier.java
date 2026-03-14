@@ -18,12 +18,12 @@ public class Carrier extends EnemyTechUnits {
 
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Carrier || enemyUnit.getEnemyType() == UnitType.Protoss_Fleet_Beacon) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Carrier || enemyUnit.getEnemyType() == UnitType.Protoss_Fleet_Beacon) {
                 return true;
             }
         }

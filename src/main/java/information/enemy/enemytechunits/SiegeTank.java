@@ -19,12 +19,12 @@ public class SiegeTank extends EnemyTechUnits {
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Tank_Mode || enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Tank_Mode || enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
                 return true;
             }
         }

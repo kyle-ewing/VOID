@@ -18,12 +18,12 @@ public class ShuttleReaver extends EnemyTechUnits {
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Shuttle) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Shuttle) {
                 return true;
             }
         }

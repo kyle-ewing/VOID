@@ -49,12 +49,12 @@ public class Workers extends CombatUnits {
             return;
         }
 
-        if(target != null && preemptiveRepair && target.getHitPoints() == target.getType().maxHitPoints()) {
+        if (target != null && preemptiveRepair && target.getHitPoints() == target.getType().maxHitPoints()) {
             unit.move(target.getPosition());
             return;
         }
 
-        if(target == null || target.getHitPoints() >= target.getType().maxHitPoints()  && !preemptiveRepair) {
+        if (target == null || target.getHitPoints() >= target.getType().maxHitPoints()  && !preemptiveRepair) {
             workerStatus = WorkerStatus.IDLE;
             repairTarget = null;
         }
@@ -62,22 +62,22 @@ public class Workers extends CombatUnits {
 
     //Adjust worker position in case it gets stuck ontop of build tile
     public void pulseCheck() {
-        if(buildingPosition == null) {
+        if (buildingPosition == null) {
             workerStatus = WorkerStatus.IDLE;
             return;
         }
 
-        if(hardReset == 5) {
+        if (hardReset == 5) {
             workerStatus = WorkerStatus.IDLE;
             hardReset = 0;
             return;
         }
 
-        if(unit.isIdle()) {
+        if (unit.isIdle()) {
             idleClock++;
         }
 
-        if(idleClock > 48) {
+        if (idleClock > 48) {
             int randomDistance = (int)(Math.random() * 5) + 1;
             double randomAngle = Math.random() * 2 * Math.PI;
             int offsetX = (int)(randomDistance * Math.cos(randomAngle));
@@ -91,17 +91,17 @@ public class Workers extends CombatUnits {
     public void stuckCheck() {
         lastFrameChecked++;
 
-        if(lastFrameChecked < 240) {
+        if (lastFrameChecked < 240) {
             return;
         }
 
-        if(distanceToBuildTarget == null || buildingPosition == null) {
+        if (distanceToBuildTarget == null || buildingPosition == null) {
             return;
         }
 
         int currentDistance = unit.getDistance(buildingPosition);
 
-        if(Math.abs(distanceToBuildTarget - currentDistance) < 32 && distanceToBuildTarget > 96) {
+        if (Math.abs(distanceToBuildTarget - currentDistance) < 32 && distanceToBuildTarget > 96) {
             setWorkerStatus(WorkerStatus.STUCK);
         }
 

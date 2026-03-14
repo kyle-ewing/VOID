@@ -20,26 +20,26 @@ public class CCFirst extends  EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null || enemyUnit.getEnemyPosition() == null ) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null || enemyUnit.getEnemyPosition() == null ) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_Command_Center) {
-                for(Base base : mapInfo.getMapBases()) {
-                    if(base.isStartingLocation()) {
-                        if(base.getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 10) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Command_Center) {
+                for (Base base : mapInfo.getMapBases()) {
+                    if (base.isStartingLocation()) {
+                        if (base.getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 10) {
                             isStartingBase = true;
                             break;
                         }
                     }
-                    else if(base.getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 10) {
+                    else if (base.getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 10) {
                         //Check for bunker to reduce false positives
-                        if(time.lessThanOrEqual(new Time(3,30))
+                        if (time.lessThanOrEqual(new Time(3,30))
                                 && enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(ut -> ut == UnitType.Terran_Bunker)) {
                             return true;
                         }
-                        else if(time.lessThanOrEqual(new Time(4,0)) && enemyUnit.getEnemyUnit().isCompleted()) {
+                        else if (time.lessThanOrEqual(new Time(4,0)) && enemyUnit.getEnemyUnit().isCompleted()) {
                             return true;
                         }
                     }

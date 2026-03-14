@@ -59,12 +59,12 @@ public class UnitManager {
         rallyPoint.onFrame();
         int frameCount = game.getFrameCount();
 
-        if(gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
+        if (gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
             rallyClock++;
         }
 
-        if(new Time(rallyClock).greaterThan(new Time(1, 0))) {
-            if(!gameState.isEnemyInBase()) {
+        if (new Time(rallyClock).greaterThan(new Time(1, 0))) {
+            if (!gameState.isEnemyInBase()) {
                 defendedAllIn = true;
                 rallyClock = 0;
             }
@@ -73,21 +73,21 @@ public class UnitManager {
             }
         }
 
-        if(frameCount % 8 != 0) {
+        if (frameCount % 8 != 0) {
             return;
         }
 
         //TODO: this is all horrible
-        for(CombatUnits combatUnit : combatUnits) {
-            if(combatUnit.getUnitStatus() == UnitStatus.LIFTABLE  && !combatUnit.getUnit().isLifted()) {
+        for (CombatUnits combatUnit : combatUnits) {
+            if (combatUnit.getUnitStatus() == UnitStatus.LIFTABLE  && !combatUnit.getUnit().isLifted()) {
                 liftBuilding(combatUnit);
             }
-            else if(combatUnit.getUnitStatus() == UnitStatus.LIFTABLE && combatUnit.getUnit().isLifted()) {
+            else if (combatUnit.getUnitStatus() == UnitStatus.LIFTABLE && combatUnit.getUnit().isLifted()) {
                 landBuilding(combatUnit);
             }
 
             //Skip over units who don't move or need to be controlled
-            if(combatUnit.hasStaticStatus()) {
+            if (combatUnit.hasStaticStatus()) {
                 continue;
             }
 
@@ -95,15 +95,15 @@ public class UnitManager {
             inRangeOfThreat(combatUnit);
 
             //Set rally point if not set
-            if(combatUnit.getRallyPoint() == null || (mapInfo.getNaturalBase() != null && !combatUnit.isNaturalRallySet())) {
-                if(mapInfo.getOwnedBases().contains(mapInfo.getNaturalBase())) {
+            if (combatUnit.getRallyPoint() == null || (mapInfo.getNaturalBase() != null && !combatUnit.isNaturalRallySet())) {
+                if (mapInfo.getOwnedBases().contains(mapInfo.getNaturalBase())) {
                     combatUnit.setNaturalRallySet(true);
                 }
 
                 rallyPoint.setRallyPoint(combatUnit);
             }
 
-            switch(combatUnit.getUnitType()) {
+            switch (combatUnit.getUnitType()) {
                 case Terran_Marine:
                     bunkerStatus(combatUnit);
                     break;
@@ -122,51 +122,51 @@ public class UnitManager {
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
 
-            if(priorityTarget != null) {
+            if (priorityTarget != null) {
                 combatUnit.setPriorityEnemyUnit(priorityTarget);
 
-                if(!priorityTargetExists()) {
+                if (!priorityTargetExists()) {
                     priorityTarget = null;
                     combatUnit.setPriorityEnemyUnit(null);
                 }
             }
 
-            if(gameState.moveOutConditionsMet()) {
-                if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF) {
-                    if(combatUnit instanceof SiegeTank) {
-                        if(((SiegeTank) combatUnit).isSieged()) {
+            if (gameState.moveOutConditionsMet()) {
+                if (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF) {
+                    if (combatUnit instanceof SiegeTank) {
+                        if (((SiegeTank) combatUnit).isSieged()) {
                             combatUnit.getUnit().unsiege();
                         }
                     }
 
-                    if(combatUnit.getUnitType() == UnitType.Terran_Vulture) {
+                    if (combatUnit.getUnitType() == UnitType.Terran_Vulture) {
                         ((Vulture) combatUnit).setLobotomyOverride(true);
                     }
 
                     combatUnit.setUnitStatus(UnitStatus.ATTACK);
                 }
-                else if(unitStatus == UnitStatus.LOAD && !enemyNearBunker()) {
+                else if (unitStatus == UnitStatus.LOAD && !enemyNearBunker()) {
                     unLoadBunker(combatUnit);
                 }
             }
             else {
-                if(gameState.isBeingSieged()) {
-                    if(unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF) {
+                if (gameState.isBeingSieged()) {
+                    if (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF) {
                         combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
                     }
-                    else if(unitStatus == UnitStatus.LOAD && !enemyNearBunker()) {
+                    else if (unitStatus == UnitStatus.LOAD && !enemyNearBunker()) {
                         combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
                         unLoadBunker(combatUnit);
                     }
 
                 }
 
-                if(combatUnit.getUnitType() == UnitType.Terran_Vulture) {
+                if (combatUnit.getUnitType() == UnitType.Terran_Vulture) {
                     ((Vulture) combatUnit).setLobotomyOverride(false);
                 }
             }
 
-            if((scouting.isCompletedScout() || scouting.attemptsMaxed()) && !gameState.isEnemyBuildingDiscovered()
+            if ((scouting.isCompletedScout() || scouting.attemptsMaxed()) && !gameState.isEnemyBuildingDiscovered()
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Vulture || combatUnit.getUnitType() == UnitType.Terran_Goliath)
                     && scouts < mapInfo.getMapBases().size()) {
@@ -180,17 +180,17 @@ public class UnitManager {
 
             unitStatus = combatUnit.getUnitStatus();
 
-            switch(unitStatus) {
+            switch (unitStatus) {
                 case ATTACK:
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
 
-                    if(combatUnit.getUnitType() == UnitType.Terran_Marine) {
-                        if(combatUnit.isInRangeOfThreat() && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
+                    if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
+                        if (combatUnit.isInRangeOfThreat() && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
                             avoidThreat(combatUnit);
                             combatUnit.setUnitStatus(UnitStatus.AVOID);
                             continue;
                         }
-                        else if(combatUnit.isInRangeOfThreat() && combatUnit.hasTankSupport()) {
+                        else if (combatUnit.isInRangeOfThreat() && combatUnit.hasTankSupport()) {
                             avoidThreat(combatUnit);
                             combatUnit.setUnitStatus(UnitStatus.AVOID);
                             continue;
@@ -199,7 +199,7 @@ public class UnitManager {
                         break;
                     }
 
-                    if(combatUnit.isInRangeOfThreat()) {
+                    if (combatUnit.isInRangeOfThreat()) {
                         avoidThreat(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.AVOID);
                         break;
@@ -209,15 +209,15 @@ public class UnitManager {
                     break;
                 case RALLY:
                     //Avoid units who can't shoot up trying to defend against air
-                    if(gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
+                    if (gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
-                    else if(gameState.isEnemyInBase() && !gameState.enemyFlyerInBase()) {
+                    else if (gameState.isEnemyInBase() && !gameState.enemyFlyerInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
-                    else if(priorityTarget != null) {
+                    else if (priorityTarget != null) {
                         combatUnit.setEnemyInBase(true);
                         combatUnit.setEnemyUnit(priorityTarget);
                     }
@@ -226,11 +226,11 @@ public class UnitManager {
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 100);
                     }
 
-                    if(obstructingBuild(combatUnit)) {
+                    if (obstructingBuild(combatUnit)) {
                         break;
                     }
 
-                    if(combatUnit.isInRangeOfThreat()) {
+                    if (combatUnit.isInRangeOfThreat()) {
                         avoidThreat(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.RETREAT);
                         break;
@@ -243,11 +243,11 @@ public class UnitManager {
                     loadBunker(combatUnit);
                     break;
                 case DEFEND:
-                    if(gameState.isEnemyInBase()) {
+                    if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 1000);
                     }
-                    else if(priorityTarget != null) {
+                    else if (priorityTarget != null) {
                         combatUnit.setEnemyInBase(true);
                         combatUnit.setEnemyUnit(priorityTarget);
                     }
@@ -256,11 +256,11 @@ public class UnitManager {
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 250);
                     }
 
-                    if(obstructingBuild(combatUnit)) {
+                    if (obstructingBuild(combatUnit)) {
                         break;
                     }
 
-                    if(combatUnit.isInRangeOfThreat()) {
+                    if (combatUnit.isInRangeOfThreat()) {
                         avoidThreat(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.RETREAT);
                         break;
@@ -270,7 +270,7 @@ public class UnitManager {
                     combatUnit.defend();
                     break;
                 case RETREAT:
-                    if(!combatUnit.isInRangeOfThreat()) {
+                    if (!combatUnit.isInRangeOfThreat()) {
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     }
                     else {
@@ -286,7 +286,7 @@ public class UnitManager {
                     scanInvisibleUnits(combatUnit);
                     break;
                 case OBSTRUCTING:
-                    if(!obstructingBuild(combatUnit)) {
+                    if (!obstructingBuild(combatUnit)) {
                         combatUnit.setUnitStatus(UnitStatus.RALLY);
                     }
 
@@ -295,7 +295,7 @@ public class UnitManager {
                 case SIEGEDEF:
                     ((SiegeTank) combatUnit).siegeDef();
 
-                    if(gameState.isEnemyInBase()) {
+                    if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
@@ -309,7 +309,7 @@ public class UnitManager {
                     avoidThreat(combatUnit);
                     break;
                 case SALLYOUT:
-                    if(!gameState.isBeingSieged()) {
+                    if (!gameState.isBeingSieged()) {
                         combatUnit.setUnitStatus(UnitStatus.RALLY);
                     }
                     else {
@@ -329,13 +329,13 @@ public class UnitManager {
     }
 
     private void loadBunker(CombatUnits combatUnit) {
-        if(bunker == null) {
+        if (bunker == null) {
             return;
         }
 
         combatUnit.getUnit().load(bunker);
 
-        if(!combatUnit.isInBunker()) {
+        if (!combatUnit.isInBunker()) {
             bunkerLoad++;
         }
 
@@ -343,13 +343,13 @@ public class UnitManager {
     }
 
     private void unLoadBunker(CombatUnits combatUnit) {
-        if(bunker != null) {
+        if (bunker != null) {
             bunker.unloadAll();
         }
         bunkerLoad = 0;
         combatUnit.setInBunker(false);
 
-        if(gameState.isBeingSieged()) {
+        if (gameState.isBeingSieged()) {
             combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
         }
         else {
@@ -358,8 +358,8 @@ public class UnitManager {
     }
 
     private void bunkerStatus(CombatUnits combatUnit) {
-        if(bunker == null || !bunker.exists()) {
-            if(combatUnit.getUnitStatus() == UnitStatus.LOAD) {
+        if (bunker == null || !bunker.exists()) {
+            if (combatUnit.getUnitStatus() == UnitStatus.LOAD) {
                 combatUnit.setUnitStatus(UnitStatus.RALLY);
                 combatUnit.setInBunker(false);
                 bunkerLoad--;
@@ -369,40 +369,40 @@ public class UnitManager {
         }
 
         //temp to allow early marines to clean up inside the base
-        if(gameState.getEnemyOpener() != null) {
-            if(gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase()) {
-                if(bunkerLoad >= 1) {;
+        if (gameState.getEnemyOpener() != null) {
+            if (gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase()) {
+                if (bunkerLoad >= 1) {;
                     return;
                 }
             }
         }
 
-        if(bunkerLoad >= 4 ) {
+        if (bunkerLoad >= 4 ) {
             return;
         }
 
-        if(!combatUnit.isInBunker() && priorityTarget == null
+        if (!combatUnit.isInBunker() && priorityTarget == null
                 && (combatUnit.getUnitStatus() == UnitStatus.RALLY || combatUnit.getUnitStatus() == UnitStatus.DEFEND)) {
 
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
 
-        if(enemyNearBunker() && combatUnit.getUnit().getDistance(bunker.getPosition()) < 200) {
+        if (enemyNearBunker() && combatUnit.getUnit().getDistance(bunker.getPosition()) < 200) {
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
     }
 
     private boolean enemyNearBunker() {
-        if(bunker == null) {
+        if (bunker == null) {
             return false;
         }
 
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            if(enemyUnit.getEnemyPosition() == null) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyPosition().getDistance(bunker.getPosition()) < 192) {
+            if (enemyUnit.getEnemyPosition().getDistance(bunker.getPosition()) < 192) {
                 return true;
             }
         }
@@ -410,8 +410,8 @@ public class UnitManager {
     }
 
     private void assignScouts(CombatUnits combatUnit) {
-        for(Base base : mapInfo.getMapBases()) {
-            if(designatedScouts.containsKey(base)) {
+        for (Base base : mapInfo.getMapBases()) {
+            if (designatedScouts.containsKey(base)) {
                 continue;
             }
 
@@ -422,8 +422,8 @@ public class UnitManager {
     }
 
     private void unassignScout(CombatUnits combatUnit) {
-        for(Base base : designatedScouts.keySet()) {
-            if(designatedScouts.get(base).getUnitID() == combatUnit.getUnitID()) {
+        for (Base base : designatedScouts.keySet()) {
+            if (designatedScouts.get(base).getUnitID() == combatUnit.getUnitID()) {
                 designatedScouts.remove(base);
                 scouts--;
                 break;
@@ -432,17 +432,17 @@ public class UnitManager {
     }
 
     private void scoutBases() {
-        for(Base base : designatedScouts.keySet()) {
+        for (Base base : designatedScouts.keySet()) {
             CombatUnits scout = designatedScouts.get(base);
 
             scout.getUnit().attack(base.getCenter());
 
-            if(gameState.isEnemyBuildingDiscovered()) {
+            if (gameState.isEnemyBuildingDiscovered()) {
                 scout.setUnitStatus(UnitStatus.RALLY);
             }
         }
 
-        if(gameState.isEnemyBuildingDiscovered()) {
+        if (gameState.isEnemyBuildingDiscovered()) {
             scouts = 0;
             designatedScouts.clear();
         }
@@ -451,18 +451,18 @@ public class UnitManager {
     private void rallyClockReset(CombatUnits combatUnit) {
         combatUnit.setResetClock(combatUnit.getResetClock() + 12);
 
-        if(new Time(combatUnit.getResetClock()).greaterThan(new Time(0, 30))) {
+        if (new Time(combatUnit.getResetClock()).greaterThan(new Time(0, 30))) {
             rallyPoint.setRallyPoint(combatUnit);
             combatUnit.setResetClock(0);
         }
     }
 
     private void enemyOpenerResponse() {
-        if(gameState.getEnemyOpener() == null) {
+        if (gameState.getEnemyOpener() == null) {
             return;
         }
 
-        switch(gameState.getEnemyOpener().getStrategyName()) {
+        switch (gameState.getEnemyOpener().getStrategyName()) {
             case "Cannon Rush":
                 this.beingAllInned = true;
                 break;
@@ -481,30 +481,30 @@ public class UnitManager {
 
     //TODO: move to comsat class
     private void scanInvisibleUnits(CombatUnits combatUnit) {
-        if(combatUnit.getUnitType() != UnitType.Terran_Comsat_Station) {
+        if (combatUnit.getUnitType() != UnitType.Terran_Comsat_Station) {
             return;
         }
 
-        if(activeScanNearUnit()) {
+        if (activeScanNearUnit()) {
             return;
         }
 
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Observer) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Observer) {
                 continue;
             }
 
-            if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && friendlyUnitInRange()) {
+            if ((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && friendlyUnitInRange()) {
                 combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition());
             }
         }
     }
 
     private boolean activeScanNearUnit() {
-        for(CombatUnits scanUnit : combatUnits) {
-            if(scanUnit.getUnitStatus() == UnitStatus.SCAN) {
-                for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-                    if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && !enemyUnit.getEnemyUnit().isDetected()) {
+        for (CombatUnits scanUnit : combatUnits) {
+            if (scanUnit.getUnitStatus() == UnitStatus.SCAN) {
+                for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    if ((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && !enemyUnit.getEnemyUnit().isDetected()) {
                         int distance = scanUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition());
                         if (distance <= 300) {
                             return true;
@@ -514,23 +514,23 @@ public class UnitManager {
             }
 
             //Give a tolerance just outside of detection range to not waste scans
-            if(scanUnit.getUnitType().isDetector()) {
+            if (scanUnit.getUnitType().isDetector()) {
                 //Edge case
-                if(scanUnit.getUnit().getPosition() == null) {
+                if (scanUnit.getUnit().getPosition() == null) {
                     continue;
                 }
 
-                for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-                    if((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
-                        if(enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= scanUnit.getUnitType().sightRange()) {
-                            if(scanUnit.getUnitType() == UnitType.Terran_Missile_Turret && enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) > 224) {
+                for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    if ((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible()) {
+                        if (enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= scanUnit.getUnitType().sightRange()) {
+                            if (scanUnit.getUnitType() == UnitType.Terran_Missile_Turret && enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) > 224) {
                                 continue;
                             }
 
                             return true;
                         }
 
-                        if(scanUnit.getUnitType() == UnitType.Terran_Missile_Turret && enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= 224) {
+                        if (scanUnit.getUnitType() == UnitType.Terran_Missile_Turret && enemyUnit.getEnemyUnit().getDistance(scanUnit.getUnit().getPosition()) <= 224) {
                             return true;
                         }
                     }
@@ -541,32 +541,32 @@ public class UnitManager {
     }
 
     private boolean friendlyUnitInRange() {
-        for(CombatUnits friendlyUnit : combatUnits) {
-            if(friendlyUnit.getUnitStatus() == UnitStatus.WORKER || friendlyUnit.getUnitStatus() == UnitStatus.BUILDING
+        for (CombatUnits friendlyUnit : combatUnits) {
+            if (friendlyUnit.getUnitStatus() == UnitStatus.WORKER || friendlyUnit.getUnitStatus() == UnitStatus.BUILDING
             || friendlyUnit.getUnitStatus() == UnitStatus.MINE || friendlyUnit.getUnitStatus() == UnitStatus.SCAN || friendlyUnit.getUnitStatus() == UnitStatus.ADDON) {
                 continue;
             }
 
-            if(friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
+            if (friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
                 continue;
             }
 
-            if(friendlyUnit.getUnit().getPosition() == null) {
+            if (friendlyUnit.getUnit().getPosition() == null) {
                 continue;
             }
 
-            for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-                if(enemyUnit.getEnemyPosition() == null) {
+            for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                if (enemyUnit.getEnemyPosition() == null) {
                     continue;
                 }
 
-                if((friendlyUnit.getUnitType().groundWeapon().maxRange() < 1 && !enemyUnit.getEnemyType().isFlyer())
+                if ((friendlyUnit.getUnitType().groundWeapon().maxRange() < 1 && !enemyUnit.getEnemyType().isFlyer())
                         || (friendlyUnit.getUnitType().airWeapon().maxRange() < 1 && enemyUnit.getEnemyType().isFlyer())) {
                     continue;
                 }
 
 
-                if(friendlyUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < friendlyUnit.getUnitType().groundWeapon().maxRange()) {
+                if (friendlyUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < friendlyUnit.getUnitType().groundWeapon().maxRange()) {
                     return true;
                 }
             }
@@ -575,16 +575,16 @@ public class UnitManager {
     }
 
     private boolean obstructingBuild(CombatUnits combatUnit) {
-        for(Unit unit : game.self().getUnits()) {
-            if(!unit.getType().isWorker()) {
+        for (Unit unit : game.self().getUnits()) {
+            if (!unit.getType().isWorker()) {
                 continue;
             }
 
-            if(combatUnit.getRallyPoint() == null) {
+            if (combatUnit.getRallyPoint() == null) {
                 continue;
             }
 
-            if(!unit.isMoving() && !unit.isConstructing() && unit.getPosition().getApproxDistance(combatUnit.getUnit().getPosition()) < 100 && combatUnit.getUnit().getPosition().getApproxDistance(combatUnit.getRallyPoint().toPosition()) < 100) {
+            if (!unit.isMoving() && !unit.isConstructing() && unit.getPosition().getApproxDistance(combatUnit.getUnit().getPosition()) < 100 && combatUnit.getUnit().getPosition().getApproxDistance(combatUnit.getRallyPoint().toPosition()) < 100) {
                 combatUnit.setUnitStatus(UnitStatus.OBSTRUCTING);
                 return true;
             }
@@ -594,19 +594,19 @@ public class UnitManager {
 
     private void moveFromObstruction(CombatUnits combatUnit) {
         Unit worker = null;
-        for(Unit unit : game.self().getUnits()) {
-            if(!unit.getType().isWorker()) {
+        for (Unit unit : game.self().getUnits()) {
+            if (!unit.getType().isWorker()) {
                 continue;
             }
 
-            if(!unit.isMoving() && !unit.isConstructing() &&
+            if (!unit.isMoving() && !unit.isConstructing() &&
                     unit.getPosition().getApproxDistance(combatUnit.getUnit().getPosition()) < 100) {
                 worker = unit;
                 break;
             }
         }
 
-        if(worker == null) {
+        if (worker == null) {
             return;
         }
 
@@ -627,7 +627,7 @@ public class UnitManager {
 
     private void avoidThreat(CombatUnits combatUnit) {
         EnemyUnits closestThreat = ClosestUnit.findClosestEnemyUnit(combatUnit, gameState.getKnownValidThreats(), Integer.MAX_VALUE);
-        if(closestThreat == null || closestThreat.getEnemyPosition() == null) {
+        if (closestThreat == null || closestThreat.getEnemyPosition() == null) {
             return;
         }
 
@@ -648,35 +648,35 @@ public class UnitManager {
     }
 
     private void inRangeOfThreat(CombatUnits combatUnit) {
-        if(gameState.getKnownValidThreats().isEmpty()) {
+        if (gameState.getKnownValidThreats().isEmpty()) {
             combatUnit.setInRangeOfThreat(false);
             return;
         }
 
         boolean inRange = false;
 
-        for(EnemyUnits enemyUnit : gameState.getKnownValidThreats()) {
-            if(enemyUnit.getEnemyPosition() == null) {
+        for (EnemyUnits enemyUnit : gameState.getKnownValidThreats()) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
-            if(combatUnit.getUnit().isFlying() && !enemyUnit.getEnemyType().airWeapon().targetsAir()) {
+            if (combatUnit.getUnit().isFlying() && !enemyUnit.getEnemyType().airWeapon().targetsAir()) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {
-                if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < UnitType.Terran_Marine.groundWeapon().maxRange() + 200) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {
+                if (combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < UnitType.Terran_Marine.groundWeapon().maxRange() + 200) {
                     inRange = true;
                 }
                 continue;
             }
 
-            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 100) {
+            if (combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 100) {
                 //Check if it's an active threat
-                if(enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && !enemyUnit.getEnemyUnit().isBurrowed()) {
+                if (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && !enemyUnit.getEnemyUnit().isBurrowed()) {
                     continue;
                 }
-                else if(enemyUnit.getEnemyType().isBuilding() && (enemyUnit.getEnemyUnit().isMorphing() || !enemyUnit.getEnemyUnit().isPowered())) {
+                else if (enemyUnit.getEnemyType().isBuilding() && (enemyUnit.getEnemyUnit().isMorphing() || !enemyUnit.getEnemyUnit().isPowered())) {
                     continue;
                 }
 
@@ -688,18 +688,18 @@ public class UnitManager {
     }
 
     private UnitType typeOfThreat(CombatUnits combatUnit) {
-        for(EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-            if(enemyUnit.getEnemyPosition() == null) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
             boolean isThreat = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.getEnemyUnit().isBurrowed() && !enemyUnit.getEnemyUnit().isDetected());
 
-            if(!isThreat) {
+            if (!isThreat) {
                 continue;
             }
 
-            if(combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 100) {
+            if (combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 100) {
                 return enemyUnit.getEnemyType();
             }
         }
@@ -707,17 +707,17 @@ public class UnitManager {
     }
 
     private boolean hasTankSupport(CombatUnits combatUnit) {
-        if(unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
+        if (unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
             ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Tank_Mode);
-            if(combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 250) {
+            if (combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 250) {
                 return true;
             }
 
-            for(CombatUnits unit : combatUnits) {
-                if((unit.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode)
+            for (CombatUnits unit : combatUnits) {
+                if ((unit.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode)
                         && unit.getEnemyUnit() != null && !unit.isInBase()) {
                     int distanceToEnemy = unit.getUnit().getDistance(unit.getEnemyUnit().getEnemyPosition());
-                    if(distanceToEnemy < 400) {
+                    if (distanceToEnemy < 400) {
                         return true;
                     }
                 }
@@ -727,8 +727,8 @@ public class UnitManager {
     }
 
     private boolean isExistingUnit(Unit unit) {
-        for(CombatUnits combatUnit : combatUnits) {
-            if(combatUnit.getUnitID() == unit.getID()) {
+        for (CombatUnits combatUnit : combatUnits) {
+            if (combatUnit.getUnitID() == unit.getID()) {
                 return true;
             }
         }
@@ -740,8 +740,8 @@ public class UnitManager {
     }
 
     private void liftBuilding(CombatUnits building) {       
-        if(gameState.getLiftableBuildings().contains(building.getUnitType())) {
-            if(gameState.getEnemyOpener() != null && !gameState.getEnemyOpener().isStrategyDefended()
+        if (gameState.getLiftableBuildings().contains(building.getUnitType())) {
+            if (gameState.getEnemyOpener() != null && !gameState.getEnemyOpener().isStrategyDefended()
                     && gameState.getEnemyOpener().overrideBuildingLift()
                     && building.getUnitType().canProduce()) {
                 return;
@@ -751,12 +751,12 @@ public class UnitManager {
                 building.setNotNeeded(true);
             }
 
-            if(building.getUnitType() == UnitType.Terran_Barracks && combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)) {
+            if (building.getUnitType() == UnitType.Terran_Barracks && combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)) {
                 return;
             }
 
             //Don't lift if cannot build goliaths and air threats are seen
-            if(building.getUnitType() == UnitType.Terran_Barracks
+            if (building.getUnitType() == UnitType.Terran_Barracks
                     && !building.notNeeded()
                     && gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer)
                     && gameState.getUnitTypeCount().getOrDefault(UnitType.Terran_Armory, 0) == 0
@@ -774,51 +774,51 @@ public class UnitManager {
             return;
         }
         
-        if(gameState.getEnemyOpener() != null
+        if (gameState.getEnemyOpener() != null
                 && gameState.getEnemyOpener().overrideBuildingLift()
                 && !gameState.getEnemyOpener().isStrategyDefended()) {
             building.getUnit().land(building.getUnit().getInitialTilePosition());
         }
 
-        if(gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer) &&
+        if (gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer) &&
                 building.getUnitType() == UnitType.Terran_Barracks && gameState.getUnitTypeCount().get(UnitType.Terran_Armory) == 0) {
             building.getUnit().land(building.getUnit().getInitialTilePosition());
         }
     }
 
     public int naturalBunkerLeashRange() {
-        if(mapInfo.hasBunkerInNatural() && mapInfo.getNaturalBase() != null && bunker != null) {
+        if (mapInfo.hasBunkerInNatural() && mapInfo.getNaturalBase() != null && bunker != null) {
             return bunker.getDistance(mapInfo.getNaturalBase().getCenter()) + 32;
         }
         return 10000;
     }
 
     public void onUnitComplete(Unit unit) {
-        if(unit.getType() == UnitType.Terran_Bunker) {
-            if(bunker != null) {
+        if (unit.getType() == UnitType.Terran_Bunker) {
+            if (bunker != null) {
                 bunker.unloadAll();
             }
             bunker = unit;
             return;
         }
 
-        if(unit.getType() == UnitType.Terran_Comsat_Station) {
+        if (unit.getType() == UnitType.Terran_Comsat_Station) {
             CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
             combatUnits.add(combatUnit);
             return;
         }
-        else if(unit.getType() == UnitType.Spell_Scanner_Sweep) {
+        else if (unit.getType() == UnitType.Spell_Scanner_Sweep) {
             CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
             combatUnits.add(combatUnit);
             return;
         }
 
-        if(isExistingUnit(unit)) {
+        if (isExistingUnit(unit)) {
             return;
         }
 
-        if(unit.getType().isBuilding()) {
-            if(!unit.canLift() && unit.getType() != UnitType.Terran_Missile_Turret) {
+        if (unit.getType().isBuilding()) {
+            if (!unit.canLift() && unit.getType() != UnitType.Terran_Missile_Turret) {
                 return;
             }
 
@@ -841,11 +841,11 @@ public class UnitManager {
     }
 
     public void onUnitDestroy(Unit unit) {
-        if(unit.getType() == UnitType.Terran_Bunker) {
+        if (unit.getType() == UnitType.Terran_Bunker) {
             bunker = null;
 
-            for(Unit u : game.self().getUnits()) {
-                if(u.getType() == UnitType.Terran_Bunker && u.isCompleted()) {
+            for (Unit u : game.self().getUnits()) {
+                if (u.getType() == UnitType.Terran_Bunker && u.isCompleted()) {
                     this.bunker = u;
                     break;
                 }
@@ -857,11 +857,11 @@ public class UnitManager {
         while (iterator.hasNext()) {
             CombatUnits combatUnit = iterator.next();
             if (combatUnit.getUnitID() == unit.getID()) {
-                if(combatUnit.getUnitStatus() == UnitStatus.LOAD) {
+                if (combatUnit.getUnitStatus() == UnitStatus.LOAD) {
                     bunkerLoad--;
                 }
 
-                if(combatUnit.getUnitStatus() == UnitStatus.SCOUT) {
+                if (combatUnit.getUnitStatus() == UnitStatus.SCOUT) {
                     unassignScout(combatUnit);
                 }
 

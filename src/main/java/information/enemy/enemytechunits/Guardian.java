@@ -11,12 +11,12 @@ public class Guardian extends EnemyTechUnits {
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Guardian) {
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Guardian) {
                 return true;
             }
         }

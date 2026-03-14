@@ -20,18 +20,18 @@ public class CannonRush extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyPosition() == null ) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyPosition() == null ) {
                 continue;
             }
 
-            if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
-                if(new Time(3, 30).greaterThan(time)) {
+            if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
+                if (new Time(3, 30).greaterThan(time)) {
                     return true;
                 }
             }
-            else if(mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
-                if(new Time(3, 30).greaterThan(time)) {
+            else if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
+                if (new Time(3, 30).greaterThan(time)) {
                     return true;
                 }
             }

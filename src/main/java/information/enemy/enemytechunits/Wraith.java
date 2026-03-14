@@ -15,12 +15,12 @@ public class Wraith extends EnemyTechUnits {
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Terran_Wraith) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Wraith) {
                 return true;
             }
         }

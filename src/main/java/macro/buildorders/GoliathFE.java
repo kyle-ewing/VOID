@@ -68,15 +68,15 @@ public class GoliathFE extends BuildOrder {
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
-        if(enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Barracks).count() > 1) {
+        if (enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Barracks).count() > 1) {
             moveOutCondition.put(UnitType.Terran_Goliath, 10);
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
         }
-        else if(enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Starport).count() > 1 && time.lessThanOrEqual(new Time(6,0))) {
+        else if (enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Starport).count() > 1 && time.lessThanOrEqual(new Time(6,0))) {
             moveOutCondition.put(UnitType.Terran_Goliath, 4);
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
         }
-        else if(time.lessThanOrEqual(new Time(8,0))) {
+        else if (time.lessThanOrEqual(new Time(8,0))) {
             moveOutCondition.put(UnitType.Terran_Goliath, 5);
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 3);
         }

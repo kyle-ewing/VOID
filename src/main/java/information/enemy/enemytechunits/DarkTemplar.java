@@ -11,12 +11,12 @@ public class DarkTemplar extends EnemyTechUnits {
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Dark_Templar) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Dark_Templar) {
                 return true;
             }
         }

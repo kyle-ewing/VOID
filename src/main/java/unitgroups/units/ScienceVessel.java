@@ -21,19 +21,19 @@ public class ScienceVessel extends CombatUnits {
     }
 
     public void rally() {
-        if(rallyPoint == null) {
+        if (rallyPoint == null) {
             return;
         }
 
-        if(friendlyUnit == null) {
+        if (friendlyUnit == null) {
             unit.move(rallyPoint.toPosition());
             return;
         }
 
-        if(irradiating) {
+        if (irradiating) {
             irradiateClock += 8;
 
-            if(irradiateClock >= 64) {
+            if (irradiateClock >= 64) {
                 irradiating = false;
                 irradiateClock = 0;
             }
@@ -41,25 +41,25 @@ public class ScienceVessel extends CombatUnits {
 
 
 
-        if(priorityEnemyUnit != null && priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+        if (priorityEnemyUnit != null && priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
             irradiateClock = 0;
             irradiating = false;
             setPriorityTargetLock(false);
             setIgnoreCurrentPriorityTarget(true);
         }
-        else if(priorityEnemyUnit != null && !priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+        else if (priorityEnemyUnit != null && !priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
             setIgnoreCurrentPriorityTarget(false);
         }
 
 
-        if(game.self().hasResearched(TechType.Irradiate) && unit.getEnergy() >= 75) {
-            if(priorityEnemyUnit != null && unit.getDistance(priorityEnemyUnit.getEnemyUnit()) <= 550 && !ignoreCurrentPriorityTarget) {
+        if (game.self().hasResearched(TechType.Irradiate) && unit.getEnergy() >= 75) {
+            if (priorityEnemyUnit != null && unit.getDistance(priorityEnemyUnit.getEnemyUnit()) <= 550 && !ignoreCurrentPriorityTarget) {
                 irradiate();
                 return;
             }
         }
 
-        if(irradiating) {
+        if (irradiating) {
             return;
         }
 
@@ -68,46 +68,46 @@ public class ScienceVessel extends CombatUnits {
     }
 
     public void attack() {
-        if(friendlyUnit == null) {
+        if (friendlyUnit == null) {
             super.setTargetRange(200);
             super.setUnitStatus(UnitStatus.RETREAT);
             return;
         }
 
-        if(irradiating) {
+        if (irradiating) {
             irradiateClock += 8;
 
-            if(irradiateClock >= 64) {
+            if (irradiateClock >= 64) {
                 irradiating = false;
                 irradiateClock = 0;
             }
         }
 
-        if(priorityEnemyUnit == null) {
+        if (priorityEnemyUnit == null) {
             irradiating = false;
             setPriorityTargetLock(false);
             setIgnoreCurrentPriorityTarget(false);
         }
 
-        if(priorityEnemyUnit != null && priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+        if (priorityEnemyUnit != null && priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
             irradiateClock = 0;
             irradiating = false;
             setPriorityTargetLock(false);
             setIgnoreCurrentPriorityTarget(true);
         }
-        else if(priorityEnemyUnit != null && !priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
+        else if (priorityEnemyUnit != null && !priorityEnemyUnit.getEnemyUnit().isIrradiated()) {
             setIgnoreCurrentPriorityTarget(false);
         }
 
 
-        if(game.self().hasResearched(TechType.Irradiate) && unit.getEnergy() >= 75) {
-            if(priorityEnemyUnit != null && unit.getDistance(priorityEnemyUnit.getEnemyUnit()) <= 550 && !ignoreCurrentPriorityTarget) {
+        if (game.self().hasResearched(TechType.Irradiate) && unit.getEnergy() >= 75) {
+            if (priorityEnemyUnit != null && unit.getDistance(priorityEnemyUnit.getEnemyUnit()) <= 550 && !ignoreCurrentPriorityTarget) {
                 irradiate();
                 return;
             }
         }
 
-        if(irradiating) {
+        if (irradiating) {
             return;
         }
 
@@ -119,11 +119,11 @@ public class ScienceVessel extends CombatUnits {
     }
 
     public void retreat() {
-        if(rallyPoint == null) {
+        if (rallyPoint == null) {
             return;
         }
 
-        if(friendlyUnit != null) {
+        if (friendlyUnit != null) {
             super.setUnitStatus(UnitStatus.ATTACK);
             return;
         }

@@ -20,29 +20,29 @@ public class FourPool extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        if(enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Drone).count() > 4) {
+        if (enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Drone).count() > 4) {
             return false;
         }
 
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyPosition() == null) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
-                if(time.lessThanOrEqual(new Time(2,0))) {
-                    if(enemyUnit.getEnemyUnit().isCompleted()) {
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
+                if (time.lessThanOrEqual(new Time(2,0))) {
+                    if (enemyUnit.getEnemyUnit().isCompleted()) {
                         return true;
                     }
                 }
             }
-            else if(enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if(time.lessThanOrEqual(new Time(2,20))) {
+            else if (enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
+                if (time.lessThanOrEqual(new Time(2,20))) {
                     return true;
                 }
 
-                else if(time.lessThanOrEqual(new Time(2,40))) {
-                    if(enemyUnit.getEnemyPosition().getDistance(mapInfo.getStartingBase().getCenter()) < 2000) {
+                else if (time.lessThanOrEqual(new Time(2,40))) {
+                    if (enemyUnit.getEnemyPosition().getDistance(mapInfo.getStartingBase().getCenter()) < 2000) {
                         return true;
                     }
                 }

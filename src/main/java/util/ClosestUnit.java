@@ -15,13 +15,13 @@ import java.util.List;
 
 public class ClosestUnit {
     public static void findClosestUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {
-        if(combatUnit.getUnitType() == UnitType.Terran_Medic) {
+        if (combatUnit.getUnitType() == UnitType.Terran_Medic) {
             return;
         }
 
         EnemyUnits closestEnemy = findClosestEnemyUnit(combatUnit, enemyUnits, range);
 
-        if(closestEnemy == null) {
+        if (closestEnemy == null) {
             combatUnit.setEnemyUnit(null);
             return;
         }
@@ -34,59 +34,59 @@ public class ClosestUnit {
         CombatUnits closestUnit = null;
         int closestDistance = combatUnit.getTargetRange();
 
-        if(combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().getUnit().exists()) {
+        if (combatUnit.getFriendlyUnit() != null && combatUnit.getFriendlyUnit().getUnit().exists()) {
             return;
         }
 
-        for(CombatUnits friendlyUnit : friendlyUnits) {
-            if(friendlyUnit.getUnitID() == combatUnit.getUnitID()) {
+        for (CombatUnits friendlyUnit : friendlyUnits) {
+            if (friendlyUnit.getUnitID() == combatUnit.getUnitID()) {
                 continue;
             }
 
-            if(friendlyUnit.getUnitType().isMechanical() && combatUnit.getUnitType() == UnitType.Terran_Medic ) {
+            if (friendlyUnit.getUnitType().isMechanical() && combatUnit.getUnitType() == UnitType.Terran_Medic ) {
                 continue;
             }
 
-            if(friendlyUnit.isInBunker() || friendlyUnit.getUnit().isLoaded()) {
+            if (friendlyUnit.isInBunker() || friendlyUnit.getUnit().isLoaded()) {
                 continue;
             }
 
-            if(friendlyUnit.getUnitType() != unitType) {
-                if(!(friendlyUnit instanceof SiegeTank)) {
+            if (friendlyUnit.getUnitType() != unitType) {
+                if (!(friendlyUnit instanceof SiegeTank)) {
                     continue;
                 }
             }
 
-            if(friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
+            if (friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
                 continue;
             }
 
-            if(combatUnit.getUnitType() == UnitType.Terran_Medic) {
+            if (combatUnit.getUnitType() == UnitType.Terran_Medic) {
                 boolean alreadyAssigned = false;
-                for(CombatUnits assignedUnit : friendlyUnits) {
-                    if(assignedUnit.getUnitType() == UnitType.Terran_Medic && assignedUnit.getUnitID() != combatUnit.getUnitID()) {
-                        if(assignedUnit.getFriendlyUnit() != null && assignedUnit.getFriendlyUnit().getUnit().getID() == friendlyUnit.getUnitID()) {
+                for (CombatUnits assignedUnit : friendlyUnits) {
+                    if (assignedUnit.getUnitType() == UnitType.Terran_Medic && assignedUnit.getUnitID() != combatUnit.getUnitID()) {
+                        if (assignedUnit.getFriendlyUnit() != null && assignedUnit.getFriendlyUnit().getUnit().getID() == friendlyUnit.getUnitID()) {
                             alreadyAssigned = true;
                             break;
                         }
                     }
                 }
 
-                if(alreadyAssigned) {
+                if (alreadyAssigned) {
                     continue;
                 }
             }
 
-            if(!friendlyUnit.getUnitType().isMechanical() || unitType.isMechanical()) {
+            if (!friendlyUnit.getUnitType().isMechanical() || unitType.isMechanical()) {
                 int distance = combatUnit.getUnit().getDistance(friendlyUnit.getUnit());
-                if(distance < closestDistance) {
+                if (distance < closestDistance) {
                     closestUnit = friendlyUnit;
                     closestDistance = distance;
                 }
             }
         }
 
-        if(closestUnit != null) {
+        if (closestUnit != null) {
             combatUnit.setFriendlyUnit(closestUnit);
         }
         else {
@@ -98,17 +98,17 @@ public class ClosestUnit {
         HashSet<EnemyUnits> priorityEnemies = new HashSet<>();
         combatUnit.setPriorityTargetExists(false);
 
-        if(!enemyUnits.contains(combatUnit.getPriorityEnemyUnit())) {
+        if (!enemyUnits.contains(combatUnit.getPriorityEnemyUnit())) {
             combatUnit.setPriorityEnemyUnit(null);
         }
 
-        if(combatUnit.priorityTargetLock()) {
+        if (combatUnit.priorityTargetLock()) {
             return;
         }
 
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(priorityUnit.contains(enemyUnit.getEnemyType())) {
-                if(combatUnit.getPriorityEnemyUnit() == enemyUnit && combatUnit.ignoreCurrentPriorityTarget()) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (priorityUnit.contains(enemyUnit.getEnemyType())) {
+                if (combatUnit.getPriorityEnemyUnit() == enemyUnit && combatUnit.ignoreCurrentPriorityTarget()) {
                     continue;
                 }
 
@@ -133,20 +133,20 @@ public class ClosestUnit {
             return null;
         }
 
-        for(Workers worker : workers) {
-            if(worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+        for (Workers worker : workers) {
+            if (worker.getWorkerStatus() != WorkerStatus.MINERALS) {
                 continue;
             }
 
             Position workerPos = worker.getUnit().getPosition();
             List<Position> path = pathFinding.findPath(workerPos, walkableGoal);
 
-            if(path == null || path.isEmpty()) {
+            if (path == null || path.isEmpty()) {
                 continue;
             }
 
             int pathLen = path.size();
-            if(pathLen < closestDistance) {
+            if (pathLen < closestDistance) {
                 closestDistance = pathLen;
                 closestWorker = worker;
             }
@@ -162,30 +162,30 @@ public class ClosestUnit {
         EnemyUnits prioritySunk = null;
 
 
-        for(EnemyUnits enemyUnit : enemyUnits) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
             //Priority tracking for sunks over creep colonies
 
-            if(enemyUnit.getEnemyPosition() == null) {
+            if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
             Position enemyPosition = enemyUnit.getEnemyPosition();
             Position unitPosition = combatUnit.getUnit().getPosition();
 
-            if(enemyUnit.getEnemyUnit().isVisible() && enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony) {
+            if (enemyUnit.getEnemyUnit().isVisible() && enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony) {
                 prioritySunk = enemyUnit;
             }
 
-            if(combatUnit.getUnit().getDistance(enemyPosition) > range) {
+            if (combatUnit.getUnit().getDistance(enemyPosition) > range) {
                 continue;
             }
 
             //Stop units from getting stuck on outdated position info
-            if(combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists()) {
+            if (combatUnit.getUnit().getDistance(enemyPosition) < 250 && !enemyUnit.getEnemyUnit().exists()) {
                 boolean burrowedLurker = (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker && enemyUnit.wasBurrowed());
 
-                if(burrowedLurker) {
-                    if(hasDetectionNearPosition(enemyUnit, combatUnit)) {
+                if (burrowedLurker) {
+                    if (hasDetectionNearPosition(enemyUnit, combatUnit)) {
                         enemyUnit.setEnemyPosition(null);
                         continue;
                     }
@@ -195,7 +195,7 @@ public class ClosestUnit {
                 }
 
                 //Hard force position reset if units literally on top of an enemy that is clearly not there anymore
-                if(combatUnit.getUnit().getDistance(enemyPosition) < 32 && !enemyUnit.getEnemyUnit().isVisible()) {
+                if (combatUnit.getUnit().getDistance(enemyPosition) < 32 && !enemyUnit.getEnemyUnit().isVisible()) {
                     enemyUnit.setEnemyPosition(null);
                     continue;
                 }
@@ -203,20 +203,20 @@ public class ClosestUnit {
                 continue;
             }
 
-            if(!combatUnit.getUnit().hasPath(enemyPosition)) {
+            if (!combatUnit.getUnit().hasPath(enemyPosition)) {
                 continue;
             }
 
-            if((!combatUnit.getUnit().getType().airWeapon().targetsAir() && !combatUnit.getUnit().isFlying()) && enemyUnit.getEnemyUnit().getType().isFlyer()) {
+            if ((!combatUnit.getUnit().getType().airWeapon().targetsAir() && !combatUnit.getUnit().isFlying()) && enemyUnit.getEnemyUnit().getType().isFlyer()) {
                 continue;
             }
 
-            if(enemyUnit.getEnemyUnit().isLifted() && !combatUnit.getUnit().getType().airWeapon().targetsAir()) {
+            if (enemyUnit.getEnemyUnit().isLifted() && !combatUnit.getUnit().getType().airWeapon().targetsAir()) {
                 continue;
             }
 
             //TODO: this doesn't actually skip these units, fix that
-            if(((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && !enemyUnit.getEnemyUnit().isDetected())
+            if (((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && !enemyUnit.getEnemyUnit().isDetected())
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Overlord
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Protoss_Observer
                     || enemyUnit.getEnemyUnit().getType() == UnitType.Zerg_Larva
@@ -228,7 +228,7 @@ public class ClosestUnit {
 
 
             //Edge case focus sunk over creep colony
-            if(closestEnemy != null
+            if (closestEnemy != null
                     && prioritySunk != null
                     && enemyUnit.getEnemyType() == UnitType.Zerg_Creep_Colony
                     && enemyUnit.getEnemyUnit().isVisible()) {
@@ -237,7 +237,7 @@ public class ClosestUnit {
                 closestEnemy = prioritySunk;
             }
             //Focus units over buildings if visible and not static defense
-            else if(closestEnemy != null && closestEnemy.getEnemyType().isBuilding()
+            else if (closestEnemy != null && closestEnemy.getEnemyType().isBuilding()
                     && !isStaticDefense(closestEnemy.getEnemyType())
                     && enemyUnit.getEnemyUnit().isVisible()
                     && distance < 500
@@ -245,7 +245,7 @@ public class ClosestUnit {
                 closestDistance = distance;
                 closestEnemy = enemyUnit;
             }
-            else if(distance < closestDistance
+            else if (distance < closestDistance
                     && (closestEnemy == null
                     || !closestEnemy.getEnemyType().isBuilding()
                     || !enemyUnit.getEnemyType().isBuilding()
@@ -256,7 +256,7 @@ public class ClosestUnit {
                 closestEnemy = enemyUnit;
             }
 
-            if(closestEnemy != null && (enemyUnit.getEnemyType() != UnitType.Zerg_Overlord && enemyUnit.getEnemyType() != UnitType.Protoss_Observer)
+            if (closestEnemy != null && (enemyUnit.getEnemyType() != UnitType.Zerg_Overlord && enemyUnit.getEnemyType() != UnitType.Protoss_Observer)
                     && (closestEnemy.getEnemyType() == UnitType.Zerg_Overlord || closestEnemy.getEnemyType() == UnitType.Protoss_Observer)) {
                 closestEnemy = enemyUnit;
                 closestDistance = distance;
@@ -267,13 +267,13 @@ public class ClosestUnit {
     }
 
     private static boolean hasDetectionNearPosition(EnemyUnits enemyUnit, CombatUnits combatUnit) {
-        if(!combatUnit.getUnitType().isDetector()) {
+        if (!combatUnit.getUnitType().isDetector()) {
             return false;
         }
 
         int detectionRange = 0;
 
-        if(combatUnit.getUnitType() == UnitType.Terran_Missile_Turret) {
+        if (combatUnit.getUnitType() == UnitType.Terran_Missile_Turret) {
             detectionRange = 224;
         }
         else {

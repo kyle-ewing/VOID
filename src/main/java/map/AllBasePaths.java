@@ -24,15 +24,15 @@ public class AllBasePaths {
     private void calculateBasePaths() {
         Position startingBasePos = mapInfo.getStartingBase().getCenter();
 
-        for(Base base : mapInfo.getMapBases()) {
-            if(mapInfo.getStartingBase().equals(base)) {
+        for (Base base : mapInfo.getMapBases()) {
+            if (mapInfo.getStartingBase().equals(base)) {
                 continue;
             }
 
             Position nearestWalkable = mapInfo.getPathFinding().findNearestWalkable(base.getCenter());
             List<Position> path = mapInfo.getPathFinding().findPath(startingBasePos, nearestWalkable);
 
-            if(path == null || path.isEmpty()) {
+            if (path == null || path.isEmpty()) {
                 continue;
             }
 
@@ -43,8 +43,8 @@ public class AllBasePaths {
     private void calculateChokePaths() {
         Position startingBasePos = mapInfo.getStartingBase().getCenter();
 
-        for(Base base : mapInfo.getMapBases()) {
-            if(mapInfo.getStartingBase().equals(base)
+        for (Base base : mapInfo.getMapBases()) {
+            if (mapInfo.getStartingBase().equals(base)
             || mapInfo.getMinBaseTiles().contains(base.getLocation())) {
                 continue;
             }
@@ -52,15 +52,15 @@ public class AllBasePaths {
             Position nearestWalkable = mapInfo.getPathFinding().findNearestWalkable(base.getCenter());
             List<Position> path = mapInfo.getPathFinding().findPath(startingBasePos, nearestWalkable);
 
-            if(path == null || path.isEmpty()) {
+            if (path == null || path.isEmpty()) {
                 continue;
             }
 
-            for(ChokePoint choke : mapInfo.getChokePoints()) {
+            for (ChokePoint choke : mapInfo.getChokePoints()) {
                 Position chokePos = choke.getCenter().toPosition();
-                for(Position pathPos : path) {
-                    if(chokePos.getDistance(pathPos) < 175) {
-                        if(!chokePathLists.containsKey(base)) {
+                for (Position pathPos : path) {
+                    if (chokePos.getDistance(pathPos) < 175) {
+                        if (!chokePathLists.containsKey(base)) {
                             chokePathLists.put(base, new ArrayList<>());
                         }
                         chokePathLists.get(base).add(chokePos);

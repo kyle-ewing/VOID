@@ -16,21 +16,21 @@ public class DTRush extends EnemyStrategy{
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        for(EnemyUnits enemyUnit : enemyUnits) {
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Templar_Archives) {
-                if(time.lessThanOrEqual(new Time(5,30))) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Templar_Archives) {
+                if (time.lessThanOrEqual(new Time(5,30))) {
                     return true;
                 }
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Citadel_of_Adun) {
-                if(time.lessThanOrEqual(new Time(5,0))) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Citadel_of_Adun) {
+                if (time.lessThanOrEqual(new Time(5,0))) {
                     return true;
                 }
             }
 
-            if(enemyUnit.getEnemyType() == UnitType.Protoss_Dark_Templar) {
-                if(time.lessThanOrEqual(new Time(7,30))) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Dark_Templar) {
+                if (time.lessThanOrEqual(new Time(7,30))) {
                     return true;
                 }
             }
