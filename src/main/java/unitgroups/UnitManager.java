@@ -166,7 +166,9 @@ public class UnitManager {
                 }
             }
 
-            if ((scouting.isCompletedScout() || scouting.attemptsMaxed()) && !gameState.isEnemyBuildingDiscovered()
+            if ((scouting.isCompletedScout() || scouting.attemptsMaxed()) 
+                    && mapInfo.getEnemyMain() != null
+                    && !gameState.isEnemyBuildingDiscovered()
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Vulture || combatUnit.getUnitType() == UnitType.Terran_Goliath)
                     && scouts < mapInfo.getMapBases().size()) {

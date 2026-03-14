@@ -101,6 +101,23 @@ public class Scouting {
             return;
         }
 
+        scanBase(gameState.getStartingEnemyBase().getEnemyPosition());
+        mainScanned = true;
+    }
+
+    private void scanRemainingMains() {
+        for (Base startingBase : mapInfo.getStartingBases()) {
+            if (startingBase == mapInfo.getStartingBase()) {
+                continue;
+            }
+
+            if (!mapInfo.isExplored(startingBase)) {
+                scanBase(startingBase.getCenter());
+            }
+        }   
+    }
+
+    private void scanBase(Position basePosition) {
         CombatUnits scanner = gameState.getCombatUnits().stream().filter(cu -> cu.getUnitType() == UnitType.Terran_Comsat_Station).findFirst().orElse(null);
 
         if (scanner == null || !scanner.getUnit().isCompleted()) {
@@ -111,10 +128,7 @@ public class Scouting {
             return;
         }
 
-        Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
-
-        scanner.getUnit().useTech(TechType.Scanner_Sweep, enemyBasePos);
-        mainScanned = true;
+        scanner.getUnit().useTech(TechType.Scanner_Sweep, basePosition);
     }
 
     public void onFrame() {
@@ -135,6 +149,10 @@ public class Scouting {
 
         if (gameState.getEnemyOpener() == null && !mainScanned && time.greaterThan(new Time(5,0))) {
             scanEnemyBase();
+        }
+        
+        if (gameState.getEnemyOpener() != null && gameState.getStartingEnemyBase() == null && time.greaterThan(new Time(5,0))) {
+            scanRemainingMains();
         }
     }
 
