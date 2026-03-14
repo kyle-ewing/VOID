@@ -312,7 +312,6 @@ public class WorkerManager {
         initialMineralAssignmentDone = true;
     }
 
-    //
     private void workerBuildClock() {
         for(Workers worker : workers) {
             if(worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {

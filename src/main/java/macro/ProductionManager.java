@@ -259,6 +259,10 @@ public class ProductionManager {
                                 && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }
+
+                        if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
+                            mapInfo.setNaturalOwned(true);
+                        }
                     }
 
                     if(worker.getWorkerStatus() == WorkerStatus.MINERALS) {
@@ -269,10 +273,18 @@ public class ProductionManager {
                         gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                         pi.setAssignedBuilder(null);
+
+                        if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
+                            mapInfo.setNaturalOwned(false);
+                        }
                     }
 
                     if(!worker.getUnit().exists()) {
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+
+                        if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
+                            mapInfo.setNaturalOwned(false);
+                        }
                     }
 
                     if(buildingInProduction(pi.getBuildPosition(), pi.getUnitType())) {

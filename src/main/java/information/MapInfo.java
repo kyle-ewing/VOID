@@ -785,6 +785,10 @@ public class MapInfo {
         return naturalOwned;
     }
 
+    public void setNaturalOwned(boolean naturalOwned) {
+        this.naturalOwned = naturalOwned;
+    }
+
     public Base getMinOnlyBase() {
         return minOnlyBase;
     }

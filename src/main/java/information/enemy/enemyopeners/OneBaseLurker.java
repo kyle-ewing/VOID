@@ -77,7 +77,7 @@ public class OneBaseLurker extends EnemyStrategy {
         if(buildType == BuildType.BIO) {
             moveOutCondition.put(UnitType.Terran_Marine, 12);
             moveOutCondition.put(UnitType.Terran_Medic, 4);
-            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
+            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 1);
         }
 
         return moveOutCondition;
