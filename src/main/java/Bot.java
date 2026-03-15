@@ -36,7 +36,7 @@ public class Bot extends DefaultBWListener {
         mapInfo = new MapInfo(bwem, game);
         gameState = new GameState(game, bwem, mapInfo);
         enemyInformation = new EnemyInformation(mapInfo, game, gameState);
-        workerManager = new WorkerManager(mapInfo, player, game, gameState);
+        workerManager = new WorkerManager(mapInfo, player, game, gameState, enemyInformation);
         productionManager = new ProductionManager(game, player, mapInfo, gameState);
         scouting = new Scouting(game, mapInfo, gameState);
         unitManager = new UnitManager(enemyInformation, gameState, mapInfo, game, scouting);

@@ -270,6 +270,36 @@ public class EnemyInformation {
         return false;
     }
 
+    public int getEnemySupplyInRange(Unit bunker) {
+        int supply = 0;
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Overlord) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyType().isWorker()) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyUnit().getType().isFlyer() || !enemyUnit.getEnemyUnit().isDetected()) {
+                continue;
+            }
+
+            if (!enemyUnit.getEnemyUnit().exists()) {
+                continue;
+            }
+            
+            if (enemyUnit.getEnemyPosition().getApproxDistance(bunker.getPosition()) < 400) {
+                supply += enemyUnit.getEnemyType().supplyRequired();
+            }
+        }
+        return supply;
+    }
+
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
         enemyInBase();

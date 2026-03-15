@@ -234,6 +234,21 @@ public class GameState {
         scanner.getUnit().useTech(TechType.Scanner_Sweep, pos);
     }
 
+    public boolean isNaturalCCCompleted() {
+        if (!mapInfo.isNaturalOwned()) {
+            return false;
+        }
+
+        for (Unit building : allBuildings) {
+            if (building.getType() == UnitType.Terran_Command_Center
+                    && building.isCompleted()
+                    && building.getDistance(mapInfo.getNaturalBase().getCenter()) < 100) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean shouldTransition() {
         return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0 && pi.getPlannedItemType() == PlannedItemType.BUILDING);
     }

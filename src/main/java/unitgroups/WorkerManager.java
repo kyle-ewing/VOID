@@ -5,6 +5,7 @@ import bwem.Base;
 import bwem.Mineral;
 import information.MapInfo;
 import information.GameState;
+import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
 import unitgroups.units.WorkerStatus;
@@ -23,6 +24,7 @@ public class WorkerManager {
     private Player player;
     private Game game;
     private GameState gameState;
+    private EnemyInformation enemyInformation;
     private EnemyScoutResponse enemyScoutResponse;
     private HashSet<Workers> workers;
     private HashSet<Workers> defenseForce = new HashSet<>();
@@ -34,11 +36,12 @@ public class WorkerManager {
     private boolean initialMineralAssignmentDone = false;
     private boolean mineralBlockersCleared = false;
 
-    public WorkerManager(MapInfo mapInfo, Player player, Game game, GameState gameState) {
+    public WorkerManager(MapInfo mapInfo, Player player, Game game, GameState gameState, EnemyInformation enemyInformation) {
         this.mapInfo = mapInfo;
         this.player = player;
         this.gameState = gameState;
         this.game = game;
+        this.enemyInformation = enemyInformation;
 
         workers = gameState.getWorkers();
 
@@ -460,17 +463,22 @@ public class WorkerManager {
         }
 
         if (bunker.isCompleted()) {
-            if (enemyInRange()) {
+            Position baseCenter = mapInfo.getStartingBase().getCenter();
+            if (gameState.isNaturalCCCompleted()) {
+                baseCenter = mapInfo.getNaturalBase().getCenter();
+            }
+
+            if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 8) {
                 createRepairForce(bunker, 3);
             }
-            else if (!enemyInRange() && bunker.getDistance(mapInfo.getStartingBase().getCenter()) > 650
+            else if (bunker.getDistance(baseCenter) > 650
                     && new Time(game.getFrameCount()).greaterThan(new Time(5,30))
-                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 2);
             }
-            else if (!enemyInRange() && bunker.getDistance(mapInfo.getStartingBase().getCenter()) > 250
+            else if (bunker.getDistance(baseCenter) > 300
                     && new Time(game.getFrameCount()).greaterThan(new Time(5,0))
-                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9,0))) {
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 1);
             }
             else if (!enemyInRange()) {
@@ -480,7 +488,6 @@ public class WorkerManager {
                     worker.setPreemptiveRepair(false);
                 }
                 repairForce.clear();
-
             }
         }
     }
