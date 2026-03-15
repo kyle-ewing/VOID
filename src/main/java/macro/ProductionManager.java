@@ -14,6 +14,7 @@ import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 import util.ClosestUnit;
+import util.Time;
 
 import java.util.*;
 
@@ -566,7 +567,12 @@ public class ProductionManager {
 
         for (long i = 0; i < scvsToQueue; i++) {
             if (ownedBases == 1) {
-                addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
+                if (unitTypeCount.get(UnitType.Terran_SCV) < 16 && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
+                }
+                else {
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
+                }
             }
             else {
                 if (unitTypeCount.get(UnitType.Terran_SCV) < 48) {
