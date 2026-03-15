@@ -72,10 +72,11 @@ public class ProductionManager {
                 priorityStop = true;
             }
 
-            //Override stop of floating too much
-            if (gameState.getResourceTracking().getAvailableMinerals() >= 800) {
+            //Override stop if floating too much
+            if (gameState.getResourceTracking().getAvailableMinerals() >= 500) {
                 priorityStop = false;
                 blockedByHigherPriority = false;
+                hasHighPriorityBuilding = false;
             }
 
             if (blockedByHigherPriority && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
@@ -291,7 +292,9 @@ public class ProductionManager {
                     }
 
                     if (!worker.getUnit().exists()) {
+                        gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                        pi.setAssignedBuilder(null);
 
                         if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
                             mapInfo.setNaturalOwned(false);
