@@ -160,6 +160,8 @@ public class ClosestUnit {
         int closestDistance = range;
         EnemyUnits closestEnemy = null;
         EnemyUnits prioritySunk = null;
+        EnemyUnits nonWorker = null;
+        EnemyUnits lurker = null;
 
 
         for (EnemyUnits enemyUnit : enemyUnits) {
@@ -224,7 +226,33 @@ public class ClosestUnit {
                 continue;
             }
 
+
+
             int distance = unitPosition.getApproxDistance(enemyPosition);
+
+            if (!enemyUnit.getEnemyType().isWorker()) {
+                nonWorker = enemyUnit;
+            }
+            else if (enemyUnit.getEnemyType() == UnitType.Zerg_Lurker) {
+                lurker = enemyUnit;
+            }
+
+            // Jank tank logic to avoid workers/focus lurkers fix later
+            if (combatUnit.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || combatUnit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+                if (nonWorker != null 
+                        && distance < 500
+                        && closestDistance < 500
+                        && enemyUnit.getEnemyType().isWorker()) {
+                    continue;
+                }
+
+                if (lurker != null
+                        && distance < 400
+                        && closestDistance < 400
+                        && enemyUnit.getEnemyType() == UnitType.Zerg_Lurker) {
+                    return lurker;
+                }
+            }
 
 
             //Edge case focus sunk over creep colony
@@ -261,6 +289,8 @@ public class ClosestUnit {
                 closestEnemy = enemyUnit;
                 closestDistance = distance;
             }
+
+
         }
 
         return closestEnemy;
