@@ -3,6 +3,7 @@ package unitgroups.units;
 import bwapi.*;
 import information.MapInfo;
 import information.enemy.EnemyInformation;
+import information.enemy.EnemyUnits;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -11,6 +12,7 @@ public class SiegeTank extends CombatUnits {
     private EnemyInformation enemyInformation;
     private MapInfo mapInfo;
     private UnitType defaultMode = UnitType.Terran_Siege_Tank_Tank_Mode;
+    private HashSet<EnemyUnits> enemyUnits;
     private HashSet<TilePosition> mainEdgeTiles = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
     private HashSet<TilePosition> backupSiegeTiles = new HashSet<>();
@@ -22,6 +24,7 @@ public class SiegeTank extends CombatUnits {
     public SiegeTank(Game game, EnemyInformation enemyInformation, Unit unit) {
         super(game, unit);
         this.enemyInformation = enemyInformation;
+        this.enemyUnits = enemyInformation.getEnemyUnits();
         mapInfo = enemyInformation.getBaseInfo();
         mainEdgeTiles = mapInfo.getMainCliffEdge();
         combinedTankTiles = mapInfo.getCombinedTankTiles();
@@ -34,8 +37,22 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
+        EnemyUnits target = enemyUnit;
+        if (!priorityTargetExists) {
+            EnemyUnits preferred = null;
+            if (preferred != null) {
+                target = preferred;
+            }
+        }
+
         siegeLogic();
-        unit.attack(enemyUnit.getEnemyPosition());
+
+        if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE) {
+            unit.attack(target.getEnemyPosition());
+        } 
+        else {
+            unit.attack(target.getEnemyUnit());
+        }
     }
 
     @Override
@@ -75,6 +92,14 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
+        EnemyUnits target = enemyUnit;
+        if (!priorityTargetExists) {
+            EnemyUnits preferred = null;
+            if (preferred != null) {
+                target = preferred;
+            }
+        }
+
         if (!inBase) {
             setUnitStatus(UnitStatus.RETREAT);
             return;
@@ -90,7 +115,7 @@ public class SiegeTank extends CombatUnits {
             Position kitePos = getKitePos(maxRange);
 
             if (unit.getGroundWeaponCooldown() == 0) {
-                unit.attack(enemyUnit.getEnemyPosition());
+                unit.attack(target.getEnemyPosition());
                 return;
             }
 
@@ -100,7 +125,14 @@ public class SiegeTank extends CombatUnits {
         }
 
         siegeLogic();
-        unit.attack(enemyUnit.getEnemyPosition());
+
+        if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE) {
+            unit.attack(target.getEnemyPosition());
+        } 
+        else {
+            unit.attack(target.getEnemyUnit());
+        }
+
     }
 
     @Override
@@ -132,13 +164,28 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
+        EnemyUnits target = enemyUnit;
+        if (!priorityTargetExists) {
+            EnemyUnits preferred = null;
+            if (preferred != null) {
+                target = preferred;
+            }
+        }
+
         if (enemyInBase) {
             super.setUnitStatus(UnitStatus.DEFEND);
             return;
         }
 
         siegeLogic();
-        unit.attack(enemyUnit.getEnemyPosition());
+
+        if(unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE) {
+            unit.attack(target.getEnemyPosition());
+        }
+        else {
+            unit.attack(target.getEnemyUnit());
+        }
+
     }
 
     public void siegeDef() {
@@ -202,6 +249,7 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
+        //TODO: add case for obstructing to unsiege and move
         switch (super.getUnitStatus()) {
             case ATTACK:
                 if (!isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
@@ -256,6 +304,85 @@ public class SiegeTank extends CombatUnits {
         }
     }
 
+    
+    private EnemyUnits findValidTarget() {
+        EnemyUnits tank = null, lurker = null, staticDefense = null, other = null, building = null, worker = null;
+        double tankDist = Double.MAX_VALUE, lurkerDist = Double.MAX_VALUE, staticDist = Double.MAX_VALUE;
+        double otherDist = Double.MAX_VALUE, buildingDist = Double.MAX_VALUE, workerDist = Double.MAX_VALUE;
+
+        for (EnemyUnits enemy : enemyUnits) {
+            if ((enemy.getEnemyUnit().isCloaked() 
+                    || enemy.getEnemyUnit().isBurrowed()) 
+                    && !enemy.getEnemyUnit().isDetected()) {
+                continue;
+            }
+
+            if (enemy.getEnemyPosition() == null) {
+                continue;
+            }
+
+            double dist = unit.getDistance(enemy.getEnemyPosition());
+            
+            UnitType type = enemy.getEnemyType();
+
+            if (type.isWorker()) {
+                continue;
+            }
+
+            if (dist > SIEGE_RANGE) {
+                continue;
+            }
+            
+ 
+            if ((type == UnitType.Terran_Siege_Tank_Tank_Mode || type == UnitType.Terran_Siege_Tank_Siege_Mode)
+                    && dist < tankDist) {
+                tank = enemy;
+                tankDist = dist;
+            }
+            else if (type == UnitType.Zerg_Lurker && dist < lurkerDist) {
+                lurker = enemy;
+                lurkerDist = dist;
+            }
+            else if (isStaticDefense(type) && dist < staticDist) {
+                staticDefense = enemy;
+                staticDist = dist;
+            }
+            else if (type.isWorker() && dist < workerDist) {
+                worker = enemy;
+                workerDist = dist;
+            }
+            else if (!type.isBuilding() && dist < otherDist) {
+                other = enemy;
+                otherDist = dist;
+            } 
+            else if (type.isBuilding() && dist < buildingDist) {
+                building = enemy;
+                buildingDist = dist;
+            }
+        }
+
+        if (tank != null) {
+            return tank;
+        }
+
+        if (lurker != null) {
+            return lurker;
+        }
+
+        if (staticDefense != null) {
+            return staticDefense;
+        }
+
+        if (other != null) {
+            return other;
+        }
+
+        if (worker != null) {
+            return worker;
+        }
+        return building;
+    }
+
     private boolean kiteThreshold() {
         int maxRange = weaponRange();
         double kiteThreshold = maxRange * 0.2;
@@ -280,6 +407,12 @@ public class SiegeTank extends CombatUnits {
 
         Position kitePos = new Position(targetX, targetY);
         return kitePos;
+    }
+
+    private boolean isStaticDefense(UnitType unitType) {
+        return unitType == UnitType.Zerg_Sunken_Colony
+                || unitType == UnitType.Protoss_Photon_Cannon
+                || unitType == UnitType.Terran_Bunker;
     }
 
 

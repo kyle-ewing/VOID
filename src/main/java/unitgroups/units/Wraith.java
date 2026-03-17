@@ -117,18 +117,27 @@ public class Wraith extends CombatUnits {
             }
         }
 
-        boolean onCooldown = unit.getAirWeaponCooldown() > 0;
-        boolean inAttackAnimation = unit.isAttackFrame() || unit.isStartingAttack();
-
-        if (distToEnemy > weaponRange + 64) {
-            unit.move(approachTo(enemyPos));
-        } 
-        else if (onCooldown || inAttackAnimation || unit.isPatrolling()) {
-            unit.move(kiteAwayFrom(enemyPos, weaponRange + 64));
+        if (target.getEnemyUnit().isDetected()) {
+            unit.attack(target.getEnemyUnit());
         } 
         else {
-            unit.patrol(enemyPos);
+            unit.attack(target.getEnemyPosition());
         }
+
+        unit.attack(target.getEnemyUnit());
+
+        // boolean onCooldown = unit.getAirWeaponCooldown() > 0;
+        // boolean inAttackAnimation = unit.isAttackFrame() || unit.isStartingAttack();
+
+        // if (distToEnemy > weaponRange + 64) {
+        //     unit.move(approachTo(enemyPos));
+        // } 
+        // else if (onCooldown || inAttackAnimation || unit.isPatrolling()) {
+        //     unit.move(kiteAwayFrom(enemyPos, weaponRange + 64));
+        // } 
+        // else {
+        //     unit.patrol(enemyPos);
+        // }
     }
 
     private EnemyUnits findValidTarget() {
