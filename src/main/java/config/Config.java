@@ -36,7 +36,7 @@ public final class Config {
 
     // Production and planning
     public boolean debugProductionQueue = true;
-    public boolean debugProdQueueOutput = true;
+    public boolean debugProdQueueOutput = false;
 
     public Config() {
         // HUD and general info
