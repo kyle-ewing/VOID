@@ -160,6 +160,10 @@ public class ProductionManager {
                                 continue;
                             }
 
+                            if (game.self().getUpgradeLevel(pi.getUpgradeType()) != pi.getUpgradeLevel() - 1) {
+                                continue;
+                            }
+
                             if (canUpgrade(pi.getUpgradeType())) {
                                 researchUpgrade(pi.getUpgradeType());
                                 pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
