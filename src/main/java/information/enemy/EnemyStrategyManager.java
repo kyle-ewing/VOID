@@ -32,7 +32,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new TwoFacTank());
         enemyStrategies.add(new SCVRush(mapInfo));
         enemyStrategies.add(new OneBaseMuta(mapInfo));
-        enemyStrategies.add(new OneBaseLurker(mapInfo));
+        // enemyStrategies.add(new OneBaseLurker(mapInfo));
         // enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
         enemyStrategies.add(new TwoBaseLurker(mapInfo));
         enemyStrategies.add(new DTRush());

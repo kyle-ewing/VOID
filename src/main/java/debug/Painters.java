@@ -48,12 +48,21 @@ public class Painters {
         }
 
         if (config.debugCombatUnits) {
+            CombatUnits combatUnit = null;
             for (CombatUnits unit : gameState.getCombatUnits()) {
                 paintUnitStatus(unit);
                 paintClosestEnemy(unit);
                 paintMedicTarget(unit);
                 paintCombatScouts(unit);
                 paintStimStatus(unit);
+
+                if (unit.getUnitStatus() == UnitStatus.REGROUP) {
+                    combatUnit = unit;
+                }
+            }
+
+            if (combatUnit != null) {
+                paintRegroupPosition(combatUnit);
             }
         }
 
@@ -199,6 +208,16 @@ public class Painters {
                 break;
             case SALLYOUT:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Cyan, true);
+                break;
+            case REGROUP:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Cyan, true);
+                break;    
+        }
+    }
+
+    private void paintRegroupPosition(CombatUnits unit) {
+        if (unit.getUnitStatus() == UnitStatus.REGROUP && unit.getRegroupPosition() != null) {
+            game.drawCircleMap(unit.getRegroupPosition(), 10, Color.Cyan, true);
         }
     }
 

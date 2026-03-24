@@ -58,9 +58,10 @@ public class UnitManager {
     }
 
     public void onFrame() {
+        int frameCount = game.getFrameCount();
         enemyOpenerResponse();
         rallyPoint.onFrame();
-        int frameCount = game.getFrameCount();
+        squadManager.onFrame();
 
         if (gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
             rallyClock++;
@@ -329,6 +330,9 @@ public class UnitManager {
                         }
                     }
                     break;
+                case REGROUP:
+                    combatUnit.regroup();
+                    break;    
             }
         }
     }
