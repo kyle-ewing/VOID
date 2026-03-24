@@ -197,14 +197,14 @@ public class CombatUnits {
             return;
         }
 
-        if (enemyUnit != null && enemyUnit.getEnemyUnit().getDistance(unit) < 150) {
+        if (enemyUnit != null && enemyUnit.getEnemyUnit().getDistance(unit) < 200) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(UnitStatus.ATTACK);
             return;
         }
 
-        if (unit.getPosition().getDistance(regroupPosition) < 175) {
+        if (unit.getPosition().getDistance(regroupPosition) < 225) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(UnitStatus.ATTACK);

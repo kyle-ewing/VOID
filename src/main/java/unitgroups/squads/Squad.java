@@ -65,12 +65,21 @@ public class Squad {
 
         Position clusterCenter = new Position(cx / count, cy / count);
 
+        if (regroupPosition == null) {
+            regroupPosition = clusterCenter;
+            return;
+        }
+
         int smoothX = (int) (regroupPosition.getX() * SMOOTHING_ALPHA + clusterCenter.getX() * (1 - SMOOTHING_ALPHA));
         int smoothY = (int) (regroupPosition.getY() * SMOOTHING_ALPHA + clusterCenter.getY() * (1 - SMOOTHING_ALPHA));
         regroupPosition = new Position(smoothX, smoothY);
     }
 
     private void checkRegroup() {
+        if (squadUnits.size() < 4) {
+            return;
+        }
+
         for (CombatUnits unit : squadUnits) {
             if (unit.getUnitStatus() != UnitStatus.ATTACK) {
                 continue; 
@@ -80,7 +89,7 @@ public class Squad {
                 continue; 
             }
 
-            if (unit.getUnit().getPosition().getDistance(regroupPosition) > 200 && game.isWalkable(regroupPosition.toWalkPosition())) {
+            if (unit.getUnit().getPosition().getDistance(regroupPosition) > 250 && game.isWalkable(regroupPosition.toWalkPosition())) {
                 unit.setUnitStatus(UnitStatus.REGROUP);
             }
         }
@@ -115,6 +124,16 @@ public class Squad {
 
     public void setSquadUnits(HashSet<CombatUnits> squadUnits) {
         this.squadUnits = squadUnits;
+    }
+
+    public int getCountOf(UnitType type) {
+        int count = 0;
+        for (UnitType t : squadComposition.values()) {
+            if (t == type) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public HashMap<Integer, UnitType> getSquadComposition() {

@@ -159,6 +159,7 @@ public class SiegeTank extends CombatUnits {
 
     }
 
+    @Override
     public void sallyOut() {
         if (enemyUnit == null) {
             return;
@@ -186,6 +187,65 @@ public class SiegeTank extends CombatUnits {
             unit.attack(target.getEnemyUnit());
         }
 
+    }
+
+    @Override
+    public void regroup() {
+        if (regroupPosition == null) {
+            return;
+        }
+
+        if (!game.isWalkable(regroupPosition.toWalkPosition())) {
+            regroupStuckCounter = 0;
+            lastRegroupCheckPosition = null;
+            setUnitStatus(UnitStatus.ATTACK);
+            return;
+        }
+
+        if (enemyUnit != null && enemyUnit.getEnemyUnit().getDistance(unit) < 200) {
+            regroupStuckCounter = 0;
+            lastRegroupCheckPosition = null;
+            setUnitStatus(UnitStatus.ATTACK);
+            return;
+        }
+
+        if (unit.getPosition().getDistance(regroupPosition) < 225) {
+            regroupStuckCounter = 0;
+            lastRegroupCheckPosition = null;
+            setUnitStatus(UnitStatus.ATTACK);
+            return;
+        }
+
+        regroupStuckCheckTimer++;
+        if (regroupStuckCheckTimer >= STUCK_CHECK_INTERVAL) {
+            regroupStuckCheckTimer = 0;
+            if (lastRegroupCheckPosition != null
+                    && unit.getPosition().getApproxDistance(lastRegroupCheckPosition) < 16) {
+                regroupStuckCounter++;
+            } else {
+                regroupStuckCounter = 0;
+            }
+            lastRegroupCheckPosition = unit.getPosition();
+        }
+
+        if (regroupStuckCounter >= STUCK_THRESHOLD) {
+            regroupStuckCounter = 0;
+            int dx = regroupPosition.getX() - unit.getPosition().getX();
+            int dy = regroupPosition.getY() - unit.getPosition().getY();
+            double length = Math.sqrt(dx * dx + dy * dy);
+            if (length > 0) {
+                int perpX = (int) (-dy * 100 / length);
+                int perpY = (int) (dx * 100 / length);
+                int moveX = Math.min(Math.max(unit.getPosition().getX() + perpX, 0), game.mapWidth() * 32);
+                int moveY = Math.min(Math.max(unit.getPosition().getY() + perpY, 0), game.mapHeight() * 32);
+                unit.move(new Position(moveX, moveY));
+            }
+            return;
+        }
+
+        siegeLogic();
+
+        unit.move(regroupPosition);
     }
 
     public void siegeDef() {
@@ -289,6 +349,12 @@ public class SiegeTank extends CombatUnits {
                     unit.unsiege();
                 }
                 break;
+            case REGROUP:
+                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64 || enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE) {
+                    super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
+                    unit.unsiege();
+                }
+                break;    
         }
 
         if (enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64
