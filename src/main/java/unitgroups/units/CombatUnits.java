@@ -16,6 +16,7 @@ public class CombatUnits {
     protected EnemyUnits priorityEnemyUnit;
     protected EnemyUnits closestEnemyBuilding;
     protected TilePosition rallyPoint;
+    protected Position regroupPosition;
 
     protected HashSet<UnitType> priorityTargets = new HashSet<>();
 
@@ -368,4 +369,14 @@ public class CombatUnits {
     public void setNotNeeded(boolean notNeeded) {
         this.notNeeded = notNeeded;
     }
+
+    public Position getRegroupPosition() {
+        return regroupPosition;
+    }
+
+    public void setRegroupPosition(Position regroupPosition) {
+        this.regroupPosition = regroupPosition;
+    }
+
+    
 }
