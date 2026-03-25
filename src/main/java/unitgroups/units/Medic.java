@@ -12,13 +12,13 @@ public class Medic extends CombatUnits {
     @Override
     public void attack() {
         if (friendlyUnit == null) {
-            super.setTargetRange(200);
+            super.setTargetRange(400);
             super.setUnitStatus(UnitStatus.RETREAT);
             return;
         }
 
-        if (super.getTargetRange() > 200) {
-            super.setTargetRange(200);
+        if (super.getTargetRange() > 400) {
+            super.setTargetRange(400);
         }
 
         if (inBase) {
@@ -78,7 +78,7 @@ public class Medic extends CombatUnits {
     //Move medics away from target to prevent blocking units from moving out
     private void unstick() {
         if (friendlyUnit == null) {
-            super.setTargetRange(200);
+            super.setTargetRange(400);
             super.setUnitStatus(UnitStatus.RETREAT);
             return;
         }

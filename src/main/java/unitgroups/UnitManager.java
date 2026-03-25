@@ -8,6 +8,7 @@ import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import information.Scouting;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import unitgroups.squads.SquadManager;
 import unitgroups.units.*;
 import map.PathFinding;
 import util.ClosestUnit;
@@ -24,6 +25,7 @@ public class UnitManager {
     private MapInfo mapInfo;
     private Game game;
     private GameState gameState;
+    private SquadManager squadManager;
     private CombatUnitCreator combatUnitCreator;
     private Scouting scouting;
     private RallyPoint rallyPoint;
@@ -46,6 +48,7 @@ public class UnitManager {
         this.mapInfo = mapInfo;
         this.game = game;
         this.scouting = scouting;
+        this.squadManager = new SquadManager(game, gameState);
         this.combatUnitCreator = new CombatUnitCreator(game, enemyInformation);
         this.pathFinding = mapInfo.getPathFinding();
         this.rallyPoint = new RallyPoint(pathFinding, gameState, mapInfo);
@@ -55,9 +58,10 @@ public class UnitManager {
     }
 
     public void onFrame() {
+        int frameCount = game.getFrameCount();
         enemyOpenerResponse();
         rallyPoint.onFrame();
-        int frameCount = game.getFrameCount();
+        squadManager.onFrame();
 
         if (gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
             rallyClock++;
@@ -326,6 +330,9 @@ public class UnitManager {
                         }
                     }
                     break;
+                case REGROUP:
+                    combatUnit.regroup();
+                    break;    
             }
         }
     }
@@ -840,6 +847,10 @@ public class UnitManager {
 
         CombatUnits combatUnit = combatUnitCreator.createCombatUnit(unit);
         combatUnits.add(combatUnit);
+
+        if (!unit.getType().isWorker() && !unit.getType().isBuilding()) {
+            squadManager.onUnitComplete(combatUnit);
+        }
     }
 
     public void onUnitDestroy(Unit unit) {
@@ -868,6 +879,7 @@ public class UnitManager {
                 }
 
                 iterator.remove();
+                squadManager.onUnitDestroy(combatUnit);
                 break;
             }
         }

@@ -16,12 +16,16 @@ public class CombatUnits {
     protected EnemyUnits priorityEnemyUnit;
     protected EnemyUnits closestEnemyBuilding;
     protected TilePosition rallyPoint;
+    protected Position regroupPosition;
+    protected Position lastRegroupCheckPosition = null;
 
     protected HashSet<UnitType> priorityTargets = new HashSet<>();
 
     protected int unitID;
     protected int resetClock = 0;
     protected int targetRange = 200;
+    protected int regroupStuckCheckTimer = 0;
+    protected int regroupStuckCounter = 0;
     protected boolean inBunker;
     protected boolean enemyInBase = false;
     protected boolean inRangeOfThreat = false;
@@ -33,6 +37,9 @@ public class CombatUnits {
     protected boolean ignoreCurrentPriorityTarget = false;
     protected boolean priorityTargetLock = false;
     protected boolean notNeeded = false;
+
+    protected static final int STUCK_CHECK_INTERVAL = 24;
+    protected static final int STUCK_THRESHOLD = 2;
 
     public CombatUnits(Game game, Unit unit) {
         this.game = game;
@@ -176,6 +183,62 @@ public class CombatUnits {
 
     public void hunting() {
 
+    }
+
+    public void regroup() {
+        if (regroupPosition == null) {
+            return;
+        }
+
+        if (!game.isWalkable(regroupPosition.toWalkPosition())) {
+            regroupStuckCounter = 0;
+            lastRegroupCheckPosition = null;
+            setUnitStatus(UnitStatus.ATTACK);
+            return;
+        }
+
+        if (enemyUnit != null && enemyUnit.getEnemyUnit().getDistance(unit) < 200) {
+            regroupStuckCounter = 0;
+            lastRegroupCheckPosition = null;
+            setUnitStatus(UnitStatus.ATTACK);
+            return;
+        }
+
+        if (unit.getPosition().getDistance(regroupPosition) < 225) {
+            regroupStuckCounter = 0;
+            lastRegroupCheckPosition = null;
+            setUnitStatus(UnitStatus.ATTACK);
+            return;
+        }
+
+        regroupStuckCheckTimer++;
+        if (regroupStuckCheckTimer >= STUCK_CHECK_INTERVAL) {
+            regroupStuckCheckTimer = 0;
+            if (lastRegroupCheckPosition != null && unit.getPosition().getApproxDistance(lastRegroupCheckPosition) < 16) {
+                regroupStuckCounter++;
+            }
+            else {
+                regroupStuckCounter = 0;
+            }
+            lastRegroupCheckPosition = unit.getPosition();
+        }
+
+        if (regroupStuckCounter >= STUCK_THRESHOLD) {
+            regroupStuckCounter = 0;
+            int dx = regroupPosition.getX() - unit.getPosition().getX();
+            int dy = regroupPosition.getY() - unit.getPosition().getY();
+            double length = Math.sqrt(dx * dx + dy * dy);
+            if (length > 0) {
+                int perpX = (int)(-dy * 100 / length);
+                int perpY = (int)(dx * 100 / length);
+                int moveX = Math.min(Math.max(unit.getPosition().getX() + perpX, 0), game.mapWidth() * 32);
+                int moveY = Math.min(Math.max(unit.getPosition().getY() + perpY, 0), game.mapHeight() * 32);
+                unit.move(new Position(moveX, moveY));
+            }
+            return;
+        }
+
+        unit.move(regroupPosition);
     }
 
     public void liftedBuildings(Position bunkerPosition, Position naturalBaseCenter) {
@@ -368,4 +431,14 @@ public class CombatUnits {
     public void setNotNeeded(boolean notNeeded) {
         this.notNeeded = notNeeded;
     }
+
+    public Position getRegroupPosition() {
+        return regroupPosition;
+    }
+
+    public void setRegroupPosition(Position regroupPosition) {
+        this.regroupPosition = regroupPosition;
+    }
+
+    
 }

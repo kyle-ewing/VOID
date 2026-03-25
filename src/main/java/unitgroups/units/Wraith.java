@@ -91,6 +91,11 @@ public class Wraith extends CombatUnits {
         }
     }
 
+    @Override
+    public void regroup() {
+        
+    }
+
     private void attackMove() {
         EnemyUnits target = enemyUnit;
         if (!priorityTargetExists) {
