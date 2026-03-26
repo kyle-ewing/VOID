@@ -104,18 +104,17 @@ public class WorkerManager {
                             worker.setWorkerStatus(WorkerStatus.REPAIRING);
                         }
                     }
-                    if (worker.getUnit().isIdle() || worker.getUnit().isAttacking() || !worker.getUnit().isGatheringMinerals()) {
-                        gatherMinerals(worker);
-                    }
 
-                    if (worker.getUnit().isGatheringGas()) {
+                    if (worker.getUnit().isGatheringGas() && !worker.getUnit().isCarryingGas()) {
                         worker.getUnit().stop();
+                    }
+                    else if (worker.getUnit().isIdle() || worker.getUnit().isAttacking() || !worker.getUnit().isGatheringMinerals()) {
+                        gatherMinerals(worker);
                     }
 
                     worker.setIdleClock(0);
                     break;
                 case GAS:
-                    //TODO: pull off gas if geyser is depleted
                     break;
                 case IDLE:
                     if (!worker.isAssignedToBase()) {
