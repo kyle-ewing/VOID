@@ -1,5 +1,9 @@
 package macro.buildorders;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -8,10 +12,6 @@ import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 import util.Time;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class TwoFac extends BuildOrder {
 
@@ -35,21 +35,21 @@ public class TwoFac extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 23, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 24, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(TechType.Spider_Mines, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
+        buildOrder.add(new PlannedItem(TechType.Spider_Mines, 32, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 32, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 34, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 32, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
-        buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,2));
+        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 31, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
+        buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 36, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 37, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 53, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 45, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 50, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 61, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 61, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 61, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 60, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 60, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 60, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 68, PlannedItemStatus.NOT_STARTED,PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 4));
+        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 70, PlannedItemStatus.NOT_STARTED,PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 4));
 
         return buildOrder;
     }

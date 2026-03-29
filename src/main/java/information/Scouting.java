@@ -1,6 +1,11 @@
 package information;
 
-import bwapi.*;
+import bwapi.Game;
+import bwapi.Player;
+import bwapi.Position;
+import bwapi.TechType;
+import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.Base;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;
@@ -101,6 +106,12 @@ public class Scouting {
             return;
         }
 
+        if (gameState.getCombatUnits().stream().filter(cu -> cu.getUnitType() == UnitType.Terran_Comsat_Station).findFirst().orElse(null) == null) {
+            return;
+        }
+
+        System.out.println("Scanning enemy base at " + time);
+
         scanBase(gameState.getStartingEnemyBase().getEnemyPosition());
         mainScanned = true;
     }
@@ -151,7 +162,7 @@ public class Scouting {
             scanEnemyBase();
         }
         
-        if (gameState.getEnemyOpener() != null && gameState.getStartingEnemyBase() == null && time.greaterThan(new Time(5,0))) {
+        if (gameState.getStartingEnemyBase() == null && time.greaterThan(new Time(5,0))) {
             scanRemainingMains();
         }
     }

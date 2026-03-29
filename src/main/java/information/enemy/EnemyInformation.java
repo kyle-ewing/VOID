@@ -1,23 +1,25 @@
 package information.enemy;
 
+import java.util.HashSet;
+import java.util.List;
+
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
+import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import util.Time;
-
-import java.util.HashSet;
-import java.util.List;
 
 public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits;
     private HashSet<EnemyUnits> validThreats;
     private HashSet<EnemyTechUnits> enemyTechUnits;
+    private HashSet<EnemyTechBuilding> enemyTechBuildings;
     private HashSet<UnitType> techunitResponse;
     private MapInfo mapInfo;
     private Game game;
@@ -36,6 +38,7 @@ public class EnemyInformation {
         enemyUnits = gameState.getKnownEnemyUnits();
         validThreats = gameState.getKnownValidThreats();
         enemyTechUnits = gameState.getKnownEnemyTechUnits();
+        enemyTechBuildings = gameState.getKnownEnemyTechBuildings();
         techunitResponse = gameState.getTechUnitResponse();
         startingEnemyBase = gameState.getStartingEnemyBase();
 
@@ -217,6 +220,17 @@ public class EnemyInformation {
         }
     }
 
+    private void checkTechBuildings() {
+        for (EnemyTechBuilding enemyBuilding : enemyStrategyManager.getEnemyBuildings()) {
+            if (!enemyBuilding.hasTriggeredResponse() && enemyBuilding.isEnemyBuilding(enemyUnits)) {
+                System.out.println("Enemy building tech response triggered for " + enemyBuilding.getBuildingType() + " at " + new Time(game.getFrameCount()));
+                enemyBuilding.friendlyBuildingResponse();
+                enemyBuilding.setTriggeredResponse(true);
+                enemyTechBuildings.add(enemyBuilding);
+            }
+        }
+    }
+
     private boolean isThreat(Unit unit) {
         return unit.getType() == UnitType.Zerg_Lurker ||
                 unit.getType() == UnitType.Zerg_Sunken_Colony && !unit.isMorphing() ||
@@ -306,6 +320,7 @@ public class EnemyInformation {
         enemyInNatural();
         checkOpenerDefense(currentTime);
         checkTechUnits();
+        checkTechBuildings();
         gameState.setBeingSieged(beingSieged());
 
         for (EnemyUnits enemyUnit : enemyUnits) {
@@ -342,6 +357,7 @@ public class EnemyInformation {
         for (EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
             if (enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
                 enemyOpener = enemyStrategy;
+                System.out.println("Enemy opener detected: " + enemyStrategy.getStrategyName() + " at " + currentTime);
                 gameState.setEnemyOpener(enemyOpener);
                 game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
                 break;

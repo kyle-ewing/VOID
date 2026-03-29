@@ -1,22 +1,37 @@
 package macro;
 
-import bwapi.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.PriorityQueue;
+
+import bwapi.Game;
+import bwapi.Player;
+import bwapi.TechType;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
+import bwapi.UpgradeType;
 import bwem.Base;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
+import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
-import macro.buildorders.*;
-import unitgroups.units.WorkerStatus;
-import unitgroups.units.Workers;
+import macro.buildorders.BuildOrder;
+import macro.buildorders.BuildType;
 import map.BuildTiles;
 import map.TilePositionValidator;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
 import util.ClosestUnit;
 import util.Time;
-
-import java.util.*;
 
 public class ProductionManager {
     private Game game;
@@ -881,7 +896,7 @@ public class ProductionManager {
         }
     }
 
-    private void enemyTechResponse() {
+    private void enemyTechUnitResponse() {
         if (gameState.getKnownEnemyTechUnits().isEmpty()) {
             return;
         }
@@ -998,6 +1013,42 @@ public class ProductionManager {
             }
 
         }
+    }
+
+    private void enemyTechBuildingResponse() {
+        if (gameState.getKnownEnemyTechBuildings().isEmpty()) {
+            return;
+        }
+
+        for (EnemyTechBuilding techBuilding : gameState.getKnownEnemyTechBuildings()) {
+            if (techBuilding.getFriendlyBuildingResponse().isEmpty()) {
+                continue;
+            }
+
+            techBuilding.getFriendlyBuildingResponse().removeIf(buildingResponse -> 
+                    allBuildings.stream().anyMatch(unit -> unit.getType() == buildingResponse));
+
+            techBuilding.getFriendlyBuildingResponse().removeIf(buildingPriority ->
+                    productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
+                    && (pi.getPriority() == 1 || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
+
+            for (UnitType buildingResponse : techBuilding.getFriendlyBuildingResponse()) {
+                productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() != 1);
+
+                if (buildingResponse.isAddon()) {
+                    addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
+                }
+                else {
+                    if (buildingResponse.canBuildAddon()) {
+                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1, true);
+                    }
+                    else {
+                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                    }
+                }
+            }
+        }
+                
     }
 
     private boolean hasTurretAtBase(TilePosition location) {
@@ -1230,7 +1281,8 @@ public class ProductionManager {
             openerResponse();
         }
 
-        enemyTechResponse();
+        enemyTechUnitResponse();
+        enemyTechBuildingResponse();
         buildTiles.onFrame();
     }
 
