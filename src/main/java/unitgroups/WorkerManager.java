@@ -475,8 +475,8 @@ public class WorkerManager {
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 2);
             }
-            else if (bunker.getDistance(baseCenter) > 300
-                    && new Time(game.getFrameCount()).greaterThan(new Time(5,0))
+            else if (bunker.getDistance(baseCenter) > 400
+                    && new Time(game.getFrameCount()).greaterThan(new Time(4,30))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 1);
             }

@@ -241,6 +241,10 @@ public class CombatUnits {
         unit.move(regroupPosition);
     }
 
+    public void poke() {
+        
+    }
+
     public void liftedBuildings(Position bunkerPosition, Position naturalBaseCenter) {
         if (!notNeeded || !unit.isLifted()) {
             return;

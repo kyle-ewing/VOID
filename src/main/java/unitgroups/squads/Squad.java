@@ -36,6 +36,10 @@ public class Squad {
         int maxNeighbors = -1;
 
         for (CombatUnits candidate : units) {
+            if (candidate.isInBunker()) {
+                continue;
+            }
+
             Position cp = candidate.getUnit().getPosition();
             int neighbors = 0;
             for (CombatUnits other : units) {

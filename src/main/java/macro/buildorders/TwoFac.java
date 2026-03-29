@@ -23,9 +23,13 @@ public class TwoFac extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 9, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 11, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 12, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 15, PlannedItemStatus.NOT_STARTED, PlannedItemType.UNIT, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 17, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 18, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 20, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 17, PlannedItemStatus.NOT_STARTED, PlannedItemType.UNIT, 3));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemStatus.NOT_STARTED, PlannedItemType.UNIT, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemStatus.NOT_STARTED, PlannedItemType.UNIT, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 18, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 1, true));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 20, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 21, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Bunker, 15, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 23, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
@@ -45,6 +49,8 @@ public class TwoFac extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 67, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 68, PlannedItemStatus.NOT_STARTED,PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 4));
+
         return buildOrder;
     }
 

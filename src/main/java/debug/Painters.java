@@ -212,6 +212,9 @@ public class Painters {
             case REGROUP:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Cyan, true);
                 break;    
+            case POKE:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Blue, true);
+                break;    
         }
     }
 
