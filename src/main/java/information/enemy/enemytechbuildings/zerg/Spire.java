@@ -16,6 +16,6 @@ public class Spire extends EnemyTechBuilding {
     }
 
     public void friendlyBuildingResponse() {
-
+        friendlyBuildingResponse.add(UnitType.Terran_Engineering_Bay);
     }
 }

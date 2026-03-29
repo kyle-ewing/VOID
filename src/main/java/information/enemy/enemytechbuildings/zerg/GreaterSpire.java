@@ -16,6 +16,6 @@ public class GreaterSpire extends EnemyTechBuilding {
     }
 
     public void friendlyBuildingResponse() {
-
+        friendlyBuildingResponse.add(UnitType.Terran_Starport);
     }
 }

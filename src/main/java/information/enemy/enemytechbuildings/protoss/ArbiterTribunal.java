@@ -18,6 +18,7 @@ public class ArbiterTribunal extends EnemyTechBuilding {
 
     @Override
     public void friendlyBuildingResponse() {
+        friendlyBuildingResponse.add(UnitType.Terran_Factory);
         friendlyBuildingResponse.add(UnitType.Terran_Starport);
         friendlyBuildingResponse.add(UnitType.Terran_Science_Facility);
     }

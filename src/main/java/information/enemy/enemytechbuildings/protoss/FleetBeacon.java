@@ -18,6 +18,7 @@ public class FleetBeacon extends EnemyTechBuilding {
 
     @Override
     public void friendlyBuildingResponse() {
+        friendlyBuildingResponse.add(UnitType.Terran_Factory);
         friendlyBuildingResponse.add(UnitType.Terran_Armory);
     }
 

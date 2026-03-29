@@ -16,6 +16,7 @@ public class RoboSupportBay extends EnemyTechBuilding {
     }
 
     public void friendlyBuildingResponse() {
+        friendlyBuildingResponse.add(UnitType.Terran_Factory);
         friendlyBuildingResponse.add(UnitType.Terran_Starport);
     }
 
