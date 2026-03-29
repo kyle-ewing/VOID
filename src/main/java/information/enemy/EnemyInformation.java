@@ -1,18 +1,19 @@
 package information.enemy;
 
+import java.util.HashSet;
+import java.util.List;
+
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
+import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import util.Time;
-
-import java.util.HashSet;
-import java.util.List;
 
 public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits;
@@ -217,6 +218,15 @@ public class EnemyInformation {
         }
     }
 
+    private void checkTechBuildings() {
+        for (EnemyTechBuilding enemyBuilding : enemyStrategyManager.getEnemyBuildings()) {
+            if (!enemyBuilding.hasTriggeredResponse()) {
+                enemyBuilding.friendlyBuildingResponse();
+                enemyBuilding.setTriggeredResponse(true);
+            }
+        }
+    }
+
     private boolean isThreat(Unit unit) {
         return unit.getType() == UnitType.Zerg_Lurker ||
                 unit.getType() == UnitType.Zerg_Sunken_Colony && !unit.isMorphing() ||
@@ -306,6 +316,7 @@ public class EnemyInformation {
         enemyInNatural();
         checkOpenerDefense(currentTime);
         checkTechUnits();
+        checkTechBuildings();
         gameState.setBeingSieged(beingSieged());
 
         for (EnemyUnits enemyUnit : enemyUnits) {
