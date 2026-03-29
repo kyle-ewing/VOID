@@ -8,6 +8,7 @@ import bwapi.Game;
 import bwapi.UnitType;
 import information.GameState;
 import unitgroups.units.CombatUnits;
+import unitgroups.units.UnitStatus;
 
 public class SquadManager {
     private Game game;
@@ -31,7 +32,7 @@ public class SquadManager {
     }
 
     public void addUnitToSquad(CombatUnits unit) {
-        if (unit.getUnitType().isFlyer()) {
+        if (unit.getUnitType().isFlyer() || unit.getUnitStatus() == UnitStatus.MINE) {
             //implement air squad later
             return;
         }
@@ -65,7 +66,7 @@ public class SquadManager {
         compositionLimits.put(UnitType.Terran_Marine, 20);
         compositionLimits.put(UnitType.Terran_Firebat, 8);
         compositionLimits.put(UnitType.Terran_Medic, 6);
-        compositionLimits.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
+        compositionLimits.put(UnitType.Terran_Siege_Tank_Tank_Mode, 6);
         compositionLimits.put(UnitType.Terran_Vulture, 12);
         compositionLimits.put(UnitType.Terran_Goliath, 12);
     }
