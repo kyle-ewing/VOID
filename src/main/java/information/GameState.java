@@ -1,11 +1,22 @@
 package information;
 
-import bwapi.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.PriorityQueue;
+
+import bwapi.Game;
+import bwapi.Player;
+import bwapi.Position;
+import bwapi.TechType;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.BWEM;
 import config.Config;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyarmycomposition.EnemyArmyCompManager;
 import information.enemy.enemyopeners.EnemyStrategy;
+import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.ExpansionCriteria;
 import macro.ResourceTracking;
@@ -13,17 +24,13 @@ import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
 import macro.buildorders.BunkerLocation;
 import macro.buildorders.buildtransitions.BuildTransition;
-import planner.PlannedItemType;
-import unitgroups.units.CombatUnits;
-import unitgroups.units.Workers;
 import map.BuildTiles;
 import planner.BuildComparator;
 import planner.PlannedItem;
+import planner.PlannedItemType;
+import unitgroups.units.CombatUnits;
+import unitgroups.units.Workers;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.PriorityQueue;
 
 public class GameState {
     private Game game;
@@ -59,6 +66,7 @@ public class GameState {
     private HashSet<EnemyUnits> knownEnemyUnits = new HashSet<>();
     private HashSet<EnemyUnits> knownValidThreats = new HashSet<>();
     private HashSet<EnemyTechUnits> knownEnemyTechUnits = new HashSet<>();
+    private HashSet<EnemyTechBuilding> knownEnemyTechBuildings = new HashSet<>();
     private HashSet<UnitType> techUnitResponse = new HashSet<>();
     private HashSet<BuildOrder> openingBuildOrders = new HashSet<>();
     private HashSet<BuildTransition> buildTransition = new HashSet<>();
@@ -316,6 +324,10 @@ public class GameState {
 
     public HashSet<EnemyTechUnits> getKnownEnemyTechUnits() {
         return knownEnemyTechUnits;
+    }
+
+    public HashSet<EnemyTechBuilding> getKnownEnemyTechBuildings() {
+        return knownEnemyTechBuildings;
     }
 
     public EnemyUnits getStartingEnemyBase() {
