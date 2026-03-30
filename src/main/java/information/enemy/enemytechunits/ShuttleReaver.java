@@ -36,4 +36,9 @@ public class ShuttleReaver extends EnemyTechUnits {
 
     public void techUpgradeResponse() {
     }
+
+    @Override
+    public boolean mineralLineTurretsOnly() {
+        return true;
+    }
 }
