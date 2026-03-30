@@ -1,23 +1,31 @@
 package unitgroups;
 
-import bwapi.*;
-import bwem.Base;
-import information.MapInfo;
-import information.GameState;
-import information.enemy.EnemyInformation;
-import information.enemy.EnemyUnits;
-import information.Scouting;
-import information.enemy.enemytechunits.EnemyTechUnits;
-import unitgroups.squads.SquadManager;
-import unitgroups.units.*;
-import map.PathFinding;
-import util.ClosestUnit;
-import util.RallyPoint;
-import util.Time;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import bwapi.Game;
+import bwapi.Position;
+import bwapi.TechType;
+import bwapi.Unit;
+import bwapi.UnitType;
+import bwem.Base;
+import information.GameState;
+import information.MapInfo;
+import information.Scouting;
+import information.enemy.EnemyInformation;
+import information.enemy.EnemyUnits;
+import information.enemy.enemytechunits.EnemyTechUnits;
+import map.PathFinding;
+import unitgroups.squads.SquadManager;
+import unitgroups.units.CombatUnitCreator;
+import unitgroups.units.CombatUnits;
+import unitgroups.units.SiegeTank;
+import unitgroups.units.UnitStatus;
+import unitgroups.units.Vulture;
+import util.ClosestUnit;
+import util.RallyPoint;
+import util.Time;
 
 public class UnitManager {
 
@@ -722,7 +730,7 @@ public class UnitManager {
     private boolean hasTankSupport(CombatUnits combatUnit) {
         if (unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
             ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Tank_Mode);
-            if (combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 200) {
+            if (combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 150) {
                 return true;
             }
 
@@ -730,7 +738,7 @@ public class UnitManager {
                 if ((unit.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode)
                         && unit.getEnemyUnit() != null && !unit.isInBase()) {
                     int distanceToEnemy = unit.getUnit().getDistance(unit.getEnemyUnit().getEnemyPosition());
-                    if (distanceToEnemy < 250) {
+                    if (distanceToEnemy < 200) {
                         return true;
                     }
                 }

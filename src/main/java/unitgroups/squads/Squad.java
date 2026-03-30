@@ -19,6 +19,8 @@ public class Squad {
 
     private static final double SMOOTHING_ALPHA = 0.85;
     private static final int CLUSTER_RADIUS = 300;
+    private static final int TANK_WEIGHT = 4;
+    private static final int TANK_THRESHOLD = 2;
 
     public Squad(Game game) {
         this.game = game;
@@ -31,12 +33,17 @@ public class Squad {
         }
 
         List<CombatUnits> units = new ArrayList<>(squadUnits);
+        boolean tankBias = siegeTankCount() >= TANK_THRESHOLD;
 
         CombatUnits anchor = units.get(0);
         int maxNeighbors = -1;
 
         for (CombatUnits candidate : units) {
             if (candidate.isInBunker()) {
+                continue;
+            }
+
+            if (tankBias && !isSiegeTank(candidate)) {
                 continue;
             }
 
@@ -61,9 +68,10 @@ public class Squad {
         for (CombatUnits unit : units) {
             Position pos = unit.getUnit().getPosition();
             if (pos.getApproxDistance(anchorPos) <= CLUSTER_RADIUS) {
-                cx += pos.getX();
-                cy += pos.getY();
-                count++;
+                int weight = (tankBias && isSiegeTank(unit)) ? TANK_WEIGHT : 1;
+                cx += pos.getX() * weight;
+                cy += pos.getY() * weight;
+                count += weight;
             }
         }
 
@@ -77,6 +85,21 @@ public class Squad {
         int smoothX = (int) (regroupPosition.getX() * SMOOTHING_ALPHA + clusterCenter.getX() * (1 - SMOOTHING_ALPHA));
         int smoothY = (int) (regroupPosition.getY() * SMOOTHING_ALPHA + clusterCenter.getY() * (1 - SMOOTHING_ALPHA));
         regroupPosition = new Position(smoothX, smoothY);
+    }
+
+    private boolean isSiegeTank(CombatUnits unit) {
+        return unit.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode
+                || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode;
+    }
+
+    private int siegeTankCount() {
+        int count = 0;
+        for (CombatUnits unit : squadUnits) {
+            if (isSiegeTank(unit)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private void checkRegroup() {
