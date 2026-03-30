@@ -730,61 +730,64 @@ public class BuildTiles {
                 continue;
             }
 
-            //Currently grabs first patch instead of center patch
-            TilePosition mineralPatch = base.getMinerals().iterator().next().getUnit().getTilePosition();
             TilePosition ccTile = base.getLocation();
+            int ccX = ccTile.getX();
+            int ccY = ccTile.getY();
+            int ccWidth = UnitType.Terran_Command_Center.tileWidth();
+            int ccHeight = UnitType.Terran_Command_Center.tileHeight();
+            int turretWidth = UnitType.Terran_Missile_Turret.tileWidth();
+            int turretHeight = UnitType.Terran_Missile_Turret.tileHeight();
 
-            int midX = (ccTile.getX() + mineralPatch.getX()) / 2;
-            int midY = (ccTile.getY() + mineralPatch.getY()) / 2;
-            TilePosition midPoint = new TilePosition(midX, midY);
+            double sumX = 0;
+            double sumY = 0;
+            for (Mineral mineral : base.getMinerals()) {
+                TilePosition patch = mineral.getUnit().getTilePosition();
+                sumX += patch.getX();
+                sumY += patch.getY();
+            }
+            int mineralCount = base.getMinerals().size();
+            int mineralCentroidX = (int)(sumX / mineralCount);
+            int mineralCentroidY = (int)(sumY / mineralCount);
+
+            double ccCenterX = ccX + ccWidth / 2.0;
+            double ccCenterY = ccY + ccHeight / 2.0;
+
+            double toCcX = ccCenterX - mineralCentroidX;
+            double toCcY = ccCenterY - mineralCentroidY;
+            double toCcLen = Math.sqrt(toCcX * toCcX + toCcY * toCcY);
+
+            int searchOriginX = mineralCentroidX;
+            int searchOriginY = mineralCentroidY;
+            if (toCcLen > 0) {
+                searchOriginX = (int) Math.round(mineralCentroidX + toCcX / toCcLen * 2);
+                searchOriginY = (int) Math.round(mineralCentroidY + toCcY / toCcLen * 2);
+            }
 
             HashSet<TilePosition> baseTiles = mapInfo.getTilesForBase(base);
 
-            int searchRadius = 6;
+            int searchRadius = 5;
             TilePosition bestTurret = null;
+            int bestDistSq = Integer.MAX_VALUE;
 
-            int ccX = ccTile.getX();
-            int ccY = ccTile.getY();
-            int ccXEnd = ccX + UnitType.Terran_Command_Center.tileWidth() + 2;
-            int ccYEnd = ccY + UnitType.Terran_Command_Center.tileHeight();
-
-            boolean found = false;
-
-            for (int r = 0; r <= searchRadius && !found; r++) {
-                for (int dx = -r; dx <= r && !found; dx++) {
-                    for (int dy = -r; dy <= r; dy++) {
-                        if (Math.abs(dx) != r && Math.abs(dy) != r) {
+            for (int r = 0; r <= searchRadius; r++) {
+                for (int ddx = -r; ddx <= r; ddx++) {
+                    for (int ddy = -r; ddy <= r; ddy++) {
+                        if (Math.abs(ddx) != r && Math.abs(ddy) != r) {
                             continue;
                         }
 
-                        int tx = midPoint.getX() + dx;
-                        int ty = midPoint.getY() + dy;
-                        TilePosition test = new TilePosition(tx, ty);
+                        int tx = searchOriginX + ddx;
+                        int ty = searchOriginY + ddy;
 
-                        if (!baseTiles.contains(test)) {
+                        if (!isMineralLineTurretValid(tx, ty, baseTiles, base, ccX, ccY, ccWidth, ccHeight, turretWidth, turretHeight)) {
                             continue;
                         }
 
-                        if (!tilePositionValidator.isBuildable(test, UnitType.Terran_Missile_Turret) || !tilePositionValidator.isWalkable(test)) {
-                            continue;
+                        int distSq = ddx * ddx + ddy * ddy;
+                        if (distSq < bestDistSq) {
+                            bestDistSq = distSq;
+                            bestTurret = new TilePosition(tx, ty);
                         }
-
-                        if (intersectsExclusionZones(test)) {
-                            continue;
-                        }
-
-                        int turretWidth = UnitType.Terran_Missile_Turret.tileWidth();
-                        int turretHeight = UnitType.Terran_Missile_Turret.tileHeight();
-
-                        boolean overlapsRightBuffer = rectanglesIntersect(tx, ty, tx + turretWidth, ty + turretHeight, ccX, ccY, ccXEnd, ccYEnd);
-
-                        if (overlapsRightBuffer || intersectsExistingBuildTiles(test, UnitType.Terran_Missile_Turret, 0) || intersectsExistingBuildTiles(test, UnitType.Terran_Missile_Turret, 0)) {
-                            continue;
-                        }
-
-                        bestTurret = test;
-                        found = true;
-                        break;
                     }
                 }
             }
@@ -823,6 +826,45 @@ public class BuildTiles {
                 addedBack++;
             }
         }
+    }
+
+    private boolean isMineralLineTurretValid(int tx, int ty, HashSet<TilePosition> baseTiles, Base base, int ccX, int ccY, int ccWidth, int ccHeight, int turretWidth, int turretHeight) {
+        TilePosition turretTile = new TilePosition(tx, ty);
+
+        if (!tilePositionValidator.isBuildable(turretTile, UnitType.Terran_Missile_Turret)) {
+            return false;
+        }
+
+        for (int dx = 0; dx < turretWidth; dx++) {
+            for (int dy = 0; dy < turretHeight; dy++) {
+                TilePosition footprintTile = new TilePosition(tx + dx, ty + dy);
+                if (!baseTiles.contains(footprintTile)) {
+                    return false;
+                }
+                if (geyserExlusionTiles.contains(footprintTile) || chokeExclusionTiles.contains(footprintTile)) {
+                    return false;
+                }
+            }
+        }
+
+        if (rectanglesIntersect(tx, ty, tx + turretWidth, ty + turretHeight, ccX, ccY, ccX + ccWidth + 3, ccY + ccHeight)) {
+            return false;
+        }
+
+        for (Mineral mineral : base.getMinerals()) {
+            TilePosition patch = mineral.getUnit().getTilePosition();
+            int mineralWidth = mineral.getUnit().getType().tileWidth();
+            int mineralHeight = mineral.getUnit().getType().tileHeight();
+            if (rectanglesIntersect(tx, ty, tx + turretWidth, ty + turretHeight, patch.getX(), patch.getY(), patch.getX() + mineralWidth, patch.getY() + mineralHeight)) {
+                return false;
+            }
+        }
+
+        if (intersectsExistingBuildTiles(turretTile, UnitType.Terran_Missile_Turret, 0)) {
+            return false;
+        }
+
+        return true;
     }
 
     private List<TilePosition> getValidTurretTiles(Set<TilePosition> baseTiles) {

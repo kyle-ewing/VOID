@@ -46,6 +46,10 @@ public abstract class EnemyTechUnits {
         return friendlyUpgradeResponse;
     }
 
+    public boolean mineralLineTurretsOnly() {
+        return false;
+    }
+
     public boolean hasTriggeredResponse() {
         return triggeredResponse;
     }
