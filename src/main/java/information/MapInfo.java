@@ -1,16 +1,25 @@
 package information;
 
-import bwapi.*;
-import bwem.*;
-import information.enemy.EnemyUnits;
-import macro.buildorders.BuildType;
-import map.PathFinding;
-import map.AllBasePaths;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import bwapi.Game;
+import bwapi.Position;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
+import bwem.Area;
+import bwem.BWEM;
+import bwem.Base;
+import bwem.ChokePoint;
+import bwem.Geyser;
+import bwem.Mineral;
+import information.enemy.EnemyUnits;
+import macro.buildorders.BuildType;
+import map.AllBasePaths;
+import map.PathFinding;
 
 public class MapInfo {
     private BWEM bwem;
@@ -327,7 +336,7 @@ public class MapInfo {
             int distanceToMainChoke = mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
             int distanceToNaturalChoke = naturalChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
 
-            if (distanceToMainChoke < 160 || distanceToMainChoke > 256 || distanceToNaturalChoke > 400) {
+            if (distanceToMainChoke < 160 || distanceToMainChoke > 256 || distanceToNaturalChoke > 225) {
                 continue;
             }
 

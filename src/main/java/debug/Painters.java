@@ -1,6 +1,22 @@
 package debug;
 
-import bwapi.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+
+import bwapi.Color;
+import bwapi.Flag;
+import bwapi.Game;
+import bwapi.Position;
+import bwapi.Text;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.Area;
 import bwem.Base;
 import bwem.ChokePoint;
@@ -8,13 +24,11 @@ import config.Config;
 import information.GameState;
 import information.Scouting;
 import information.enemy.EnemyUnits;
+import planner.PlannedItem;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
 import unitgroups.units.Workers;
-import planner.PlannedItem;
 import util.Time;
-
-import java.util.*;
 
 public class Painters {
     Game game;
@@ -124,6 +138,7 @@ public class Painters {
             paintTileZone(gameState.getBuildTiles().getBackBaseTiles(), Color.Orange);
             paintTileZone(gameState.getBaseInfo().getNaturalTiles(),  Color.Teal);
             paintTileZone(gameState.getBaseInfo().getMinBaseTiles(), Color.Grey);
+            paintTileZone(gameState.getBaseInfo().getCombinedTankTiles(), Color.Yellow);
         }
 
         if (config.debugCCExclusionZone) {
