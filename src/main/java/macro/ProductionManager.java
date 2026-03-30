@@ -324,7 +324,7 @@ public class ProductionManager {
                         gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
 
-                        if (worker.getUnitID() == pi.getAssignedBuilder().getUnitID() ) {
+                        if (pi.getAssignedBuilder() != null && worker.getUnitID() == pi.getAssignedBuilder().getUnitID()) {
                             worker.setWorkerStatus(WorkerStatus.BUILDING);
                         }
                     }
