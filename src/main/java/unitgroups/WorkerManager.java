@@ -1,10 +1,21 @@
 package unitgroups;
 
-import bwapi.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import bwapi.Game;
+import bwapi.Player;
+import bwapi.Position;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.Base;
 import bwem.Mineral;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
@@ -12,12 +23,6 @@ import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.ClosestUnit;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 public class WorkerManager {
     private MapInfo mapInfo;
@@ -154,6 +159,13 @@ public class WorkerManager {
                     }
                     break;
                 case REPAIRING:
+                    if (worker.isPreemptiveRepair()) {
+                        Unit nearbyDamaged = findNearbyDamagedBuilding(worker, 75);
+                        if (nearbyDamaged != null) {
+                            worker.repair(nearbyDamaged);
+                            break;
+                        }
+                    }
                     worker.repair(worker.getRepairTarget());
 
                     if (obstructingBuild(worker)) {
@@ -467,7 +479,12 @@ public class WorkerManager {
                 baseCenter = mapInfo.getNaturalBase().getCenter();
             }
 
-            if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 8) {
+            int openerSize = openerRepairForceSize();
+
+            if (openerSize > 0) {
+                createRepairForce(bunker, openerSize);
+            }
+            else if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 8) {
                 createRepairForce(bunker, 3);
             }
             else if (bunker.getDistance(baseCenter) > 650
@@ -531,6 +548,35 @@ public class WorkerManager {
 //                break;
 //            }
 //        }
+    }
+
+    private int openerRepairForceSize() {
+        if (gameState.getEnemyOpener() == null || new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
+            return 0;
+        }
+
+        switch (gameState.getEnemyOpener().getStrategyName()) {
+            case "Dark Templar":
+                if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
+                    return 3;
+                }
+            case "Four Pool":
+                return 2;
+            default:
+                return 0;
+        }
+    }
+
+    private Unit findNearbyDamagedBuilding(Workers worker, int range) {
+        for (Unit building : gameState.getAllBuildings()) {
+            if (!building.isCompleted()) {
+                continue;
+            }
+            if (building.getHitPoints() < building.getType().maxHitPoints() && building.getDistance(worker.getUnit()) < range) {
+                return building;
+            }
+        }
+        return null;
     }
 
     private boolean obstructingBuild(Workers worker) {
