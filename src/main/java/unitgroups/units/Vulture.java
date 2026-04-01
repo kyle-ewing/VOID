@@ -1,17 +1,23 @@
 package unitgroups.units;
 
-import bwapi.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+
+import bwapi.Game;
+import bwapi.Position;
+import bwapi.TechType;
+import bwapi.Unit;
+import bwapi.UnitType;
+import bwapi.UpgradeType;
+import bwapi.WeaponType;
 import bwem.Base;
 import bwem.ChokePoint;
 import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import util.Time;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
 
 public class Vulture extends CombatUnits {
     private EnemyInformation enemyInformation;
@@ -27,7 +33,7 @@ public class Vulture extends CombatUnits {
     private boolean lobotomyOverride = false;
 
     private final int FULL_MINE_CYCLE = new Time(0,30).getFrames();
-    private final int ALLOWED_MINE_CYCLE = new Time(0,14).getFrames();
+    private final int ALLOWED_MINE_CYCLE = new Time(0,17).getFrames();
     private int mineCycle;
 
     public Vulture(Game game, EnemyInformation enemyInformation, Unit unit) {
@@ -482,8 +488,12 @@ public class Vulture extends CombatUnits {
             if (mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())) {
                 return;
             }
-
-            if (enemyUnit.getEnemyType().groundWeapon().maxRange() <= 64) {
+            if (hasTankSupport && enemyUnit.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode) {
+                Position minePos = unit.getPosition();
+                unit.useTech(TechType.Spider_Mines, minePos);
+                layingMines = true;
+            }
+            else if (enemyUnit.getEnemyType().groundWeapon().maxRange() <= 64) {
                 Position minePos = kiteTo(128);
                 unit.move(minePos);
                 unit.useTech(TechType.Spider_Mines, minePos);
