@@ -799,6 +799,7 @@ public class ProductionManager {
                      pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS));
 
             productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED &&
+                (pi.getUnitType() != null && pi.getUnitType().isBuilding()) &&
                 buildingCounts.containsKey(pi.getUnitType()) &&
                 pi.getUnitType() != UnitType.Terran_Factory);
 
@@ -811,8 +812,7 @@ public class ProductionManager {
             }
         }
         else {
-            productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
-        }
+            productionQueue.removeIf(pi -> pi.getUnitType() != null && pi.getUnitType().isBuilding() && buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED); }
 
         for (UnitType buildingType : gameState.getEnemyOpener().removeBuildings()) {
             List<PlannedItem> queueSnapshot = new ArrayList<>(productionQueue);
@@ -852,10 +852,6 @@ public class ProductionManager {
                         }
 
                     }
-                    //TODO: add separate list for units
-                    else if (!building.isBuilding()){
-                        addToQueue(building, PlannedItemType.UNIT, 1);
-                    }
                     else {
                         if (building.canBuildAddon()) {
                             addToQueue(building, PlannedItemType.BUILDING, 1, true);
@@ -865,6 +861,10 @@ public class ProductionManager {
                         }
                     }
                 }
+            }
+            // TODO: add separate list for units
+            else if (!building.isBuilding()) {
+                addToQueue(building, PlannedItemType.UNIT, 1);
             }
         }
 

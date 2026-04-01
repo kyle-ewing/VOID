@@ -1,12 +1,18 @@
 package unitgroups.units;
 
-import bwapi.*;
+import java.util.HashSet;
+import java.util.Random;
+
+import bwapi.Game;
+import bwapi.Position;
+import bwapi.TechType;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
+import bwapi.WeaponType;
 import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
-
-import java.util.HashSet;
-import java.util.Random;
 
 public class SiegeTank extends CombatUnits {
     private EnemyInformation enemyInformation;
@@ -69,6 +75,11 @@ public class SiegeTank extends CombatUnits {
 
         if (super.getRallyPoint().toPosition().getApproxDistance(unit.getPosition()) < 128) {
             super.setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
+
+        if (dtUndetected && super.getRallyPoint() != null) {
+            unit.move(super.getRallyPoint().toPosition());
             return;
         }
 

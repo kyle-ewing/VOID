@@ -124,13 +124,14 @@ public class Vulture extends CombatUnits {
             setUnitStatus(UnitStatus.DEFEND);
         }
 
-        if (!inRangeOfThreat && isOutRanged()) {
+        if (!inRangeOfThreat && isOutRanged() || dtUndetected) {
             unit.move(rallyPoint.toPosition());
         }
 
         if (inBase && isOutRanged()) {
             setUnitStatus(UnitStatus.DEFEND);
         }
+
 
         if (enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() - 32) && !hasTankSupport) {
             unit.move(rallyPoint.toPosition());

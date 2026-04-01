@@ -1,12 +1,12 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class DTRush extends EnemyStrategy{
     public DTRush() {
@@ -48,6 +48,10 @@ public class DTRush extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Starport);
         getBuildingResponse().add(UnitType.Terran_Control_Tower);
         getBuildingResponse().add(UnitType.Terran_Science_Facility);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
     public void upgradeResponse() {

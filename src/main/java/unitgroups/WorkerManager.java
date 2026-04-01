@@ -551,7 +551,7 @@ public class WorkerManager {
     }
 
     private int openerRepairForceSize() {
-        if (gameState.getEnemyOpener() == null || new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
+        if (gameState.getEnemyOpener() == null || new Time(game.getFrameCount()).greaterThan(new Time(8, 0))) {
             return 0;
         }
 
@@ -560,6 +560,7 @@ public class WorkerManager {
                 if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
                 }
+                return 0;
             case "Four Pool":
                 return 2;
             default:
