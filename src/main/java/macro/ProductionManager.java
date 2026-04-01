@@ -792,7 +792,27 @@ public class ProductionManager {
             buildingCounts.merge(building, 1, Integer::sum);
         }
 
-        productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
+        if (startingOpener.buildType() == BuildType.MECH) {
+            boolean factoryActiveOrComplete = unitTypeCount.get(UnitType.Terran_Factory) > 0 ||
+                productionQueue.stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Factory &&
+                    (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED ||
+                     pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS));
+
+            productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED &&
+                buildingCounts.containsKey(pi.getUnitType()) &&
+                pi.getUnitType() != UnitType.Terran_Factory);
+
+            if (!factoryActiveOrComplete) {
+                productionQueue.stream()
+                    .filter(pi -> pi.getUnitType() == UnitType.Terran_Factory &&
+                        pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)
+                    .min(Comparator.comparingInt(PlannedItem::getSupply))
+                    .ifPresent(productionQueue::remove);
+            }
+        }
+        else {
+            productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
+        }
 
         for (UnitType buildingType : gameState.getEnemyOpener().removeBuildings()) {
             List<PlannedItem> queueSnapshot = new ArrayList<>(productionQueue);
