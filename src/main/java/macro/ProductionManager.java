@@ -589,7 +589,8 @@ public class ProductionManager {
 
         for (long i = 0; i < scvsToQueue; i++) {
             if (ownedBases == 1) {
-                if (unitTypeCount.get(UnitType.Terran_SCV) < 16 && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
+                if (unitTypeCount.get(UnitType.Terran_SCV) < 16 && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
+                        || unitTypeCount.get(UnitType.Terran_SCV) < 24 && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
                 else {
