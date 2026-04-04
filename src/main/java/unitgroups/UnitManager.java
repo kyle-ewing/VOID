@@ -194,6 +194,8 @@ public class UnitManager {
 
             unitStatus = combatUnit.getUnitStatus();
 
+            combatUnit.setDtUndetected(isDTUndetected(combatUnit));
+
             switch (unitStatus) {
                 case ATTACK:
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
@@ -210,6 +212,11 @@ public class UnitManager {
                             continue;
                         }
                         combatUnit.attack();
+                        break;
+                    }
+
+                    if (combatUnit.isDtUndetected()) {
+                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
                         break;
                     }
 
@@ -244,6 +251,11 @@ public class UnitManager {
                         break;
                     }
 
+                    if (combatUnit.isDtUndetected()) {
+                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                        break;
+                    }
+
                     if (combatUnit.isInRangeOfThreat()) {
                         avoidThreat(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.RETREAT);
@@ -271,6 +283,11 @@ public class UnitManager {
                     }
 
                     if (obstructingBuild(combatUnit)) {
+                        break;
+                    }
+
+                    if (combatUnit.isDtUndetected()) {
+                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
                         break;
                     }
 
@@ -342,6 +359,11 @@ public class UnitManager {
                     combatUnit.regroup();
                     break;    
                 case POKE:
+                    if (combatUnit.isDtUndetected()) {
+                        combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                        break;
+                    }
+
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     combatUnit.poke();
                     break;    
@@ -708,6 +730,25 @@ public class UnitManager {
         combatUnit.setInRangeOfThreat(inRange);
     }
 
+    private boolean isDTUndetected(CombatUnits combatUnit) {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType() != UnitType.Protoss_Dark_Templar) {
+                continue;
+            }
+            if (enemyUnit.getEnemyUnit().isDetected()) {
+                continue;
+            }
+            if (enemyUnit == combatUnit.getEnemyUnit()) {
+                return true;
+            }
+            if (enemyUnit.getEnemyPosition() != null
+                    && combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < 250) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private UnitType typeOfThreat(CombatUnits combatUnit) {
         for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             if (enemyUnit.getEnemyPosition() == null) {
@@ -772,8 +813,11 @@ public class UnitManager {
                 building.setNotNeeded(true);
             }
 
-            if (building.getUnitType() == UnitType.Terran_Barracks && combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)) {
-                return;
+            if (building.getUnitType() == UnitType.Terran_Barracks) {
+                if (combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)
+                        || gameState.getProductionQueue().stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
+                    return;
+                }
             }
 
             //Don't lift if cannot build goliaths and air threats are seen

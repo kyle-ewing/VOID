@@ -1,6 +1,12 @@
 package unitgroups.units;
 
-import bwapi.*;
+import bwapi.Game;
+import bwapi.Position;
+import bwapi.TechType;
+import bwapi.Unit;
+import bwapi.UnitType;
+import bwapi.UpgradeType;
+import bwapi.WeaponType;
 
 public class Marine extends CombatUnits {
     private static final int UPGRADE_RANGE = 32;
@@ -74,7 +80,11 @@ public class Marine extends CombatUnits {
             return;
         }
 
-        enemyUnit = null;
+        if (dtUndetected && rallyPoint != null) {
+            unit.move(rallyPoint.toPosition());
+            return;
+        }
+
         unit.move(rallyPoint.toPosition());
 
         if (inBase || hasTankSupport) {

@@ -589,7 +589,8 @@ public class ProductionManager {
 
         for (long i = 0; i < scvsToQueue; i++) {
             if (ownedBases == 1) {
-                if (unitTypeCount.get(UnitType.Terran_SCV) < 16 && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
+                if (unitTypeCount.get(UnitType.Terran_SCV) < 16 && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
+                        || unitTypeCount.get(UnitType.Terran_SCV) < 24 && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
                 else {
@@ -792,7 +793,27 @@ public class ProductionManager {
             buildingCounts.merge(building, 1, Integer::sum);
         }
 
-        productionQueue.removeIf(pi -> buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
+        if (startingOpener.buildType() == BuildType.MECH) {
+            boolean factoryActiveOrComplete = unitTypeCount.get(UnitType.Terran_Factory) > 0 ||
+                productionQueue.stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Factory &&
+                    (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED ||
+                     pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS));
+
+            productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED &&
+                (pi.getUnitType() != null && pi.getUnitType().isBuilding()) &&
+                buildingCounts.containsKey(pi.getUnitType()) &&
+                pi.getUnitType() != UnitType.Terran_Factory);
+
+            if (!factoryActiveOrComplete) {
+                productionQueue.stream()
+                    .filter(pi -> pi.getUnitType() == UnitType.Terran_Factory &&
+                        pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)
+                    .min(Comparator.comparingInt(PlannedItem::getSupply))
+                    .ifPresent(productionQueue::remove);
+            }
+        }
+        else {
+            productionQueue.removeIf(pi -> pi.getUnitType() != null && pi.getUnitType().isBuilding() && buildingCounts.containsKey(pi.getUnitType()) && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED); }
 
         for (UnitType buildingType : gameState.getEnemyOpener().removeBuildings()) {
             List<PlannedItem> queueSnapshot = new ArrayList<>(productionQueue);
@@ -832,10 +853,6 @@ public class ProductionManager {
                         }
 
                     }
-                    //TODO: add separate list for units
-                    else if (!building.isBuilding()){
-                        addToQueue(building, PlannedItemType.UNIT, 1);
-                    }
                     else {
                         if (building.canBuildAddon()) {
                             addToQueue(building, PlannedItemType.BUILDING, 1, true);
@@ -845,6 +862,10 @@ public class ProductionManager {
                         }
                     }
                 }
+            }
+            // TODO: add separate list for units
+            else if (!building.isBuilding()) {
+                addToQueue(building, PlannedItemType.UNIT, 1);
             }
         }
 

@@ -1,10 +1,14 @@
 package unitgroups.units;
 
-import bwapi.*;
-import information.enemy.EnemyUnits;
-import javafx.geometry.Pos;
-
 import java.util.HashSet;
+
+import bwapi.Game;
+import bwapi.Position;
+import bwapi.TechType;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
+import information.enemy.EnemyUnits;
 
 public class CombatUnits {
     protected Game game;
@@ -37,6 +41,7 @@ public class CombatUnits {
     protected boolean ignoreCurrentPriorityTarget = false;
     protected boolean priorityTargetLock = false;
     protected boolean notNeeded = false;
+    protected boolean dtUndetected = false;
 
     protected static final int STUCK_CHECK_INTERVAL = 24;
     protected static final int STUCK_THRESHOLD = 2;
@@ -146,8 +151,11 @@ public class CombatUnits {
         if (enemyUnit == null) {
             return;
         }
-
-        enemyUnit = null;
+        
+        if (dtUndetected && rallyPoint != null) {
+            unit.move(rallyPoint.toPosition());
+            return;
+        }
 
         if (!inRangeOfThreat) {
             setUnitStatus(UnitStatus.RALLY);
@@ -354,6 +362,14 @@ public class CombatUnits {
 
     public void setEnemyInBase(boolean enemyInBase) {
         this.enemyInBase = enemyInBase;
+    }
+
+    public boolean isDtUndetected() {
+        return dtUndetected;
+    }
+
+    public void setDtUndetected(boolean dtUndetected) {
+        this.dtUndetected = dtUndetected;
     }
 
     public boolean isInRangeOfThreat() {
