@@ -1,5 +1,5 @@
 package macro.buildorders.buildtransitions;
 
 public enum BuildTransitionName {
-    TVZBIO, TVTMECH
+    TVZBIO, TVTMECH, TVPMECH
 }

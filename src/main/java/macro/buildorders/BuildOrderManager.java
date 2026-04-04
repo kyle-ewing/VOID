@@ -1,12 +1,13 @@
 package macro.buildorders;
 
+import java.util.HashSet;
+
 import bwapi.Race;
 import information.enemy.EnemyInformation;
 import macro.buildorders.buildtransitions.BuildTransition;
+import macro.buildorders.buildtransitions.TvPMech;
 import macro.buildorders.buildtransitions.TvTMech;
 import macro.buildorders.buildtransitions.TvZBio;
-
-import java.util.HashSet;
 
 public class BuildOrderManager {
     private EnemyInformation enemyInformation;
@@ -14,7 +15,9 @@ public class BuildOrderManager {
     private HashSet<BuildOrder> terranOpeners = new HashSet<>();
     private HashSet<BuildOrder> zergOpeners = new HashSet<>();
     private HashSet<BuildOrder> randomOpeners = new HashSet<>();
-    private HashSet<BuildTransition> buildTransitions = new HashSet<>();
+    private HashSet<BuildTransition> protossTransitions = new HashSet<>();
+    private HashSet<BuildTransition> terranTransitions = new HashSet<>();
+    private HashSet<BuildTransition> zergTransitions = new HashSet<>();
     private Race enemyRace;
 
     public BuildOrderManager(Race enemyRace) {
@@ -44,8 +47,9 @@ public class BuildOrderManager {
     }
 
     private void initBuildTransitions() {
-        buildTransitions.add(new TvZBio());
-        buildTransitions.add(new TvTMech());
+        zergTransitions.add(new TvZBio());
+        terranTransitions.add(new TvTMech());
+        protossTransitions.add(new TvPMech());
     }
 
     public HashSet<BuildOrder> getOpenersForRace() {
@@ -62,7 +66,16 @@ public class BuildOrderManager {
     }
 
     public HashSet<BuildTransition> getBuildTransitions() {
-        return buildTransitions;
+        switch (enemyRace) {
+            case Protoss:
+                return protossTransitions;
+            case Terran:
+                return terranTransitions;
+            case Zerg:
+                return zergTransitions;
+            default:
+                return terranTransitions;
+        }
     }
 
 }
