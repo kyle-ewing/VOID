@@ -5,7 +5,6 @@ import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
 import planner.PlannedItem;
-import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 
 import java.util.HashSet;
@@ -37,6 +36,6 @@ public class Lurker extends EnemyTechUnits {
     }
 
     public void techUpgradeResponse() {
-        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Irradiate, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Science_Facility, 4));
+        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Irradiate, 0, PlannedItemType.UPGRADE, UnitType.Terran_Science_Facility, 4));
     }
 }

@@ -8,7 +8,7 @@ public class PlannedItem {
     private UnitType techBuilding;
     private Integer supply = 0;
     private Integer upgradeLevel;
-    private PlannedItemStatus plannedItemStatus;
+    private PlannedItemStatus plannedItemStatus = PlannedItemStatus.NOT_STARTED;
     private PlannedItemType plannedItemType;
     private TilePosition buildPosition;
     private Workers assignedBuilder;
@@ -22,10 +22,9 @@ public class PlannedItem {
     private int priority;
     private int resetCounter = 0;
 
-    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
+    public PlannedItem(UnitType unitType, Integer supply, PlannedItemType plannedItemType, int priority) {
         this.unitType = unitType;
         this.supply = supply;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.priority = priority;
         assignedBuilder = null;
@@ -34,90 +33,71 @@ public class PlannedItem {
 
     public PlannedItem(UnitType unitType, PlannedItemType plannedItemType, int priority) {
         this.unitType = unitType;
-        this.plannedItemStatus = PlannedItemStatus.NOT_STARTED;
         this.priority = priority;
         this.plannedItemType = plannedItemType;
     }
 
-    public PlannedItem(TechType techUpgrade, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
+    public PlannedItem(TechType techUpgrade, Integer supply, PlannedItemType plannedItemType, int priority) {
         this.supply = supply;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.techUpgrade = techUpgrade;
         this.priority = priority;
         this.upgradeType = null;
     }
 
-    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
+    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemType plannedItemType, int priority) {
         this.supply = supply;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.upgradeType = upgradeType;
         this.priority = priority;
         this.techUpgrade = null;
     }
 
-    public PlannedItem(TechType techUpgrade, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
+    public PlannedItem(TechType techUpgrade, Integer supply, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
         this.techUpgrade = techUpgrade;
         this.supply = supply;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.techBuilding = techBuilding;
         this.priority = priority;
     }
 
-    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, Integer upgradeLevel, int priority) {
+    public PlannedItem(UpgradeType upgradeType, Integer supply, PlannedItemType plannedItemType, UnitType techBuilding, Integer upgradeLevel, int priority) {
         this.upgradeType = upgradeType;
         this.supply = supply;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.techBuilding = techBuilding;
         this.upgradeLevel = upgradeLevel;
         this.priority = priority;
     }
 
-    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, TilePosition buildPosition , int priority) {
+    public PlannedItem(UnitType unitType, Integer supply, PlannedItemType plannedItemType, TilePosition buildPosition, int priority) {
         this.unitType = unitType;
         this.supply = supply;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.buildPosition = buildPosition;
         this.priority = priority;
     }
 
-    public PlannedItem(UnitType unitType, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority) {
-        this.unitType = unitType;
-        this.supply = 0;
-        this.plannedItemStatus = plannedItemStatus;
-        this.plannedItemType = plannedItemType;
-        this.priority = priority;
-        assignedBuilder = null;
-        buildPosition = null;
-    }
-
-    public PlannedItem(TechType techUpgrade, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
+    public PlannedItem(TechType techUpgrade, PlannedItemType plannedItemType, UnitType techBuilding, int priority) {
         this.techUpgrade = techUpgrade;
         this.supply = 0;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.techBuilding = techBuilding;
         this.priority = priority;
     }
 
-    public PlannedItem(UpgradeType upgradeType, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, UnitType techBuilding, Integer upgradeLevel, int priority) {
+    public PlannedItem(UpgradeType upgradeType, PlannedItemType plannedItemType, UnitType techBuilding, Integer upgradeLevel, int priority) {
         this.upgradeType = upgradeType;
         this.supply = 0;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.techBuilding = techBuilding;
         this.upgradeLevel = upgradeLevel;
         this.priority = priority;
     }
 
-    public PlannedItem(UnitType unitType, Integer supply, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
+    public PlannedItem(UnitType unitType, Integer supply, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
         this.unitType = unitType;
         this.supply = supply;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.priority = priority;
         this.needsAddon = needsAddon;
@@ -125,9 +105,8 @@ public class PlannedItem {
         buildPosition = null;
     }
 
-    public PlannedItem(UnitType unitType, PlannedItemStatus plannedItemStatus, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
+    public PlannedItem(UnitType unitType, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
         this.unitType = unitType;
-        this.plannedItemStatus = plannedItemStatus;
         this.plannedItemType = plannedItemType;
         this.priority = priority;
         this.needsAddon = needsAddon;

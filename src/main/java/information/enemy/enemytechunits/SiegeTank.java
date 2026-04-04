@@ -5,7 +5,6 @@ import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
 import planner.PlannedItem;
-import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 
 import java.util.ArrayList;
@@ -37,6 +36,6 @@ public class SiegeTank extends EnemyTechUnits {
     }
 
     public void techUpgradeResponse() {
-        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Cloaking_Field, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, UnitType.Terran_Control_Tower, 2));
+        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Cloaking_Field, 0, PlannedItemType.UPGRADE, UnitType.Terran_Control_Tower, 2));
     }
 }
