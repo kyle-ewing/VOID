@@ -290,11 +290,11 @@ public class UnitProduction {
     }
 
     private PlannedItem plannedUnit(UnitType unitType, int priority) {
-        return new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UNIT, priority);
+        return new PlannedItem(unitType, 0, PlannedItemType.UNIT, priority);
     }
 
     private PlannedItem plannedBuilding(UnitType unitType, int priority) {
-        return new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.BUILDING, priority);
+        return new PlannedItem(unitType, 0, PlannedItemType.BUILDING, priority);
     }
 
     private boolean canBuild(Unit unit, UnitType unitType) {

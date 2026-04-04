@@ -439,23 +439,23 @@ public class ProductionManager {
     }
 
     private void addToQueue(UnitType unitType, PlannedItemType plannedItemType, int priority) {
-        productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, plannedItemType, priority));
+        productionQueue.add(new PlannedItem(unitType, 0, plannedItemType, priority));
     }
 
     private void addToQueue(UnitType unitType, int supply, PlannedItemType plannedItemType, int priority) {
-        productionQueue.add(new PlannedItem(unitType, supply, PlannedItemStatus.NOT_STARTED, plannedItemType, priority));
+        productionQueue.add(new PlannedItem(unitType, supply, plannedItemType, priority));
     }
 
     private void addToQueue(UnitType unitType, PlannedItemType plannedItemType,  TilePosition buildPosition, int priority) {
-        productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, plannedItemType, buildPosition, priority));
+        productionQueue.add(new PlannedItem(unitType, 0, plannedItemType, buildPosition, priority));
     }
 
     private void addToQueue(UnitType unitType, PlannedItemType plannedItemType, int priority, boolean needsAddon) {
-        productionQueue.add(new PlannedItem(unitType, PlannedItemStatus.NOT_STARTED, plannedItemType, priority , needsAddon));
+        productionQueue.add(new PlannedItem(unitType, plannedItemType, priority , needsAddon));
     }
 
     private void addAddOn(UnitType unitType, int priority) {
-        productionQueue.add(new PlannedItem(unitType, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.ADDON, priority));
+        productionQueue.add(new PlannedItem(unitType, 0, PlannedItemType.ADDON, priority));
     }
 
     private boolean hasHigherPriorityBuilding() {
@@ -906,12 +906,12 @@ public class ProductionManager {
             if (existingUpgrade) {
                 if (existingItem.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                     productionQueue.removeIf(pi -> pi.getUpgradeType() != null && pi.getUpgradeType() == upgrade);
-                    productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE,  researchBuilding, upgradeLevel,1));
+                    productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemType.UPGRADE,  researchBuilding, upgradeLevel,1));
                 }
             }
             else {
                 if (game.self().getUpgradeLevel(upgrade) < upgradeLevel) {
-                    productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemStatus.NOT_STARTED, PlannedItemType.UPGRADE, researchBuilding, upgradeLevel,1));
+                    productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemType.UPGRADE, researchBuilding, upgradeLevel,1));
                 }
             }
         }
