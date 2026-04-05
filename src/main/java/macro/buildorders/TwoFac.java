@@ -70,7 +70,7 @@ public class TwoFac extends BuildOrder {
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         moveOutCondition.put(UnitType.Terran_Vulture, 6);
-        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
+        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 5);
         return moveOutCondition;
     }
 }
