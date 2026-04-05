@@ -96,8 +96,8 @@ public class Vulture extends CombatUnits {
         }
 
         if (hasTankSupport) {
-            unit.attack(enemyUnit.getEnemyPosition());
-        } 
+            unit.attack(enemyUnit.getEnemyUnit());
+        }
         else {
             attackMove();
         }
@@ -139,6 +139,13 @@ public class Vulture extends CombatUnits {
 
         if (!inRangeOfThreat && (!isOutRanged() || hasTankSupport)) {
             setUnitStatus(UnitStatus.ATTACK);
+        }
+
+        if (game.self().hasResearched(TechType.Spider_Mines) && unit.getSpiderMineCount() > 0 && !layingMines && !recentlyMined) {
+            if (!mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition()) && unit.getDistance(enemyUnit.getEnemyPosition()) > 300) {
+                unit.useTech(TechType.Spider_Mines, unit.getPosition());
+                layingMines = true;
+            }
         }
     }
 
