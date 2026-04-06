@@ -35,14 +35,14 @@ public class TwoFac extends BuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 24, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(TechType.Spider_Mines, 32, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 3));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 32, PlannedItemType.BUILDING, 3));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 34, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 32, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 31, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 36, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1,3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 36, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 37, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 45, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 50, PlannedItemType.BUILDING, 3));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 52, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 61, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 60, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 60, PlannedItemType.ADDON, 2));
