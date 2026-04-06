@@ -7,6 +7,7 @@ import java.util.Iterator;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
@@ -351,7 +352,19 @@ public class UnitManager {
                 case LIFTABLE:
                     if (combatUnit.getUnitType() == UnitType.Terran_Engineering_Bay) {
                         if (gameState.getBunkerPosition() != null && mapInfo.getNaturalBase() != null) {
-                            combatUnit.liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
+                            switch (game.enemy().getRace()) {
+                                case Terran:
+                                    combatUnit.liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
+                                    break;
+                                case Protoss:
+                                    TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
+
+                                    if (landPosition != null) {
+                                        combatUnit.getUnit().land(landPosition);
+                                    }
+                                default:
+                                    //do nothing    
+                            }
                         }
                     }
                     break;
@@ -812,6 +825,15 @@ public class UnitManager {
             if (!building.getUnitType().canProduce()) {
                 building.setNotNeeded(true);
             }
+
+            if (building.getUnitType() == UnitType.Terran_Engineering_Bay) {
+                TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
+
+                if (landPosition != null && building.getUnit().getTilePosition().getX() == landPosition.getX() 
+                    && building.getUnit().getTilePosition().getY() == landPosition.getY()) {
+                return;
+            }
+            } 
 
             if (building.getUnitType() == UnitType.Terran_Barracks) {
                 if (combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)

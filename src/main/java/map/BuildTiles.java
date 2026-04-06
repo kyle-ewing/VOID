@@ -30,6 +30,7 @@ public class BuildTiles {
     private Queue<Base> pendingBaseTiles = new ArrayDeque<>();
     private TilePosition mainChokeBunker;
     private TilePosition naturalChokeBunker;
+    private TilePosition naturalBunkerEbayPosition;
     private TilePosition closeBunkerTile;
     private TilePosition mainChokeTurret;
     private TilePosition naturalChokeTurret;
@@ -661,8 +662,62 @@ public class BuildTiles {
 
             if (naturalBunker != null) {
                 naturalChokeBunker = naturalBunker;
+                naturalBunkerEbayPosition = computeEbayInFrontOfBunker(naturalBunker, chokeTile);
             }
         }
+    }
+
+    private TilePosition computeEbayInFrontOfBunker(TilePosition bunkerTile, TilePosition chokeTile) {
+        int dx = chokeTile.getX() - bunkerTile.getX();
+        int dy = chokeTile.getY() - bunkerTile.getY();
+
+        int ebayW = UnitType.Terran_Engineering_Bay.tileWidth();
+        int ebayH = UnitType.Terran_Engineering_Bay.tileHeight();
+        int bunkerW = UnitType.Terran_Bunker.tileWidth();
+        int bunkerH = UnitType.Terran_Bunker.tileHeight();
+
+        int searchRange = 6;
+
+        if (Math.abs(dx) >= Math.abs(dy)) {
+            int fixedX;
+            if (dx > 0) {
+                fixedX = bunkerTile.getX() + bunkerW;
+            }
+            else {
+                fixedX = bunkerTile.getX() - ebayW;
+            }
+
+            for (int offset = 0; offset <= searchRange; offset++) {
+                for (int sign = -1; sign <= 1; sign += 2) {
+                    int testY = bunkerTile.getY() + offset * sign;
+                    TilePosition candidate = new TilePosition(fixedX, testY);
+                    if (tilePositionValidator.isBuildable(candidate, UnitType.Terran_Engineering_Bay) && !intersectsExclusionZones(candidate)) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+        else {
+            int fixedY;
+            if (dy > 0) {
+                fixedY = bunkerTile.getY() + bunkerH;
+            }
+            else {
+                fixedY = bunkerTile.getY() - ebayH;
+            }
+
+            for (int offset = 0; offset <= searchRange; offset++) {
+                for (int sign = -1; sign <= 1; sign += 2) {
+                    int testX = bunkerTile.getX() + offset * sign;
+                    TilePosition candidate = new TilePosition(testX, fixedY);
+                    if (tilePositionValidator.isBuildable(candidate, UnitType.Terran_Engineering_Bay) && !intersectsExclusionZones(candidate)) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private TilePosition findValidTileNear(TilePosition center, UnitType unitType) {
@@ -1235,6 +1290,10 @@ public class BuildTiles {
 
     public TilePosition getNaturalChokeBunker() {
         return naturalChokeBunker;
+    }
+
+    public TilePosition getNaturalBunkerEbayPosition() {
+        return naturalBunkerEbayPosition;
     }
 
     public TilePosition getMainChokeBunker() {
