@@ -19,6 +19,7 @@ import information.enemy.enemyarmycomposition.EnemyArmyCompResponse;
 import information.enemy.enemyopeners.EnemyStrategy;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderName;
+import macro.buildorders.MechBuildOrder;
 import map.BuildTiles;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
@@ -220,15 +221,23 @@ public class UnitProduction {
             }
 
             if (canBuild(building, UnitType.Terran_Factory)) {
-                // 2 : 1 gol/vulture : tank ratio minimum, or 4:1 cap exceeded
+                boolean firstTankPriority = tankCount == 0
+                        && buildOrder instanceof MechBuildOrder
+                        && ((MechBuildOrder) buildOrder).prioritizeTankFirst();
+
                 if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && building.getAddon() != null
                         && !hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && tankCount < 12
-                        && (mechCount >= tankCount * 2 || ratioOverMaximum)) {
-                    items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 2));
+                        && (firstTankPriority || mechCount >= tankCount * 2 || ratioOverMaximum)) {
+                    if (firstTankPriority) {
+                        items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 1));
+                    }
+                    else {
+                        items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 2));
+                    }
                 }
-                else if (!ratioOverMaximum && !addonFreeFactoryAvailable || building.getAddon() == null) {
+                else if (!firstTankPriority && (!ratioOverMaximum && !addonFreeFactoryAvailable || building.getAddon() == null)) {
                     if (!ratioOverMaximum && buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
                         if (isRecruitable(UnitType.Terran_Goliath) && !hasInQueue(UnitType.Terran_Goliath)) {
                             items.add(plannedUnit(UnitType.Terran_Goliath, 3));

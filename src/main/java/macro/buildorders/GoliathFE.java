@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class GoliathFE extends BuildOrder {
+public class GoliathFE extends MechBuildOrder {
 
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.GOLIATHFE;
