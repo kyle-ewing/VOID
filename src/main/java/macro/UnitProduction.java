@@ -169,6 +169,8 @@ public class UnitProduction {
         int vesselCount = unitTypeCount.get(UnitType.Terran_Science_Vessel);
         boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 3;
         int factoryCap = buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC ? 4 : 5;
+        boolean addonFreeFactoryAvailable = productionBuildings.stream()
+                .anyMatch(b -> b.getType() == UnitType.Terran_Factory && b.getAddon() == null && !b.isTraining());
 
         for (Unit building : productionBuildings) {
             for (UnitType unitType : techUnitResponses) {
@@ -226,14 +228,16 @@ public class UnitProduction {
                         && (mechCount >= tankCount * 2 || ratioOverMaximum)) {
                     items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 2));
                 }
-                else if (!ratioOverMaximum && buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
-                    if (isRecruitable(UnitType.Terran_Goliath) && !hasInQueue(UnitType.Terran_Goliath)) {
-                        items.add(plannedUnit(UnitType.Terran_Goliath, 3));
+                else if (!ratioOverMaximum && !addonFreeFactoryAvailable || building.getAddon() == null) {
+                    if (!ratioOverMaximum && buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
+                        if (isRecruitable(UnitType.Terran_Goliath) && !hasInQueue(UnitType.Terran_Goliath)) {
+                            items.add(plannedUnit(UnitType.Terran_Goliath, 3));
+                        }
                     }
-                }
-                else if (!ratioOverMaximum) {
-                    if (isRecruitable(UnitType.Terran_Vulture) && !hasInQueue(UnitType.Terran_Vulture)) {
-                        items.add(plannedUnit(UnitType.Terran_Vulture, 3));
+                    else if (!ratioOverMaximum) {
+                        if (isRecruitable(UnitType.Terran_Vulture) && !hasInQueue(UnitType.Terran_Vulture)) {
+                            items.add(plannedUnit(UnitType.Terran_Vulture, 3));
+                        }
                     }
                 }
             }
