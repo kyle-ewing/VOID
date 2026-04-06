@@ -166,7 +166,8 @@ public class UnitProduction {
         List<PlannedItem> items = new ArrayList<>();
         int tankCount = unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
         int mechCount = unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath);
-        boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 2.5;
+        int vesselCount = unitTypeCount.get(UnitType.Terran_Science_Vessel);
+        boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 3;
         int factoryCap = buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC ? 4 : 5;
 
         for (Unit building : productionBuildings) {
@@ -176,6 +177,16 @@ public class UnitProduction {
                         && !hasInQueue(unitType)) {
 
                     if (unitType == UnitType.Terran_Goliath && ratioOverMaximum) {
+                        continue;
+                    }
+
+                    if (unitType == UnitType.Terran_Science_Vessel) {
+                        if (vesselCount == 0) {
+                            items.add(plannedUnit(unitType, 1));
+                        }
+                        else if (vesselCount < 5 && vesselCount < tankCount / 4) {
+                            items.add(plannedUnit(unitType, 2));
+                        }
                         continue;
                     }
 
@@ -190,18 +201,29 @@ public class UnitProduction {
                     if (canBuild(building, unitType.whatBuilds().getKey())
                             && isRecruitable(unitType)
                             && !hasInQueue(unitType)) {
+
+                        if (unitType == UnitType.Terran_Science_Vessel) {
+                            if (vesselCount == 0) {
+                                items.add(plannedUnit(unitType, 1));
+                            }
+                            else if (vesselCount < 5 && vesselCount < tankCount / 3) {
+                                items.add(plannedUnit(unitType, 2));
+                            }
+                            continue;
+                        }
+
                         items.add(plannedUnit(unitType, unitTypeCount.get(unitType) < 8 ? 1 : 3));
                     }
                 }
             }
 
             if (canBuild(building, UnitType.Terran_Factory)) {
-                // 1.5 : 1 gol/vulture : tank ratio minimum, or 4:1 cap exceeded
+                // 2 : 1 gol/vulture : tank ratio minimum, or 4:1 cap exceeded
                 if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && building.getAddon() != null
                         && !hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && tankCount < 12
-                        && (mechCount >= tankCount * 1.5 || ratioOverMaximum)) {
+                        && (mechCount >= tankCount * 2 || ratioOverMaximum)) {
                     items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 2));
                 }
                 else if (!ratioOverMaximum && buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
