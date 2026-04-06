@@ -12,7 +12,7 @@ import planner.PlannedItem;
 import planner.PlannedItemType;
 import util.Time;
 
-public class TwoFac extends BuildOrder {
+public class TwoFac extends MechBuildOrder {
 
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.TWOFAC;

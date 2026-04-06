@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class OneFacFE extends BuildOrder {
+public class OneFacFE extends MechBuildOrder {
 
     public BuildOrderName getBuildOrderName() {
         return BuildOrderName.ONEFACFE;
