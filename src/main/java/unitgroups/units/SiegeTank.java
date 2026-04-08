@@ -24,6 +24,7 @@ public class SiegeTank extends CombatUnits {
     private HashSet<TilePosition> backupSiegeTiles = new HashSet<>();
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
+    private int unsiegeClock = 0;
 
     private static final int SIEGE_RANGE = 384;
 
@@ -370,15 +371,25 @@ public class SiegeTank extends CombatUnits {
                 break;    
         }
 
+        if (isSieged() && !unit.isAttacking() || unit.getGroundWeaponCooldown() == 0) {
+            unsiegeClock += 8;
+        }
+        else {
+            unsiegeClock = 0;
+        }
+
         if (enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE - 32 && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64
                 && canSiege() && !enemyUnit.getEnemyType().isWorker()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             unit.siege();
         }
 
-        if (enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE && isSieged()
+        if (enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE 
+                && isSieged()
+                && unsiegeClock > 144
                 && !enemyUnit.getEnemyUnit().isLifted()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
+            unsiegeClock = 0;
             unit.unsiege();
         }
     }
@@ -503,10 +514,7 @@ public class SiegeTank extends CombatUnits {
     }
 
     public boolean isSieged() {
-        if (unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-            return true;
-        }
-        return false;
+        return unit.getType() == UnitType.Terran_Siege_Tank_Siege_Mode;
     }
 
     private int weaponRange() {
