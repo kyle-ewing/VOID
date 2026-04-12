@@ -18,6 +18,7 @@ public class CannonRush extends EnemyStrategy {
         this.mapInfo = mapInfo;
 
         buildingResponse();
+        techUpgradeResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {

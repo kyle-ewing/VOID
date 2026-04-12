@@ -933,12 +933,12 @@ public class ProductionManager {
             if (existingUpgrade) {
                 if (existingItem.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
                     productionQueue.removeIf(pi -> pi.getTechUpgrade() != null && pi.getTechUpgrade() == tech);
-                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, 1));
+                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
                 }
             }
             else {
                 if (!game.self().hasResearched(tech)) {
-                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, 1));
+                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
                 }
             }
         }

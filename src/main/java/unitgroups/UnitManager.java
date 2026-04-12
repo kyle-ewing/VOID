@@ -327,9 +327,9 @@ public class UnitManager {
                 case SIEGEDEF:
                     ((SiegeTank) combatUnit).siegeDef();
 
+                    ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
-                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
                     break;
                 case HUNTING:
