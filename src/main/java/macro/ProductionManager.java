@@ -915,6 +915,33 @@ public class ProductionManager {
                 }
             }
         }
+
+        for (TechType tech : gameState.getEnemyOpener().getTechUpgradeResponse()) {
+            boolean existingUpgrade = false;
+            PlannedItem existingItem = null;
+
+            for (PlannedItem pi : productionQueue) {
+                if (pi.getTechUpgrade() != null && tech != null) {
+                    if (pi.getTechUpgrade() == tech) {
+                        existingItem = pi;
+                        existingUpgrade = true;
+                        break;
+                    }
+                }
+            }
+
+            if (existingUpgrade) {
+                if (existingItem.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                    productionQueue.removeIf(pi -> pi.getTechUpgrade() != null && pi.getTechUpgrade() == tech);
+                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, 1));
+                }
+            }
+            else {
+                if (!game.self().hasResearched(tech)) {
+                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, 1));
+                }
+            }
+        }
     }
 
     private void enemyTechUnitResponse() {
