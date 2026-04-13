@@ -136,7 +136,10 @@ public class WorkerManager {
                     }
 
                     if (worker.getEnemyUnit() != null) {
-                        worker.selfDefense();
+                        TilePosition enemyTile = worker.getEnemyUnit().getEnemyPosition().toTilePosition();
+                        if (mapInfo.getBaseTiles().contains(enemyTile) || mapInfo.getNaturalTiles().contains(enemyTile)) {
+                            worker.selfDefense();
+                        }
                     }
 
                     if ((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()

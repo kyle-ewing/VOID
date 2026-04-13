@@ -359,8 +359,13 @@ public class UnitManager {
                                 case Protoss:
                                     TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
 
-                                    if (landPosition != null) {
+                                    if (landPosition != null && !gameState.isEnemyInNatural()) {
                                         combatUnit.getUnit().land(landPosition);
+                                    }
+                                    else {
+                                        if (combatUnit.getRallyPoint() != null) {
+                                            combatUnit.getUnit().move(combatUnit.getRallyPoint().toPosition());
+                                        }
                                     }
                                 default:
                                     //do nothing    

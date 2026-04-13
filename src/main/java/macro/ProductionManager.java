@@ -790,7 +790,9 @@ public class ProductionManager {
 
         Map<UnitType, Integer> buildingCounts = new HashMap<>();
         for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
-            buildingCounts.merge(building, 1, Integer::sum);
+            if (building.isBuilding()) {
+                buildingCounts.merge(building, 1, Integer::sum);
+            }
         }
 
         if (startingOpener.buildType() == BuildType.MECH) {
@@ -828,7 +830,7 @@ public class ProductionManager {
         for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             boolean alreadyInProgress = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == building && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED);
 
-            if (unitTypeCount.get(building) == 0 && !alreadyInProgress) {
+            if (unitTypeCount.get(building) == 0 && !alreadyInProgress && building.isBuilding()) {
                 if (building.isAddon()) {
                     addToQueue(building, PlannedItemType.ADDON, 1);
                 }
