@@ -142,7 +142,9 @@ public class Vulture extends CombatUnits {
         }
 
         if (game.self().hasResearched(TechType.Spider_Mines) && unit.getSpiderMineCount() > 0 && !layingMines && !recentlyMined) {
-            if (!mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition()) && unit.getDistance(enemyUnit.getEnemyPosition()) > 300) {
+            if (!mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())
+                    && !mapInfo.getNaturalTiles().contains(unit.getPosition().toTilePosition())
+                    && unit.getDistance(enemyUnit.getEnemyPosition()) > 300) {
                 unit.useTech(TechType.Spider_Mines, unit.getPosition());
                 layingMines = true;
             }
@@ -492,8 +494,8 @@ public class Vulture extends CombatUnits {
         }
 
         if (unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
-            //Don't lay mines in the main
-            if (mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())) {
+            if (mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())
+                    || mapInfo.getNaturalTiles().contains(unit.getPosition().toTilePosition())) {
                 return;
             }
             if (hasTankSupport && enemyUnit.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode) {
