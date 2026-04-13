@@ -1,13 +1,14 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import bwapi.TechType;
 import bwapi.UnitType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class CannonRush extends EnemyStrategy {
     private MapInfo mapInfo;
@@ -17,6 +18,7 @@ public class CannonRush extends EnemyStrategy {
         this.mapInfo = mapInfo;
 
         buildingResponse();
+        techUpgradeResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
@@ -25,15 +27,13 @@ public class CannonRush extends EnemyStrategy {
                 continue;
             }
 
-            if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
-                if (new Time(3, 30).greaterThan(time)) {
-                    return true;
+            if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) || mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
+                if (enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon || enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
+                    if (new Time(3, 30).greaterThan(time)) {
+                        return true;
+                    }
                 }
-            }
-            else if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) && enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
-                if (new Time(3, 30).greaterThan(time)) {
-                    return true;
-                }
+
             }
         }
         return false;
@@ -44,6 +44,10 @@ public class CannonRush extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Refinery);
         getBuildingResponse().add(UnitType.Terran_Factory);
         getBuildingResponse().add(UnitType.Terran_Machine_Shop);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
@@ -52,6 +56,12 @@ public class CannonRush extends EnemyStrategy {
 
     public void upgradeResponse() {
     }
+    
+    @Override
+    public void techUpgradeResponse() {
+        getTechUpgradeResponse().add(TechType.Tank_Siege_Mode);
+    }
+
 
     public HashSet<UnitType> removeBuildings() {
         return new HashSet<>();

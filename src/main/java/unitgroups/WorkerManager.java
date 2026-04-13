@@ -76,7 +76,7 @@ public class WorkerManager {
             if (new Time(frameCount).lessThanOrEqual(new Time(6,0))) {
                 if (worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
                     //Stop worker defense after the early game
-                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened()) {
+                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase()) {
                         if (workers.size() > 12) {
                             createDefenseForce(6);
                         }
@@ -136,12 +136,17 @@ public class WorkerManager {
                     }
 
                     if (worker.getEnemyUnit() != null) {
-                        worker.selfDefense();
+                        TilePosition enemyTile = worker.getEnemyUnit().getEnemyPosition().toTilePosition();
+                        if (mapInfo.getBaseTiles().contains(enemyTile) || mapInfo.getNaturalTiles().contains(enemyTile)) {
+                            worker.selfDefense();
+                        }
                     }
 
                     if ((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()
-                            || (!mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())
-                            && !mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition()))) {
+                            || (worker.getEnemyUnit() == null
+                            && !mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())
+                            && !mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition()))
+                            || hasCompletedCannonInBase()) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         worker.setAttackClock(0);
                         worker.setAssignedToBase(false);
@@ -392,7 +397,23 @@ public class WorkerManager {
             }
 
             TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
-            if (mapInfo.getBaseTiles().contains(enemyTile)) {
+            if (mapInfo.getBaseTiles().contains(enemyTile) || mapInfo.getNaturalTiles().contains(enemyTile)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasCompletedCannonInBase() {
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType() != UnitType.Protoss_Photon_Cannon) {
+                continue;
+            }
+            if (!enemyUnit.getEnemyUnit().isCompleted() || !enemyUnit.getEnemyUnit().isPowered()) {
+                continue;
+            }
+            TilePosition cannonTile = enemyUnit.getEnemyUnit().getTilePosition();
+            if (mapInfo.getBaseTiles().contains(cannonTile) || mapInfo.getNaturalTiles().contains(cannonTile)) {
                 return true;
             }
         }
@@ -402,7 +423,14 @@ public class WorkerManager {
     private void enemyStrategyResponse() {
         switch (gameState.getEnemyOpener().getStrategyName()) {
             case "Cannon Rush":
-                createDefenseForce(6);
+                if (!hasCompletedCannonInBase()) {
+                    if (workers.size() > 12) {
+                        createDefenseForce(6);
+                    }
+                    else {
+                        createDefenseForce(3);
+                    }
+                }
                 break;
             case "Four Rax":
                 if (gameState.getKnownEnemyUnits().stream().anyMatch(unit -> unit.getEnemyType() == UnitType.Terran_Marine && unit.getEnemyPosition() != null

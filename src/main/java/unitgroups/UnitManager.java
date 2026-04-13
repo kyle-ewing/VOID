@@ -327,9 +327,9 @@ public class UnitManager {
                 case SIEGEDEF:
                     ((SiegeTank) combatUnit).siegeDef();
 
+                    ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
-                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     }
                     break;
                 case HUNTING:
@@ -359,8 +359,13 @@ public class UnitManager {
                                 case Protoss:
                                     TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
 
-                                    if (landPosition != null) {
+                                    if (landPosition != null && !gameState.isEnemyInNatural()) {
                                         combatUnit.getUnit().land(landPosition);
+                                    }
+                                    else {
+                                        if (combatUnit.getRallyPoint() != null) {
+                                            combatUnit.getUnit().move(combatUnit.getRallyPoint().toPosition());
+                                        }
                                     }
                                 default:
                                     //do nothing    

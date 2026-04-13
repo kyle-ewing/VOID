@@ -790,7 +790,9 @@ public class ProductionManager {
 
         Map<UnitType, Integer> buildingCounts = new HashMap<>();
         for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
-            buildingCounts.merge(building, 1, Integer::sum);
+            if (building.isBuilding()) {
+                buildingCounts.merge(building, 1, Integer::sum);
+            }
         }
 
         if (startingOpener.buildType() == BuildType.MECH) {
@@ -828,7 +830,7 @@ public class ProductionManager {
         for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             boolean alreadyInProgress = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == building && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED);
 
-            if (unitTypeCount.get(building) == 0 && !alreadyInProgress) {
+            if (unitTypeCount.get(building) == 0 && !alreadyInProgress && building.isBuilding()) {
                 if (building.isAddon()) {
                     addToQueue(building, PlannedItemType.ADDON, 1);
                 }
@@ -912,6 +914,33 @@ public class ProductionManager {
             else {
                 if (game.self().getUpgradeLevel(upgrade) < upgradeLevel) {
                     productionQueue.add(new PlannedItem(upgrade, 0, PlannedItemType.UPGRADE, researchBuilding, upgradeLevel,1));
+                }
+            }
+        }
+
+        for (TechType tech : gameState.getEnemyOpener().getTechUpgradeResponse()) {
+            boolean existingUpgrade = false;
+            PlannedItem existingItem = null;
+
+            for (PlannedItem pi : productionQueue) {
+                if (pi.getTechUpgrade() != null && tech != null) {
+                    if (pi.getTechUpgrade() == tech) {
+                        existingItem = pi;
+                        existingUpgrade = true;
+                        break;
+                    }
+                }
+            }
+
+            if (existingUpgrade) {
+                if (existingItem.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                    productionQueue.removeIf(pi -> pi.getTechUpgrade() != null && pi.getTechUpgrade() == tech);
+                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
+                }
+            }
+            else {
+                if (!game.self().hasResearched(tech)) {
+                    productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
                 }
             }
         }
