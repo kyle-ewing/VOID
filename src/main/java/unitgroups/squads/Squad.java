@@ -16,6 +16,7 @@ public class Squad {
     private Position regroupPosition;
     private HashSet<CombatUnits> squadUnits = new HashSet<>();
     private HashMap<Integer, UnitType> squadComposition = new HashMap<>();
+    private boolean enemyArmyExists = false;
 
     private static final double SMOOTHING_ALPHA = 0.85;
     private static final int CLUSTER_RADIUS = 300;
@@ -68,7 +69,11 @@ public class Squad {
         for (CombatUnits unit : units) {
             Position pos = unit.getUnit().getPosition();
             if (pos.getApproxDistance(anchorPos) <= CLUSTER_RADIUS) {
-                int weight = (tankBias && isSiegeTank(unit)) ? TANK_WEIGHT : 1;
+                int weight = 1;
+
+                if (tankBias && isSiegeTank(unit)) {
+                    weight = TANK_WEIGHT;
+                }
                 cx += pos.getX() * weight;
                 cy += pos.getY() * weight;
                 count += weight;
@@ -103,7 +108,7 @@ public class Squad {
     }
 
     private void checkRegroup() {
-        if (squadUnits.size() < 4) {
+        if (squadUnits.size() < 4 || !enemyArmyExists) {
             return;
         }
 
@@ -112,11 +117,20 @@ public class Squad {
                 continue; 
             }
 
-            if (unit.getEnemyUnit() != null && unit.getEnemyUnit().getEnemyPosition() != null && unit.getUnit().getPosition().getDistance(unit.getEnemyUnit().getEnemyPosition()) < 150) {
+            int regroupRange = 250;
+
+            if (siegeTankCount() >= 4) {
+                regroupRange += siegeTankCount() * 20;
+            }
+
+            if (unit.getEnemyUnit() != null 
+                    && unit.getEnemyUnit().getEnemyPosition() != null 
+                    && unit.getUnit().getPosition().getDistance(unit.getEnemyUnit().getEnemyPosition()) < 150
+                    && unit.getUnit().getDistance(regroupPosition) > regroupRange + 200) {
                 continue; 
             }
 
-            if (unit.getUnit().getPosition().getDistance(regroupPosition) > 250 && game.isWalkable(regroupPosition.toWalkPosition())) {
+            if (unit.getUnit().getPosition().getDistance(regroupPosition) > regroupRange && game.isWalkable(regroupPosition.toWalkPosition())) {
                 unit.setUnitStatus(UnitStatus.REGROUP);
             }
         }
@@ -171,5 +185,12 @@ public class Squad {
         this.squadComposition = squadComposition;
     }
 
+    public boolean enemyArmyExists() {
+        return enemyArmyExists;
+    }
+
+    public void setEnemyArmyExists(boolean enemyArmyExists) {
+        this.enemyArmyExists = enemyArmyExists;
+    }
     
 }

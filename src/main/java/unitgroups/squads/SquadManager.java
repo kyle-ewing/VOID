@@ -7,18 +7,22 @@ import java.util.List;
 import bwapi.Game;
 import bwapi.UnitType;
 import information.GameState;
+import information.enemy.EnemyInformation;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
 
 public class SquadManager {
     private Game game;
     private GameState gamestate;
+    private EnemyInformation enemyInformation;
     private List<Squad> squads = new ArrayList<>();
     private HashMap<UnitType, Integer> compositionLimits = new HashMap<>();
+    private float enemyArmySupply = 0;
 
-    public SquadManager(Game game, GameState gamestate) {
+    public SquadManager(Game game, GameState gamestate, EnemyInformation enemyInformation) {
         this.game = game;
         this.gamestate = gamestate;
+        this.enemyInformation = enemyInformation;
         squads.add(new Squad(game));
         initCompositionLimits();
     }
@@ -72,7 +76,16 @@ public class SquadManager {
     }
 
     public void onFrame() {
+        enemyArmySupply = enemyInformation.getEnemyArmySupply();
+
         for (Squad squad : squads) {
+            if (enemyArmySupply > 8) {
+                squad.setEnemyArmyExists(true);
+            } 
+            else {
+                squad.setEnemyArmyExists(false);
+            }
+
             squad.onFrame();
         }
         updateRegroupPositions();
