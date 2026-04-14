@@ -57,7 +57,7 @@ public class UnitManager {
         this.mapInfo = mapInfo;
         this.game = game;
         this.scouting = scouting;
-        this.squadManager = new SquadManager(game, gameState);
+        this.squadManager = new SquadManager(game, gameState, enemyInformation);
         this.combatUnitCreator = new CombatUnitCreator(game, enemyInformation);
         this.pathFinding = mapInfo.getPathFinding();
         this.rallyPoint = new RallyPoint(pathFinding, gameState, mapInfo);

@@ -28,6 +28,7 @@ public class EnemyInformation {
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
     private int openerDefenseTimer = 0;
+    private float enemyArmySupply = 0;
     private static final int OPENER_DEFENSE_TIME = 4320;
 
     public EnemyInformation(MapInfo mapInfo, Game game, GameState gameState) {
@@ -372,6 +373,10 @@ public class EnemyInformation {
 
         if (!previouslyDiscovered(unit)) {
             addEnemyUnit(unit);
+            
+            if (!unit.getType().isBuilding() && !unit.getType().isWorker()) {
+                enemyArmySupply += unit.getType().supplyRequired() / 2;
+            }
 
             if (unit.getType().isBuilding()) {
                 gameState.setEnemyBuildingDiscovered(true);
@@ -439,6 +444,10 @@ public class EnemyInformation {
             }
         }
 
+        if (!unit.getType().isBuilding() && !unit.getType().isWorker()) {
+            enemyArmySupply -= unit.getType().supplyRequired() / 2;
+        }
+
         for (EnemyUnits threat : validThreats) {
             if (threat.getEnemyID() == unit.getID()) {
                 validThreats.remove(threat);
@@ -488,5 +497,9 @@ public class EnemyInformation {
 
     public HashSet<UnitType> getTechUnitResponse() {
         return techunitResponse;
+    }
+
+    public float getEnemyArmySupply() {
+        return enemyArmySupply;
     }
 }
