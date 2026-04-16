@@ -27,6 +27,7 @@ public class Scouting {
     private boolean completedScout = false;
     private boolean attemptsMaxed = false;
     private boolean mainScanned = false;
+    private boolean reversed = false;
 
     private Time time;
 
@@ -81,6 +82,17 @@ public class Scouting {
             scout.getUnit().stop();
         }
 
+        if (scout.getUnit().isIdle()) {
+            scout.setIdleClock(scout.getIdleClock() + 1);
+        }
+        // else {
+        //     scout.setIdleClock(0);
+        // }
+
+        if (scout.getIdleClock() >= 48) {
+            reversed = !reversed;
+            scout.setIdleClock(0);
+        }
 
         Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
         double angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
@@ -91,7 +103,12 @@ public class Scouting {
         Position targetPosition = new Position(x, y);
 
         if (scout.getUnit().getDistance(targetPosition) < 90) {
-            currentPositionIndex = (currentPositionIndex + 1) % positionCount;
+            if (reversed) {
+                currentPositionIndex = (currentPositionIndex - 1 + positionCount) % positionCount;
+            }
+            else {
+                currentPositionIndex = (currentPositionIndex + 1) % positionCount;
+            }
             angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
             x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
             y = (int) (enemyBasePos.getY() + scoutRadius * Math.sin(angle));
@@ -150,7 +167,7 @@ public class Scouting {
         }
 
         if (gameState.getStartingEnemyBase() != null 
-                && time.greaterThan(new Time(3, 0))
+                && time.greaterThan(new Time(2, 45))
                 && time.lessThanOrEqual(new Time(5, 0))
                 && gameState.getEnemyOpener() == null 
                 && scout == null) {
