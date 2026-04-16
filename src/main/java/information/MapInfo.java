@@ -172,7 +172,7 @@ public class MapInfo {
         }
 
         Position chokeCenter = naturalChokePoint.getCenter().toPosition();
-        int maxDistance = 64;
+        int maxDistance = 96;
 
         int mapWidth = game.mapWidth();
         int mapHeight = game.mapHeight();

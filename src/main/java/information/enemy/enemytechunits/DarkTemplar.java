@@ -1,9 +1,9 @@
 package information.enemy.enemytechunits;
 
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
-
-import java.util.HashSet;
 
 public class DarkTemplar extends EnemyTechUnits {
     public DarkTemplar() {
@@ -24,6 +24,8 @@ public class DarkTemplar extends EnemyTechUnits {
     }
 
     public void techBuildingResponse() {
+        getFriendlyBuildingResponse().add(UnitType.Terran_Engineering_Bay);
+        getFriendlyBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getFriendlyBuildingResponse().add(UnitType.Terran_Factory);
         getFriendlyBuildingResponse().add(UnitType.Terran_Starport);
         getFriendlyBuildingResponse().add(UnitType.Terran_Control_Tower);

@@ -149,6 +149,14 @@ public class Scouting {
             sendScout();
         }
 
+        if (gameState.getStartingEnemyBase() != null 
+                && time.greaterThan(new Time(3, 0))
+                && time.lessThanOrEqual(new Time(5, 0))
+                && gameState.getEnemyOpener() == null 
+                && scout == null) {
+            sendScout();
+        }
+
         if (gameState.getStartingEnemyBase() != null) {
             scoutEnemyPerimeter();
             completedScout = true;

@@ -16,21 +16,27 @@ public class DTRush extends EnemyStrategy{
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        if (enemyUnits.stream().anyMatch(unit -> unit.getEnemyType() == UnitType.Protoss_Dragoon)
+                && time.lessThanOrEqual(new Time(5, 30))
+                && time.greaterThan(new Time(3, 30))) {
+            return false;
+        }
+        
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyType() == UnitType.Protoss_Templar_Archives) {
-                if (time.lessThanOrEqual(new Time(5,30))) {
+                if (time.lessThanOrEqual(new Time(4,0))) {
                     return true;
                 }
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Protoss_Citadel_of_Adun) {
-                if (time.lessThanOrEqual(new Time(5,0))) {
+                if (time.lessThanOrEqual(new Time(3,20))) {
                     return true;
                 }
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Protoss_Dark_Templar) {
-                if (time.lessThanOrEqual(new Time(7,30))) {
+                if (time.lessThanOrEqual(new Time(5,30))) {
                     return true;
                 }
             }
@@ -44,12 +50,6 @@ public class DTRush extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Academy);
         getBuildingResponse().add(UnitType.Terran_Comsat_Station);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
-        getBuildingResponse().add(UnitType.Terran_Factory);
-        getBuildingResponse().add(UnitType.Terran_Starport);
-        getBuildingResponse().add(UnitType.Terran_Control_Tower);
-        getBuildingResponse().add(UnitType.Terran_Science_Facility);
-        getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
     }
