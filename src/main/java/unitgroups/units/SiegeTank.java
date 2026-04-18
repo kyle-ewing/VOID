@@ -54,9 +54,9 @@ public class SiegeTank extends CombatUnits {
 
         siegeLogic();
 
-        if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE) {
+        if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE || !target.getEnemyUnit().isVisible()) {
             unit.attack(target.getEnemyPosition());
-        } 
+        }
         else {
             unit.attack(target.getEnemyUnit());
         }
@@ -342,14 +342,16 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
+        int distToEnemy = unit.getDistance(enemyUnit.getEnemyPosition());
+
         //TODO: add case for obstructing to unsiege and move
         switch (super.getUnitStatus()) {
             case ATTACK:
-                if (!isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
+                if (!isSieged() && distToEnemy < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                 }
 
-                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64
+                if (isSieged() && distToEnemy < 64
                         && !enemyUnit.getEnemyUnit().isLifted()) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
@@ -357,7 +359,7 @@ public class SiegeTank extends CombatUnits {
                 }
                 break;
             case DEFEND:
-                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
+                if (isSieged() && distToEnemy < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
@@ -370,13 +372,13 @@ public class SiegeTank extends CombatUnits {
                 }
                 break;
             case SIEGEDEF:
-                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64) {
+                if (isSieged() && distToEnemy < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
 
-                if (super.enemyInBase && enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE) {
+                if (super.enemyInBase && distToEnemy > SIEGE_RANGE) {
                     super.setUnitStatus(UnitStatus.DEFEND);
                     if (isSieged()) {
                         super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
@@ -385,11 +387,11 @@ public class SiegeTank extends CombatUnits {
                 }
                 return;
             case REGROUP:
-                if (isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) < 64 || enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE) {
+                if (isSieged() && distToEnemy < 64 || distToEnemy > SIEGE_RANGE) {
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
-                break;    
+                break;
         }
 
         if (isSieged() && !unit.isAttacking() || unit.getGroundWeaponCooldown() == 0) {
@@ -399,13 +401,13 @@ public class SiegeTank extends CombatUnits {
             unsiegeClock = 0;
         }
 
-        if (enemyUnit.getEnemyUnit().getDistance(unit) < SIEGE_RANGE - 32 && !isSieged() && enemyUnit.getEnemyUnit().getDistance(unit) > 64
-                && canSiege() && !enemyUnit.getEnemyType().isWorker()) {
+        if (distToEnemy < SIEGE_RANGE - 32 && !isSieged() && distToEnemy > 64
+                && canSiege() && !enemyUnit.getEnemyType().isWorker() && enemyUnit.getEnemyUnit().isVisible()) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Siege_Mode);
             unit.siege();
         }
 
-        if (enemyUnit.getEnemyUnit().getDistance(unit) > SIEGE_RANGE 
+        if ((distToEnemy > SIEGE_RANGE || !enemyUnit.getEnemyUnit().isVisible())
                 && isSieged()
                 && unsiegeClock > 144
                 && !enemyUnit.getEnemyUnit().isLifted()) {
