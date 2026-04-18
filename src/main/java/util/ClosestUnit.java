@@ -209,7 +209,7 @@ public class ClosestUnit {
                 continue;
             }
 
-            if ((!combatUnit.getUnit().getType().airWeapon().targetsAir() && !combatUnit.getUnit().isFlying()) && enemyUnit.getEnemyUnit().getType().isFlyer()) {
+            if (!combatUnit.getUnit().getType().airWeapon().targetsAir() && enemyUnit.getEnemyType().isFlyer()) {
                 continue;
             }
 

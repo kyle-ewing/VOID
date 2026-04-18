@@ -243,7 +243,7 @@ public class UnitProduction {
                             items.add(plannedUnit(UnitType.Terran_Goliath, 3));
                         }
                     }
-                    else if (!ratioOverMaximum) {
+                    else if (!ratioOverMaximum && !techUnitResponses.contains(UnitType.Terran_Goliath)) {
                         if (isRecruitable(UnitType.Terran_Vulture) && !hasInQueue(UnitType.Terran_Vulture)) {
                             items.add(plannedUnit(UnitType.Terran_Vulture, 3));
                         }

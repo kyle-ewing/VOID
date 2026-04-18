@@ -23,7 +23,7 @@ public class TwoFac extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 11, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 12, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 15, PlannedItemType.UNIT, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 17, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 16, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 17, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 2));
