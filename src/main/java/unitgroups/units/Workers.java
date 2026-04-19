@@ -3,6 +3,7 @@ package unitgroups.units;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
+import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import macro.ResourceTracking;
 import planner.PlannedItem;
@@ -22,6 +23,7 @@ public class Workers extends CombatUnits {
     private boolean preemptiveRepair = false;
     private boolean assignedToBase = false;
     private Position buildingPosition;
+    private UnitType buildType;
 
     public Workers(Game game, Unit unit) {
         super(game, unit);
@@ -114,6 +116,7 @@ public class Workers extends CombatUnits {
         this.getUnit().move(pi.getBuildPosition().toPosition());
         pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
 
+        this.buildType = pi.getUnitType();
         this.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
     }
 
@@ -123,6 +126,7 @@ public class Workers extends CombatUnits {
         this.setBuildingPosition(null);
         this.getUnit().stop();
         this.idleClock = 0;
+        this.buildType = null;
         resourceTracking.unreserveResources(pi.getUnitType());
         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
     }
@@ -228,4 +232,14 @@ public class Workers extends CombatUnits {
     public void setLastFrameChecked(int lastFrameChecked) {
         this.lastFrameChecked = lastFrameChecked;
     }
+
+    public UnitType getBuildType() {
+        return buildType;
+    }
+
+    public void setBuildType(UnitType buildType) {
+        this.buildType = buildType;
+    }
+
+    
 }

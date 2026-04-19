@@ -19,6 +19,7 @@ public final class Config {
     public boolean debugGeyserExclusionZone = false;
     public boolean debugCCExclusionZone = false;
     public boolean debugOwnedTiles = false;
+    public boolean debugSiegeDefTiles = false;
 
     // Bases and buildings
     public boolean debugBuildTiles = true;
@@ -51,6 +52,7 @@ public final class Config {
         this.debugGeyserExclusionZone = getBooleanOrDefault("DEBUG_GEYSER_EXCLUSION_ZONE", this.debugGeyserExclusionZone);
         this.debugCCExclusionZone = getBooleanOrDefault("DEBUG_CC_EXCLUSION_ZONE", this.debugCCExclusionZone);
         this.debugOwnedTiles = getBooleanOrDefault("DEBUG_OWNED_TILES", this.debugOwnedTiles);
+        this.debugSiegeDefTiles = getBooleanOrDefault("DEBUG_SIEGEDEF_TILES", this.debugSiegeDefTiles);
 
         // Bases and buildings
         this.debugBases = getBooleanOrDefault("DEBUG_BASES", this.debugBases);
