@@ -22,6 +22,7 @@ public class SiegeTank extends CombatUnits {
     private HashSet<TilePosition> mainEdgeTiles = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
     private HashSet<TilePosition> backupSiegeTiles = new HashSet<>();
+    private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
     private int unsiegeClock = 0;
@@ -36,6 +37,7 @@ public class SiegeTank extends CombatUnits {
         mainEdgeTiles = mapInfo.getMainCliffEdge();
         combinedTankTiles = mapInfo.getCombinedTankTiles();
         backupSiegeTiles = mapInfo.getBackupMainSiegeTiles();
+        ccExclusionTiles = mapInfo.getCcExclusionTiles();
     }
 
     @Override
@@ -331,7 +333,7 @@ public class SiegeTank extends CombatUnits {
             }
             i++;
         }
-        if (targetTile != null) {
+        if (targetTile != null && !ccExclusionTiles.contains(targetTile)) {
             siegeTile = targetTile;
             foundSiegeTile = true;
         }
@@ -344,8 +346,13 @@ public class SiegeTank extends CombatUnits {
 
         int distToEnemy = unit.getDistance(enemyUnit.getEnemyPosition());
 
-        //TODO: add case for obstructing to unsiege and move
         switch (super.getUnitStatus()) {
+            case OBSTRUCTING:
+                if (isSieged()) {
+                    super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
+                    unit.unsiege();
+                }
+                return;
             case ATTACK:
                 if (!isSieged() && distToEnemy < 64) {
                     super.setUnitStatus(UnitStatus.RETREAT);

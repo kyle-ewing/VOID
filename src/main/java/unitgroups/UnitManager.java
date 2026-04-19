@@ -24,6 +24,8 @@ import unitgroups.units.CombatUnits;
 import unitgroups.units.SiegeTank;
 import unitgroups.units.UnitStatus;
 import unitgroups.units.Vulture;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
 import util.ClosestUnit;
 import util.RallyPoint;
 import util.Time;
@@ -325,6 +327,10 @@ public class UnitManager {
                     moveFromObstruction(combatUnit);
                     break;
                 case SIEGEDEF:
+                    if (obstructingBuild(combatUnit)) {
+                        break;
+                    }
+                
                     ((SiegeTank) combatUnit).siegeDef();
 
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
@@ -636,54 +642,70 @@ public class UnitManager {
     }
 
     private boolean obstructingBuild(CombatUnits combatUnit) {
-        for (Unit unit : game.self().getUnits()) {
-            if (!unit.getType().isWorker()) {
+        for (Workers worker : gameState.getWorkers()) {
+            if (worker.getWorkerStatus() != WorkerStatus.MOVING_TO_BUILD) {
                 continue;
             }
 
-            if (combatUnit.getRallyPoint() == null) {
+            Position buildPos = worker.getBuildingPosition();
+            if (buildPos == null) {
                 continue;
             }
 
-            if (!unit.isMoving() && !unit.isConstructing() && unit.getPosition().getApproxDistance(combatUnit.getUnit().getPosition()) < 100 && combatUnit.getUnit().getPosition().getApproxDistance(combatUnit.getRallyPoint().toPosition()) < 100) {
-                combatUnit.setUnitStatus(UnitStatus.OBSTRUCTING);
-                return true;
+            if (worker.getBuildType() != null 
+                    && worker.getBuildType().tileWidth() == 4 
+                    && worker.getBuildType().tileHeight() == 3) {
+                if (combatUnit.getUnit().getDistance(buildPos) < 150) {
+                    combatUnit.setUnitStatus(UnitStatus.OBSTRUCTING);
+                    return true;
+                }
+            }
+            else {
+                if (combatUnit.getUnit().getDistance(buildPos) < 100) {
+                    combatUnit.setUnitStatus(UnitStatus.OBSTRUCTING);
+                    return true;
+                }
             }
         }
         return false;
     }
 
     private void moveFromObstruction(CombatUnits combatUnit) {
-        Unit worker = null;
-        for (Unit unit : game.self().getUnits()) {
-            if (!unit.getType().isWorker()) {
+        Position buildPos = null;
+        for (Workers worker : gameState.getWorkers()) {
+            if (worker.getWorkerStatus() != WorkerStatus.MOVING_TO_BUILD) {
                 continue;
             }
 
-            if (!unit.isMoving() && !unit.isConstructing() &&
-                    unit.getPosition().getApproxDistance(combatUnit.getUnit().getPosition()) < 100) {
-                worker = unit;
-                break;
+            Position bp = worker.getBuildingPosition();
+            if (worker.getBuildType() != null && worker.getBuildType().tileWidth() == 4 
+                    && worker.getBuildType() != null
+                    && worker.getBuildType().tileHeight() == 3) {
+                if (combatUnit.getUnit().getDistance(bp) < 150) {
+                    buildPos = bp;
+                }
+            } else {
+                if (combatUnit.getUnit().getDistance(bp) < 100) {
+                    buildPos = bp;
+                }
             }
         }
 
-        if (worker == null) {
+        if (buildPos == null) {
             return;
         }
 
-        Position workerPos = worker.getPosition();
         Position unitPos = combatUnit.getUnit().getPosition();
-        int dx = unitPos.getX() - workerPos.getX();
-        int dy = unitPos.getY() - workerPos.getY();
+        int dx = unitPos.getX() - buildPos.getX();
+        int dy = unitPos.getY() - buildPos.getY();
 
-        int moveX = unitPos.getX() + (dx * 100 / Math.max(1, unitPos.getApproxDistance(workerPos)));
-        int moveY = unitPos.getY() + (dy * 100 / Math.max(1, unitPos.getApproxDistance(workerPos)));
+        int moveX = unitPos.getX() + (dx * 100 / Math.max(1, unitPos.getApproxDistance(buildPos)));
+        int moveY = unitPos.getY() + (dy * 100 / Math.max(1, unitPos.getApproxDistance(buildPos)));
 
         moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
         moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
 
-        Position movePos = new Position(moveX, moveY);
-        combatUnit.getUnit().attack(movePos);
+        combatUnit.getUnit().attack(new Position(moveX, moveY));
     }
 
     private void avoidThreat(CombatUnits combatUnit) {

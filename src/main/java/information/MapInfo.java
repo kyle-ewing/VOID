@@ -48,6 +48,7 @@ public class MapInfo {
     private HashSet<TilePosition> naturalChokeEdge = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
     private HashSet<TilePosition> backupMainSiegeTiles = new HashSet<>();
+    private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
     private HashMap<Base, List<Position>> allPathsMap;
     private HashMap<Base, HashSet<TilePosition>> baseTilesAllBases = new HashMap<>();
@@ -97,6 +98,7 @@ public class MapInfo {
         setNaturalChokeEdge();
         combineTankTiles();
         backupMainSiegeTiles();
+        setCcExclusionTiles();
         setAllBaseTiles();
         setAreaTiles();
         setBlockingMinerals();
@@ -451,6 +453,27 @@ public class MapInfo {
 
     }
 
+    private void setCcExclusionTiles() {
+        addCcExclusionForBase(startingBase);
+        if (naturalBase != null) {
+            addCcExclusionForBase(naturalBase);
+        }
+    }
+
+    private void addCcExclusionForBase(Base base) {
+        TilePosition cc = base.getLocation();
+        int ccX = cc.getX();
+        int ccY = cc.getY();
+        int ccXEnd = ccX + UnitType.Terran_Command_Center.tileWidth();
+        int ccHeight = UnitType.Terran_Command_Center.tileHeight();
+
+        for (int x = ccX; x < ccXEnd + 3; x++) {
+            for (int y = ccY; y < ccY + ccHeight; y++) {
+                ccExclusionTiles.add(new TilePosition(x, y));
+            }
+        }
+    }
+
     public ChokePoint getMainChoke() {
         return mainChokePoint;
     }
@@ -784,6 +807,10 @@ public class MapInfo {
 
     public HashSet<TilePosition> getBackupMainSiegeTiles() {
         return backupMainSiegeTiles;
+    }
+
+    public HashSet<TilePosition> getCcExclusionTiles() {
+        return ccExclusionTiles;
     }
 
     public HashMap<Unit, Position> getBlockingMineralFields() {
