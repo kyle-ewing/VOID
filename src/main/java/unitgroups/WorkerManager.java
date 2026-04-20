@@ -741,6 +741,12 @@ public class WorkerManager {
             }
         }
 
+        if (blockRemover != null && blockRemover.getUnit().isCarrying()) {
+            blockRemover.setWorkerStatus(WorkerStatus.IDLE);
+            System.out.println("Mineral blockers cleared");
+            return;
+        }
+
         Entry<Unit,Position> blocker = mapInfo.getBlockingMineralFields().entrySet().stream()
             .findAny().orElse(null);
 
