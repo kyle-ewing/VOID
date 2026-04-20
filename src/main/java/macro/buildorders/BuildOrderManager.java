@@ -31,7 +31,8 @@ public class BuildOrderManager {
 
         //TvP
         // protossOpeners.add(new TwoRaxAcademy());
-        protossOpeners.add(new TwoFac());
+        // protossOpeners.add(new TwoFac());
+        protossOpeners.add(new OneFacFE());
 
         //TvT
         //terranOpeners.add(new TwoRaxAcademy());
