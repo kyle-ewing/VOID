@@ -45,9 +45,10 @@ public class OneFacFE extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 56, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 56, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(TechType.Spider_Mines, 54, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
-        buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 56, PlannedItemType.UPGRADE,UnitType.Terran_Machine_Shop, 1, 3));
+        buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 56, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 62, PlannedItemType.BUILDING, 3));
-        
+        buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 70, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 4));
+
         return buildOrder;
     }
 
@@ -88,8 +89,8 @@ public class OneFacFE extends MechBuildOrder {
 
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
-        moveOutCondition.put(UnitType.Terran_Vulture, 7);
-        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
+        moveOutCondition.put(UnitType.Terran_Vulture, 10);
+        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 6);
         return moveOutCondition;
     }
 }

@@ -221,7 +221,7 @@ public class UnitProduction {
             }
 
             if (canBuild(building, UnitType.Terran_Factory)) {
-                boolean firstTankPriority = tankCount == 0
+                boolean firstTankPriority = tankCount < 2
                         && buildOrder instanceof MechBuildOrder
                         && ((MechBuildOrder) buildOrder).prioritizeTankFirst();
 
@@ -229,7 +229,7 @@ public class UnitProduction {
                         && building.getAddon() != null
                         && !hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && tankCount < 12
-                        && (firstTankPriority || mechCount >= tankCount * 2 || ratioOverMaximum)) {
+                        && (firstTankPriority || tankCount < 5 || mechCount >= tankCount * 2 || ratioOverMaximum)) {
                     if (firstTankPriority) {
                         items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 1));
                     }
