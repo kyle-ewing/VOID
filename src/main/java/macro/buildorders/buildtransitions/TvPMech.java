@@ -25,7 +25,7 @@ public class TvPMech extends BuildTransition {
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 73, PlannedItemType.BUILDING, 3, true));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 73, PlannedItemType.BUILDING, 3, true));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 94, PlannedItemType.BUILDING, 3, false));
-        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 97, PlannedItemType.BUILDING, 3, false));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 97, PlannedItemType.BUILDING, 6, false));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 97, PlannedItemType.BUILDING, 7, false));
         transitionItems.add(new PlannedItem(UnitType.Terran_Machine_Shop, PlannedItemType.ADDON, 6));
         transitionItems.add(new PlannedItem(UnitType.Terran_Machine_Shop, PlannedItemType.ADDON, 6));
@@ -34,7 +34,7 @@ public class TvPMech extends BuildTransition {
 
     public ArrayList<PlannedItem> getOptionalBuildings() {
         ArrayList<PlannedItem> optionalItems = new ArrayList<>();
-        optionalItems.add(new PlannedItem(UnitType.Terran_Starport, PlannedItemType.BUILDING, 5, true));
+        optionalItems.add(new PlannedItem(UnitType.Terran_Starport, 80, PlannedItemType.BUILDING, 5, true));
         optionalItems.add(new PlannedItem(UnitType.Terran_Science_Facility, PlannedItemType.BUILDING, 6, true));
         return optionalItems;
     }

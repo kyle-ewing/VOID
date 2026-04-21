@@ -3,6 +3,7 @@ package information.enemy.enemyopeners;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwem.Base;
@@ -80,12 +81,11 @@ public class TwoGate extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Bunker);
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Vulture);
         getBuildingResponse().add(UnitType.Terran_Vulture);
     }
 
     public void upgradeResponse() {
+        getTechUpgradeResponse().add(TechType.Tank_Siege_Mode);
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {

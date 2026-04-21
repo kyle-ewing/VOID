@@ -59,6 +59,7 @@ public class WorkerManager {
         workerBuildClock();
         buildingHealthCheck();
         preemptiveBunkerRepair();
+        clearNaturalDefenseForce();
         enemyScoutResponse.onFrame();
 
         int frameCount = game.getFrameCount();
@@ -385,6 +386,33 @@ public class WorkerManager {
     private void removeDefenseForce(Workers worker) {
         worker.setWorkerStatus(WorkerStatus.IDLE);
         defenseForce.remove(worker);
+    }
+
+    private void clearNaturalDefenseForce() {
+        if (defenseForce.isEmpty()) {
+            return;
+        }
+
+        boolean hasBunker = false;
+        for (Unit building : gameState.getAllBuildings()) {
+            if (building.getType() == UnitType.Terran_Bunker && building.isCompleted()) {
+                hasBunker = true;
+                break;
+            }
+        }
+
+        if (!hasBunker) {
+            return;
+        }
+
+        Iterator<Workers> iterator = defenseForce.iterator();
+        while (iterator.hasNext()) {
+            Workers worker = iterator.next();
+            if (mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition())) {
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                iterator.remove();
+            }
+        }
     }
 
     //Avoid false positives from a single worker attacking a scv (Stone check)

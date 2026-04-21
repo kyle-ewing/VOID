@@ -25,6 +25,7 @@ public class SiegeTank extends CombatUnits {
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
+    private boolean wasNaturalOwned = false;
     private int unsiegeClock = 0;
 
     private static final int SIEGE_RANGE = 384;
@@ -263,6 +264,13 @@ public class SiegeTank extends CombatUnits {
     }
 
     public void siegeDef() {
+        boolean naturalOwned = mapInfo.isNaturalOwned();
+        if (naturalOwned && !wasNaturalOwned) {
+            siegeTile = null;
+            foundSiegeTile = false;
+            wasNaturalOwned = true;
+        }
+
         if (siegeTile == null) {
             setSiegeTile();
         }
