@@ -777,6 +777,7 @@ public class ProductionManager {
                 case "Four Rax":
                 case "DT Rush":
                 case "SCV Rush":
+                case "Two Gate":    
                     return buildTiles.getMainChokeBunker();
                 case "Four Pool":
                     return buildTiles.getCloseBunkerTile();

@@ -606,11 +606,15 @@ public class WorkerManager {
         }
 
         switch (gameState.getEnemyOpener().getStrategyName()) {
+            case "Two Gate":
+                if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
+                    return 3;
+                }
             case "Dark Templar":
                 if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
                 }
-                return 0;
+                return 0;  
             case "Four Pool":
                 return 2;
             default:
