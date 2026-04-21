@@ -806,7 +806,7 @@ public class ProductionManager {
                 buildingCounts.containsKey(pi.getUnitType()) &&
                 pi.getUnitType() != UnitType.Terran_Factory);
 
-            if (!factoryActiveOrComplete) {
+            if (!factoryActiveOrComplete && buildingCounts.containsKey(UnitType.Terran_Factory)) {
                 productionQueue.stream()
                     .filter(pi -> pi.getUnitType() == UnitType.Terran_Factory &&
                         pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import bwapi.TechType;
+import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
@@ -24,9 +25,9 @@ public class OneFacFE extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 12, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 14, PlannedItemType.UNIT, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 15, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 16, PlannedItemType.BUILDING, 2, true));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 16, PlannedItemType.BUILDING, 1, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 16, PlannedItemType.ADDON, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Bunker, 17, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Bunker, 16, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
@@ -62,6 +63,27 @@ public class OneFacFE extends MechBuildOrder {
 
     public BuildType buildType() {
         return BuildType.MECH;
+    }
+
+    @Override
+    public int getGasWorkerTarget(int totalGasGathered, HashSet<Unit> allBuildings) {
+        if (gasThrottleLifted) {
+            return 3;
+        }
+
+        boolean factoryComplete = allBuildings.stream()
+            .anyMatch(b -> b.getType() == UnitType.Terran_Factory && b.isCompleted());
+
+        if (factoryComplete) {
+            gasThrottleLifted = true;
+            return 3;
+        }
+
+        if (totalGasGathered >= 100) {
+            return 1;
+        }
+
+        return 3;
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
