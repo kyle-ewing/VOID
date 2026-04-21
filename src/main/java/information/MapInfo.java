@@ -724,9 +724,9 @@ public class MapInfo {
 
             double score = distFromEnemy - distFromMain;
 
-            if (buildType == BuildType.MECH && base.getGeysers().isEmpty()) {
-                score -= 5000;
-            }
+            // if (buildType == BuildType.MECH && base.getGeysers().isEmpty()) {
+            //     score -= 5000;
+            // }
 
             if (score > bestScore) {
                 bestScore = score;
@@ -881,10 +881,10 @@ public class MapInfo {
         if (naturalOwned && baseTaken != null) {
             addAreaTiles(baseTaken);
 
-            if (!naturalAreaAdded) {
-                addAreaTiles(naturalBase);
-                naturalAreaAdded = true;
-            }
+            // if (!naturalAreaAdded) {
+            //     addAreaTiles(naturalBase);
+            //     naturalAreaAdded = true;
+            // }
         }
     }
 

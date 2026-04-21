@@ -481,12 +481,11 @@ public class ProductionManager {
 
     //Unplanned depot additions to the queue
     private void addSupplyDepot() {
+        int usedSupply = game.self().supplyUsed() / 2;
+        int totalSupply = game.self().supplyTotal() / 2;
+        int freeSupply = totalSupply - usedSupply;
 
         if (!isDepotInQueue()) {
-
-            int usedSupply = game.self().supplyUsed() / 2;
-            int totalSupply = game.self().supplyTotal() / 2;
-            int freeSupply = totalSupply - usedSupply;
 
             if (totalSupply >= 200) {
                 return;
@@ -500,6 +499,12 @@ public class ProductionManager {
             if (freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() == 1) {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
             }
+        }
+        else if (freeSupply < 2 && productionQueue.stream()
+                .anyMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Command_Center && pi.getSupply() >= usedSupply)
+                && productionQueue
+                .stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot && pi.getSupply() == 0)) {
+            addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
         }
     }
 
@@ -806,7 +811,7 @@ public class ProductionManager {
                 buildingCounts.containsKey(pi.getUnitType()) &&
                 pi.getUnitType() != UnitType.Terran_Factory);
 
-            if (!factoryActiveOrComplete) {
+            if (!factoryActiveOrComplete && buildingCounts.containsKey(UnitType.Terran_Factory)) {
                 productionQueue.stream()
                     .filter(pi -> pi.getUnitType() == UnitType.Terran_Factory &&
                         pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)

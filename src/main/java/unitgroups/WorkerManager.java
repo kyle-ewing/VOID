@@ -253,7 +253,6 @@ public class WorkerManager {
 
     private void gatherGas() {
         if (gasImbalance()) {
-
             for (Unit geyser : refinerySaturation.keySet()) {
                 if (refinerySaturation.get(geyser).isEmpty()) {
                     continue;
@@ -265,18 +264,37 @@ public class WorkerManager {
                     worker.setWorkerStatus(WorkerStatus.IDLE);
                     iterator.remove();
                 }
-
             }
             return;
         }
 
+        int gasTarget = getGasWorkerTarget();
         Workers scv;
 
         for (Unit geyser : refinerySaturation.keySet()) {
-            if (refinerySaturation.get(geyser).size() < 3) {
+            int currentCount = refinerySaturation.get(geyser).size();
+
+            if (currentCount > gasTarget) {
+                Iterator<Workers> iterator = refinerySaturation.get(geyser).iterator();
+                while (iterator.hasNext() && refinerySaturation.get(geyser).size() > gasTarget) {
+                    Workers worker = iterator.next();
+
+                    if (worker.getUnit().isCarryingGas()) {
+                        continue;
+                    }
+
+                    worker.setWorkerStatus(WorkerStatus.IDLE);
+                    iterator.remove();
+                }
+            }
+            else if (currentCount < gasTarget) {
                 scv = ClosestUnit.findClosestWorker(geyser.getPosition(), workers, mapInfo.getPathFinding());
 
                 if (scv == null) {
+                    continue;
+                }
+
+                if (scv.getUnit().isCarryingMinerals()) {
                     continue;
                 }
 
@@ -285,6 +303,10 @@ public class WorkerManager {
                 scv.getUnit().gather(geyser);
             }
         }
+    }
+
+    private int getGasWorkerTarget() {
+        return gameState.getStartingOpener().getGasWorkerTarget(player.gatheredGas(), gameState.getAllBuildings());
     }
 
     private void assignMineralSaturation(Workers worker) {
@@ -516,7 +538,7 @@ public class WorkerManager {
                 createRepairForce(bunker, 3);
             }
             else if (bunker.getDistance(baseCenter) > 650
-                    && new Time(game.getFrameCount()).greaterThan(new Time(5,30))
+                    && new Time(game.getFrameCount()).greaterThan(new Time(5,20))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 2);
             }
