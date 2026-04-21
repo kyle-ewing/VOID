@@ -311,8 +311,9 @@ public class WorkerManager {
 
     private void assignMineralSaturation(Workers worker) {
         for (Base base : mapInfo.getOwnedBases()) {
-            if (mineralSaturation.get(base).size() < 24) {
-                mineralSaturation.get(base).add(worker);
+            HashSet<Workers> saturation = mineralSaturation.computeIfAbsent(base, k -> new HashSet<>());
+            if (saturation.size() < 24) {
+                saturation.add(worker);
                 worker.setAssignedToBase(true);
                 break;
             }

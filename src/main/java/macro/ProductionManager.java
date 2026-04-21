@@ -503,7 +503,8 @@ public class ProductionManager {
         else if (freeSupply < 2 && productionQueue.stream()
                 .anyMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Command_Center && pi.getSupply() >= usedSupply)
                 && productionQueue
-                .stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot && pi.getSupply() == 0)) {
+                .stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot && pi.getSupply() == 0)
+                && gameState.isEnemyInNatural()) {
             addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
         }
     }
@@ -747,6 +748,15 @@ public class ProductionManager {
     private void setCommandCenterPosition(PlannedItem pi) {
         if (!mapInfo.getOrderedExpansions().isEmpty() && mapInfo.getOrderedExpansions().get(0) == mapInfo.getNaturalBase()) {
             Base natural = mapInfo.getNaturalBase();
+
+            if (gameState.getEnemyOpener() != null 
+                    && !mapInfo.hasBunkerInNatural()
+                    || gameState.isEnemyInNatural()) {
+
+                pi.setBuildPosition(buildTiles.getMainBaseCCTile()); 
+                mapInfo.getOrderedExpansions().remove(natural);
+                return;
+            }
 
             if (!tilePositionValidator.isBuildable(natural.getLocation(), UnitType.Terran_Command_Center)) {
                 return;

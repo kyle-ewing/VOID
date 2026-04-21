@@ -817,6 +817,12 @@ public class MapInfo {
         return blockingMineralFields;
     }
 
+    public void claimNatural() {
+        baseTiles.addAll(naturalTiles);
+        naturalOwned = true;
+        ownedBases.add(naturalBase);
+    }
+
     public boolean isNaturalOwned() {
         return naturalOwned;
     }

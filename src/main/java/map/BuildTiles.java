@@ -1,15 +1,26 @@
 package map;
 
-import bwapi.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+
+import bwapi.Game;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.Base;
 import bwem.ChokePoint;
 import bwem.Geyser;
 import bwem.Mineral;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
 import util.PositionInterpolator;
-
-import java.util.*;
 
 public class BuildTiles {
     private Game game;
@@ -34,6 +45,7 @@ public class BuildTiles {
     private TilePosition closeBunkerTile;
     private TilePosition mainChokeTurret;
     private TilePosition naturalChokeTurret;
+    private TilePosition mainBaseCCTile;
     private Base startingBase;
     private boolean naturalTilesGenerated = false;
     private boolean minOnlyTilesGenerated = false;
@@ -64,6 +76,7 @@ public class BuildTiles {
         mainChokeTurret = generateChokeTurretTile(mainChokeBunker, startingBase);
         naturalChokeTurret = generateChokeTurretTile(naturalChokeBunker, mapInfo.getNaturalBase());
         //generateChokeTurretTiles();
+        generateMainBaseCCTile();
         generateLargeTiles(frontBaseTiles);
         generateMediumTiles(backBaseTiles);
         generateTurretTiles();
@@ -779,6 +792,73 @@ public class BuildTiles {
         return null;
     }
 
+    private void generateMainBaseCCTile() {
+        int ccWidth = UnitType.Terran_Command_Center.tileWidth();
+        int ccHeight = UnitType.Terran_Command_Center.tileHeight();
+        HashSet<TilePosition> baseTiles = mapInfo.getBaseTiles();
+        TilePosition naturalLocation = mapInfo.getNaturalBase().getLocation();
+
+        TilePosition bestTile = null;
+        int bestDistance = Integer.MAX_VALUE;
+
+        for (TilePosition candidate : baseTiles) {
+            boolean valid = true;
+
+            for (int x = 0; x < ccWidth && valid; x++) {
+                for (int y = 0; y < ccHeight && valid; y++) {
+                    TilePosition footprintTile = new TilePosition(candidate.getX() + x, candidate.getY() + y);
+                    if (!baseTiles.contains(footprintTile) || intersectsExclusionZones(footprintTile) || !tilePositionValidator.isBuildable(footprintTile)) {
+                        valid = false;
+                    }
+                }
+            }
+
+            if (!valid) {
+                continue;
+            }
+
+            if (intersectsNeutralBuildings(candidate, ccWidth, ccHeight)) {
+                continue;
+            }
+
+            if (intersectsExistingBuildTiles(candidate, UnitType.Terran_Command_Center, 0)) {
+                continue;
+            }
+
+            boolean isNearCliffEdge = false;
+
+            for (int x = 0; x < ccWidth && !isNearCliffEdge; x++) {
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() + x, candidate.getY() - 1))) {
+                    isNearCliffEdge = true;
+                }
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() + x, candidate.getY() + ccHeight))) {
+                    isNearCliffEdge = true;
+                }
+            }
+
+            for (int y = 0; y < ccHeight && !isNearCliffEdge; y++) {
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() - 1, candidate.getY() + y))) {
+                    isNearCliffEdge = true;
+                }
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() + ccWidth, candidate.getY() + y))) {
+                    isNearCliffEdge = true;
+                }
+            }
+
+            if (!isNearCliffEdge) {
+                continue;
+            }
+
+            int distance = candidate.getApproxDistance(naturalLocation);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestTile = candidate;
+            }
+        }
+
+        mainBaseCCTile = bestTile;
+    }
+
     private void generateTurretTiles() {
         for (Base base : mapInfo.getMapBases()) {
             if (base == null || base.getMinerals().isEmpty()) {
@@ -977,6 +1057,17 @@ public class BuildTiles {
 
         if (inCCBuffer) {
             return true;
+        }
+
+        if (mainBaseCCTile != null) {
+            int ccTileX = mainBaseCCTile.getX();
+            int ccTileY = mainBaseCCTile.getY();
+            int ccXEnd = ccTileX + UnitType.Terran_Command_Center.tileWidth();
+            int ccYEnd = ccTileY + UnitType.Terran_Command_Center.tileHeight();
+
+            if (rectanglesIntersect(newX, newY, endX, endY, ccTileX, ccTileY, ccXEnd, ccYEnd)) {
+                return true;
+            }
         }
 
         if (closeBunkerTile != null) {
@@ -1334,6 +1425,10 @@ public class BuildTiles {
 
     public HashSet<TilePosition> getMainTurrets() {
         return mainTurrets;
+    }
+
+    public TilePosition getMainBaseCCTile() {
+        return mainBaseCCTile;
     }
 
     public void onFrame() {
