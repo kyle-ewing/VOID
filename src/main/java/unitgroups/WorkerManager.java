@@ -59,6 +59,7 @@ public class WorkerManager {
         workerBuildClock();
         buildingHealthCheck();
         preemptiveBunkerRepair();
+        clearNaturalDefenseForce();
         enemyScoutResponse.onFrame();
 
         int frameCount = game.getFrameCount();
@@ -76,7 +77,7 @@ public class WorkerManager {
             if (new Time(frameCount).lessThanOrEqual(new Time(6,0))) {
                 if (worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
                     //Stop worker defense after the early game
-                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase()) {
+                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase() && !hasBunker()) {
                         if (workers.size() > 12) {
                             createDefenseForce(6);
                         }
@@ -311,8 +312,9 @@ public class WorkerManager {
 
     private void assignMineralSaturation(Workers worker) {
         for (Base base : mapInfo.getOwnedBases()) {
-            if (mineralSaturation.get(base).size() < 24) {
-                mineralSaturation.get(base).add(worker);
+            HashSet<Workers> saturation = mineralSaturation.computeIfAbsent(base, k -> new HashSet<>());
+            if (saturation.size() < 24) {
+                saturation.add(worker);
                 worker.setAssignedToBase(true);
                 break;
             }
@@ -386,6 +388,35 @@ public class WorkerManager {
         defenseForce.remove(worker);
     }
 
+    private boolean hasBunker() {
+        for (Unit building : gameState.getAllBuildings()) {
+            if (building.getType() == UnitType.Terran_Bunker && building.isCompleted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void clearNaturalDefenseForce() {
+        if (defenseForce.isEmpty()) {
+            return;
+        }
+
+        if (!hasBunker()) {
+            return;
+        }
+
+        Iterator<Workers> iterator = defenseForce.iterator();
+        while (iterator.hasNext()) {
+            Workers worker = iterator.next();
+            if (mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition())
+                    || mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())) {
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                iterator.remove();
+            }
+        }
+    }
+
     //Avoid false positives from a single worker attacking a scv (Stone check)
     private boolean actuallyThreatened() {
         int enemyWorkerCount = 0;
@@ -445,7 +476,7 @@ public class WorkerManager {
     private void enemyStrategyResponse() {
         switch (gameState.getEnemyOpener().getStrategyName()) {
             case "Cannon Rush":
-                if (!hasCompletedCannonInBase()) {
+                if (!hasCompletedCannonInBase() && !hasBunker()) {
                     if (workers.size() > 12) {
                         createDefenseForce(6);
                     }
@@ -606,11 +637,15 @@ public class WorkerManager {
         }
 
         switch (gameState.getEnemyOpener().getStrategyName()) {
+            case "Two Gate":
+                if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
+                    return 3;
+                }
             case "Dark Templar":
                 if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
                 }
-                return 0;
+                return 0;  
             case "Four Pool":
                 return 2;
             default:

@@ -15,6 +15,7 @@ import information.enemy.enemyopeners.OneBaseMuta;
 import information.enemy.enemyopeners.SCVRush;
 import information.enemy.enemyopeners.TwoBaseLurker;
 import information.enemy.enemyopeners.TwoFacTank;
+import information.enemy.enemyopeners.TwoGate;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechbuildings.protoss.ArbiterTribunal;
 import information.enemy.enemytechbuildings.protoss.CitadelOfAdun;
@@ -74,6 +75,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new TwoBaseLurker(mapInfo));
         enemyStrategies.add(new DTRush());
         enemyStrategies.add(new FFE(mapInfo));
+        enemyStrategies.add(new TwoGate(mapInfo));
     }
 
     private void addEnemyTechUnits() {

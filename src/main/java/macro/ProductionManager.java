@@ -502,8 +502,10 @@ public class ProductionManager {
         }
         else if (freeSupply < 2 && productionQueue.stream()
                 .anyMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Command_Center && pi.getSupply() >= usedSupply)
-                && productionQueue
-                .stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot && pi.getSupply() == 0)) {
+                && productionQueue.stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot && pi.getSupply() == 0)
+                && productionQueue.stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot
+                        && (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED || pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS))
+                && gameState.isEnemyInNatural()) {
             addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
         }
     }
@@ -748,6 +750,26 @@ public class ProductionManager {
         if (!mapInfo.getOrderedExpansions().isEmpty() && mapInfo.getOrderedExpansions().get(0) == mapInfo.getNaturalBase()) {
             Base natural = mapInfo.getNaturalBase();
 
+            if (gameState.isEnemyInNatural()) {
+                pi.setBuildPosition(buildTiles.getMainBaseCCTile());
+                mapInfo.getOrderedExpansions().remove(natural);
+                return;
+            }
+
+            if (gameState.getEnemyOpener() != null && !mapInfo.hasBunkerInNatural()) {
+                boolean naturalBunkerInQueue = productionQueue.stream()
+                        .anyMatch(queued -> queued.getUnitType() == UnitType.Terran_Bunker
+                                && queued.getBuildPosition() != null
+                                && buildTiles.getNaturalChokeBunker() != null
+                                && buildTiles.getNaturalChokeBunker().equals(queued.getBuildPosition()));
+
+                if (!naturalBunkerInQueue && !gameState.getEnemyOpener().removeBuildings().contains(UnitType.Terran_Bunker)) {
+                    pi.setBuildPosition(buildTiles.getMainBaseCCTile());
+                    mapInfo.getOrderedExpansions().remove(natural);
+                    return;
+                }
+            }
+
             if (!tilePositionValidator.isBuildable(natural.getLocation(), UnitType.Terran_Command_Center)) {
                 return;
             }
@@ -777,6 +799,7 @@ public class ProductionManager {
                 case "Four Rax":
                 case "DT Rush":
                 case "SCV Rush":
+                case "Two Gate":    
                     return buildTiles.getMainChokeBunker();
                 case "Four Pool":
                     return buildTiles.getCloseBunkerTile();

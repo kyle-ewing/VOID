@@ -1,15 +1,26 @@
 package map;
 
-import bwapi.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+
+import bwapi.Game;
+import bwapi.TilePosition;
+import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.Base;
 import bwem.ChokePoint;
 import bwem.Geyser;
 import bwem.Mineral;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
 import util.PositionInterpolator;
-
-import java.util.*;
 
 public class BuildTiles {
     private Game game;
@@ -34,6 +45,7 @@ public class BuildTiles {
     private TilePosition closeBunkerTile;
     private TilePosition mainChokeTurret;
     private TilePosition naturalChokeTurret;
+    private TilePosition mainBaseCCTile;
     private Base startingBase;
     private boolean naturalTilesGenerated = false;
     private boolean minOnlyTilesGenerated = false;
@@ -64,6 +76,7 @@ public class BuildTiles {
         mainChokeTurret = generateChokeTurretTile(mainChokeBunker, startingBase);
         naturalChokeTurret = generateChokeTurretTile(naturalChokeBunker, mapInfo.getNaturalBase());
         //generateChokeTurretTiles();
+        generateMainBaseCCTile();
         generateLargeTiles(frontBaseTiles);
         generateMediumTiles(backBaseTiles);
         generateTurretTiles();
@@ -779,6 +792,77 @@ public class BuildTiles {
         return null;
     }
 
+    private void generateMainBaseCCTile() {
+        int ccWidth = UnitType.Terran_Command_Center.tileWidth();
+        int ccHeight = UnitType.Terran_Command_Center.tileHeight();
+        HashSet<TilePosition> baseTiles = mapInfo.getBaseTiles();
+        TilePosition naturalLocation = mapInfo.getNaturalBase().getLocation();
+
+        TilePosition bestTile = null;
+        int bestDistance = Integer.MAX_VALUE;
+
+        for (TilePosition candidate : baseTiles) {
+            boolean valid = true;
+
+            for (int x = 0; x < ccWidth && valid; x++) {
+                for (int y = 0; y < ccHeight && valid; y++) {
+                    TilePosition footprintTile = new TilePosition(candidate.getX() + x, candidate.getY() + y);
+                    if (!baseTiles.contains(footprintTile) || intersectsExclusionZones(footprintTile) || !tilePositionValidator.isBuildable(footprintTile)) {
+                        valid = false;
+                    }
+                }
+            }
+
+            if (!valid) {
+                continue;
+            }
+
+            if (intersectsNeutralBuildings(candidate, ccWidth, ccHeight)) {
+                continue;
+            }
+
+            if (intersectsExistingBuildTiles(candidate, UnitType.Terran_Command_Center, 0)) {
+                continue;
+            }
+
+            if (tooCloseToNaturalResources(candidate, ccWidth, ccHeight)) {
+                continue;
+            }
+
+            boolean isNearCliffEdge = false;
+
+            for (int x = 0; x < ccWidth && !isNearCliffEdge; x++) {
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() + x, candidate.getY() - 1))) {
+                    isNearCliffEdge = true;
+                }
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() + x, candidate.getY() + ccHeight))) {
+                    isNearCliffEdge = true;
+                }
+            }
+
+            for (int y = 0; y < ccHeight && !isNearCliffEdge; y++) {
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() - 1, candidate.getY() + y))) {
+                    isNearCliffEdge = true;
+                }
+                if (!tilePositionValidator.isWalkable(new TilePosition(candidate.getX() + ccWidth, candidate.getY() + y))) {
+                    isNearCliffEdge = true;
+                }
+            }
+
+            if (!isNearCliffEdge) {
+                continue;
+            }
+
+            int distance = candidate.getApproxDistance(naturalLocation);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestTile = candidate;
+            }
+        }
+
+        mainBaseCCTile = bestTile;
+    }
+
     private void generateTurretTiles() {
         for (Base base : mapInfo.getMapBases()) {
             if (base == null || base.getMinerals().isEmpty()) {
@@ -979,6 +1063,17 @@ public class BuildTiles {
             return true;
         }
 
+        if (mainBaseCCTile != null) {
+            int ccTileX = mainBaseCCTile.getX();
+            int ccTileY = mainBaseCCTile.getY();
+            int ccXEnd = ccTileX + UnitType.Terran_Command_Center.tileWidth();
+            int ccYEnd = ccTileY + UnitType.Terran_Command_Center.tileHeight();
+
+            if (rectanglesIntersect(newX, newY, endX, endY, ccTileX, ccTileY, ccXEnd, ccYEnd)) {
+                return true;
+            }
+        }
+
         if (closeBunkerTile != null) {
             int bunkerXStart = closeBunkerTile.getX();
             int bunkerYStart = closeBunkerTile.getY();
@@ -1091,6 +1186,48 @@ public class BuildTiles {
         return false;
     }
 
+
+    private boolean tooCloseToNaturalResources(TilePosition candidate, int ccWidth, int ccHeight) {
+        int minGap = 3;
+        Base natural = mapInfo.getNaturalBase();
+
+        int ccX1 = candidate.getX();
+        int ccY1 = candidate.getY();
+        int ccX2 = ccX1 + ccWidth;
+        int ccY2 = ccY1 + ccHeight;
+
+        for (Mineral mineral : natural.getMinerals()) {
+            TilePosition pos = mineral.getTopLeft();
+            int resX1 = pos.getX();
+            int resY1 = pos.getY();
+            int resX2 = resX1 + 2;
+            int resY2 = resY1 + 1;
+
+            int gapX = Math.max(0, Math.max(resX1 - ccX2, ccX1 - resX2));
+            int gapY = Math.max(0, Math.max(resY1 - ccY2, ccY1 - resY2));
+
+            if (Math.max(gapX, gapY) < minGap) {
+                return true;
+            }
+        }
+
+        for (Geyser geyser : natural.getGeysers()) {
+            TilePosition pos = geyser.getTopLeft();
+            int resX1 = pos.getX();
+            int resY1 = pos.getY();
+            int resX2 = resX1 + 4;
+            int resY2 = resY1 + 2;
+
+            int gapX = Math.max(0, Math.max(resX1 - ccX2, ccX1 - resX2));
+            int gapY = Math.max(0, Math.max(resY1 - ccY2, ccY1 - resY2));
+
+            if (Math.max(gapX, gapY) < minGap) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private boolean intersectsNeutralBuildings(TilePosition tile, int width, int height) {
         for (Unit neutralBuilding : game.getNeutralUnits()) {
@@ -1334,6 +1471,10 @@ public class BuildTiles {
 
     public HashSet<TilePosition> getMainTurrets() {
         return mainTurrets;
+    }
+
+    public TilePosition getMainBaseCCTile() {
+        return mainBaseCCTile;
     }
 
     public void onFrame() {

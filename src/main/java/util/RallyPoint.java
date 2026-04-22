@@ -1,14 +1,14 @@
 package util;
 
+import java.util.List;
+
 import bwapi.Position;
 import bwem.Base;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
-import unitgroups.units.CombatUnits;
 import map.PathFinding;
-
-import java.util.List;
+import unitgroups.units.CombatUnits;
 
 public class RallyPoint {
     private PathFinding pathFinding;
@@ -32,7 +32,7 @@ public class RallyPoint {
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
-        if (enemyStrategy == null || enemyStrategy.isStrategyDefended() || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
+        if (enemyStrategy == null || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
             if (mapInfo.hasBunkerInNatural() || mapInfo.isNaturalOwned()) {
                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             }

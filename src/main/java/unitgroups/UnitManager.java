@@ -26,6 +26,9 @@ import unitgroups.units.UnitStatus;
 import unitgroups.units.Vulture;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
+import planner.PlannedItem;
+import planner.PlannedItemStatus;
+import planner.PlannedItemType;
 import util.ClosestUnit;
 import util.RallyPoint;
 import util.Time;
@@ -51,7 +54,7 @@ public class UnitManager {
     private Unit bunker = null;
     private boolean beingAllInned = false;
     private boolean defendedAllIn = false;
-
+    private Unit naturalBaseCC = null;
 
     public UnitManager(EnemyInformation enemyInformation, GameState gameState, MapInfo mapInfo, Game game, Scouting scouting) {
         this.enemyInformation = enemyInformation;
@@ -78,8 +81,8 @@ public class UnitManager {
             rallyClock++;
         }
 
-        if (new Time(rallyClock).greaterThan(new Time(1, 0))) {
-            if (!gameState.isEnemyInBase()) {
+        if (new Time(rallyClock).greaterThan(new Time(3, 0))) {
+            if (!gameState.isEnemyInBase() && !gameState.isEnemyInNatural()) {
                 defendedAllIn = true;
                 rallyClock = 0;
             }
@@ -91,6 +94,8 @@ public class UnitManager {
         if (frameCount % 8 != 0) {
             return;
         }
+
+        flyNaturalBaseCC();
 
         //TODO: this is all horrible
         for (CombatUnits combatUnit : combatUnits) {
@@ -392,6 +397,76 @@ public class UnitManager {
                     combatUnit.poke();
                     break;    
             }
+        }
+    }
+
+    private void flyNaturalBaseCC() {
+        if (mapInfo.isNaturalOwned()) {
+            return;
+        }
+
+        TilePosition ccTile = gameState.getBuildTiles().getMainBaseCCTile();
+        if (ccTile == null) {
+            return;
+        }
+
+        if (naturalBaseCC == null || !naturalBaseCC.exists()) {
+            for (Unit unit : game.self().getUnits()) {
+                if (unit.getType() == UnitType.Terran_Command_Center
+                        && unit.isCompleted()
+                        && !unit.isLifted()
+                        && unit.getTilePosition().equals(ccTile)) {
+                    naturalBaseCC = unit;
+                    break;
+                }
+            }
+        }
+
+        if (naturalBaseCC == null || !naturalBaseCC.exists()) {
+            return;
+        }
+
+        if (!naturalBaseCC.isLifted() && naturalBaseCC.getDistance(mapInfo.getNaturalBase().getCenter()) < 50) {
+            mapInfo.claimNatural();
+            naturalBaseCC = null;
+            return;
+        }
+
+        int tankCount = unitCount.getOrDefault(UnitType.Terran_Siege_Tank_Tank_Mode, 0)
+                + unitCount.getOrDefault(UnitType.Terran_Siege_Tank_Siege_Mode, 0);
+
+        if (!naturalBaseCC.isLifted()) {
+            if (!gameState.isEnemyInNatural() && tankCount > 2) {
+                naturalBaseCC.lift();
+                queueNaturalBunker();
+            }
+            return;
+        }
+
+        Position naturalCenter = mapInfo.getNaturalBase().getCenter();
+
+        if (naturalBaseCC.getDistance(naturalCenter) > 128) {
+            naturalBaseCC.move(naturalCenter);
+            return;
+        }
+
+        naturalBaseCC.land(mapInfo.getNaturalBase().getLocation());
+    }
+
+    private void queueNaturalBunker() {
+        TilePosition naturalBunkerTile = gameState.getBuildTiles().getNaturalChokeBunker();
+        if (naturalBunkerTile == null || mapInfo.hasBunkerInNatural()) {
+            return;
+        }
+
+        boolean alreadyQueued = gameState.getProductionQueue().stream()
+                .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Bunker
+                        && naturalBunkerTile.equals(pi.getBuildPosition())
+                        && pi.getPlannedItemStatus() != PlannedItemStatus.COMPLETE);
+
+        if (!alreadyQueued) {
+            gameState.getProductionQueue().add(
+                    new PlannedItem(UnitType.Terran_Bunker, 0, PlannedItemType.BUILDING, naturalBunkerTile, 3));
         }
     }
 

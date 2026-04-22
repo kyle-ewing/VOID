@@ -100,6 +100,7 @@ public class Painters {
             paintLargeBuildTiles(gameState.getBuildTiles().getLargeBuildTilesNoGap(), Color.Yellow);
             paintMediumBuildTiles(gameState.getBuildTiles().getMediumBuildTiles(), Color.Blue);
             paintEbayLandingLocation(gameState.getBuildTiles().getNaturalBunkerEbayPosition());
+            paintLargeBuildTile(gameState.getBuildTiles().getMainBaseCCTile(), Color.Purple);
         }
 
         if (config.debugBunkerTiles) {
@@ -528,6 +529,16 @@ public class Painters {
             );
             game.drawBoxMap(depotStart, depotEnd, color);
         }
+    }
+
+    private void paintLargeBuildTile(TilePosition buildTile, Color color) {
+        game.drawTextMap(buildTile.toPosition(), String.valueOf(buildTile));
+        Position start = buildTile.toPosition();
+        Position end = new Position(
+                start.getX() + UnitType.Terran_Barracks.tileWidth() * 32,
+                start.getY() + UnitType.Terran_Barracks.tileHeight() * 32);
+        game.drawBoxMap(start, end, color);
+        
     }
 
     private void paintPaintBunkerTile(TilePosition tilePosition) {

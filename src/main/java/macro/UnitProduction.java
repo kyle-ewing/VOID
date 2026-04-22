@@ -262,13 +262,6 @@ public class UnitProduction {
             items.addAll(getCompositionResponseUnits(building));
         }
 
-        if (gameState.getResourceTracking().getAvailableMinerals() > 500
-                && unitTypeCount.get(UnitType.Terran_Factory) < factoryCap
-                && !hasInQueue(UnitType.Terran_Factory)) {
-            PlannedItem extra = productionBuilding(UnitType.Terran_Factory, 3);
-            if (extra != null) items.add(extra);
-        }
-
         return items;
     }
 
