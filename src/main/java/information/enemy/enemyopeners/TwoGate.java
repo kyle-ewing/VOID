@@ -37,7 +37,7 @@ public class TwoGate extends EnemyStrategy {
             }
         }
 
-        if (time.greaterThan(new Time(4, 0))) {
+        if (time.greaterThan(new Time(3, 25))) {
             return false;
         }
 
@@ -55,10 +55,14 @@ public class TwoGate extends EnemyStrategy {
             enemyNaturalTiles = mapInfo.getBaseTilesAllBases().get(enemyNatural);
         }
 
+        int zealotCount = 0;
+
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyType() != UnitType.Protoss_Zealot) {
                 continue;
             }
+
+            zealotCount++;
 
             if (enemyUnit.getEnemyPosition() == null) {
                 continue;
@@ -69,7 +73,11 @@ public class TwoGate extends EnemyStrategy {
             boolean inEnemyMain = enemyMainTiles != null && enemyMainTiles.contains(zealotTile);
             boolean inEnemyNatural = enemyNaturalTiles != null && enemyNaturalTiles.contains(zealotTile);
 
-            if (!inEnemyMain && !inEnemyNatural) {
+            if (!inEnemyMain && !inEnemyNatural && zealotCount >= 2) {
+                return true;
+            }
+
+            if (mapInfo.getNaturalTiles().contains(zealotTile)) {
                 return true;
             }
         }
@@ -80,12 +88,14 @@ public class TwoGate extends EnemyStrategy {
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Bunker);
         getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Vulture);
+        getBuildingResponse().add(UnitType.Terran_Vulture);
+        getBuildingResponse().add(UnitType.Terran_Vulture);
         getBuildingResponse().add(UnitType.Terran_Vulture);
     }
 
     public void upgradeResponse() {
-        getTechUpgradeResponse().add(TechType.Tank_Siege_Mode);
+        getTechUpgradeResponse().add(TechType.Spider_Mines);
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {

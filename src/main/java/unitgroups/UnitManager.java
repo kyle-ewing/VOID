@@ -26,6 +26,9 @@ import unitgroups.units.UnitStatus;
 import unitgroups.units.Vulture;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
+import planner.PlannedItem;
+import planner.PlannedItemStatus;
+import planner.PlannedItemType;
 import util.ClosestUnit;
 import util.RallyPoint;
 import util.Time;
@@ -435,6 +438,7 @@ public class UnitManager {
         if (!naturalBaseCC.isLifted()) {
             if (!gameState.isEnemyInNatural() && tankCount > 2) {
                 naturalBaseCC.lift();
+                queueNaturalBunker();
             }
             return;
         }
@@ -447,6 +451,23 @@ public class UnitManager {
         }
 
         naturalBaseCC.land(mapInfo.getNaturalBase().getLocation());
+    }
+
+    private void queueNaturalBunker() {
+        TilePosition naturalBunkerTile = gameState.getBuildTiles().getNaturalChokeBunker();
+        if (naturalBunkerTile == null || mapInfo.hasBunkerInNatural()) {
+            return;
+        }
+
+        boolean alreadyQueued = gameState.getProductionQueue().stream()
+                .anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Bunker
+                        && naturalBunkerTile.equals(pi.getBuildPosition())
+                        && pi.getPlannedItemStatus() != PlannedItemStatus.COMPLETE);
+
+        if (!alreadyQueued) {
+            gameState.getProductionQueue().add(
+                    new PlannedItem(UnitType.Terran_Bunker, 0, PlannedItemType.BUILDING, naturalBunkerTile, 3));
+        }
     }
 
     private void loadBunker(CombatUnits combatUnit) {

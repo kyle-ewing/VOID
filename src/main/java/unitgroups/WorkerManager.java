@@ -77,7 +77,7 @@ public class WorkerManager {
             if (new Time(frameCount).lessThanOrEqual(new Time(6,0))) {
                 if (worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
                     //Stop worker defense after the early game
-                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase()) {
+                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase() && !hasBunker()) {
                         if (workers.size() > 12) {
                             createDefenseForce(6);
                         }
@@ -388,27 +388,29 @@ public class WorkerManager {
         defenseForce.remove(worker);
     }
 
+    private boolean hasBunker() {
+        for (Unit building : gameState.getAllBuildings()) {
+            if (building.getType() == UnitType.Terran_Bunker && building.isCompleted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void clearNaturalDefenseForce() {
         if (defenseForce.isEmpty()) {
             return;
         }
 
-        boolean hasBunker = false;
-        for (Unit building : gameState.getAllBuildings()) {
-            if (building.getType() == UnitType.Terran_Bunker && building.isCompleted()) {
-                hasBunker = true;
-                break;
-            }
-        }
-
-        if (!hasBunker) {
+        if (!hasBunker()) {
             return;
         }
 
         Iterator<Workers> iterator = defenseForce.iterator();
         while (iterator.hasNext()) {
             Workers worker = iterator.next();
-            if (mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition())) {
+            if (mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition())
+                    || mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
                 iterator.remove();
             }
@@ -474,7 +476,7 @@ public class WorkerManager {
     private void enemyStrategyResponse() {
         switch (gameState.getEnemyOpener().getStrategyName()) {
             case "Cannon Rush":
-                if (!hasCompletedCannonInBase()) {
+                if (!hasCompletedCannonInBase() && !hasBunker()) {
                     if (workers.size() > 12) {
                         createDefenseForce(6);
                     }

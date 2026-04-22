@@ -825,6 +825,10 @@ public class BuildTiles {
                 continue;
             }
 
+            if (tooCloseToNaturalResources(candidate, ccWidth, ccHeight)) {
+                continue;
+            }
+
             boolean isNearCliffEdge = false;
 
             for (int x = 0; x < ccWidth && !isNearCliffEdge; x++) {
@@ -1182,6 +1186,48 @@ public class BuildTiles {
         return false;
     }
 
+
+    private boolean tooCloseToNaturalResources(TilePosition candidate, int ccWidth, int ccHeight) {
+        int minGap = 3;
+        Base natural = mapInfo.getNaturalBase();
+
+        int ccX1 = candidate.getX();
+        int ccY1 = candidate.getY();
+        int ccX2 = ccX1 + ccWidth;
+        int ccY2 = ccY1 + ccHeight;
+
+        for (Mineral mineral : natural.getMinerals()) {
+            TilePosition pos = mineral.getTopLeft();
+            int resX1 = pos.getX();
+            int resY1 = pos.getY();
+            int resX2 = resX1 + 2;
+            int resY2 = resY1 + 1;
+
+            int gapX = Math.max(0, Math.max(resX1 - ccX2, ccX1 - resX2));
+            int gapY = Math.max(0, Math.max(resY1 - ccY2, ccY1 - resY2));
+
+            if (Math.max(gapX, gapY) < minGap) {
+                return true;
+            }
+        }
+
+        for (Geyser geyser : natural.getGeysers()) {
+            TilePosition pos = geyser.getTopLeft();
+            int resX1 = pos.getX();
+            int resY1 = pos.getY();
+            int resX2 = resX1 + 4;
+            int resY2 = resY1 + 2;
+
+            int gapX = Math.max(0, Math.max(resX1 - ccX2, ccX1 - resX2));
+            int gapY = Math.max(0, Math.max(resY1 - ccY2, ccY1 - resY2));
+
+            if (Math.max(gapX, gapY) < minGap) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private boolean intersectsNeutralBuildings(TilePosition tile, int width, int height) {
         for (Unit neutralBuilding : game.getNeutralUnits()) {
