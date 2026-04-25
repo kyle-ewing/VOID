@@ -565,11 +565,11 @@ public class WorkerManager {
             if (openerSize > 0) {
                 createRepairForce(bunker, openerSize);
             }
-            else if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 8) {
+            else if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 6) {
                 createRepairForce(bunker, 3);
             }
             else if (bunker.getDistance(baseCenter) > 650
-                    && new Time(game.getFrameCount()).greaterThan(new Time(5,20))
+                    && new Time(game.getFrameCount()).greaterThan(new Time(5, 10))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 2);
             }

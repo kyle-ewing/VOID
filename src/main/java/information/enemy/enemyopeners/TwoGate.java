@@ -20,9 +20,14 @@ public class TwoGate extends EnemyStrategy {
         this.mapInfo = mapInfo;
 
         buildingResponse();
+        upgradeResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        if (enemyUnits.stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Cybernetics_Core)) {
+            return false;
+        }
+        
         if (time.lessThanOrEqual(new Time(3, 0))) {
             int completedGateways = 0;
 
@@ -73,7 +78,11 @@ public class TwoGate extends EnemyStrategy {
             boolean inEnemyMain = enemyMainTiles != null && enemyMainTiles.contains(zealotTile);
             boolean inEnemyNatural = enemyNaturalTiles != null && enemyNaturalTiles.contains(zealotTile);
 
-            if (!inEnemyMain && !inEnemyNatural && zealotCount >= 2) {
+            if (!inEnemyMain 
+                    && !inEnemyNatural 
+                    && zealotCount >= 2
+                    && mapInfo.getEnemyNatural() != null
+                    && enemyUnit.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getCenter()) > 400) {
                 return true;
             }
 

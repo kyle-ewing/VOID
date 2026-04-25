@@ -185,7 +185,7 @@ public class EnemyInformation {
 
     public boolean outRangingUnitNearby(EnemyUnits enemyUnit, UnitType friendlyUnitType, int range) {
         for (EnemyUnits outRangingUnit : enemyUnits) {
-            if (outRangingUnit.getEnemyID() == enemyUnit.getEnemyID()) {
+            if (outRangingUnit.getEnemyID() == enemyUnit.getEnemyID() || outRangingUnit.getEnemyPosition() == null) {
                 continue;
             }
 
@@ -194,7 +194,7 @@ public class EnemyInformation {
             }
 
             if (outRangingUnit.getEnemyType().groundWeapon().maxRange() + 32 >= friendlyUnitType.groundWeapon().maxRange()) {
-                if (outRangingUnit.getEnemyUnit().getDistance(enemyUnit.getEnemyUnit().getPosition()) <= range) {
+                if (outRangingUnit.getEnemyPosition().getDistance(enemyUnit.getEnemyPosition()) <= range) {
                     return true;
                 }
             }

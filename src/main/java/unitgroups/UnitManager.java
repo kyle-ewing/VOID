@@ -18,6 +18,9 @@ import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import map.PathFinding;
+import planner.PlannedItem;
+import planner.PlannedItemStatus;
+import planner.PlannedItemType;
 import unitgroups.squads.SquadManager;
 import unitgroups.units.CombatUnitCreator;
 import unitgroups.units.CombatUnits;
@@ -26,9 +29,6 @@ import unitgroups.units.UnitStatus;
 import unitgroups.units.Vulture;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
-import planner.PlannedItem;
-import planner.PlannedItemStatus;
-import planner.PlannedItemType;
 import util.ClosestUnit;
 import util.RallyPoint;
 import util.Time;
@@ -436,7 +436,7 @@ public class UnitManager {
                 + unitCount.getOrDefault(UnitType.Terran_Siege_Tank_Siege_Mode, 0);
 
         if (!naturalBaseCC.isLifted()) {
-            if (!gameState.isEnemyInNatural() && tankCount > 2) {
+            if (!gameState.isEnemyInNatural() && tankCount >= 2) {
                 naturalBaseCC.lift();
                 queueNaturalBunker();
             }
@@ -979,7 +979,7 @@ public class UnitManager {
         if (mapInfo.hasBunkerInNatural() && mapInfo.getNaturalBase() != null && bunker != null) {
             return bunker.getDistance(mapInfo.getNaturalBase().getCenter()) + 32;
         }
-        return 10000;
+        return -1;
     }
 
     public void onUnitComplete(Unit unit) {
