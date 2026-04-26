@@ -32,8 +32,15 @@ public class TwoGate extends EnemyStrategy {
             int completedGateways = 0;
 
             for (EnemyUnits enemyUnit : enemyUnits) {
-                if (enemyUnit.getEnemyType() == UnitType.Protoss_Gateway && enemyUnit.getEnemyUnit().getHitPoints() > 250) {
-                    completedGateways++;
+                if (enemyUnit.getEnemyType() == UnitType.Protoss_Gateway) {
+                    if (time.lessThanOrEqual(new Time(1,55))) {
+                        completedGateways++;
+                        continue;
+                    }
+
+                    if (enemyUnit.getEnemyUnit().getHitPoints() > 250) {
+                        completedGateways++;
+                    }
                 }
             }
 

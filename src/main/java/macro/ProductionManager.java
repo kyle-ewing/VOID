@@ -732,7 +732,7 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
         }
         else {
-            if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+            if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || (gameState.getBunkerPosition() != null && mapInfo.getNaturalTiles().contains(gameState.getBunkerPosition()))) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
                 reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                 pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
             }
@@ -797,7 +797,6 @@ public class ProductionManager {
             switch (gameState.getEnemyOpener().getStrategyName()) {
                 case "Cannon Rush":
                 case "Four Rax":
-                case "DT Rush":
                 case "SCV Rush":
                 case "Two Gate":    
                     return buildTiles.getMainChokeBunker();
@@ -864,7 +863,7 @@ public class ProductionManager {
                 }
                 else {
                     if (building == UnitType.Terran_Missile_Turret) {
-                        if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && buildTiles.getNaturalChokeTurret() != null
+                        if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || (gameState.getBunkerPosition() != null && mapInfo.getNaturalTiles().contains(gameState.getBunkerPosition()))) && buildTiles.getNaturalChokeTurret() != null
                                 && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
                             reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
                             addToQueue(building, PlannedItemType.BUILDING, buildTiles.getNaturalChokeTurret(),1);

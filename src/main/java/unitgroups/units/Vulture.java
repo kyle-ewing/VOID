@@ -256,6 +256,12 @@ public class Vulture extends CombatUnits {
             return;
         }
 
+        Position kitePos = getKitePosition();
+        if (kitePos != null) {
+            unit.move(kitePos);
+            return;
+        }
+
         Position currVulturePos = unit.getPosition();
         Position currEnemyPos = enemyUnit.getEnemyPosition();
         double currDist = currVulturePos.getDistance(currEnemyPos);
