@@ -857,7 +857,7 @@ public class ProductionManager {
         for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             boolean alreadyInProgress = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == building && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED);
 
-            if (unitTypeCount.get(building) == 0 && !alreadyInProgress && building.isBuilding()) {
+            if ((unitTypeCount.get(building) == 0 || building == UnitType.Terran_Command_Center) && !alreadyInProgress && building.isBuilding()) {
                 if (building.isAddon()) {
                     addToQueue(building, PlannedItemType.ADDON, 1);
                 }

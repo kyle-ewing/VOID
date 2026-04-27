@@ -10,6 +10,7 @@ import information.enemy.enemyopeners.FFE;
 import information.enemy.enemyopeners.FourPool;
 import information.enemy.enemyopeners.FourRax;
 import information.enemy.enemyopeners.GasSteal;
+import information.enemy.enemyopeners.NexusFirst;
 import information.enemy.enemyopeners.OneBaseLurker;
 import information.enemy.enemyopeners.OneBaseMuta;
 import information.enemy.enemyopeners.SCVRush;
@@ -76,6 +77,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new DTRush());
         enemyStrategies.add(new FFE(mapInfo));
         enemyStrategies.add(new TwoGate(mapInfo));
+        enemyStrategies.add(new NexusFirst(mapInfo));
     }
 
     private void addEnemyTechUnits() {
