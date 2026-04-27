@@ -77,7 +77,7 @@ public class WorkerManager {
             if (new Time(frameCount).lessThanOrEqual(new Time(6,0))) {
                 if (worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
                     //Stop worker defense after the early game
-                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase() && !hasBunker()) {
+                    if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase() && !hasBunkerInMain()) {
                         if (workers.size() > 12) {
                             createDefenseForce(6);
                         }
@@ -397,6 +397,16 @@ public class WorkerManager {
         return false;
     }
 
+    private boolean hasBunkerInMain() {
+        for (Unit building : gameState.getAllBuildings()) {
+            if (building.getType() == UnitType.Terran_Bunker && building.isCompleted()
+                    && mapInfo.getBaseTiles().contains(building.getTilePosition())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void clearNaturalDefenseForce() {
         if (defenseForce.isEmpty()) {
             return;
@@ -476,7 +486,7 @@ public class WorkerManager {
     private void enemyStrategyResponse() {
         switch (gameState.getEnemyOpener().getStrategyName()) {
             case "Cannon Rush":
-                if (!hasCompletedCannonInBase() && !hasBunker()) {
+                if (!hasCompletedCannonInBase() && !hasBunkerInMain() && enemyInBase()) {
                     if (workers.size() > 12) {
                         createDefenseForce(6);
                     }
@@ -566,6 +576,11 @@ public class WorkerManager {
                 createRepairForce(bunker, openerSize);
             }
             else if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 6) {
+                createRepairForce(bunker, 3);
+            }
+            else if (bunker.getDistance(baseCenter) > 750
+                    && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
                 createRepairForce(bunker, 3);
             }
             else if (bunker.getDistance(baseCenter) > 650

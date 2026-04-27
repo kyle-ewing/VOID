@@ -39,7 +39,7 @@ public class Vulture extends CombatUnits {
     private int wallStuckRetreatTimer = 0;
 
     private final int FULL_MINE_CYCLE = new Time(0,30).getFrames();
-    private final int ALLOWED_MINE_CYCLE = new Time(0,17).getFrames();
+    private final int ALLOWED_MINE_CYCLE = new Time(0,20).getFrames();
     private int mineCycle;
 
     public Vulture(Game game, EnemyInformation enemyInformation, Unit unit) {
@@ -166,7 +166,7 @@ public class Vulture extends CombatUnits {
 
         boolean outRangingNearby = enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() - 32);
 
-        if ((isOutRanged() && unit.getDistance(enemyUnit.getEnemyPosition()) > 450)
+        if (((isOutRanged() || outRangingNearby) && unit.getDistance(enemyUnit.getEnemyPosition()) > 450)
                 || (!inRangeOfThreat && (!isOutRanged() || hasTankSupport) && !outRangingNearby)) {
             setUnitStatus(UnitStatus.POKE);
             return;

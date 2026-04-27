@@ -40,11 +40,11 @@ public class OneFacFE extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 40, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 42, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 44, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(TechType.Spider_Mines, 48, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 51, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 58, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 56, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 56, PlannedItemType.ADDON, 2));
-        buildOrder.add(new PlannedItem(TechType.Spider_Mines, 54, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 56, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 62, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 70, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 4));
