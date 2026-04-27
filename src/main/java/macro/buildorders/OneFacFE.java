@@ -93,4 +93,8 @@ public class OneFacFE extends MechBuildOrder {
         moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 6);
         return moveOutCondition;
     }
+
+    public int getScoutSupply() {
+        return 11;
+    }
 }
