@@ -460,5 +460,5 @@ public class CombatUnits {
         this.regroupPosition = regroupPosition;
     }
 
-    
+
 }
