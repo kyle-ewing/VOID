@@ -544,6 +544,10 @@ public class ProductionManager {
         TilePosition turretPosition = null;
         Base newBase = null;
 
+        if (unit.getTilePosition().equals(buildTiles.getMainBaseCCTile())) {
+            return;
+        }
+
         for (Base base : mapInfo.getMapBases()) {
             if (base.getLocation().getDistance(unit.getTilePosition()) < 10) {
                 newBase = base;
@@ -1374,7 +1378,9 @@ public class ProductionManager {
             addCCTurret(unit);
             addToQueue(UnitType.Terran_Comsat_Station, PlannedItemType.ADDON, 2);
 
-            if (mapInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10 && !mapInfo.hasBunkerInNatural()
+            if (mapInfo.getNaturalBase().getLocation().getDistance(unit.getTilePosition()) < 10
+                    && !unit.getTilePosition().equals(buildTiles.getMainBaseCCTile())
+                    && !mapInfo.hasBunkerInNatural()
                     && (gameState.getStartingOpener().buildType() == BuildType.BIO || gameState.getEnemyOpener() != null)) {
                 addToQueue(UnitType.Terran_Bunker, PlannedItemType.BUILDING, buildTiles.getNaturalChokeBunker(), 3);
             }

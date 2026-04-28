@@ -403,7 +403,7 @@ public class UnitManager {
 
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     combatUnit.poke();
-                    break;    
+                    break;
             }
         }
     }

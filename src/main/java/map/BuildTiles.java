@@ -31,6 +31,7 @@ public class BuildTiles {
     private HashSet<TilePosition> largeBuildTiles = new HashSet<>();
     private HashSet<TilePosition> largeBuildTilesNoGap = new HashSet<>();
     private HashSet<TilePosition> mineralExlusionTiles = new HashSet<>();
+    private HashSet<TilePosition> mineralAboveGapTiles = new HashSet<>();
     private HashSet<TilePosition> geyserExlusionTiles = new HashSet<>();
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
     private HashSet<TilePosition> chokeExclusionTiles = new HashSet<>();
@@ -63,6 +64,7 @@ public class BuildTiles {
 
     private void generateBuildTiles() {
         mineralExclusionZone(startingBase);
+        mineralAboveGap(startingBase);
         geyserExclusionZone(startingBase);
         ccExclusionZone(startingBase);
         mineralExclusionZone(mapInfo.getNaturalBase());
@@ -545,26 +547,62 @@ public class BuildTiles {
         TilePosition chokePos = mapInfo.getMainChoke().getCenter().toTilePosition();
         TilePosition basePos = mapInfo.getStartingBase().getLocation();
 
-        int firstMidX = (chokePos.getX() + basePos.getX()) / 2;
-        int firstMidY = (chokePos.getY() + basePos.getY()) / 2;
-        int finalMidX = (firstMidX + basePos.getX()) / 2;
-        int finalMidY = (firstMidY + basePos.getY()) / 2;
-        TilePosition finalMidPoint = new TilePosition(finalMidX, finalMidY);
+        TilePosition finalMidPoint = PositionInterpolator.interpolate(basePos, chokePos, 0.20);
+        boolean geyserInPath = false;
 
-        int searchRadius = 4;
+        for (Geyser geyser : startingBase.getGeysers()) {
+            TilePosition geyserTL = geyser.getTopLeft();
+            int geyserCX = geyserTL.getX() + 2;
+            int geyserCY = geyserTL.getY() + 1;
+
+            int ccToChokeX = chokePos.getX() - basePos.getX();
+            int ccToChokeY = chokePos.getY() - basePos.getY();
+            int ccToGeyserX = geyserCX - basePos.getX();
+            int ccToGeyserY = geyserCY - basePos.getY();
+
+            double dot = ccToGeyserX * ccToChokeX + ccToGeyserY * ccToChokeY;
+            double chokeDistSq = ccToChokeX * ccToChokeX + ccToChokeY * ccToChokeY;
+            double geyserDistSq = ccToGeyserX * ccToGeyserX + ccToGeyserY * ccToGeyserY;
+
+            if (dot > 0 && geyserDistSq < chokeDistSq) {
+                geyserInPath = true;
+                double geyserDist = Math.sqrt(geyserDistSq);
+                if (geyserDist > 0) {
+                    double newDist = Math.max(geyserDist - 3, 0);
+                    int newX = (int)(basePos.getX() + ccToGeyserX / geyserDist * newDist);
+                    int newY = (int)(basePos.getY() + ccToGeyserY / geyserDist * newDist);
+                    finalMidPoint = new TilePosition(newX, newY);
+                }
+            }
+        }
+
+        int searchRadius = 3;
         int closestDistance = Integer.MAX_VALUE;
         int bunkerWidth = UnitType.Terran_Bunker.tileWidth();
         int bunkerHeight = UnitType.Terran_Bunker.tileHeight();
 
-        for (int x = finalMidX - searchRadius; x <= finalMidX + searchRadius; x++) {
-            for (int y = finalMidY - searchRadius; y <= finalMidY + searchRadius; y++) {
+        int midX = finalMidPoint.getX();
+        int midY = finalMidPoint.getY();
+
+        for (int x = midX - searchRadius; x <= midX + searchRadius; x++) {
+            for (int y = midY - searchRadius; y <= midY + searchRadius; y++) {
                 TilePosition testPos = new TilePosition(x, y);
                 boolean validLocation = true;
 
                 for (int bx = x; bx < x + bunkerWidth; bx++) {
                     for (int by = y; by < y + bunkerHeight; by++) {
                         TilePosition footprintTile = new TilePosition(bx, by);
-                        if (intersectsExclusionZones(footprintTile)) {
+                        boolean excluded;
+                        if (geyserInPath) {
+                            excluded = mineralExlusionTiles.contains(footprintTile)
+                                    || ccExclusionTiles.contains(footprintTile)
+                                    || chokeExclusionTiles.contains(footprintTile)
+                                    || mineralAboveGapTiles.contains(footprintTile);
+                        }
+                        else {
+                            excluded = intersectsExclusionZones(footprintTile);
+                        }
+                        if (excluded) {
                             validLocation = false;
                             break;
                         }
@@ -1252,6 +1290,16 @@ public class BuildTiles {
         return false;
     }
 
+    private void mineralAboveGap(Base base) {
+        for (Mineral mineral : base.getMinerals()) {
+            TilePosition mineralTile = mineral.getTopLeft();
+            int mineralWidth = mineral.getUnit().getType().tileWidth();
+            for (int x = mineralTile.getX(); x < mineralTile.getX() + mineralWidth; x++) {
+                mineralAboveGapTiles.add(new TilePosition(x, mineralTile.getY() - 1));
+            }
+        }
+    }
+
     private void mineralExclusionZone(Base base) {
         TilePosition lowestXTile = null;
         TilePosition highestXTile = null;
@@ -1349,7 +1397,8 @@ public class BuildTiles {
 
     private boolean intersectsExclusionZones(TilePosition tilePosition) {
         return geyserExlusionTiles.contains(tilePosition) || mineralExlusionTiles.contains(tilePosition)
-                || ccExclusionTiles.contains(tilePosition) || chokeExclusionTiles.contains(tilePosition);
+                || ccExclusionTiles.contains(tilePosition) || chokeExclusionTiles.contains(tilePosition)
+                || mineralAboveGapTiles.contains(tilePosition);
     }
 
     public boolean isAddonPositionBlocked(TilePosition buildingTile) {
