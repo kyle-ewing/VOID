@@ -422,6 +422,8 @@ public class WorkerManager {
             if (mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition())
                     || mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
+                worker.setAssignedToBase(false);
+                worker.setAttackClock(0);
                 iterator.remove();
             }
         }
@@ -581,7 +583,12 @@ public class WorkerManager {
             else if (bunker.getDistance(baseCenter) > 750
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
-                createRepairForce(bunker, 3);
+                if (new Time(game.getFrameCount()).greaterThan(new Time(5, 15))) {
+                    createRepairForce(bunker, 4);
+                }
+                else {
+                    createRepairForce(bunker, 3);
+                }
             }
             else if (bunker.getDistance(baseCenter) > 650
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 10))

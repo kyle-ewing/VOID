@@ -754,7 +754,7 @@ public class ProductionManager {
         if (!mapInfo.getOrderedExpansions().isEmpty() && mapInfo.getOrderedExpansions().get(0) == mapInfo.getNaturalBase()) {
             Base natural = mapInfo.getNaturalBase();
 
-            if (gameState.isEnemyInNatural()) {
+            if (gameState.isEnemyInNatural() && !mapInfo.hasBunkerInNatural()) {
                 pi.setBuildPosition(buildTiles.getMainBaseCCTile());
                 mapInfo.getOrderedExpansions().remove(natural);
                 return;

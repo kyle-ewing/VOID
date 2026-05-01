@@ -568,16 +568,18 @@ public class MapInfo {
             return;
         }
 
-        if (firstArea.getBases().isEmpty() || !firstArea.getBases().get(0).equals(naturalBase)) {
+        if (!firstArea.getBases().isEmpty() && !firstArea.getBases().get(0).equals(naturalBase)) {
             minOnlyBase = firstArea.getBases().get(0);
             HashSet<TilePosition> firstAreaTiles = getTilesForBase(firstArea.getBases().get(0));
             minBaseTiles.addAll(firstAreaTiles);
+            baseTiles.addAll(firstAreaTiles);
         }
 
-        if (secondArea.getBases().isEmpty() || !secondArea.getBases().get(0).equals(naturalBase)) {
+        if (!secondArea.getBases().isEmpty() && !secondArea.getBases().get(0).equals(naturalBase)) {
             minOnlyBase = secondArea.getBases().get(0);
             HashSet<TilePosition> secondAreaTiles = getTilesForBase(secondArea.getBases().get(0));
             minBaseTiles.addAll(secondAreaTiles);
+            baseTiles.addAll(secondAreaTiles);
         }
     }
 
@@ -885,12 +887,10 @@ public class MapInfo {
         }
 
         if (naturalOwned && baseTaken != null) {
-            addAreaTiles(baseTaken);
-
-            // if (!naturalAreaAdded) {
-            //     addAreaTiles(naturalBase);
-            //     naturalAreaAdded = true;
-            // }
+            HashSet<TilePosition> expansionTiles = baseTilesAllBases.get(baseTaken);
+            if (expansionTiles != null) {
+                baseTiles.addAll(expansionTiles);
+            }
         }
     }
 
@@ -917,7 +917,10 @@ public class MapInfo {
             }
 
             if (destroyedBase != null) {
-                removeAreaTiles(destroyedBase);
+                HashSet<TilePosition> expansionTiles = baseTilesAllBases.get(destroyedBase);
+                if (expansionTiles != null) {
+                    baseTiles.removeAll(expansionTiles);
+                }
             }
 
             boolean hasOtherExpansion = false;
