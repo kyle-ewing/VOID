@@ -908,7 +908,12 @@ public class UnitManager {
     private boolean hasTankSupport(CombatUnits combatUnit) {
         if (unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
             ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Tank_Mode);
-            if (combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 150) {
+            if (combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 250) {
+                return true;
+            }
+
+            ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Siege_Mode);
+            if (combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 250) {
                 return true;
             }
 
@@ -916,7 +921,7 @@ public class UnitManager {
                 if ((unit.getUnitType() == UnitType.Terran_Siege_Tank_Tank_Mode || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode)
                         && unit.getEnemyUnit() != null && !unit.isInBase()) {
                     int distanceToEnemy = unit.getUnit().getDistance(unit.getEnemyUnit().getEnemyPosition());
-                    if (distanceToEnemy < 200) {
+                    if (distanceToEnemy < 300) {
                         return true;
                     }
                 }
