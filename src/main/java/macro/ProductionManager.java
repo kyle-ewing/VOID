@@ -285,8 +285,7 @@ public class ProductionManager {
                             }
                         }
 
-                        //TODO: ignore if building CC (or other long distance builds)
-                        if (worker.getBuildFrameCount() > 420 && mapInfo.getStartingBase().getCenter().getDistance(pi.getBuildPosition().toPosition()) < 1000
+                        if (worker.getBuildFrameCount() > 420 && (mapInfo.getBaseTiles().contains(pi.getBuildPosition()) || mapInfo.getNaturalTiles().contains(pi.getBuildPosition()))
                                 && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                             worker.buildReset(pi, gameState.getResourceTracking());
                         }

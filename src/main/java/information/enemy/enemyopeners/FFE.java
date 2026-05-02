@@ -25,7 +25,7 @@ public class FFE extends EnemyStrategy{
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        if (time.greaterThan(new Time(3,30))) {
+        if (time.greaterThan(new Time(3,40))) {
             return false;
         }
 
