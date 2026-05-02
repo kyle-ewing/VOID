@@ -1,6 +1,7 @@
 package unitgroups.units;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -9,6 +10,8 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.TechType;
 import bwapi.Unit;
+import bwapi.UnitCommand;
+import bwapi.UnitCommandType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwapi.WeaponType;
@@ -29,7 +32,10 @@ public class Vulture extends CombatUnits {
     private int pulseCheck = 0;
     private int mineTimer = 0;
     private boolean layingMines = false;
+    private boolean miningExpansion = false;
+    private boolean approachingStagingBase = false;
     private boolean recentlyMined = false;
+    private Base targetedEnemyExpansion = null;
     private boolean lobotomyOverride = false;
     private Position prevVulturePos = null;
     private Position prevEnemyPos = null;
@@ -54,6 +60,15 @@ public class Vulture extends CombatUnits {
 
     @Override
     public void onFrame() {
+        if (mineTimer >= 144) {
+            mineTimer = 0;
+            recentlyMined = false;
+        }
+
+        if (recentlyMined) {
+            mineTimer += 8;
+        }
+
         if (unitStatus != UnitStatus.POKE && unitStatus != UnitStatus.ATTACK) {
             wallStuckTimer = 0;
             wallStuckCheckPos = null;
@@ -234,27 +249,47 @@ public class Vulture extends CombatUnits {
             mineCount = unit.getSpiderMineCount();
             recentlyMined = true;
             layingMines = false;
+            miningExpansion = false;
+            approachingStagingBase = false;
+            targetedEnemyExpansion = null;
         }
 
         if (pulseCheck > 64) {
             pulseCheck = 0;
             layingMines = false;
+            miningExpansion = false;
+            approachingStagingBase = false;
+            targetedEnemyExpansion = null;
         }
 
         if (layingMines) {
             if (unit.isStuck()) {
                 layingMines = false;
+                miningExpansion = false;
+                approachingStagingBase = false;
+                targetedEnemyExpansion = null;
                 recentlyMined = true;
                 pulseCheck = 0;
                 return;
             }
 
-            pulseCheck += 8;
+            if (!miningExpansion) {
+                pulseCheck += 8;
+            }
+            else if (targetedEnemyExpansion != null && unit.getDistance(targetedEnemyExpansion.getCenter()) < 96) {
+                pulseCheck += 8;
+            }
+
             return;
         }
 
         if (wallStuckRetreatTimer > 0 && rallyPoint != null) {
             unit.move(rallyPoint.toPosition());
+            return;
+        }
+
+        if (isOutRanged() && !hasTankSupport && !lobotomyOverride) {
+            unitStatus = UnitStatus.RETREAT;
             return;
         }
 
@@ -296,11 +331,6 @@ public class Vulture extends CombatUnits {
             prevVulturePos = currVulturePos;
             prevEnemyPos = currEnemyPos;
             velocityUpdateFrame = game.getFrameCount();
-        }
-
-        if (isOutRanged() && !hasTankSupport && !lobotomyOverride && currDist < 256) {
-            unitStatus = UnitStatus.RETREAT;
-            return;
         }
 
         boolean outRangingNearby = enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), myWeaponRange + 32);
@@ -657,7 +687,7 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if (enemyUnit != null && unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
+        if (enemyUnit != null && unit.getDistance(enemyUnit.getEnemyPosition()) < 200 && enemyUnit.getEnemyType().isBuilding()) {
             return;
         }
 
@@ -674,13 +704,7 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if (mineTimer >= 144) {
-            mineTimer = 0;
-            recentlyMined = false;
-        }
-
         if (recentlyMined) {
-            mineTimer += 8;
             return;
         }
 
@@ -734,6 +758,94 @@ public class Vulture extends CombatUnits {
         int idOffset = (10 + (unit.getID() % 21)) * 24;
         if ((currentFrame - mineCycle + idOffset) % FULL_MINE_CYCLE < ALLOWED_MINE_CYCLE) {
             return true;
+        }
+        return false;
+    }
+
+    public void mineEnemyExpansions(HashMap<Base, CombatUnits> claimedBases) {
+        if (enemyUnit != null && enemyUnit.getEnemyPosition() != null) {
+            if (unit.getDistance(enemyUnit.getEnemyPosition()) < 200) {
+                return;
+            }
+        }
+
+        if (miningExpansion && targetedEnemyExpansion != null && enemyDepotNearBase(targetedEnemyExpansion)) {
+            miningExpansion = false;
+            layingMines = false;
+            approachingStagingBase = false;
+            targetedEnemyExpansion = null;
+        }
+
+        if (approachingStagingBase && targetedEnemyExpansion != null) {
+            ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
+            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 256) {
+                approachingStagingBase = false;
+                unit.useTech(TechType.Spider_Mines, targetedEnemyExpansion.getCenter());
+            }
+            return;
+        }
+
+        if (miningExpansion) {
+            UnitCommand lastCmd = unit.getLastCommand();
+            if (lastCmd.getType() == UnitCommandType.Use_Tech_Position) {
+                return;
+            }
+            miningExpansion = false;
+            layingMines = false;
+            targetedEnemyExpansion = null;
+        }
+
+        ArrayList<Base> enemyExpansions = mapInfo.scoredBestEnemyExpansion(enemyUnits);
+
+        for (Base expansion : enemyExpansions) {
+            if (claimedBases.containsKey(expansion) && claimedBases.get(expansion) != this) {
+                continue;
+            }
+
+            boolean alreadyMined = false;
+            for (Unit friendlyMine : game.self().getUnits()) {
+                if (friendlyMine.getType() == UnitType.Terran_Vulture_Spider_Mine) {
+                    if (friendlyMine.getDistance(expansion.getCenter()) < 64) {
+                        alreadyMined = true;
+                        break;
+                    }
+                }
+            }
+
+            if (enemyDepotNearBase(expansion)) {
+                continue;
+            }
+
+            if (!alreadyMined) {
+                ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
+                targetedEnemyExpansion = expansion;
+                claimedBases.put(expansion, this);
+                layingMines = true;
+                miningExpansion = true;
+
+                if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) > 256) {
+                    unit.move(ordered.get(0).getCenter());
+                    approachingStagingBase = true;
+                }
+                else {
+                    unit.useTech(TechType.Spider_Mines, expansion.getCenter());
+                }
+                break;
+            }
+        }
+    }
+
+    private boolean enemyDepotNearBase(Base base) {
+        for (EnemyUnits eu : enemyUnits) {
+            if (!eu.getEnemyType().isResourceDepot()) {
+                continue;
+            }
+            if (eu.getEnemyPosition() == null) {
+                continue;
+            }
+            if (eu.getEnemyPosition().getDistance(base.getCenter()) < 256) {
+                return true;
+            }
         }
         return false;
     }

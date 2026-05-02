@@ -578,16 +578,17 @@ public class WorkerManager {
                 createRepairForce(bunker, openerSize);
             }
             else if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 6) {
-                createRepairForce(bunker, 3);
+                createRepairForce(bunker, 4);
             }
             else if (bunker.getDistance(baseCenter) > 750
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
-                if (new Time(game.getFrameCount()).greaterThan(new Time(5, 15))) {
-                    createRepairForce(bunker, 4);
+                if (enemyInformation.getNonWorkerEnemySupply() >= 8) {
+                    System.out.println("Preemptive bunker repair: distance " + bunker.getDistance(baseCenter) + " enemy supply in range: " + enemyInformation.getEnemySupplyInRange(bunker));
+                    createRepairForce(bunker, 5);
                 }
                 else {
-                    createRepairForce(bunker, 3);
+                    createRepairForce(bunker, 2);
                 }
             }
             else if (bunker.getDistance(baseCenter) > 650
@@ -596,7 +597,7 @@ public class WorkerManager {
                 createRepairForce(bunker, 2);
             }
             else if (bunker.getDistance(baseCenter) > 400
-                    && new Time(game.getFrameCount()).greaterThan(new Time(4,30))
+                    && new Time(game.getFrameCount()).greaterThan(new Time(4,20))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 1);
             }

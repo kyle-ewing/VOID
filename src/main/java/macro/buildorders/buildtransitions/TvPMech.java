@@ -35,7 +35,7 @@ public class TvPMech extends BuildTransition {
     public ArrayList<PlannedItem> getOptionalBuildings() {
         ArrayList<PlannedItem> optionalItems = new ArrayList<>();
         optionalItems.add(new PlannedItem(UnitType.Terran_Starport, 80, PlannedItemType.BUILDING, 5, true));
-        optionalItems.add(new PlannedItem(UnitType.Terran_Science_Facility, PlannedItemType.BUILDING, 6, true));
+        optionalItems.add(new PlannedItem(UnitType.Terran_Science_Facility, PlannedItemType.BUILDING, 6, false));
         return optionalItems;
     }
 

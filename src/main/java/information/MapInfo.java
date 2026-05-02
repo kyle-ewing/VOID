@@ -739,6 +739,78 @@ public class MapInfo {
         return bestBase;
     }
 
+    public ArrayList<Base> scoredBestEnemyExpansion(HashSet<EnemyUnits> knownEnemyUnits) {
+        ArrayList<Base> candidates = new ArrayList<>();
+
+        if (enemyMain == null && enemyNatural == null) {
+            return candidates;
+        }
+
+        boolean enemyNaturalHasDepot = false;
+        if (enemyNatural != null) {
+            for (EnemyUnits enemyUnit : knownEnemyUnits) {
+                if (enemyUnit.getEnemyType().isResourceDepot()
+                        && enemyUnit.getEnemyPosition().getDistance(enemyNatural.getLocation().toPosition()) < 200) {
+                    enemyNaturalHasDepot = true;
+                    break;
+                }
+            }
+        }
+
+        Base enemyFrontline;
+        if (enemyNaturalHasDepot) {
+            enemyFrontline = enemyNatural;
+        }
+        else if (enemyMain != null) {
+            enemyFrontline = enemyMain;
+        }
+        else {
+            enemyFrontline = enemyNatural;
+        }
+
+        for (Base base : mapBases) {
+            if (base == startingBase || base == naturalBase || base == enemyMain || (base == enemyNatural && enemyNaturalHasDepot)) {
+                continue;
+            }
+
+            if (ownedBases.contains(base)) {
+                continue;
+            }
+
+            List<Position> path = allPathsMap.get(base);
+            if (path == null || path.isEmpty()) {
+                continue;
+            }
+
+            boolean enemyOwned = false;
+            for (EnemyUnits enemyUnit : knownEnemyUnits) {
+                if (enemyUnit.getEnemyType().isResourceDepot()
+                        && enemyUnit.getEnemyPosition().getDistance(base.getLocation().toPosition()) < 100) {
+                    enemyOwned = true;
+                    break;
+                }
+            }
+
+            if (enemyOwned) {
+                continue;
+            }
+
+            candidates.add(base);
+        }
+
+        Base playerFrontline = ownedBases.contains(naturalBase) ? naturalBase : startingBase;
+        final Base finalEnemyFrontline = enemyFrontline;
+        final Base finalPlayerFrontline = playerFrontline;
+
+        candidates.sort((a, b) -> {
+            double scoreA = finalPlayerFrontline.getCenter().getDistance(a.getCenter()) - finalEnemyFrontline.getCenter().getDistance(a.getCenter());
+            double scoreB = finalPlayerFrontline.getCenter().getDistance(b.getCenter()) - finalEnemyFrontline.getCenter().getDistance(b.getCenter());
+            return Double.compare(scoreB, scoreA);
+        });
+
+        return new ArrayList<>(candidates.subList(0, Math.min(3, candidates.size())));
+    }
+
     public HashSet<Base> getStartingBases() {
         return startingBases;
     }

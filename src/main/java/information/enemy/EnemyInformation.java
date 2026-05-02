@@ -315,6 +315,17 @@ public class EnemyInformation {
         return supply;
     }
 
+    public int getNonWorkerEnemySupply() {
+        int supply = 0;
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType().isWorker() || enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+            supply += enemyUnit.getEnemyType().supplyRequired() / 2;
+        }
+        return supply;
+    }
+
     public void onFrame() {
         Time currentTime = new Time(game.getFrameCount());
         enemyInBase();
