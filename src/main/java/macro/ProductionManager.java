@@ -1357,7 +1357,6 @@ public class ProductionManager {
         unitProduction.onFrame();
         production();
         addSupplyDepot();
-
         addExpansion();
 
         if (gameState.getEnemyOpener() != null && !openerResponse) {

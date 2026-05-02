@@ -45,6 +45,7 @@ public class UnitManager {
     private RallyPoint rallyPoint;
     private PathFinding pathFinding;
     private HashSet<CombatUnits> combatUnits;
+    private HashMap<Base, CombatUnits> claimedVultureBases = new HashMap<>();
     private HashMap<UnitType, Integer> unitCount;
     private HashMap<Base, CombatUnits> designatedScouts = new HashMap<>();
     private EnemyUnits priorityTarget = null;
@@ -53,7 +54,7 @@ public class UnitManager {
     private int rallyClock = 0;
     private Unit bunker = null;
     private boolean beingAllInned = false;
-    private boolean defendedAllIn = false;
+    private boolean defendedEnemyOpener = false;
     private Unit naturalBaseCC = null;
 
     public UnitManager(EnemyInformation enemyInformation, GameState gameState, MapInfo mapInfo, Game game, Scouting scouting) {
@@ -77,13 +78,13 @@ public class UnitManager {
         rallyPoint.onFrame();
         squadManager.onFrame();
 
-        if (gameState.getEnemyOpener() != null && beingAllInned && !defendedAllIn) {
+        if (gameState.getEnemyOpener() != null && !defendedEnemyOpener) {
             rallyClock++;
         }
 
-        if (new Time(rallyClock).greaterThan(new Time(3, 0))) {
+        if (new Time(rallyClock).greaterThan(new Time(4, 0))) {
             if (!gameState.isEnemyInBase() && !gameState.isEnemyInNatural()) {
-                defendedAllIn = true;
+                defendedEnemyOpener = true;
                 rallyClock = 0;
             }
             else {
@@ -134,6 +135,8 @@ public class UnitManager {
                     ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
                     ClosestUnit.priorityTargets(combatUnit, combatUnit.getPriorityTargets(), gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     break;
+                default:
+                    //nothing
             }
 
             combatUnit.setInBase(mapInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())
@@ -402,6 +405,15 @@ public class UnitManager {
                     }
 
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
+
+                    if (game.self().hasResearched(TechType.Spider_Mines) 
+                            && combatUnit.getUnit().getSpiderMineCount() > 0
+                            && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9, 0))) {
+                        if (gameState.getEnemyOpener() == null || (gameState.getEnemyOpener() != null && defendedEnemyOpener)) {
+                            ((Vulture) combatUnit).mineEnemyExpansions(claimedVultureBases);
+                        }
+                    }
+
                     combatUnit.poke();
                     break;
             }
@@ -1087,6 +1099,13 @@ public class UnitManager {
 
                 if (combatUnit.getUnitStatus() == UnitStatus.SCOUT) {
                     unassignScout(combatUnit);
+                }
+
+                for (Base base : claimedVultureBases.keySet()) {
+                    if (claimedVultureBases.get(base).getUnitID() == combatUnit.getUnitID()) {
+                        claimedVultureBases.remove(base);
+                        break;
+                    }
                 }
 
                 iterator.remove();
