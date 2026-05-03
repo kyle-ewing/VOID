@@ -107,6 +107,10 @@ public class Workers extends CombatUnits {
             setWorkerStatus(WorkerStatus.STUCK);
         }
 
+        if (currentDistance < 96 && buildFrameCount > 120) {
+            setWorkerStatus(WorkerStatus.STUCK);
+        }
+
     }
 
     public void build(PlannedItem pi, ResourceTracking resourceTracking) {

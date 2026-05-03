@@ -70,6 +70,11 @@ public class BuildTiles {
         mineralExclusionZone(mapInfo.getNaturalBase());
         geyserExclusionZone(mapInfo.getNaturalBase());
         ccExclusionZone(mapInfo.getNaturalBase());
+        if (mapInfo.getMinOnlyBase() != null) {
+            mineralExclusionZone(mapInfo.getMinOnlyBase());
+            geyserExclusionZone(mapInfo.getMinOnlyBase());
+            ccExclusionZone(mapInfo.getMinOnlyBase());
+        }
         chokeExclusionZone(startingBase);
         generateFrontBaseTiles();
         generateBackBaseTiles();
@@ -93,10 +98,6 @@ public class BuildTiles {
         }
 
         if (!mapInfo.getMinBaseTiles().isEmpty() && mapInfo.getMinOnlyBase() != null && !minOnlyTilesGenerated) {
-            chokeExclusionTiles.clear();
-            mineralExclusionZone(mapInfo.getMinOnlyBase());
-            geyserExclusionZone(mapInfo.getMinOnlyBase());
-            ccExclusionZone(mapInfo.getMinOnlyBase());
             generateLargeTiles(mapInfo.getMinBaseTiles());
             minOnlyTilesGenerated = true;
         }
@@ -212,6 +213,9 @@ public class BuildTiles {
                 }
 
                 if (!overlapsWithNoGapTiles) {
+                    if (!hasAdjacentBuildableColumn(tile, barWidth, barHeight)) {
+                        continue;
+                    }
                     largeBuildTilesNoGap.add(tile);
                 }
             }
@@ -393,10 +397,34 @@ public class BuildTiles {
                 }
 
                 if (!overlapsWithNoGapTiles) {
+                    if (!hasAdjacentBuildableColumn(tile, barWidth, barHeight)) {
+                        continue;
+                    }
                     largeBuildTilesNoGap.add(tile);
                 }
             }
         }
+    }
+
+    private boolean hasAdjacentBuildableColumn(TilePosition tile, int barWidth, int barHeight) {
+        int x = tile.getX();
+        int y = tile.getY();
+
+        for (int dy = 0; dy < barHeight; dy++) {
+            TilePosition leftTile = new TilePosition(x - 1, y + dy);
+            if (tilePositionValidator.isWithinMap(leftTile) && tilePositionValidator.isBuildable(leftTile)) {
+                return true;
+            }
+        }
+
+        for (int dy = 0; dy < barHeight; dy++) {
+            TilePosition rightTile = new TilePosition(x + barWidth, y + dy);
+            if (tilePositionValidator.isWithinMap(rightTile) && tilePositionValidator.isBuildable(rightTile)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean isValidBarracksStack(TilePosition topTile, int gap) {
@@ -464,6 +492,8 @@ public class BuildTiles {
 
     private void generateMediumTiles(HashSet<TilePosition> baseTiles) {
         UnitType depotType = UnitType.Terran_Supply_Depot;
+        int depotWidth = depotType.tileWidth();
+        int depotHeight = depotType.tileHeight();
 
         List<TilePosition> sortedBackTiles = new ArrayList<>(baseTiles);
         HashSet<TilePosition> usedTiles = new HashSet<>();
@@ -482,9 +512,15 @@ public class BuildTiles {
                 continue;
             }
 
-            TilePosition bottomTile = new TilePosition(tile.getX(), tile.getY() + depotType.tileHeight());
+            TilePosition topRight = new TilePosition(tile.getX() + depotWidth, tile.getY());
+            TilePosition bottomLeft = new TilePosition(tile.getX(), tile.getY() + depotHeight);
+            TilePosition bottomRight = new TilePosition(tile.getX() + depotWidth, tile.getY() + depotHeight);
 
-            if (usedTiles.contains(bottomTile) || !baseTiles.contains(bottomTile)) {
+            if (!baseTiles.contains(topRight) || !baseTiles.contains(bottomLeft) || !baseTiles.contains(bottomRight)) {
+                continue;
+            }
+
+            if (usedTiles.contains(topRight) || usedTiles.contains(bottomLeft) || usedTiles.contains(bottomRight)) {
                 continue;
             }
 
@@ -492,30 +528,176 @@ public class BuildTiles {
                 continue;
             }
 
-            if (validMediumTileStack(tile, depotType)) {
+            if (validMediumTileSquare(tile, depotType)) {
+                mediumBuildTiles.add(tile);
+                mediumBuildTiles.add(topRight);
+                mediumBuildTiles.add(bottomLeft);
+                mediumBuildTiles.add(bottomRight);
+                usedTiles.add(tile);
+                usedTiles.add(topRight);
+                usedTiles.add(bottomLeft);
+                usedTiles.add(bottomRight);
+
+                for (int y = 0; y < 2 * depotHeight; y++) {
+                    usedTiles.add(new TilePosition(tile.getX() + 2 * depotWidth, tile.getY() + y));
+                }
+            }
+        }
+
+        for (TilePosition tile : sortedBackTiles) {
+            if (mediumBuildTiles.size() >= 22) {
+                break;
+            }
+
+            if (usedTiles.contains(tile)) {
+                continue;
+            }
+
+            TilePosition rightTile = new TilePosition(tile.getX() + depotWidth, tile.getY());
+
+            if (!baseTiles.contains(tile) || !baseTiles.contains(rightTile)) {
+                continue;
+            }
+
+            if (usedTiles.contains(rightTile)) {
+                continue;
+            }
+
+            if (intersectsExistingBuildTiles(tile, depotType, 0)) {
+                continue;
+            }
+
+            if (validMediumTileHorizontalPair(tile, depotType)) {
+                mediumBuildTiles.add(tile);
+                mediumBuildTiles.add(rightTile);
+                usedTiles.add(tile);
+                usedTiles.add(rightTile);
+
+                for (int y = 0; y < depotHeight; y++) {
+                    usedTiles.add(new TilePosition(tile.getX() + 2 * depotWidth, tile.getY() + y));
+                }
+            }
+        }
+
+        for (TilePosition tile : sortedBackTiles) {
+            if (mediumBuildTiles.size() >= 22) {
+                break;
+            }
+
+            if (usedTiles.contains(tile)) {
+                continue;
+            }
+
+            TilePosition bottomTile = new TilePosition(tile.getX(), tile.getY() + depotHeight);
+
+            if (!baseTiles.contains(tile) || !baseTiles.contains(bottomTile)) {
+                continue;
+            }
+
+            if (usedTiles.contains(bottomTile)) {
+                continue;
+            }
+
+            if (intersectsExistingBuildTiles(tile, depotType, 0)) {
+                continue;
+            }
+
+            if (validMediumTileVerticalStack(tile, depotType)) {
                 mediumBuildTiles.add(tile);
                 mediumBuildTiles.add(bottomTile);
                 usedTiles.add(tile);
                 usedTiles.add(bottomTile);
 
-                for (int y = 0; y < 2 * depotType.tileHeight(); y++) {
-                    usedTiles.add(new TilePosition(tile.getX() + depotType.tileWidth(), tile.getY() + y));
+                for (int y = 0; y < 2 * depotHeight; y++) {
+                    usedTiles.add(new TilePosition(tile.getX() + depotWidth, tile.getY() + y));
                 }
             }
         }
     }
 
-
-
-    //Try to generate two medium tiles on top of each other
-    private boolean validMediumTileStack(TilePosition topTile, UnitType depotType) {
+    private boolean validMediumTileHorizontalPair(TilePosition topLeft, UnitType depotType) {
+        int depotWidth = depotType.tileWidth();
         int depotHeight = depotType.tileHeight();
-        TilePosition bottomTile = new TilePosition(topTile.getX(), topTile.getY() + depotHeight);
 
-        return validMediumTilePosition(topTile, depotType) && validMediumTilePosition(bottomTile, depotType);
+        TilePosition rightTile = new TilePosition(topLeft.getX() + depotWidth, topLeft.getY());
+
+        if (!validMediumTilePositionNoGap(topLeft, depotType)) {
+            return false;
+        }
+
+        if (!validMediumTilePositionNoGap(rightTile, depotType)) {
+            return false;
+        }
+
+        for (int y = 0; y < depotHeight; y++) {
+            TilePosition gapTile = new TilePosition(topLeft.getX() + 2 * depotWidth, topLeft.getY() + y);
+
+            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, depotType, 0)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    private boolean validMediumTilePosition(TilePosition tile, UnitType depot) {
+    private boolean validMediumTileVerticalStack(TilePosition topTile, UnitType depotType) {
+        int depotWidth = depotType.tileWidth();
+        int depotHeight = depotType.tileHeight();
+
+        TilePosition bottomTile = new TilePosition(topTile.getX(), topTile.getY() + depotHeight);
+
+        if (!validMediumTilePositionNoGap(topTile, depotType)) {
+            return false;
+        }
+
+        if (!validMediumTilePositionNoGap(bottomTile, depotType)) {
+            return false;
+        }
+
+        for (int y = 0; y < 2 * depotHeight; y++) {
+            TilePosition gapTile = new TilePosition(topTile.getX() + depotWidth, topTile.getY() + y);
+
+            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, depotType, 0)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean validMediumTileSquare(TilePosition topLeft, UnitType depotType) {
+        int depotWidth = depotType.tileWidth();
+        int depotHeight = depotType.tileHeight();
+
+        TilePosition topRight = new TilePosition(topLeft.getX() + depotWidth, topLeft.getY());
+        TilePosition bottomLeft = new TilePosition(topLeft.getX(), topLeft.getY() + depotHeight);
+        TilePosition bottomRight = new TilePosition(topLeft.getX() + depotWidth, topLeft.getY() + depotHeight);
+
+        if (!validMediumTilePositionNoGap(topLeft, depotType)) {
+            return false;
+        }
+        if (!validMediumTilePositionNoGap(topRight, depotType)) {
+            return false;
+        }
+        if (!validMediumTilePositionNoGap(bottomLeft, depotType)) {
+            return false;
+        }
+        if (!validMediumTilePositionNoGap(bottomRight, depotType)) {
+            return false;
+        }
+
+        for (int y = 0; y < 2 * depotHeight; y++) {
+            TilePosition gapTile = new TilePosition(topLeft.getX() + 2 * depotWidth, topLeft.getY() + y);
+
+            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, depotType, 0)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean validMediumTilePositionNoGap(TilePosition tile, UnitType depot) {
         int depotWidth = depot.tileWidth();
         int depotHeight = depot.tileHeight();
 
@@ -527,16 +709,6 @@ public class BuildTiles {
                         || intersectsExistingBuildTiles(checkTile, depot, 0)) {
                     return false;
                 }
-            }
-        }
-
-        //TODO: Check for a gap in any direction
-        //Check tile gap to the right
-        for (int y = 0; y < depotHeight; y++) {
-            TilePosition gapTile = new TilePosition(tile.getX() + depotWidth, tile.getY() + y);
-
-            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, depot, 0)) {
-                return false;
             }
         }
 
@@ -1402,13 +1574,29 @@ public class BuildTiles {
     }
 
     public boolean isAddonPositionBlocked(TilePosition buildingTile) {
-        int addonX = buildingTile.getX() + 4;
-        for (int dy = 0; dy < 3; dy++) {
-            TilePosition addonTile = new TilePosition(addonX, buildingTile.getY() + dy);
-            if (largeBuildTilesNoGap.contains(addonTile)) {
+        if (largeBuildTilesNoGap.contains(buildingTile)) {
+            return true;
+        }
+
+        int buildingX = buildingTile.getX();
+        int buildingY = buildingTile.getY();
+        int addonX1 = buildingX + 4;
+        int addonY1 = buildingY;
+        int addonX2 = buildingX + 6;
+        int addonY2 = buildingY + 2;
+
+        int barWidth = UnitType.Terran_Barracks.tileWidth();
+        int barHeight = UnitType.Terran_Barracks.tileHeight();
+
+        for (TilePosition noGapTile : largeBuildTilesNoGap) {
+            int tileX = noGapTile.getX();
+            int tileY = noGapTile.getY();
+
+            if (rectanglesIntersect(addonX1, addonY1, addonX2, addonY2, tileX, tileY, tileX + barWidth, tileY + barHeight)) {
                 return true;
             }
         }
+
         return false;
     }
 

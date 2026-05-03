@@ -28,7 +28,7 @@ public class TwoGate extends EnemyStrategy {
             return false;
         }
         
-        if (time.lessThanOrEqual(new Time(3, 0))) {
+        if (time.lessThanOrEqual(new Time(3, 5))) {
             int completedGateways = 0;
 
             for (EnemyUnits enemyUnit : enemyUnits) {
@@ -49,7 +49,7 @@ public class TwoGate extends EnemyStrategy {
             }
         }
 
-        if (time.greaterThan(new Time(3, 25))) {
+        if (time.greaterThan(new Time(3, 35))) {
             return false;
         }
 

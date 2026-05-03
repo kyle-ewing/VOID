@@ -141,9 +141,13 @@ public class SiegeTank extends CombatUnits {
 
         siegeLogic();
 
+        if (!isSieged() && getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+            return;
+        }
+
         if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE) {
             unit.attack(target.getEnemyPosition());
-        } 
+        }
         else {
             unit.attack(target.getEnemyUnit());
         }
@@ -400,7 +404,7 @@ public class SiegeTank extends CombatUnits {
                         unit.unsiege();
                     }
                 }
-                return;
+                break;
             case REGROUP:
                 if (isSieged() && distToEnemy < 64 || distToEnemy > SIEGE_RANGE) {
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
@@ -522,6 +526,10 @@ public class SiegeTank extends CombatUnits {
     }
 
     private Position getKitePos(int maxRange) {
+        if (maxRange == 0) {
+            return mapInfo.getStartingBase().getCenter();
+        }
+
         Position enemyPosition = enemyUnit.getEnemyPosition();
         Position unitPosition = unit.getPosition();
 
@@ -529,12 +537,15 @@ public class SiegeTank extends CombatUnits {
         double dy = unitPosition.getY() - enemyPosition.getY();
         double length = Math.sqrt(dx * dx + dy * dy);
 
+        if (length < 1) {
+            return mapInfo.getStartingBase().getCenter();
+        }
+
         double scale = maxRange / length;
         int targetX = (int) (enemyPosition.getX() + dx * scale);
         int targetY = (int) (enemyPosition.getY() + dy * scale);
 
-        Position kitePos = new Position(targetX, targetY);
-        return kitePos;
+        return new Position(targetX, targetY);
     }
 
     private boolean isStaticDefense(UnitType unitType) {
