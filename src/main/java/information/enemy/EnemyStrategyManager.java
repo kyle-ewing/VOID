@@ -39,6 +39,7 @@ import information.enemy.enemytechunits.Guardian;
 import information.enemy.enemytechunits.Lurker;
 import information.enemy.enemytechunits.Mutalisk;
 import information.enemy.enemytechunits.Queen;
+import information.enemy.enemytechunits.Scout;
 import information.enemy.enemytechunits.ShuttleReaver;
 import information.enemy.enemytechunits.SiegeTank;
 import information.enemy.enemytechunits.Wraith;
@@ -85,6 +86,7 @@ public class EnemyStrategyManager {
         enemyTechUnits.add(new Arbiter());
         enemyTechUnits.add(new Carrier());
         enemyTechUnits.add(new DarkTemplar());
+        enemyTechUnits.add(new Scout());
         enemyTechUnits.add(new Lurker());
         enemyTechUnits.add(new Wraith());
         enemyTechUnits.add(new BattleCruiser());
