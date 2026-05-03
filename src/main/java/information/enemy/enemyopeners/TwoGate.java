@@ -49,7 +49,7 @@ public class TwoGate extends EnemyStrategy {
             }
         }
 
-        if (time.greaterThan(new Time(3, 25))) {
+        if (time.greaterThan(new Time(3, 35))) {
             return false;
         }
 

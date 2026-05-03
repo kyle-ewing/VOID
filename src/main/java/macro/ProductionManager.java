@@ -409,6 +409,7 @@ public class ProductionManager {
 
                             if (pi.getResetCounter() > 64) {
                                 pi.setResetCounter(0);
+                                pi.setAddOnParent(null);
                                 pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                             }
                             continue;
@@ -654,6 +655,23 @@ public class ProductionManager {
         }
     }
 
+    private boolean hasWalkablePerimeter(TilePosition tile, UnitType unitType) {
+        int w = unitType.tileWidth();
+        int h = unitType.tileHeight();
+        int tx = tile.getX();
+        int ty = tile.getY();
+
+        for (int x = tx - 1; x <= tx + w; x++) {
+            if (tilePositionValidator.isWalkable(new TilePosition(x, ty - 1))) return true;
+            if (tilePositionValidator.isWalkable(new TilePosition(x, ty + h))) return true;
+        }
+        for (int y = ty; y < ty + h; y++) {
+            if (tilePositionValidator.isWalkable(new TilePosition(tx - 1, y))) return true;
+            if (tilePositionValidator.isWalkable(new TilePosition(tx + w, y))) return true;
+        }
+        return false;
+    }
+
     private void setBuildingPosition(PlannedItem pi) {
         TilePosition cloestBuildTile = null;
         int distanceFromSCV = Integer.MAX_VALUE;
@@ -666,6 +684,10 @@ public class ProductionManager {
             if ((pi.getUnitType().canBuildAddon() && pi.needsAddon()) || buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
                 for (TilePosition tilePosition : buildTiles.getLargeBuildTiles()) {
                     if (tileTaken(tilePosition)) {
+                        continue;
+                    }
+
+                    if (!hasWalkablePerimeter(tilePosition, pi.getUnitType())) {
                         continue;
                     }
 
@@ -684,6 +706,10 @@ public class ProductionManager {
                             continue;
                         }
 
+                        if (!hasWalkablePerimeter(tilePosition, pi.getUnitType())) {
+                            continue;
+                        }
+
                         int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                         if (distance < distanceFromSCV) {
@@ -696,6 +722,10 @@ public class ProductionManager {
             else {
                 for (TilePosition tilePosition : buildTiles.getLargeBuildTilesNoGap()) {
                     if (tileTaken(tilePosition)) {
+                        continue;
+                    }
+
+                    if (!hasWalkablePerimeter(tilePosition, pi.getUnitType())) {
                         continue;
                     }
 
@@ -722,6 +752,10 @@ public class ProductionManager {
 
             for (TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
                 if (tileTaken(tilePosition)) {
+                    continue;
+                }
+
+                if (!hasWalkablePerimeter(tilePosition, pi.getUnitType())) {
                     continue;
                 }
 
