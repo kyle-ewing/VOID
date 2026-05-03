@@ -1,4 +1,4 @@
-﻿package map;
+package map;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
