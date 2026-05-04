@@ -11,6 +11,7 @@ import java.util.PriorityQueue;
 
 import bwapi.Game;
 import bwapi.Player;
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
@@ -285,9 +286,15 @@ public class ProductionManager {
                             }
                         }
 
-                        if (worker.getBuildFrameCount() > 420 && (mapInfo.getBaseTiles().contains(pi.getBuildPosition()) || mapInfo.getNaturalTiles().contains(pi.getBuildPosition()))
-                                && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
-                            worker.buildReset(pi, gameState.getResourceTracking());
+                        if (mapInfo.getBaseTiles().contains(pi.getBuildPosition()) && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                            if (worker.getBuildFrameCount() > 420) {
+                                worker.buildReset(pi, gameState.getResourceTracking());
+                            }
+                        }
+                        else if (mapInfo.getNaturalTiles().contains(pi.getBuildPosition()) && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                            if (worker.getBuildFrameCount() > 600) {
+                                worker.buildReset(pi, gameState.getResourceTracking());
+                            }
                         }
 
                         if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
@@ -578,7 +585,7 @@ public class ProductionManager {
 
         //temp fix
         if (gameState.getEnemyOpener() != null) {
-            if (gameState.getEnemyOpener().getStrategyName().equals("Gas Steal") && !gameState.moveOutConditionsMet()) {
+            if (gameState.getEnemyOpener().getStrategyName().equals("Gas Steal") && !gameState.moveOutConditionsMet() && game.enemy().getRace() == Race.Zerg) {
                 workerCap = 12;
             }
         }
@@ -1005,6 +1012,29 @@ public class ProductionManager {
             else {
                 if (!game.self().hasResearched(tech)) {
                     productionQueue.add(new PlannedItem(tech, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
+                }
+            }
+        }
+
+        TilePosition correctBunkerPosition = setBunkerPosition();
+        if (correctBunkerPosition != null) {
+            for (PlannedItem pi : productionQueue) {
+                if (pi.getUnitType() != UnitType.Terran_Bunker) {
+                    continue;
+                }
+                if (pi.getBuildPosition() == null || pi.getBuildPosition().equals(correctBunkerPosition)) {
+                    continue;
+                }
+                if (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED) {
+                    Workers worker = pi.getAssignedBuilder();
+                    if (worker != null) {
+                        worker.buildReset(pi, gameState.getResourceTracking());
+                    }
+                    pi.setAssignedBuilder(null);
+                    pi.setBuildPosition(null);
+                }
+                else if (pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                    pi.setBuildPosition(null);
                 }
             }
         }

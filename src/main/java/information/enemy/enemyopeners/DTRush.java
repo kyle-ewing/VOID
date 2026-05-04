@@ -33,6 +33,10 @@ public class DTRush extends EnemyStrategy{
                 if (time.lessThanOrEqual(new Time(3,20))) {
                     return true;
                 }
+
+                if (time.lessThanOrEqual(new Time(3, 45)) && enemyUnit.getEnemyUnit().getHitPoints() > 350) {
+                    return true;
+                }
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Protoss_Dark_Templar) {

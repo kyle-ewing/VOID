@@ -114,6 +114,10 @@ public class EnemyInformation {
                 return;
             }
             else if (mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural())) {
+                if (enemyUnit.getEnemyType().isWorker()) {
+                    continue;
+                }
+
                 gameState.setEnemyInBase(true);
                 return;
             }
@@ -148,11 +152,23 @@ public class EnemyInformation {
         }
 
         for (EnemyUnits enemyUnit : enemyUnits) {
+            int workerCount = 0;
+
             if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
             if (!enemyUnit.getEnemyType().canAttack() && !enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyType().isWorker() && mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyTilePosition())) {
+                workerCount++;
+
+                if (workerCount >= 3) {
+                    gameState.setEnemyInNatural(true);
+                    return;
+                }
                 continue;
             }
 
@@ -184,6 +200,10 @@ public class EnemyInformation {
     }
 
     public boolean outRangingUnitNearby(EnemyUnits enemyUnit, UnitType friendlyUnitType, int range) {
+        if (enemyUnit.getEnemyPosition() == null) {
+            return false;
+        }
+        
         for (EnemyUnits outRangingUnit : enemyUnits) {
             if (outRangingUnit.getEnemyID() == enemyUnit.getEnemyID() || outRangingUnit.getEnemyPosition() == null) {
                 continue;

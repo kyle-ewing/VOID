@@ -98,6 +98,6 @@ public class OneFacFE extends MechBuildOrder {
     }
 
     public int getScoutSupply() {
-        return 12;
+        return 11;
     }
 }

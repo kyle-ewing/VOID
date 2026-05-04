@@ -385,9 +385,6 @@ public class UnitManager {
                                         if (combatUnit.getRallyPoint() != null) {
                                             combatUnit.getUnit().move(combatUnit.getRallyPoint().toPosition());
                                         }
-                                        else {
-                                            System.out.println("Ebay rally null");
-                                        }
                                     }
                                 default:
                                     //do nothing    
@@ -437,7 +434,6 @@ public class UnitManager {
                         && !unit.isLifted()
                         && unit.getTilePosition().equals(ccTile)) {
                     naturalBaseCC = unit;
-                    System.out.println("Assigned natural base CC at " + new Time(game.getFrameCount()));
                     break;
                 }
             }
@@ -448,7 +444,6 @@ public class UnitManager {
         }
 
         if (!naturalBaseCC.isLifted() && naturalBaseCC.getDistance(mapInfo.getNaturalBase().getCenter()) < 50) {
-            System.out.println("Claiming Natural " + new Time(game.getFrameCount()));
             mapInfo.claimNatural();
             naturalBaseCC = null;
             return;
@@ -459,7 +454,6 @@ public class UnitManager {
 
         if (!naturalBaseCC.isLifted()) {
             if (!gameState.isEnemyInNatural() && tankCount >= 2) {
-                System.out.println("Lifting CC " + new Time(game.getFrameCount()));
                 naturalBaseCC.lift();
                 queueNaturalBunker();
             }
@@ -467,7 +461,6 @@ public class UnitManager {
         }
         else {
             if (gameState.isEnemyInNatural()) {
-                System.out.println("enemy in nat move back to tile at "  + new Time(game.getFrameCount()));
                 naturalBaseCC.move(gameState.getBuildTiles().getMainBaseCCTile().toPosition());
                 return;
             }
@@ -476,14 +469,10 @@ public class UnitManager {
         Position naturalCenter = mapInfo.getNaturalBase().getCenter();
 
         if (naturalBaseCC.getDistance(naturalCenter) > 32) {
-            System.out.println("Moving CC at " + new Time(game.getFrameCount()));
             naturalBaseCC.move(naturalCenter);
 
             return;
         }
-
-        System.out.println("Landing CC " + new Time(game.getFrameCount()));
-        System.out.println(naturalBaseCC.land(mapInfo.getNaturalBase().getLocation()));
         naturalBaseCC.land(mapInfo.getNaturalBase().getLocation());
     }
 

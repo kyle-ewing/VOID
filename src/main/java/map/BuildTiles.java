@@ -632,7 +632,7 @@ public class BuildTiles {
         for (int y = 0; y < depotHeight; y++) {
             TilePosition gapTile = new TilePosition(topLeft.getX() + 2 * depotWidth, topLeft.getY() + y);
 
-            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, depotType, 0)) {
+            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile)) {
                 return false;
             }
         }
@@ -657,7 +657,7 @@ public class BuildTiles {
         for (int y = 0; y < 2 * depotHeight; y++) {
             TilePosition gapTile = new TilePosition(topTile.getX() + depotWidth, topTile.getY() + y);
 
-            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, depotType, 0)) {
+            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile)) {
                 return false;
             }
         }
@@ -689,7 +689,7 @@ public class BuildTiles {
         for (int y = 0; y < 2 * depotHeight; y++) {
             TilePosition gapTile = new TilePosition(topLeft.getX() + 2 * depotWidth, topLeft.getY() + y);
 
-            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile) || intersectsExistingBuildTiles(gapTile, depotType, 0)) {
+            if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile)) {
                 return false;
             }
         }
@@ -701,12 +701,15 @@ public class BuildTiles {
         int depotWidth = depot.tileWidth();
         int depotHeight = depot.tileHeight();
 
+        if (intersectsExistingBuildTiles(tile, depot, 0)) {
+            return false;
+        }
+
         for (int x = 0; x < depotWidth; x++) {
             for (int y = 0; y < depotHeight; y++) {
                 TilePosition checkTile = new TilePosition(tile.getX() + x, tile.getY() + y);
 
-                if (intersectsExclusionZones(checkTile) || !tilePositionValidator.isBuildable(checkTile)
-                        || intersectsExistingBuildTiles(checkTile, depot, 0)) {
+                if (intersectsExclusionZones(checkTile) || !tilePositionValidator.isBuildable(checkTile)) {
                     return false;
                 }
             }
@@ -1593,6 +1596,18 @@ public class BuildTiles {
             int tileY = noGapTile.getY();
 
             if (rectanglesIntersect(addonX1, addonY1, addonX2, addonY2, tileX, tileY, tileX + barWidth, tileY + barHeight)) {
+                return true;
+            }
+        }
+
+        int depotWidth = UnitType.Terran_Supply_Depot.tileWidth();
+        int depotHeight = UnitType.Terran_Supply_Depot.tileHeight();
+
+        for (TilePosition mediumTile : mediumBuildTiles) {
+            int tileX = mediumTile.getX();
+            int tileY = mediumTile.getY();
+
+            if (rectanglesIntersect(addonX1, addonY1, addonX2, addonY2, tileX, tileY, tileX + depotWidth, tileY + depotHeight)) {
                 return true;
             }
         }

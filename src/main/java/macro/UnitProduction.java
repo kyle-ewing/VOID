@@ -220,6 +220,15 @@ public class UnitProduction {
                 }
             }
 
+            if (canBuild(building, UnitType.Terran_Barracks)
+                    && enemyOpener != null
+                    && enemyOpener.getStrategyName().equals("Cannon Rush")
+                    && !enemyOpener.isStrategyDefended()
+                    && isRecruitable(UnitType.Terran_Marine)
+                    && !hasInQueue(UnitType.Terran_Marine)) {
+                items.add(plannedUnit(UnitType.Terran_Marine, 1));
+            }
+
             if (canBuild(building, UnitType.Terran_Factory)) {
                 boolean firstTankPriority = tankCount < 2
                         && buildOrder instanceof MechBuildOrder

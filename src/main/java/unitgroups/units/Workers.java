@@ -13,6 +13,7 @@ public class Workers extends CombatUnits {
     private Unit repairTarget;
     private WorkerStatus workerStatus;
     private int buildFrameCount;
+    private int nearTargetFrameCount;
     private int attackClock;
     private int idleClock = 0;
     private int lastFrameChecked = 0;
@@ -103,11 +104,18 @@ public class Workers extends CombatUnits {
 
         int currentDistance = unit.getDistance(buildingPosition);
 
+        if (currentDistance < 96) {
+            nearTargetFrameCount++;
+        }
+        else {
+            nearTargetFrameCount = 0;
+        }
+
         if (Math.abs(distanceToBuildTarget - currentDistance) < 32 && distanceToBuildTarget > 96) {
             setWorkerStatus(WorkerStatus.STUCK);
         }
 
-        if (currentDistance < 96 && buildFrameCount > 120) {
+        if (nearTargetFrameCount > 120) {
             setWorkerStatus(WorkerStatus.STUCK);
         }
 
@@ -130,6 +138,7 @@ public class Workers extends CombatUnits {
         this.setBuildingPosition(null);
         this.getUnit().stop();
         this.idleClock = 0;
+        this.nearTargetFrameCount = 0;
         this.buildType = null;
         resourceTracking.unreserveResources(pi.getUnitType());
         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
@@ -159,6 +168,10 @@ public class Workers extends CombatUnits {
 
     public void setBuildFrameCount(int buildFrameCount) {
         this.buildFrameCount = buildFrameCount;
+    }
+
+    public void setNearTargetFrameCount(int nearTargetFrameCount) {
+        this.nearTargetFrameCount = nearTargetFrameCount;
     }
 
     public int getAttackClock() {
