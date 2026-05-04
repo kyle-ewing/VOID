@@ -127,8 +127,6 @@ public class Scouting {
             return;
         }
 
-        System.out.println("Scanning enemy base at " + time);
-
         scanBase(gameState.getStartingEnemyBase().getEnemyPosition());
         mainScanned = true;
     }

@@ -364,6 +364,7 @@ public class WorkerManager {
             else {
                 worker.setLastFrameChecked(0);
                 worker.setBuildFrameCount(0);
+                worker.setNearTargetFrameCount(0);
             }
 
         }
@@ -577,22 +578,24 @@ public class WorkerManager {
             if (openerSize > 0) {
                 createRepairForce(bunker, openerSize);
             }
-            else if (enemyInRange() && enemyInformation.getEnemySupplyInRange(bunker) >= 6) {
-                createRepairForce(bunker, 4);
+            else if (enemyInRange(200) && enemyInformation.getEnemySupplyInRange(bunker) >= 10) {
+                createRepairForce(bunker, 6);
             }
+            else if (enemyInRange(400) && enemyInformation.getEnemySupplyInRange(bunker) >= 6) {
+                createRepairForce(bunker, 4);
+            } 
             else if (bunker.getDistance(baseCenter) > 750
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
                 if (enemyInformation.getNonWorkerEnemySupply() >= 8) {
-                    System.out.println("Preemptive bunker repair: distance " + bunker.getDistance(baseCenter) + " enemy supply in range: " + enemyInformation.getEnemySupplyInRange(bunker));
                     createRepairForce(bunker, 5);
                 }
                 else {
-                    createRepairForce(bunker, 2);
+                    createRepairForce(bunker, 4);
                 }
             }
-            else if (bunker.getDistance(baseCenter) > 650
-                    && new Time(game.getFrameCount()).greaterThan(new Time(5, 10))
+            else if (bunker.getDistance(baseCenter) > 550
+                    && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 2);
             }
@@ -601,7 +604,7 @@ public class WorkerManager {
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8,0))) {
                 createRepairForce(bunker, 1);
             }
-            else if (!enemyInRange()) {
+            else if (!enemyInRange(400)) {
                 for (Workers worker : repairForce) {
                     worker.setWorkerStatus(WorkerStatus.IDLE);
                     worker.setRepairTarget(null);
@@ -724,7 +727,7 @@ public class WorkerManager {
         worker.getUnit().move(movePos);
     }
 
-    private boolean enemyInRange() {
+    private boolean enemyInRange(int range) {
         Unit mainBunker = null;
         for (Unit bunker : player.getUnits()) {
             if (bunker.getType() == UnitType.Terran_Bunker && bunker.isCompleted()) {
@@ -758,7 +761,7 @@ public class WorkerManager {
                 return false;
             }
 
-            if (enemyUnit.getEnemyPosition().getApproxDistance(mainBunker.getPosition()) < 400) {
+            if (enemyUnit.getEnemyPosition().getApproxDistance(mainBunker.getPosition()) < range) {
                 return true;
             }
 
@@ -823,7 +826,6 @@ public class WorkerManager {
 
         if (blockRemover != null && blockRemover.getUnit().isCarrying()) {
             blockRemover.setWorkerStatus(WorkerStatus.IDLE);
-            System.out.println("Mineral blockers cleared");
             return;
         }
 

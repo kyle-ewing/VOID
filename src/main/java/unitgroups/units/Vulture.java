@@ -175,7 +175,6 @@ public class Vulture extends CombatUnits {
         }
 
         if (unit.getDistance(rallyPoint.toPosition()) < 100) {
-            System.out.println("Vulture reached rally point while retreating.");
             setUnitStatus(UnitStatus.DEFEND);
         }
 
@@ -190,7 +189,6 @@ public class Vulture extends CombatUnits {
         unit.move(rallyPoint.toPosition());
 
         if (inBase && isOutRanged()) {
-            System.out.println("Vulture retreating to base while out of range.");
             setUnitStatus(UnitStatus.DEFEND);
         }
 
@@ -289,6 +287,11 @@ public class Vulture extends CombatUnits {
 
         if (isOutRanged() && !hasTankSupport && !lobotomyOverride && unit.getDistance(enemyUnit.getEnemyPosition()) < 225) {
             unitStatus = UnitStatus.RETREAT;
+            return;
+        }
+
+        if (enemyUnit.getEnemyType().isWorker()) {
+            unit.attack(enemyUnit.getEnemyUnit());
             return;
         }
 
@@ -777,7 +780,7 @@ public class Vulture extends CombatUnits {
                 unit.useTech(TechType.Spider_Mines, targetedEnemyExpansion.getCenter());
                 return;
             }
-            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 256) {
+            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 96) {
                 approachingStagingBase = false;
                 unit.useTech(TechType.Spider_Mines, targetedEnemyExpansion.getCenter());
             }
