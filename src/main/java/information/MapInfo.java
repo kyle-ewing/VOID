@@ -397,6 +397,52 @@ public class MapInfo {
         }
     }
 
+    public void setNaturalChokeEdgeFromBunker(TilePosition bunkerTile) {
+        naturalChokeEdge.clear();
+
+        if (naturalTiles.isEmpty() || naturalBase == null) {
+            return;
+        }
+
+        Position bunkerCenter = new Position(bunkerTile.toPosition().getX() + 48, bunkerTile.toPosition().getY() + 32);
+        int minDistance = 64;
+        int maxDistance = 160;
+
+        int toNatX = naturalBase.getCenter().getX() - bunkerCenter.getX();
+        int toNatY = naturalBase.getCenter().getY() - bunkerCenter.getY();
+        double toNatMag = Math.sqrt((double) toNatX * toNatX + (double) toNatY * toNatY);
+
+        for (TilePosition tile : naturalTiles) {
+            int tileX = tile.getX();
+            int tileY = tile.getY();
+            boolean onBunkerFootprint = tileX >= bunkerTile.getX() - 1 && tileX <= bunkerTile.getX() + 3
+                    && tileY >= bunkerTile.getY() - 1 && tileY <= bunkerTile.getY() + 2;
+
+            if (onBunkerFootprint) {
+                continue;
+            }
+
+            int distanceToBunker = bunkerCenter.getApproxDistance(tile.toPosition());
+
+            if (distanceToBunker >= minDistance && distanceToBunker <= maxDistance) {
+                if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
+                    int toTileX = tile.toPosition().getX() - bunkerCenter.getX();
+                    int toTileY = tile.toPosition().getY() - bunkerCenter.getY();
+                    double toTileMag = Math.sqrt((double) toTileX * toTileX + (double) toTileY * toTileY);
+                    double cosAngle = ((double) toNatX * toTileX + (double) toNatY * toTileY) / (toNatMag * toTileMag);
+
+                    if (cosAngle >= -0.156) {
+                        naturalChokeEdge.add(tile);
+                    }
+                }
+            }
+        }
+
+        combinedTankTiles.clear();
+        combinedTankTiles.addAll(mainCliffEdge);
+        combinedTankTiles.addAll(naturalChokeEdge);
+    }
+
     private void combineTankTiles() {
         combinedTankTiles.addAll(mainCliffEdge);
         combinedTankTiles.addAll(naturalChokeEdge);

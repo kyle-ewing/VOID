@@ -970,6 +970,7 @@ public class BuildTiles {
             if (naturalBunker != null) {
                 naturalChokeBunker = naturalBunker;
                 naturalBunkerEbayPosition = computeEbayInFrontOfBunker(naturalBunker, chokeTile);
+                mapInfo.setNaturalChokeEdgeFromBunker(naturalChokeBunker);
             }
         }
     }
