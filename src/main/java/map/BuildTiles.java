@@ -494,6 +494,8 @@ public class BuildTiles {
         UnitType depotType = UnitType.Terran_Supply_Depot;
         int depotWidth = depotType.tileWidth();
         int depotHeight = depotType.tileHeight();
+        int barWidth = UnitType.Terran_Barracks.tileWidth();
+        int barHeight = UnitType.Terran_Barracks.tileHeight();
 
         List<TilePosition> sortedBackTiles = new ArrayList<>(baseTiles);
         HashSet<TilePosition> usedTiles = new HashSet<>();
@@ -521,6 +523,33 @@ public class BuildTiles {
             }
 
             if (usedTiles.contains(topRight) || usedTiles.contains(bottomLeft) || usedTiles.contains(bottomRight)) {
+                continue;
+            }
+
+            boolean squareAdjacentToLarge = false;
+            int squareGroupWidth = 2 * depotWidth;
+            int squareGroupHeight = 2 * depotHeight;
+            for (TilePosition lt : largeBuildTiles) {
+                boolean xOverlap = lt.getX() < tile.getX() + squareGroupWidth && lt.getX() + barWidth > tile.getX();
+                boolean directlyAbove = lt.getY() + barHeight == tile.getY();
+                boolean directlyBelow = lt.getY() == tile.getY() + squareGroupHeight;
+                if (xOverlap && (directlyAbove || directlyBelow)) {
+                    squareAdjacentToLarge = true;
+                    break;
+                }
+            }
+            if (!squareAdjacentToLarge) {
+                for (TilePosition lt : largeBuildTilesNoGap) {
+                    boolean xOverlap = lt.getX() < tile.getX() + squareGroupWidth && lt.getX() + barWidth > tile.getX();
+                    boolean directlyAbove = lt.getY() + barHeight == tile.getY();
+                    boolean directlyBelow = lt.getY() == tile.getY() + squareGroupHeight;
+                    if (xOverlap && (directlyAbove || directlyBelow)) {
+                        squareAdjacentToLarge = true;
+                        break;
+                    }
+                }
+            }
+            if (squareAdjacentToLarge) {
                 continue;
             }
 
@@ -563,6 +592,32 @@ public class BuildTiles {
                 continue;
             }
 
+            boolean pairAdjacentToLarge = false;
+            int pairGroupWidth = 2 * depotWidth;
+            for (TilePosition lt : largeBuildTiles) {
+                boolean xOverlap = lt.getX() < tile.getX() + pairGroupWidth && lt.getX() + barWidth > tile.getX();
+                boolean directlyAbove = lt.getY() + barHeight == tile.getY();
+                boolean directlyBelow = lt.getY() == tile.getY() + depotHeight;
+                if (xOverlap && (directlyAbove || directlyBelow)) {
+                    pairAdjacentToLarge = true;
+                    break;
+                }
+            }
+            if (!pairAdjacentToLarge) {
+                for (TilePosition lt : largeBuildTilesNoGap) {
+                    boolean xOverlap = lt.getX() < tile.getX() + pairGroupWidth && lt.getX() + barWidth > tile.getX();
+                    boolean directlyAbove = lt.getY() + barHeight == tile.getY();
+                    boolean directlyBelow = lt.getY() == tile.getY() + depotHeight;
+                    if (xOverlap && (directlyAbove || directlyBelow)) {
+                        pairAdjacentToLarge = true;
+                        break;
+                    }
+                }
+            }
+            if (pairAdjacentToLarge) {
+                continue;
+            }
+
             if (intersectsExistingBuildTiles(tile, depotType, 0)) {
                 continue;
             }
@@ -595,6 +650,32 @@ public class BuildTiles {
             }
 
             if (usedTiles.contains(bottomTile)) {
+                continue;
+            }
+
+            boolean stackAdjacentToLarge = false;
+            int stackGroupHeight = 2 * depotHeight;
+            for (TilePosition lt : largeBuildTiles) {
+                boolean xOverlap = lt.getX() < tile.getX() + depotWidth && lt.getX() + barWidth > tile.getX();
+                boolean directlyAbove = lt.getY() + barHeight == tile.getY();
+                boolean directlyBelow = lt.getY() == tile.getY() + stackGroupHeight;
+                if (xOverlap && (directlyAbove || directlyBelow)) {
+                    stackAdjacentToLarge = true;
+                    break;
+                }
+            }
+            if (!stackAdjacentToLarge) {
+                for (TilePosition lt : largeBuildTilesNoGap) {
+                    boolean xOverlap = lt.getX() < tile.getX() + depotWidth && lt.getX() + barWidth > tile.getX();
+                    boolean directlyAbove = lt.getY() + barHeight == tile.getY();
+                    boolean directlyBelow = lt.getY() == tile.getY() + stackGroupHeight;
+                    if (xOverlap && (directlyAbove || directlyBelow)) {
+                        stackAdjacentToLarge = true;
+                        break;
+                    }
+                }
+            }
+            if (stackAdjacentToLarge) {
                 continue;
             }
 
