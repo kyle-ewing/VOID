@@ -1,5 +1,6 @@
 package unitgroups.units;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -334,20 +335,16 @@ public class SiegeTank extends CombatUnits {
 
     private void pickSiegeDefTile(HashSet<TilePosition> tileSet) {
         Random rand = new Random(unitID);
+        ArrayList<TilePosition> tiles = new ArrayList<>(tileSet);
+        int startIndex = rand.nextInt(tiles.size());
 
-        int index = rand.nextInt(tileSet.size());
-        TilePosition targetTile = null;
-        int i = 0;
-        for (TilePosition tile : tileSet) {
-            if (i == index) {
-                targetTile = tile;
-                break;
+        for (int i = 0; i < tiles.size(); i++) {
+            TilePosition targetTile = tiles.get((startIndex + i) % tiles.size());
+            if (!ccExclusionTiles.contains(targetTile)) {
+                siegeTile = targetTile;
+                foundSiegeTile = true;
+                return;
             }
-            i++;
-        }
-        if (targetTile != null && !ccExclusionTiles.contains(targetTile)) {
-            siegeTile = targetTile;
-            foundSiegeTile = true;
         }
     }
 

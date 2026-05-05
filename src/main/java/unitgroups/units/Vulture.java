@@ -837,6 +837,12 @@ public class Vulture extends CombatUnits {
         }
     }
 
+    public void resetExpansionMining() {
+        miningExpansion = false;
+        layingMines = false;
+        targetedEnemyExpansion = null;
+    }
+
     private boolean enemyDepotNearBase(Base base) {
         for (EnemyUnits eu : enemyUnits) {
             if (!eu.getEnemyType().isResourceDepot()) {
@@ -858,5 +864,9 @@ public class Vulture extends CombatUnits {
 
     public void setLobotomyOverride(boolean lobotomyOverride) {
         this.lobotomyOverride = lobotomyOverride;
+    }
+
+    public boolean isMiningExpansion() {
+        return miningExpansion;
     }
 }

@@ -409,6 +409,10 @@ public class UnitManager {
                         if (gameState.getEnemyOpener() == null || (gameState.getEnemyOpener() != null && defendedEnemyOpener)) {
                             ((Vulture) combatUnit).mineEnemyExpansions(claimedVultureBases);
                         }
+
+                        if (((Vulture) combatUnit).isMiningExpansion() && new Time(game.getFrameCount()).greaterThan(new Time(9, 0))) {
+                            ((Vulture) combatUnit).resetExpansionMining();
+                        }
                     }
 
                     combatUnit.poke();

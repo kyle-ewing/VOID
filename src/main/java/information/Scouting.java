@@ -3,6 +3,7 @@ package information;
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -20,14 +21,20 @@ public class Scouting {
     private Player player;
 
     private Workers scout;
+    private Workers secondScout = null;
     private int scoutRadius = 200;
     private int positionCount = 8;
     private int currentPositionIndex = 0;
+    private int secondScoutPositionIndex = 0;
     private int scoutingAttempts = 0;
     private boolean completedScout = false;
     private boolean attemptsMaxed = false;
     private boolean mainScanned = false;
     private boolean reversed = false;
+    private boolean secondScoutReversed = false;
+    private boolean secondScoutSent = false;
+    private boolean enemyBaseLocated = false;
+    private boolean secondScoutFoundEnemy = false;
 
     private Time time;
 
@@ -50,14 +57,27 @@ public class Scouting {
             selectScout();
         }
 
-        for (Base startingBase : mapInfo.getStartingBases()) {
-            if (startingBase == mapInfo.getStartingBase()) {
+        if (scout == null) {
+            return;
+        }
+
+        Base closest = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (Base base : mapInfo.getStartingBases()) {
+            if (mapInfo.isExplored(base)) {
                 continue;
             }
 
-            if (!mapInfo.isExplored(startingBase)) {
-                scout.getUnit().move(startingBase.getCenter());
+            int distance = scout.getUnit().getDistance(base.getCenter());
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closest = base;
             }
+        }
+
+        if (closest != null) {
+            scout.getUnit().move(closest.getCenter());
         }
     }
 
@@ -85,9 +105,6 @@ public class Scouting {
         if (scout.getUnit().isIdle()) {
             scout.setIdleClock(scout.getIdleClock() + 1);
         }
-        // else {
-        //     scout.setIdleClock(0);
-        // }
 
         if (scout.getIdleClock() >= 48) {
             reversed = !reversed;
@@ -118,6 +135,111 @@ public class Scouting {
         scout.getUnit().rightClick(targetPosition);
     }
 
+    private void scoutEnemyPerimeterSecond() {
+        if (secondScout == null) {
+            return;
+        }
+
+        if (secondScout.getUnit().isAttacking()) {
+            secondScout.getUnit().stop();
+        }
+
+        if (secondScout.getUnit().isIdle()) {
+            secondScout.setIdleClock(secondScout.getIdleClock() + 1);
+        }
+
+        if (secondScout.getIdleClock() >= 48) {
+            secondScoutReversed = !secondScoutReversed;
+            secondScout.setIdleClock(0);
+        }
+
+        Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
+        double angle = (Math.PI * 2 * secondScoutPositionIndex) / positionCount;
+
+        int x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
+        int y = (int) (enemyBasePos.getY() + scoutRadius * Math.sin(angle));
+
+        Position targetPosition = new Position(x, y);
+
+        if (secondScout.getUnit().getDistance(targetPosition) < 90) {
+            if (secondScoutReversed) {
+                secondScoutPositionIndex = (secondScoutPositionIndex - 1 + positionCount) % positionCount;
+            }
+            else {
+                secondScoutPositionIndex = (secondScoutPositionIndex + 1) % positionCount;
+            }
+            angle = (Math.PI * 2 * secondScoutPositionIndex) / positionCount;
+            x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
+            y = (int) (enemyBasePos.getY() + scoutRadius * Math.sin(angle));
+            targetPosition = new Position(x, y);
+        }
+
+        secondScout.getUnit().rightClick(targetPosition);
+    }
+
+    private void sendSecondScout() {
+        if (secondScout == null) {
+            for (Workers scv : gameState.getWorkers()) {
+                if (scv.getWorkerStatus() == WorkerStatus.MINERALS) {
+                    secondScout = scv;
+                    scv.setWorkerStatus(WorkerStatus.SCOUTING);
+                    break;
+                }
+            }
+        }
+
+        if (secondScout == null) {
+            return;
+        }
+
+        for (Base base : mapInfo.getStartingBases()) {
+            if (!mapInfo.isExplored(base)) {
+                secondScout.getUnit().move(base.getCenter());
+                return;
+            }
+        }
+    }
+
+    private void returnFirstScoutHome() {
+        if (scout == null) {
+            return;
+        }
+        scout.setWorkerStatus(WorkerStatus.MINERALS);
+        scout = null;
+    }
+
+    private void returnSecondScoutHome() {
+        if (secondScout == null) {
+            return;
+        }
+        secondScout.setWorkerStatus(WorkerStatus.MINERALS);
+        secondScout = null;
+    }
+
+    private void locateEnemyBase() {
+        if (enemyBaseLocated) {
+            return;
+        }
+
+        enemyBaseLocated = true;
+
+        if (!secondScoutSent) {
+            return;
+        }
+
+        if (scout == null && secondScout != null) {
+            secondScoutFoundEnemy = true;
+            return;
+        }
+
+        if (secondScout == null) {
+            return;
+        }
+
+        Position enemyPos = gameState.getStartingEnemyBase().getEnemyPosition();
+        secondScoutFoundEnemy = secondScout.getUnit().getDistance(enemyPos) < scout.getUnit().getDistance(enemyPos);
+    }
+
     private void scanEnemyBase() {
         if (gameState.getStartingEnemyBase() == null) {
             return;
@@ -140,7 +262,7 @@ public class Scouting {
             if (!mapInfo.isExplored(startingBase)) {
                 scanBase(startingBase.getCenter());
             }
-        }   
+        }
     }
 
     private void scanBase(Position basePosition) {
@@ -164,16 +286,41 @@ public class Scouting {
             sendScout();
         }
 
-        if (gameState.getStartingEnemyBase() != null 
+        if (gameState.getStartingEnemyBase() != null
                 && time.greaterThan(new Time(2, 45))
                 && time.lessThanOrEqual(new Time(5, 0))
-                && gameState.getEnemyOpener() == null 
+                && gameState.getEnemyOpener() == null
                 && scout == null) {
             sendScout();
         }
 
+        if (!secondScoutSent
+                && mapInfo.getStartingBases().size() == 3
+                && game.enemy().getRace() == Race.Protoss
+                && gameState.getEnemyOpener() == null
+                && gameState.getStartingEnemyBase() == null
+                && mapInfo.getStartingBases().stream().anyMatch(b -> mapInfo.isExplored(b))) {
+            secondScoutSent = true;
+        }
+
+        if (secondScoutSent && gameState.getStartingEnemyBase() == null) {
+            sendSecondScout();
+        }
+
         if (gameState.getStartingEnemyBase() != null) {
-            scoutEnemyPerimeter();
+            locateEnemyBase();
+
+            if (secondScoutSent && secondScoutFoundEnemy) {
+                returnFirstScoutHome();
+                scoutEnemyPerimeterSecond();
+            }
+            else if (secondScoutSent && !secondScoutFoundEnemy) {
+                returnSecondScoutHome();
+                scoutEnemyPerimeter();
+            }
+            else {
+                scoutEnemyPerimeter();
+            }
             completedScout = true;
         }
 
@@ -184,19 +331,19 @@ public class Scouting {
         if (gameState.getEnemyOpener() == null && !mainScanned && time.greaterThan(new Time(5,0))) {
             scanEnemyBase();
         }
-        
+
         if (gameState.getStartingEnemyBase() == null && time.greaterThan(new Time(5,0))) {
             scanRemainingMains();
         }
     }
 
     public void onEnemyDestroy(Unit unit) {
-        if (scout == null) {
-            return;
+        if (scout != null && unit.getID() == scout.getUnit().getID()) {
+            scout = null;
         }
 
-        if (unit.getID() == scout.getUnit().getID()) {
-            scout = null;
+        if (secondScout != null && unit.getID() == secondScout.getUnit().getID()) {
+            secondScout = null;
         }
     }
 

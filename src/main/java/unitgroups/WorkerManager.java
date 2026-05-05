@@ -69,7 +69,7 @@ public class WorkerManager {
             openerResponse = true;
         }
 
-        if (gameState.hasTransitioned() && !mineralBlockersCleared) {
+        if ((gameState.hasTransitioned() || new Time(game.getFrameCount()).greaterThan(new Time(8, 0))) && !mineralBlockersCleared) {
             removeMineralBlockers();
         }
 

@@ -87,11 +87,19 @@ public class UnitProduction {
                 if (unitType == UnitType.Terran_Science_Vessel) {
                     if (unitTypeCount.get(unitType) < 1) {
                         items.add(plannedUnit(unitType, 1));
-                    } 
+                    }
                     else if (unitTypeCount.get(unitType) < 5) {
                         items.add(plannedUnit(unitType, 2));
                     }
-                } 
+                }
+                else if (unitType == UnitType.Terran_Wraith) {
+                    if (unitTypeCount.get(unitType) < 1) {
+                        items.add(plannedUnit(unitType, 1));
+                    }
+                    else {
+                        items.add(plannedUnit(unitType, 2));
+                    }
+                }
                 else {
                     items.add(plannedUnit(unitType, 2));
                 }
@@ -188,6 +196,16 @@ public class UnitProduction {
                             items.add(plannedUnit(unitType, 1));
                         }
                         else if (vesselCount < 5 && vesselCount < tankCount / 4) {
+                            items.add(plannedUnit(unitType, 2));
+                        }
+                        continue;
+                    }
+
+                    if (unitType == UnitType.Terran_Wraith) {
+                        if (unitTypeCount.get(unitType) < 1) {
+                            items.add(plannedUnit(unitType, 1));
+                        }
+                        else {
                             items.add(plannedUnit(unitType, 2));
                         }
                         continue;

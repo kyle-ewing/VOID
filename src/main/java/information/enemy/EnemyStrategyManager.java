@@ -5,6 +5,7 @@ import java.util.HashSet;
 import information.MapInfo;
 import information.enemy.enemyopeners.CannonRush;
 import information.enemy.enemyopeners.DTRush;
+import information.enemy.enemyopeners.DragoonRangeRush;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.FFE;
 import information.enemy.enemyopeners.FourPool;
@@ -79,6 +80,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new FFE(mapInfo));
         enemyStrategies.add(new TwoGate(mapInfo));
         enemyStrategies.add(new NexusFirst(mapInfo));
+        enemyStrategies.add(new DragoonRangeRush(mapInfo));
     }
 
     private void addEnemyTechUnits() {
