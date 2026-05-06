@@ -54,6 +54,7 @@ public class GameState {
     private boolean enemyBuildingDiscovered = false;
     private boolean enemyFlyerInBase = false;
     private boolean canExpand = false;
+    private boolean hasDepletingBase = false;
     private boolean enemyOpenerIdentified = false;
     private boolean moveOutConditionsMet = false;
     private boolean hasTransitioned = false;
@@ -396,6 +397,14 @@ public class GameState {
 
     public void setCanExpand(boolean canExpand) {
         this.canExpand = canExpand;
+    }
+
+    public boolean hasDepletingBase() {
+        return hasDepletingBase;
+    }
+
+    public void setHasDepletingBase(boolean hasDepletingBase) {
+        this.hasDepletingBase = hasDepletingBase;
     }
 
     public boolean hasTransitioned() {

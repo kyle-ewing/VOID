@@ -3,6 +3,7 @@ package information;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import bwapi.Game;
@@ -17,6 +18,7 @@ import bwem.ChokePoint;
 import bwem.Geyser;
 import bwem.Mineral;
 import information.enemy.EnemyUnits;
+import information.neutral.MineralPatch;
 import macro.buildorders.BuildType;
 import map.AllBasePaths;
 import map.PathFinding;
@@ -41,7 +43,10 @@ public class MapInfo {
     private HashSet<TilePosition> baseTiles = new HashSet<>();
     private HashSet<TilePosition> naturalTiles = new HashSet<>();
     private HashSet<TilePosition> minBaseTiles = new HashSet<>();
-    private HashSet<Base> ownedBases = new HashSet<>();
+    private LinkedHashSet<Base> ownedBases = new LinkedHashSet<>();
+    private HashSet<Base> depletedBases = new HashSet<>();
+    private HashSet<Base> halfTransferredBases = new HashSet<>();
+    private HashSet<Base> depletionCountedBases = new HashSet<>();
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> usedGeysers = new HashSet<>();
     private HashSet<TilePosition> mainCliffEdge = new HashSet<>();
@@ -55,6 +60,10 @@ public class MapInfo {
     private HashMap<Area, HashSet<TilePosition>> areaTiles = new HashMap<>();
     private HashMap<Base, HashSet<Area>> baseAddedAreas = new HashMap<>();
     private HashMap<Unit, Position> blockingMineralFields = new HashMap<>();
+    private HashMap<Base, Integer> originalMineralCounts = new HashMap<>();
+    private HashMap<Base, Integer> originalPatchCounts = new HashMap<>();
+    private HashMap<Base, Integer> livePatchCounts = new HashMap<>();
+    private HashMap<Base, List<MineralPatch>> basePatches = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
     private boolean naturalAreaAdded = false;
@@ -77,6 +86,7 @@ public class MapInfo {
         }
 
         addAllBases();
+        setOriginalMineralCounts();
         setStartingBase();
         addStartingBases();
         setStartingMineralPatches();
@@ -709,6 +719,33 @@ public class MapInfo {
         }
     }
 
+    private void setOriginalMineralCounts() {
+        for (Base base : mapBases) {
+            int totalResources = 0;
+            List<MineralPatch> patches = new ArrayList<>();
+            for (Mineral mineral : base.getMinerals()) {
+                totalResources += mineral.getUnit().getResources();
+                patches.add(new MineralPatch(mineral));
+            }
+            originalMineralCounts.put(base, totalResources);
+            int patchCount = base.getMinerals().size();
+            originalPatchCounts.put(base, patchCount);
+            livePatchCounts.put(base, patchCount);
+            basePatches.put(base, patches);
+        }
+    }
+
+    private void decrementLivePatchCount(Unit mineralUnit) {
+
+        for (Base base : mapBases) {
+            for (Mineral mineral : base.getMinerals()) {
+                if (mineral.getUnit().getID() == mineralUnit.getID()) {
+                    livePatchCounts.put(base, Math.max(0, livePatchCounts.getOrDefault(base, 0) - 1));
+                }
+            }
+        }
+    }
+
     private void setBlockingMinerals() {
         for (Unit unit : game.getNeutralUnits()) {
             if (unit.getType() != UnitType.Resource_Mineral_Field) {
@@ -937,6 +974,34 @@ public class MapInfo {
         return blockingMineralFields;
     }
 
+    public HashMap<Base, Integer> getOriginalMineralCounts() {
+        return originalMineralCounts;
+    }
+
+    public HashSet<Base> getDepletedBases() {
+        return depletedBases;
+    }
+
+    public HashSet<Base> getHalfTransferredBases() {
+        return halfTransferredBases;
+    }
+
+    public HashSet<Base> getDepletionCountedBases() {
+        return depletionCountedBases;
+    }
+
+    public HashMap<Base, Integer> getOriginalPatchCounts() {
+        return originalPatchCounts;
+    }
+
+    public HashMap<Base, Integer> getLivePatchCounts() {
+        return livePatchCounts;
+    }
+
+    public List<MineralPatch> getBasePatches(Base base) {
+        return basePatches.getOrDefault(base, new ArrayList<>());
+    }
+
     public void claimNatural() {
         baseTiles.addAll(naturalTiles);
         naturalOwned = true;
@@ -1054,6 +1119,18 @@ public class MapInfo {
             }
 
             return;
+        }
+
+        if (unit.getType().isMineralField()) {
+            bwem.getMap().onUnitDestroyed(unit);
+            decrementLivePatchCount(unit);
+            for (List<MineralPatch> patches : basePatches.values()) {
+                for (MineralPatch patch : patches) {
+                    if (patch.getUnit().getID() == unit.getID()) {
+                        patch.markDestroyed();
+                    }
+                }
+            }
         }
 
         if (blockingMineralFields.containsKey(unit)) {

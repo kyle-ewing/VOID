@@ -19,6 +19,7 @@ import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
+import information.neutral.MineralPatch;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.ClosestUnit;
@@ -61,6 +62,8 @@ public class WorkerManager {
         preemptiveBunkerRepair();
         clearNaturalDefenseForce();
         enemyScoutResponse.onFrame();
+        transferDepletedBaseWorkers();
+        updateDepletingBaseFlag();
 
         int frameCount = game.getFrameCount();
 
@@ -107,6 +110,8 @@ public class WorkerManager {
                         if (buildingRepair.get(building) == null) {
                             buildingRepair.put(building, worker);
                             worker.setRepairTarget(building);
+                            removeMineralSaturation(worker);
+                            worker.setAssignedToBase(false);
                             worker.setWorkerStatus(WorkerStatus.REPAIRING);
                         }
                     }
@@ -311,14 +316,145 @@ public class WorkerManager {
     }
 
     private void assignMineralSaturation(Workers worker) {
+        Base closestBase = null;
+        double closestDistance = Double.MAX_VALUE;
+
         for (Base base : mapInfo.getOwnedBases()) {
+            if (mapInfo.getDepletedBases().contains(base)) {
+                continue;
+            }
+            int capacity = 24;
+            if (mapInfo.getHalfTransferredBases().contains(base)) {
+                capacity = 12;
+            }
             HashSet<Workers> saturation = mineralSaturation.computeIfAbsent(base, k -> new HashSet<>());
-            if (saturation.size() < 24) {
-                saturation.add(worker);
-                worker.setAssignedToBase(true);
-                break;
+            if (saturation.size() >= capacity) {
+                continue;
+            }
+            double distance = worker.getUnit().getDistance(base.getCenter());
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestBase = base;
             }
         }
+
+        if (closestBase != null) {
+            mineralSaturation.get(closestBase).add(worker);
+            worker.setAssignedToBase(true);
+            if (!closestBase.getMinerals().isEmpty()) {
+                worker.getUnit().gather(closestBase.getMinerals().get(0).getUnit());
+            }
+            return;
+        }
+
+        Base nextExpansion = mapInfo.scoredBestExpansion(gameState.getStartingOpener().buildType(), gameState.getKnownEnemyUnits());
+        if (nextExpansion != null && !nextExpansion.getMinerals().isEmpty()) {
+            mineralSaturation.computeIfAbsent(nextExpansion, k -> new HashSet<>()).add(worker);
+            worker.setAssignedToBase(true);
+            worker.getUnit().gather(nextExpansion.getMinerals().get(0).getUnit());
+        }
+    }
+
+    private int baseMineralResources(Base base) {
+        int total = 0;
+        for (MineralPatch patch : mapInfo.getBasePatches(base)) {
+            total += patch.getResources();
+        }
+        return total;
+    }
+
+    private int basePatchCount(Base base) {
+        int count = 0;
+        for (MineralPatch patch : mapInfo.getBasePatches(base)) {
+            if (patch.getResources() > 0) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private void transferDepletedBaseWorkers() {
+        for (Base base : mineralSaturation.keySet()) {
+            if (mapInfo.getDepletedBases().contains(base)) {
+                continue;
+            }
+
+            HashSet<Workers> assigned = mineralSaturation.get(base);
+
+            if (baseMineralResources(base) == 0) {
+                mapInfo.getDepletedBases().add(base);
+                for (Workers worker : new HashSet<>(assigned)) {
+                    if (worker.getWorkerStatus() == WorkerStatus.GAS) {
+                        continue;
+                    }
+                    assigned.remove(worker);
+                    worker.setAssignedToBase(false);
+                    worker.setWorkerStatus(WorkerStatus.IDLE);
+                }
+                continue;
+            }
+
+            if (mapInfo.getHalfTransferredBases().contains(base)) {
+                continue;
+            }
+
+            Integer originalPatches = mapInfo.getOriginalPatchCounts().get(base);
+            if (originalPatches == null || originalPatches == 0) {
+                continue;
+            }
+
+            if (basePatchCount(base) * 2 > originalPatches) {
+                continue;
+            }
+
+            mapInfo.getHalfTransferredBases().add(base);
+
+            int mineralWorkerCount = 0;
+            for (Workers w : assigned) {
+                if (w.getWorkerStatus() != WorkerStatus.GAS) {
+                    mineralWorkerCount++;
+                }
+            }
+
+            int toTransfer = mineralWorkerCount / 2;
+            int transferred = 0;
+
+            for (Workers worker : new HashSet<>(assigned)) {
+                if (transferred >= toTransfer) {
+                    break;
+                }
+                if (worker.getWorkerStatus() == WorkerStatus.GAS) {
+                    continue;
+                }
+                assigned.remove(worker);
+                worker.setAssignedToBase(false);
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                transferred++;
+            }
+        }
+    }
+
+    private void updateDepletingBaseFlag() {
+        HashMap<Base, Integer> originalCounts = mapInfo.getOriginalMineralCounts();
+        for (Base base : mapInfo.getOwnedBases()) {
+            if (mapInfo.getDepletedBases().contains(base)) {
+                continue;
+            }
+            if (mapInfo.getDepletionCountedBases().contains(base)) {
+                continue;
+            }
+            Integer original = originalCounts.get(base);
+            if (original == null || original == 0) {
+                continue;
+            }
+            int current = baseMineralResources(base);
+            if (current > 0 && current * 3 <= original) {
+                mapInfo.getDepletionCountedBases().add(base);
+                gameState.setHasDepletingBase(true);
+                return;
+            }
+        }
+        gameState.setHasDepletingBase(false);
     }
 
     private void removeMineralSaturation(Workers worker) {
@@ -637,6 +773,8 @@ public class WorkerManager {
         Workers repairWorker = ClosestUnit.findClosestWorker(bunker.getPosition(), availableWorkers, mapInfo.getPathFinding());
 
         if (repairWorker != null) {
+            removeMineralSaturation(repairWorker);
+            repairWorker.setAssignedToBase(false);
             repairWorker.setWorkerStatus(WorkerStatus.REPAIRING);
             repairWorker.setRepairTarget(bunker);
             repairWorker.setPreemptiveRepair(true);
@@ -866,7 +1004,7 @@ public class WorkerManager {
         }
         for (Base base : mapInfo.getOwnedBases()) {
             if (unit.getPosition().getApproxDistance(base.getCenter()) < 100) {
-                mineralSaturation.put(base, new HashSet<>());
+                mineralSaturation.computeIfAbsent(base, k -> new HashSet<>());
             }
         }
     }
