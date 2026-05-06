@@ -757,6 +757,15 @@ public class ProductionManager {
                 return;
             }
 
+            int mediumBuildingsBuilt = (int) allBuildings.stream()
+                    .filter(u -> u.getType().tileWidth() == 3 && u.getType().tileHeight() == 2)
+                    .count();
+
+            boolean useFurthest = mediumBuildingsBuilt > 4;
+            if (useFurthest) {
+                distanceFromSCV = Integer.MIN_VALUE;
+            }
+
             for (TilePosition tilePosition : buildTiles.getMediumBuildTiles()) {
                 if (tileTaken(tilePosition)) {
                     continue;
@@ -768,9 +777,17 @@ public class ProductionManager {
 
                 int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
-                if (distance < distanceFromSCV) {
-                    distanceFromSCV = distance;
-                    cloestBuildTile = tilePosition;
+                if (useFurthest) {
+                    if (distance > distanceFromSCV) {
+                        distanceFromSCV = distance;
+                        cloestBuildTile = tilePosition;
+                    }
+                }
+                else {
+                    if (distance < distanceFromSCV) {
+                        distanceFromSCV = distance;
+                        cloestBuildTile = tilePosition;
+                    }
                 }
             }
             pi.setBuildPosition(cloestBuildTile);
