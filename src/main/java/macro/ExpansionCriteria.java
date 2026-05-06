@@ -17,6 +17,7 @@ public class ExpansionCriteria {
     private boolean mineralCriteria = false;
     private boolean productionBuildingCriteria = false;
     private boolean armyComparisonCriteria = false;
+    private boolean depletingBaseCriteria = false;
 
 
     public ExpansionCriteria(Game game, Player player, GameState gameState) {
@@ -81,6 +82,13 @@ public class ExpansionCriteria {
             // do this later
         }
 
+        if (!depletingBaseCriteria) {
+            if (gameState.hasDepletingBase()) {
+                depletingBaseCriteria = true;
+                expansionScore += 2;
+            }
+        }
+
         //Single triggered criteria
         if (!workerCriteria) {
             int workerCount = gameState.getWorkers().size();
@@ -116,6 +124,7 @@ public class ExpansionCriteria {
             enemyBaseCriteria = false;
             mineralCriteria = false;
             armyComparisonCriteria = false;
+            depletingBaseCriteria = false;
         }
     }
 

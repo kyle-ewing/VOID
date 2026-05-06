@@ -581,7 +581,7 @@ public class ProductionManager {
 
     private void scvProduction() {
         int ownedBases = mapInfo.getOwnedBases().size();
-        int workerCap = 24 * ownedBases;
+        int workerCap = Math.min(24 * ownedBases, 72);
 
         //temp fix
         if (gameState.getEnemyOpener() != null) {

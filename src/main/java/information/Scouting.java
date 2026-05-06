@@ -22,6 +22,7 @@ public class Scouting {
 
     private Workers scout;
     private Workers secondScout = null;
+    private Base scoutTargetBase = null;
     private int scoutRadius = 200;
     private int positionCount = 8;
     private int currentPositionIndex = 0;
@@ -77,6 +78,7 @@ public class Scouting {
         }
 
         if (closest != null) {
+            scoutTargetBase = closest;
             scout.getUnit().move(closest.getCenter());
         }
     }
@@ -193,11 +195,17 @@ public class Scouting {
         }
 
         for (Base base : mapInfo.getStartingBases()) {
-            if (!mapInfo.isExplored(base)) {
-                secondScout.getUnit().move(base.getCenter());
-                return;
+            if (mapInfo.isExplored(base)) {
+                continue;
             }
+            if (base == scoutTargetBase) {
+                continue;
+            }
+            secondScout.getUnit().move(base.getCenter());
+            return;
         }
+
+        returnSecondScoutHome();
     }
 
     private void returnFirstScoutHome() {
@@ -206,6 +214,7 @@ public class Scouting {
         }
         scout.setWorkerStatus(WorkerStatus.MINERALS);
         scout = null;
+        scoutTargetBase = null;
     }
 
     private void returnSecondScoutHome() {

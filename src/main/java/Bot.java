@@ -92,7 +92,7 @@ public class Bot extends DefaultBWListener {
             productionManager.onUnitDestroy(unit);
         }
 
-        if (unit.getType() == UnitType.Terran_Command_Center || unit.getType() == UnitType.Resource_Mineral_Field) {
+        if (unit.getType() == UnitType.Terran_Command_Center || unit.getType().isMineralField()) {
             mapInfo.onUnitDestroy(unit);
         }
 
