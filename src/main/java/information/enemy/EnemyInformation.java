@@ -355,6 +355,7 @@ public class EnemyInformation {
         checkTechBuildings();
         gameState.setBeingSieged(beingSieged());
 
+        enemyArmySupply = 0;
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyUnit().isVisible()) {
                 if (enemyUnit.getEnemyUnit().getType() != enemyUnit.getEnemyType()) {
@@ -372,6 +373,11 @@ public class EnemyInformation {
             //Remove irradiated units that die out of view
             if (enemyUnit.getEnemyUnit().isIrradiated()) {
                 enemyUnit.setIrradiateTimer();
+            }
+
+            UnitType enemyType = enemyUnit.getEnemyType();
+            if (!enemyType.isBuilding() && !enemyType.isWorker()) {
+                enemyArmySupply += enemyType.supplyRequired() / 2.0f;
             }
         }
         //Edge case where buildings aren't removed on death but position is null from units walking over it
@@ -404,10 +410,6 @@ public class EnemyInformation {
 
         if (!previouslyDiscovered(unit)) {
             addEnemyUnit(unit);
-            
-            if (!unit.getType().isBuilding() && !unit.getType().isWorker()) {
-                enemyArmySupply += unit.getType().supplyRequired() / 2;
-            }
 
             if (unit.getType().isBuilding()) {
                 gameState.setEnemyBuildingDiscovered(true);
@@ -473,10 +475,6 @@ public class EnemyInformation {
                 enemyUnits.remove(enemyUnit);
                 break;
             }
-        }
-
-        if (!unit.getType().isBuilding() && !unit.getType().isWorker()) {
-            enemyArmySupply -= unit.getType().supplyRequired() / 2;
         }
 
         for (EnemyUnits threat : validThreats) {

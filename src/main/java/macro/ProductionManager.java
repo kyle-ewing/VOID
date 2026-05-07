@@ -839,7 +839,7 @@ public class ProductionManager {
             return;
         }
 
-        Base best = mapInfo.scoredBestExpansion(startingOpener.buildType(), gameState.getKnownEnemyUnits());
+        Base best = mapInfo.scoredBestExpansion(startingOpener.getBuildOrderName(), gameState.getKnownEnemyUnits());
         if (best == null) {
             return;
         }

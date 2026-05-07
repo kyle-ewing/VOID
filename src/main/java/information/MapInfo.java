@@ -19,7 +19,7 @@ import bwem.Geyser;
 import bwem.Mineral;
 import information.enemy.EnemyUnits;
 import information.neutral.MineralPatch;
-import macro.buildorders.BuildType;
+import macro.buildorders.BuildOrderName;
 import map.AllBasePaths;
 import map.PathFinding;
 
@@ -764,7 +764,7 @@ public class MapInfo {
         }
     }
 
-    public Base scoredBestExpansion(BuildType buildType, HashSet<EnemyUnits> knownEnemyUnits) {
+    public Base scoredBestExpansion(BuildOrderName buildOrder, HashSet<EnemyUnits> knownEnemyUnits) {
         Base bestBase = null;
         double bestScore = Double.NEGATIVE_INFINITY;
 
@@ -809,9 +809,9 @@ public class MapInfo {
 
             double score = distFromEnemy - distFromMain;
 
-            // if (buildType == BuildType.MECH && base.getGeysers().isEmpty()) {
-            //     score -= 5000;
-            // }
+            if (buildOrder == BuildOrderName.GOLIATHFE && base.getGeysers().isEmpty()) {
+                score -= 5000;
+            }
 
             if (score > bestScore) {
                 bestScore = score;

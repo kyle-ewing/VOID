@@ -347,7 +347,7 @@ public class WorkerManager {
             return;
         }
 
-        Base nextExpansion = mapInfo.scoredBestExpansion(gameState.getStartingOpener().buildType(), gameState.getKnownEnemyUnits());
+        Base nextExpansion = mapInfo.scoredBestExpansion(gameState.getStartingOpener().getBuildOrderName(), gameState.getKnownEnemyUnits());
         if (nextExpansion != null && !nextExpansion.getMinerals().isEmpty()) {
             mineralSaturation.computeIfAbsent(nextExpansion, k -> new HashSet<>()).add(worker);
             worker.setAssignedToBase(true);

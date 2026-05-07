@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 import bwapi.Game;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
@@ -457,7 +458,7 @@ public class UnitManager {
                 + unitCount.getOrDefault(UnitType.Terran_Siege_Tank_Siege_Mode, 0);
 
         if (!naturalBaseCC.isLifted()) {
-            if (!gameState.isEnemyInNatural() && tankCount >= 2) {
+            if (!gameState.isEnemyInNatural() && (tankCount >= 2 || game.enemy().getRace() == Race.Zerg)) {
                 naturalBaseCC.lift();
                 queueNaturalBunker();
             }
