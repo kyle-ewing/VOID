@@ -850,7 +850,7 @@ public class UnitManager {
                 continue;
             }
 
-            if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {\
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {
                 if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
                     continue;
                 }
