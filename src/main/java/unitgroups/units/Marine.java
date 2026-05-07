@@ -38,6 +38,15 @@ public class Marine extends CombatUnits {
             setUnitStatus(UnitStatus.RETREAT);
         }
 
+        if (unit.getDistance(rallyPoint.toPosition()) < 96) {
+            if (enemyUnit != null && enemyUnit.getEnemyPosition() != null) {
+                unit.attack(enemyUnit.getEnemyPosition());
+            }
+            else {
+                unit.attack(rallyPoint.toPosition());
+            }
+        }
+
     }
 
     @Override

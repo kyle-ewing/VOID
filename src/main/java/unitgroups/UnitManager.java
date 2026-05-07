@@ -850,7 +850,11 @@ public class UnitManager {
                 continue;
             }
 
-            if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker && enemyUnit.getEnemyUnit().isCompleted()) {\
+                if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
+                    continue;
+                }
+
                 if (combatUnit.getUnit().getPosition().getApproxDistance(enemyUnit.getEnemyPosition()) < UnitType.Terran_Marine.groundWeapon().maxRange() + 200) {
                     inRange = true;
                 }

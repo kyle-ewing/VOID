@@ -36,8 +36,8 @@ public final class Config {
     public boolean debugEnemyUnits = false;
 
     // Production and planning
-    public boolean debugProductionQueue = true;
-    public boolean debugProdQueueOutput = true;
+    public boolean debugProductionQueue = false;
+    public boolean debugProdQueueOutput = false;
 
     public Config() {
         // HUD and general info

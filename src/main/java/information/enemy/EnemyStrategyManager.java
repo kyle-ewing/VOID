@@ -3,6 +3,7 @@ package information.enemy;
 import java.util.HashSet;
 
 import information.MapInfo;
+import information.enemy.enemyopeners.BunkerRush;
 import information.enemy.enemyopeners.CannonRush;
 import information.enemy.enemyopeners.DTRush;
 import information.enemy.enemyopeners.DragoonRangeRush;
@@ -71,6 +72,7 @@ public class EnemyStrategyManager {
 //        enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new FourRax(mapInfo));
         enemyStrategies.add(new TwoFacTank());
+        enemyStrategies.add(new BunkerRush(mapInfo));
         enemyStrategies.add(new SCVRush(mapInfo));
         enemyStrategies.add(new OneBaseMuta(mapInfo));
         enemyStrategies.add(new OneBaseLurker(mapInfo));
