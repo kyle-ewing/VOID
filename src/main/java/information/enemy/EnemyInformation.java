@@ -244,7 +244,6 @@ public class EnemyInformation {
     private void checkTechBuildings() {
         for (EnemyTechBuilding enemyBuilding : enemyStrategyManager.getEnemyBuildings()) {
             if (!enemyBuilding.hasTriggeredResponse() && enemyBuilding.isEnemyBuilding(enemyUnits)) {
-                System.out.println("Enemy building tech response triggered for " + enemyBuilding.getBuildingType() + " at " + new Time(game.getFrameCount()));
                 enemyBuilding.friendlyBuildingResponse();
                 enemyBuilding.setTriggeredResponse(true);
                 enemyTechBuildings.add(enemyBuilding);
@@ -395,7 +394,6 @@ public class EnemyInformation {
         for (EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
             if (enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
                 enemyOpener = enemyStrategy;
-                System.out.println("Enemy opener detected: " + enemyStrategy.getStrategyName() + " at " + currentTime);
                 gameState.setEnemyOpener(enemyOpener);
                 game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
                 break;

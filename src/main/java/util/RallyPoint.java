@@ -59,6 +59,17 @@ public class RallyPoint {
             case "Gas Steal":
                 combatUnit.setRallyPoint(naturalBase.getCenter().toTilePosition());
                 break;
+            case "Bunker Rush":
+                if (gameState.isEnemyInNatural()) {
+                    combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                }
+                else if (!mapInfo.isNaturalOwned() || !mapInfo.hasBunkerInNatural()){
+                    combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+                }
+                else {
+                    combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                }
+                break;    
         }
 
     }

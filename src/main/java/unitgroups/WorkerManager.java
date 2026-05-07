@@ -134,7 +134,7 @@ public class WorkerManager {
                     worker.setWorkerStatus(WorkerStatus.MINERALS);
                     break;
                 case DEFEND:
-                    ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 900);
+                    ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 1100);
                     workerAttackClock(worker);
 
                     if (frameCount % 24 != 0) {
@@ -639,11 +639,16 @@ public class WorkerManager {
                         && mapInfo.getBaseTiles().contains(unit.getEnemyPosition().toTilePosition()))) {
                     createDefenseForce(3);
                 }
+                break;
             case "SCV Rush":
                 if (gameState.isEnemyInBase()) {
                     createDefenseForce(3);
                 }
                 break;
+            case "Bunker Rush":
+                if (gameState.isEnemyInNatural()) {
+                    createDefenseForce(3);
+                }
         }
     }
 
