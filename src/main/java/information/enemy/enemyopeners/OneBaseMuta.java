@@ -13,7 +13,7 @@ public class OneBaseMuta extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public OneBaseMuta(MapInfo mapInfo) {
-        super("One Base Muta");
+        super(EnemyStrategyName.ONEBASEMUTA);
         this.mapInfo = mapInfo;
 
         buildingResponse();

@@ -15,7 +15,7 @@ public class CCFirst extends  EnemyStrategy {
     private boolean isStartingBase = false;
 
     public CCFirst(MapInfo mapInfo) {
-        super("CC First");
+        super(EnemyStrategyName.CCFIRST);
         this.mapInfo = mapInfo;
     }
 

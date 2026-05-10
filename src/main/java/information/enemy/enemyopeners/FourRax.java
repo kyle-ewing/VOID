@@ -15,7 +15,7 @@ public class FourRax extends  EnemyStrategy {
     private boolean isStartingBase = false;
 
     public FourRax(MapInfo mapInfo) {
-        super("Four Rax");
+        super(EnemyStrategyName.FOURRAX);
         this.mapInfo = mapInfo;
 
         buildingResponse();

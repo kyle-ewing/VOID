@@ -10,7 +10,7 @@ import java.util.HashSet;
 
 public class TwoFacTank extends  EnemyStrategy {
     public TwoFacTank() {
-        super("Two Fac Tank");
+        super(EnemyStrategyName.TWOFACTANK);
 
         buildingResponse();
     }

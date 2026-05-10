@@ -13,7 +13,7 @@ public class ThreeHatchBeforePool extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public ThreeHatchBeforePool(MapInfo mapInfo) {
-        super("Three Hatch Before Pool");
+        super(EnemyStrategyName.THREEHATCHBEFOREPOOL);
         this.mapInfo = mapInfo;
 
         buildingResponse();

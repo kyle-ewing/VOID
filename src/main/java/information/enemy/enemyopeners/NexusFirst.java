@@ -13,7 +13,7 @@ public class NexusFirst extends  EnemyStrategy {
     private MapInfo mapInfo;
 
     public NexusFirst(MapInfo mapInfo) {
-        super("Nexus First");
+        super(EnemyStrategyName.NEXUSFIRST);
         this.mapInfo = mapInfo;
         
         buildingResponse();

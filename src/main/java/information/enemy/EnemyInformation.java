@@ -264,13 +264,13 @@ public class EnemyInformation {
             openerDefenseTimer++;
 
             switch (enemyOpener.getStrategyName()) {
-                case "Dark Templar":
+                case DTRUSH:
                     if (currentTime.greaterThan(new Time(6,0))) {
                         enemyOpener.setDefendedStrategy(true);
                         return;
                     }
                     break;
-                case "Two Fac Tank":
+                case TWOFACTANK:
                     if (currentTime.greaterThan(new Time(7,0))) {
                         enemyOpener.setDefendedStrategy(true);
                         return;

@@ -53,13 +53,13 @@ public class RallyPoint {
         }
 
         switch (enemyStrategy.getStrategyName()) {
-            case "Four Pool":
+            case FOURPOOL:
                 combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
                 break;
-            case "Gas Steal":
+            case GASSTEAL:
                 combatUnit.setRallyPoint(naturalBase.getCenter().toTilePosition());
                 break;
-            case "Bunker Rush":
+            case BUNKERRUSH:
                 if (gameState.isEnemyInNatural()) {
                     combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
                 }
@@ -69,7 +69,7 @@ public class RallyPoint {
                 else {
                     combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
                 }
-                break;    
+                break;
         }
 
     }

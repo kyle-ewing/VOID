@@ -17,6 +17,7 @@ import information.MapInfo;
 import information.Scouting;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import map.PathFinding;
 import planner.PlannedItem;
@@ -541,7 +542,7 @@ public class UnitManager {
 
         //temp to allow early marines to clean up inside the base
         if (gameState.getEnemyOpener() != null) {
-            if (gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase()) {
+            if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.SCVRUSH && gameState.isEnemyInBase()) {
                 if (bunkerLoad >= 1) {;
                     return;
                 }
@@ -634,18 +635,18 @@ public class UnitManager {
         }
 
         switch (gameState.getEnemyOpener().getStrategyName()) {
-            case "Cannon Rush":
+            case CANNONRUSH:
                 this.beingAllInned = true;
                 break;
-            case "Four Pool":
+            case FOURPOOL:
                 this.beingAllInned = true;
                 break;
-            case "Gas Steal":
+            case GASSTEAL:
                 //Not an all in but needs response
                 this.beingAllInned = true;
                 priorityTarget = gameState.getEnemyOpener().getPriorityEnemyUnit();
                 break;
-            case "Dark Templar":
+            case DTRUSH:
                 break;
         }
     }
@@ -920,7 +921,7 @@ public class UnitManager {
         if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
             Squad squad = squadManager.getSquadOfUnit(combatUnit);
             if (squad != null && squad.siegeTankCount() > 0 
-                    && gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName().equals("FFE")) {
+                    && gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.FFE) {
                 return true;
             }
         }

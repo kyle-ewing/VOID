@@ -19,6 +19,7 @@ import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategyName;
 import information.neutral.MineralPatch;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
@@ -93,7 +94,7 @@ public class WorkerManager {
 
                 //TODO: move to enemystratresponse
                 if (gameState.getEnemyOpener() != null
-                        && gameState.getEnemyOpener().getStrategyName().equals("Gas Steal")
+                        && gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL
                         && gameState.isEnemyInBase()) {
                     if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(2, 5))) {
                         createDefenseForce(1);
@@ -628,7 +629,7 @@ public class WorkerManager {
 
     private void enemyStrategyResponse() {
         switch (gameState.getEnemyOpener().getStrategyName()) {
-            case "Cannon Rush":
+            case CANNONRUSH:
                 if (!hasCompletedCannonInBase() && !hasBunkerInMain() && enemyInBase()) {
                     if (workers.size() > 12) {
                         createDefenseForce(6);
@@ -638,18 +639,18 @@ public class WorkerManager {
                     }
                 }
                 break;
-            case "Four Rax":
+            case FOURRAX:
                 if (gameState.getKnownEnemyUnits().stream().anyMatch(unit -> unit.getEnemyType() == UnitType.Terran_Marine && unit.getEnemyPosition() != null
                         && mapInfo.getBaseTiles().contains(unit.getEnemyPosition().toTilePosition()))) {
                     createDefenseForce(3);
                 }
                 break;
-            case "SCV Rush":
+            case SCVRUSH:
                 if (gameState.isEnemyInBase()) {
                     createDefenseForce(3);
                 }
                 break;
-            case "Bunker Rush":
+            case BUNKERRUSH:
                 if (gameState.isEnemyInNatural()) {
                     createDefenseForce(3);
                 }
@@ -810,16 +811,16 @@ public class WorkerManager {
         }
 
         switch (gameState.getEnemyOpener().getStrategyName()) {
-            case "Two Gate":
+            case TWOGATE:
                 if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
                     return 3;
                 }
-            case "Dark Templar":
+            case DTRUSH:
                 if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
                 }
-                return 0;  
-            case "Four Pool":
+                return 0;
+            case FOURPOOL:
                 return 2;
             default:
                 return 0;
@@ -938,7 +939,7 @@ public class WorkerManager {
 
     private boolean gasImbalance() {
         if (gameState.getEnemyOpener() != null) {
-            if (gameState.getEnemyOpener().getStrategyName().equals("SCV Rush") && gameState.isEnemyInBase() && workers.size() < 13
+            if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.SCVRUSH && gameState.isEnemyInBase() && workers.size() < 13
                     && gameState.getResourceTracking().getAvailableMinerals() > 300) {
                 return true;
             }

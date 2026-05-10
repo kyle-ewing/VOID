@@ -18,7 +18,6 @@ import information.enemy.enemyarmycomposition.EnemyArmyCompManager;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
-import macro.ExpansionCriteria;
 import macro.ResourceTracking;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
@@ -42,7 +41,6 @@ public class GameState {
     private ResourceTracking resourceTracking;
     private BuildOrderManager buildOrderManager;
     private EnemyStrategy enemyOpener = null;
-    private ExpansionCriteria expansionCriteria;
 
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
@@ -87,10 +85,9 @@ public class GameState {
 
         player = game.self();
 
-        buildTiles = new BuildTiles(game, mapInfo, this);
+        buildTiles = new BuildTiles(game, mapInfo);
         buildOrderManager = new BuildOrderManager(game.enemy().getRace());
         resourceTracking = new ResourceTracking(player);
-        expansionCriteria = new ExpansionCriteria(game, player, this);
         jadeBunkerPosition();
         addOpeningBuildOrders();
     }
@@ -99,7 +96,6 @@ public class GameState {
         time = new Time(game.getFrameCount());
 
         resourceTracking.onFrame();
-        expansionCriteria.onFrame();
 
         amendMoveOutCondition();
         moveOutConditionsMet();

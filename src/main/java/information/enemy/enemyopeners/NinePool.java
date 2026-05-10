@@ -13,7 +13,7 @@ public class NinePool extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public NinePool(MapInfo mapInfo) {
-        super("Nine Pool");
+        super(EnemyStrategyName.NINEPOOL);
         this.mapInfo = mapInfo;
 
         buildingResponse();

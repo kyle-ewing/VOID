@@ -13,7 +13,7 @@ public class BunkerRush extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public BunkerRush(MapInfo mapInfo) {
-        super("Bunker Rush");
+        super(EnemyStrategyName.BUNKERRUSH);
         this.mapInfo = mapInfo;
 
         buildingResponse();

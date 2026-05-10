@@ -18,13 +18,11 @@ import bwem.Base;
 import bwem.ChokePoint;
 import bwem.Geyser;
 import bwem.Mineral;
-import information.GameState;
 import information.MapInfo;
 import util.PositionInterpolator;
 
 public class BuildTiles {
     private Game game;
-    private GameState gameState;
     private MapInfo mapInfo;
     private TilePositionValidator tilePositionValidator;
     private HashSet<TilePosition> mediumBuildTiles = new HashSet<>();
@@ -51,10 +49,9 @@ public class BuildTiles {
     private boolean naturalTilesGenerated = false;
     private boolean minOnlyTilesGenerated = false;
 
-    public BuildTiles(Game game, MapInfo mapInfo, GameState gameState) {
+    public BuildTiles(Game game, MapInfo mapInfo) {
         this.game = game;
         this.mapInfo = mapInfo;
-        this.gameState = gameState;
 
         tilePositionValidator = new TilePositionValidator(game);
 
