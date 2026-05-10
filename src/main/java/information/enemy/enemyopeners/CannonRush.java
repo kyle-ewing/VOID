@@ -14,7 +14,7 @@ public class CannonRush extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public CannonRush(MapInfo mapInfo) {
-        super("Cannon Rush");
+        super(EnemyStrategyName.CANNONRUSH);
         this.mapInfo = mapInfo;
 
         buildingResponse();

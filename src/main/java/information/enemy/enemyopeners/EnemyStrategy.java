@@ -12,14 +12,14 @@ import macro.buildorders.BuildType;
 import util.Time;
 
 public abstract class EnemyStrategy {
-    protected String strategyName;
+    protected EnemyStrategyName strategyName;
     protected ArrayList<UnitType> buildingResponse = new ArrayList<>();
     protected ArrayList<UpgradeType> upgradeResponse = new ArrayList<>();
     protected ArrayList<TechType> techUpgradeResponse = new ArrayList<>();
     protected EnemyUnits priorityEnemyUnit = null;
     protected boolean defendedStrategy = false;
 
-    public EnemyStrategy(String strategyName) {
+    public EnemyStrategy(EnemyStrategyName strategyName) {
         this.strategyName = strategyName;
     }
 
@@ -29,7 +29,7 @@ public abstract class EnemyStrategy {
     public abstract HashSet<UnitType> removeBuildings();
     public abstract HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time);
 
-    public String getStrategyName() {
+    public EnemyStrategyName getStrategyName() {
         return strategyName;
     }
 

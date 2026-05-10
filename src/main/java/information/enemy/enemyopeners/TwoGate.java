@@ -16,7 +16,7 @@ public class TwoGate extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public TwoGate(MapInfo mapInfo) {
-        super("Two Gate");
+        super(EnemyStrategyName.TWOGATE);
         this.mapInfo = mapInfo;
 
         buildingResponse();

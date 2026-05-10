@@ -16,7 +16,7 @@ public class FFE extends EnemyStrategy{
     private MapInfo mapInfo;
 
     public FFE(MapInfo mapInfo) {
-        super("FFE");
+        super(EnemyStrategyName.FFE);
 
         this.mapInfo = mapInfo;
 

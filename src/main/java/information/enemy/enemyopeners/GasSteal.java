@@ -13,7 +13,7 @@ public class GasSteal extends EnemyStrategy{
     private MapInfo mapInfo;
 
     public GasSteal(MapInfo mapInfo) {
-        super("Gas Steal");
+        super(EnemyStrategyName.GASSTEAL);
 
         this.mapInfo = mapInfo;
     }

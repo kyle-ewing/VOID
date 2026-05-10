@@ -14,7 +14,7 @@ public class DragoonRangeRush extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public DragoonRangeRush(MapInfo mapInfo) {
-        super("Dragoon Range Rush");
+        super(EnemyStrategyName.DRAGOONRANGERUSH);
         this.mapInfo = mapInfo;
 
         buildingResponse();

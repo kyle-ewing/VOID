@@ -14,7 +14,7 @@ public class SCVRush extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public SCVRush(MapInfo mapInfo) {
-        super("SCV Rush");
+        super(EnemyStrategyName.SCVRUSH);
         this.mapInfo = mapInfo;
 
         buildingResponse();

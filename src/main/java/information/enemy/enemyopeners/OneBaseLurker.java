@@ -14,7 +14,7 @@ public class OneBaseLurker extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public OneBaseLurker(MapInfo mapInfo) {
-        super("One Base Lurker");
+        super(EnemyStrategyName.ONEBASELURKER);
         this.mapInfo = mapInfo;
 
         buildingResponse();

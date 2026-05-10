@@ -13,7 +13,7 @@ public class FourPool extends EnemyStrategy {
     private MapInfo mapInfo;
 
     public FourPool(MapInfo mapInfo) {
-        super("Four Pool");
+        super(EnemyStrategyName.FOURPOOL);
         this.mapInfo = mapInfo;
 
         buildingResponse();

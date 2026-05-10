@@ -21,6 +21,7 @@ import bwem.Base;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.BuildOrder;
@@ -49,6 +50,7 @@ public class ProductionManager {
     private PriorityQueue<PlannedItem> productionQueue;
     private BuildOrder startingOpener;
     private UnitProduction unitProduction;
+    private ExpansionCriteria expansionCriteria;
     private TilePosition bunkerPosition = null;
     private boolean openerResponse = false;
     private boolean priorityStop = false;
@@ -71,6 +73,7 @@ public class ProductionManager {
 
         tilePositionValidator = new TilePositionValidator(game);
         unitProduction = new UnitProduction(gameState, game);
+        expansionCriteria = new ExpansionCriteria(game, player, gameState);
 
         initialize();
     }
@@ -586,7 +589,7 @@ public class ProductionManager {
 
         //temp fix
         if (gameState.getEnemyOpener() != null) {
-            if (gameState.getEnemyOpener().getStrategyName().equals("Gas Steal") && !gameState.moveOutConditionsMet() && game.enemy().getRace() == Race.Zerg) {
+            if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL && !gameState.moveOutConditionsMet() && game.enemy().getRace() == Race.Zerg) {
                 workerCap = 12;
             }
         }
@@ -879,12 +882,12 @@ public class ProductionManager {
 
         if (gameState.getEnemyOpener() != null) {
             switch (gameState.getEnemyOpener().getStrategyName()) {
-                case "Cannon Rush":
-                case "Four Rax":
-                case "SCV Rush":
-                case "Two Gate":    
+                case CANNONRUSH:
+                case FOURRAX:
+                case SCVRUSH:
+                case TWOGATE:
                     return buildTiles.getMainChokeBunker();
-                case "Four Pool":
+                case FOURPOOL:
                     return buildTiles.getCloseBunkerTile();
             }
         }
@@ -1469,6 +1472,7 @@ public class ProductionManager {
         enemyTechUnitResponse();
         enemyTechBuildingResponse();
         buildTiles.onFrame();
+        expansionCriteria.onFrame();
     }
 
     public void onUnitCreate(Unit unit) {

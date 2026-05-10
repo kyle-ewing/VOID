@@ -10,7 +10,7 @@ import util.Time;
 
 public class DTRush extends EnemyStrategy{
     public DTRush() {
-        super("Dark Templar");
+        super(EnemyStrategyName.DTRUSH);
 
         buildingResponse();
     }

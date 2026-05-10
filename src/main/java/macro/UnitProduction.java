@@ -17,6 +17,7 @@ import information.enemy.EnemyUnits;
 import information.enemy.enemyarmycomposition.EnemyArmyCompManager;
 import information.enemy.enemyarmycomposition.EnemyArmyCompResponse;
 import information.enemy.enemyopeners.EnemyStrategy;
+import information.enemy.enemyopeners.EnemyStrategyName;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderName;
 import macro.buildorders.MechBuildOrder;
@@ -118,7 +119,7 @@ public class UnitProduction {
                 } 
                 else if (isRecruitable(UnitType.Terran_Marine) && !hasInQueue(UnitType.Terran_Marine)) {
                     int priority = (enemyOpener != null
-                            && enemyOpener.getStrategyName().equals("Gas Steal")) ? 2 : 3;
+                            && enemyOpener.getStrategyName() == EnemyStrategyName.GASSTEAL) ? 2 : 3;
                     items.add(plannedUnit(UnitType.Terran_Marine, priority));
                 }
             }
@@ -151,8 +152,8 @@ public class UnitProduction {
         }
         if (enemyOpener != null) {
             switch (enemyOpener.getStrategyName()) {
-                case "One Base Lurker":
-                case "Two Base Lurker":
+                case ONEBASELURKER:
+                case TWOBASELURKER:
                     return Collections.singletonList(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, tankCount < 2 ? 1 : 2));
                 default:
                     return Collections.singletonList(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 2));
@@ -240,7 +241,7 @@ public class UnitProduction {
 
             if (canBuild(building, UnitType.Terran_Barracks)
                     && enemyOpener != null
-                    && enemyOpener.getStrategyName().equals("Cannon Rush")
+                    && enemyOpener.getStrategyName() == EnemyStrategyName.CANNONRUSH
                     && !enemyOpener.isStrategyDefended()
                     && isRecruitable(UnitType.Terran_Marine)
                     && !hasInQueue(UnitType.Terran_Marine)) {
@@ -386,7 +387,7 @@ public class UnitProduction {
 
     private boolean isLurkerOpener() {
         return enemyOpener != null &&
-                (enemyOpener.getStrategyName().equals("One Base Lurker") ||
-                        enemyOpener.getStrategyName().equals("Two Base Lurker"));
+                (enemyOpener.getStrategyName() == EnemyStrategyName.ONEBASELURKER ||
+                        enemyOpener.getStrategyName() == EnemyStrategyName.TWOBASELURKER);
     }
 }
