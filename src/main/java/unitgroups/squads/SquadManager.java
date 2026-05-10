@@ -56,6 +56,15 @@ public class SquadManager {
         squads.add(newSquad);
     }
 
+    public Squad getSquadOfUnit(CombatUnits unit) {
+        for (Squad squad : squads) {
+            if (squad.getSquadUnits().contains(unit)) {
+                return squad;
+            }
+        }
+        return null;
+    }
+
     public void removeUnitFromSquad(CombatUnits unit) {
         for (Squad squad : squads) {
             squad.removeFromSquad(unit);

@@ -188,6 +188,10 @@ public class WorkerManager {
                         break;
                     }
 
+                    if (frameCount % 24 != 0) {
+                        break;
+                    }
+
                     scoutAttack(worker);
                     break;
                 case STUCK:
@@ -917,12 +921,19 @@ public class WorkerManager {
     }
 
     private void scoutAttack(Workers worker) {
-        if (worker.getEnemyUnit() != null) {
+        if (worker.getEnemyUnit() != null && worker.getEnemyUnit().getEnemyType().isWorker() && worker.getEnemyUnit().getEnemyUnit().exists()) {
             worker.selfDefense();
+            return;
         }
-        else {
-            ClosestUnit.findClosestEnemyUnit(worker, gameState.getKnownEnemyUnits(), 600);
+
+        HashSet<EnemyUnits> enemyWorkers = new HashSet<>();
+        for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {
+            if (enemy.getEnemyType().isWorker()) {
+                enemyWorkers.add(enemy);
+            }
         }
+
+        worker.setEnemyUnit(ClosestUnit.findClosestEnemyUnit(worker, enemyWorkers, 600));
     }
 
     private boolean gasImbalance() {

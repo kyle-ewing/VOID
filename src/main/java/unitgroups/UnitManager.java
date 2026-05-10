@@ -22,6 +22,7 @@ import map.PathFinding;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
+import unitgroups.squads.Squad;
 import unitgroups.squads.SquadManager;
 import unitgroups.units.CombatUnitCreator;
 import unitgroups.units.CombatUnits;
@@ -404,14 +405,14 @@ public class UnitManager {
 
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
 
-                    if (game.self().hasResearched(TechType.Spider_Mines) 
-                            && combatUnit.getUnit().getSpiderMineCount() > 0
-                            && new Time(game.getFrameCount()).lessThanOrEqual(new Time(9, 0))) {
-                        if (gameState.getEnemyOpener() == null || (gameState.getEnemyOpener() != null && defendedEnemyOpener)) {
-                            ((Vulture) combatUnit).mineEnemyExpansions(claimedVultureBases);
+                    if (game.self().hasResearched(TechType.Spider_Mines)
+                            && combatUnit.getUnit().getSpiderMineCount() > 0) {
+                        if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(9, 0))) {
+                            if (gameState.getEnemyOpener() == null || (gameState.getEnemyOpener() != null && defendedEnemyOpener)) {
+                                ((Vulture) combatUnit).mineEnemyExpansions(claimedVultureBases);
+                            }
                         }
-
-                        if (((Vulture) combatUnit).isMiningExpansion() && new Time(game.getFrameCount()).greaterThan(new Time(9, 0))) {
+                        else if (((Vulture) combatUnit).isMiningExpansion()) {
                             ((Vulture) combatUnit).resetExpansionMining();
                         }
                     }
@@ -916,6 +917,14 @@ public class UnitManager {
     }
 
     private boolean hasTankSupport(CombatUnits combatUnit) {
+        if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
+            Squad squad = squadManager.getSquadOfUnit(combatUnit);
+            if (squad != null && squad.siegeTankCount() > 0 
+                    && gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName().equals("FFE")) {
+                return true;
+            }
+        }
+
         if (unitCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) > 0 || unitCount.get(UnitType.Terran_Siege_Tank_Siege_Mode) > 0) {
             ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Siege_Tank_Tank_Mode);
             if (combatUnit.getFriendlyUnit() != null && combatUnit.getUnit().getDistance(combatUnit.getFriendlyUnit().getUnit()) < 250) {
@@ -966,6 +975,11 @@ public class UnitManager {
             }
 
             if (building.getUnitType() == UnitType.Terran_Engineering_Bay) {
+                if (gameState.moveOutConditionsMet()) {
+                    building.getUnit().lift();
+                    return;
+                }
+
                 TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
 
                 if (landPosition != null && building.getUnit().getTilePosition().getX() == landPosition.getX() 
@@ -1001,6 +1015,10 @@ public class UnitManager {
         }
 
         if (!gameState.getLiftableBuildings().contains(building.getUnitType())) {
+            return;
+        }
+
+        if (gameState.moveOutConditionsMet()) {
             return;
         }
 

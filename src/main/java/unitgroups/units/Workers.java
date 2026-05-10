@@ -42,7 +42,13 @@ public class Workers extends CombatUnits {
 
         if (!unit.isAttackFrame()) {
             attackClock = 0;
-            unit.attack(enemyUnit.getEnemyPosition());
+
+            if (enemyUnit.getEnemyUnit().isVisible()) {
+                unit.attack(enemyUnit.getEnemyUnit());
+            }
+            else {
+                unit.attack(enemyUnit.getEnemyPosition());
+            }
         }
     }
 
