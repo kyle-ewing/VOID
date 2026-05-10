@@ -97,7 +97,7 @@ public class Squad {
                 || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode;
     }
 
-    private int siegeTankCount() {
+    public int siegeTankCount() {
         int count = 0;
         for (CombatUnits unit : squadUnits) {
             if (isSiegeTank(unit)) {

@@ -100,8 +100,8 @@ public class Scouting {
             return;
         }
 
-        if (scout.getUnit().isAttacking()) {
-            scout.getUnit().stop();
+        if (scout.getEnemyUnit() != null) {
+            return;
         }
 
         if (scout.getUnit().isIdle()) {
@@ -142,8 +142,8 @@ public class Scouting {
             return;
         }
 
-        if (secondScout.getUnit().isAttacking()) {
-            secondScout.getUnit().stop();
+        if (secondScout.getEnemyUnit() != null) {
+            return;
         }
 
         if (secondScout.getUnit().isIdle()) {
@@ -202,6 +202,17 @@ public class Scouting {
                 continue;
             }
             secondScout.getUnit().move(base.getCenter());
+            return;
+        }
+
+        if (scoutTargetBase != null && scout != null
+                && secondScout.getUnit().getDistance(scoutTargetBase.getCenter()) < scout.getUnit().getDistance(scoutTargetBase.getCenter())) {
+            Workers oldScout = scout;
+            scout = secondScout;
+            secondScout = null;
+            oldScout.setWorkerStatus(WorkerStatus.MINERALS);
+            scout.getUnit().move(scoutTargetBase.getCenter());
+            secondScoutSent = false;
             return;
         }
 

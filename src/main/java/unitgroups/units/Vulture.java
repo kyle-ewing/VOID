@@ -134,10 +134,10 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if ((isOutRanged() || enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() + 32)) 
-                && !hasTankSupport 
+        if ((isOutRanged() || enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() + 32))
+                && !hasTankSupport
                 && !lobotomyOverride
-                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 96) {
+                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 160) {
             unitStatus = UnitStatus.RETREAT;
             return;
         }
@@ -285,7 +285,8 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if (isOutRanged() && !hasTankSupport && !lobotomyOverride && unit.getDistance(enemyUnit.getEnemyPosition()) < 225) {
+        if (isOutRanged() && !hasTankSupport && !lobotomyOverride
+                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 128) {
             unitStatus = UnitStatus.RETREAT;
             return;
         }
@@ -323,7 +324,7 @@ public class Vulture extends CombatUnits {
         boolean outRangingNearby = enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), myWeaponRange + 32);
 
         if (outRangingNearby && !enemyFleeing && !hasTankSupport && !lobotomyOverride
-                && currDist < myWeaponRange + 96) {
+                && currDist < myWeaponRange + 160) {
             unitStatus = UnitStatus.RETREAT;
             return;
         }
@@ -335,7 +336,7 @@ public class Vulture extends CombatUnits {
         }
 
         if (currDist > myWeaponRange) {
-            if (outRangingNearby && !enemyFleeing && !hasTankSupport && !lobotomyOverride && currDist < myWeaponRange + 72) {
+            if (outRangingNearby && !enemyFleeing && !hasTankSupport && !lobotomyOverride && currDist < myWeaponRange + 160) {
                 unitStatus = UnitStatus.RETREAT;
                 return;
             }
@@ -533,7 +534,7 @@ public class Vulture extends CombatUnits {
                 safeDistance = range + 160;
             }
             else {
-                safeDistance = Math.max(weaponRange(), range + 96);
+                safeDistance = Math.max(weaponRange(), range + 160);
             }
 
             if (threatDist < safeDistance) {
@@ -840,6 +841,7 @@ public class Vulture extends CombatUnits {
     public void resetExpansionMining() {
         miningExpansion = false;
         layingMines = false;
+        approachingStagingBase = false;
         targetedEnemyExpansion = null;
     }
 

@@ -20,6 +20,7 @@ import bwapi.UpgradeType;
 import bwem.Base;
 import information.GameState;
 import information.MapInfo;
+import information.enemy.EnemyUnits;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.BuildOrder;
@@ -817,6 +818,18 @@ public class ProductionManager {
                 return;
             }
 
+            if (!mapInfo.hasBunkerInNatural()) {
+                for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    UnitType enemyType = enemyUnit.getEnemyType();
+                    if (!enemyType.isFlyer() && !enemyType.isWorker()
+                            && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {
+                        pi.setBuildPosition(buildTiles.getMainBaseCCTile());
+                        mapInfo.getOrderedExpansions().remove(natural);
+                        return;
+                    }
+                }
+            }
+
             if (gameState.getEnemyOpener() != null && !mapInfo.hasBunkerInNatural()) {
                 boolean naturalBunkerInQueue = productionQueue.stream()
                         .anyMatch(queued -> queued.getUnitType() == UnitType.Terran_Bunker
@@ -824,7 +837,17 @@ public class ProductionManager {
                                 && buildTiles.getNaturalChokeBunker() != null
                                 && buildTiles.getNaturalChokeBunker().equals(queued.getBuildPosition()));
 
-                if (!naturalBunkerInQueue && !gameState.getEnemyOpener().removeBuildings().contains(UnitType.Terran_Bunker)) {
+                boolean enemyGroundNearNatural = false;
+                for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    UnitType enemyType = enemyUnit.getEnemyType();
+                    if (!enemyType.isFlyer() && !enemyType.isWorker()
+                            && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {
+                        enemyGroundNearNatural = true;
+                        break;
+                    }
+                }
+
+                if (!naturalBunkerInQueue && !gameState.getEnemyOpener().removeBuildings().contains(UnitType.Terran_Bunker) && enemyGroundNearNatural) {
                     pi.setBuildPosition(buildTiles.getMainBaseCCTile());
                     mapInfo.getOrderedExpansions().remove(natural);
                     return;
