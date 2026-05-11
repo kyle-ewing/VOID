@@ -69,7 +69,7 @@ public class UnitManager {
         this.squadManager = new SquadManager(game, gameState, enemyInformation);
         this.combatUnitCreator = new CombatUnitCreator(game, enemyInformation);
         this.pathFinding = mapInfo.getPathFinding();
-        this.rallyPoint = new RallyPoint(pathFinding, gameState, mapInfo);
+        this.rallyPoint = new RallyPoint(game, pathFinding, gameState, mapInfo);
 
         combatUnits = gameState.getCombatUnits();
         unitCount = gameState.getUnitTypeCount();

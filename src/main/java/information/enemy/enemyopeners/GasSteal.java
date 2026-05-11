@@ -1,13 +1,13 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class GasSteal extends EnemyStrategy{
     private MapInfo mapInfo;
@@ -19,7 +19,7 @@ public class GasSteal extends EnemyStrategy{
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        if (time.greaterThan(new Time(2,30))) {
+        if (time.greaterThan(new Time(2,45))) {
             return false;
         }
 

@@ -274,6 +274,9 @@ public class ClosestUnit {
                 closestEnemy = enemyUnit;
             }
             else if (distance < closestDistance
+                    && !(closestEnemy != null
+                            && isStaticDefense(closestEnemy.getEnemyType())
+                            && enemyUnit.getEnemyType().isWorker())
                     && (closestEnemy == null
                     || !closestEnemy.getEnemyType().isBuilding()
                     || !enemyUnit.getEnemyType().isBuilding()
@@ -291,6 +294,13 @@ public class ClosestUnit {
             }
 
 
+        }
+
+        if (closestEnemy != null
+                && closestEnemy.getEnemyType() == UnitType.Zerg_Creep_Colony
+                && closestEnemy.getEnemyUnit().isVisible()
+                && prioritySunk != null) {
+            return prioritySunk;
         }
 
         return closestEnemy;

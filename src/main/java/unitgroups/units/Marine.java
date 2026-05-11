@@ -31,7 +31,7 @@ public class Marine extends CombatUnits {
             setUnitStatus(UnitStatus.DEFEND);
         }
 
-        if (inBase) {
+        if (inBase || unit.getDistance(rallyPoint.toPosition()) < 96) {
             unit.attack(rallyPoint.toPosition());
         }
         else {
@@ -96,7 +96,7 @@ public class Marine extends CombatUnits {
 
         unit.move(rallyPoint.toPosition());
 
-        if (inBase || hasTankSupport) {
+        if (inBase || hasTankSupport || unit.getDistance(rallyPoint.toPosition()) < 48) {
             setUnitStatus(UnitStatus.RALLY);
         }
     }
