@@ -8,6 +8,7 @@ import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwem.Base;
+import information.enemy.enemyopeners.EnemyStrategyName;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
@@ -316,8 +317,8 @@ public class Scouting {
 
         if (!secondScoutSent
                 && mapInfo.getStartingBases().size() == 3
-                && game.enemy().getRace() == Race.Protoss
-                && gameState.getEnemyOpener() == null
+                && ((game.enemy().getRace() == Race.Protoss && gameState.getEnemyOpener() == null)
+                    || (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL))
                 && gameState.getStartingEnemyBase() == null
                 && mapInfo.getStartingBases().stream().anyMatch(b -> mapInfo.isExplored(b))) {
             secondScoutSent = true;

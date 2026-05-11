@@ -2,7 +2,9 @@ package util;
 
 import java.util.List;
 
+import bwapi.Game;
 import bwapi.Position;
+import bwapi.TilePosition;
 import bwem.Base;
 import information.GameState;
 import information.MapInfo;
@@ -11,6 +13,7 @@ import map.PathFinding;
 import unitgroups.units.CombatUnits;
 
 public class RallyPoint {
+    private Game game;
     private PathFinding pathFinding;
     private GameState gameState;
     private MapInfo mapInfo;
@@ -20,7 +23,8 @@ public class RallyPoint {
     private Position mainRallyPoint;
     private Position naturalRallyPoint;
 
-    public RallyPoint(PathFinding pathFinding, GameState gameState, MapInfo mapInfo) {
+    public RallyPoint(Game game, PathFinding pathFinding, GameState gameState, MapInfo mapInfo) {
+        this.game = game;
         this.pathFinding = pathFinding;
         this.gameState = gameState;
         this.mapInfo = mapInfo;
@@ -57,7 +61,13 @@ public class RallyPoint {
                 combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
                 break;
             case GASSTEAL:
-                combatUnit.setRallyPoint(naturalBase.getCenter().toTilePosition());
+                Base gasStealEnemyNatural = mapInfo.getEnemyNatural();
+                if (gasStealEnemyNatural == null) {
+                    combatUnit.setRallyPoint(new TilePosition(game.mapWidth() / 2, game.mapHeight() / 2));
+                }
+                else {
+                    combatUnit.setRallyPoint(rallyPath(naturalBase.getCenter(), gasStealEnemyNatural.getCenter(), 0.8).toTilePosition());
+                }
                 break;
             case BUNKERRUSH:
                 if (gameState.isEnemyInNatural()) {
@@ -70,6 +80,9 @@ public class RallyPoint {
                     combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
                 }
                 break;
+            default:
+                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+                break;    
         }
 
     }
