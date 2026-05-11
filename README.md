@@ -6,11 +6,11 @@ Terran bot cloned from [JavaBWAPI](https://github.com/JavaBWAPI/jbwapi-java-temp
 
 ## Features
 
-- Two Rax Academy build order
-- Desginated build tile placement
-- Scouting
-- Basic enemy strategy detection (4 Pool, Cannon Rush)
-- Reaction to enemy all in openers
+- Unique build order for each enemy race
+- Ability to detect over 20 enemy openers
+- Designated build tile placement
+- Reaction to seeing enemy tech units/buildings
+- Strong defensive play
 
 ### Installation
 
