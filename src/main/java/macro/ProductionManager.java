@@ -252,7 +252,7 @@ public class ProductionManager {
                     else if (pi.getPlannedItemType() == PlannedItemType.ADDON) {
                         for (Unit productionBuilding : productionBuildings) {
                             if (productionBuilding.canBuildAddon(pi.getUnitType()) && !productionBuilding.isTraining() && productionBuilding.getAddon() == null) {
-                                if (productionQueue.stream().anyMatch(plannedItem -> plannedItem.getAddOnParent() == productionBuilding)) {
+                                if (productionQueue.stream().anyMatch(plannedItem -> plannedItem.getAddOnParent() == productionBuilding && plannedItem != pi) ) {
                                     continue;
                                 }
 
@@ -260,8 +260,13 @@ public class ProductionManager {
                                     continue;
                                 }
 
-                                productionBuilding.buildAddon(pi.getUnitType());
                                 pi.setAddOnParent(productionBuilding);
+
+                                if (pi.getAddOnParent() != null && pi.getAddOnParent().getType() == UnitType.Terran_Command_Center && !ccOnLocation(pi)) {
+                                    continue;
+                                }
+
+                                productionBuilding.buildAddon(pi.getUnitType());
                                 pi.setPlannedItemStatus(PlannedItemStatus.IN_PROGRESS);
                                 break;
                             }
@@ -1456,6 +1461,17 @@ public class ProductionManager {
 
     private boolean hasPositionInQueue(TilePosition tilePosition) {
         return productionQueue.stream().anyMatch(pi -> pi.getBuildPosition() != null && pi.getBuildPosition().equals(tilePosition) && pi.getPlannedItemStatus() != PlannedItemStatus.COMPLETE);
+    }
+
+    private boolean ccOnLocation(PlannedItem pi) {
+        Unit commandCenter = pi.getAddOnParent();
+
+        for (Base base : mapInfo.getOwnedBases()) {
+            if (commandCenter.getDistance(base.getCenter()) < 30) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void onFrame() {
