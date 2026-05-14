@@ -1576,6 +1576,11 @@ public class ProductionManager {
                     return;
                 }
 
+                if (unit.getTilePosition().equals(buildTiles.getNaturalBunkerEbayPosition())
+                        || unit.getTilePosition().equals(buildTiles.getNaturalBunkerBarracksPosition())) {
+                    return;
+                }
+
                 buildTiles.getLargeBuildTiles().add(unit.getTilePosition());
             }
             else if (unit.getType().tileHeight() == 2 && unit.getType().tileWidth() == 3) {

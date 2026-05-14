@@ -9,6 +9,7 @@ import java.util.Random;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitCommand;
 import bwapi.UnitCommandType;
@@ -195,7 +196,8 @@ public class Vulture extends CombatUnits {
         if (game.self().hasResearched(TechType.Spider_Mines) && unit.getSpiderMineCount() > 0 && !layingMines && !recentlyMined) {
             if (!mapInfo.getBaseTiles().contains(unit.getPosition().toTilePosition())
                     && !mapInfo.getNaturalTiles().contains(unit.getPosition().toTilePosition())
-                    && unit.getDistance(enemyUnit.getEnemyPosition()) > 300) {
+                    && unit.getDistance(enemyUnit.getEnemyPosition()) > 300
+                    && !isOnNaturalBunkerWall(unit.getPosition())) {
                 unit.useTech(TechType.Spider_Mines, unit.getPosition());
                 layingMines = true;
             }
@@ -669,7 +671,7 @@ public class Vulture extends CombatUnits {
                     validMinePositionAttempt++;
                 }
 
-                if (currentMinePos != null) {
+                if (currentMinePos != null && !isOnNaturalBunkerWall(currentMinePos)) {
                     unit.useTech(TechType.Spider_Mines, currentMinePos);
                     layingMines = true;
                     currentMinePos = null;
@@ -693,6 +695,10 @@ public class Vulture extends CombatUnits {
             return;
         }
 
+        if (isOnNaturalBunkerWall(unit.getPosition())) {
+            return;
+        }
+
         unit.useTech(TechType.Spider_Mines, unit.getPosition());
         layingMines = true;
     }
@@ -713,14 +719,18 @@ public class Vulture extends CombatUnits {
             }
             if (hasTankSupport && enemyUnit.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode) {
                 Position minePos = unit.getPosition();
-                unit.useTech(TechType.Spider_Mines, minePos);
-                layingMines = true;
+                if (!isOnNaturalBunkerWall(minePos)) {
+                    unit.useTech(TechType.Spider_Mines, minePos);
+                    layingMines = true;
+                }
             }
             else if (enemyUnit.getEnemyType().groundWeapon().maxRange() <= 64) {
                 Position minePos = kiteTo(128);
                 unit.move(minePos);
-                unit.useTech(TechType.Spider_Mines, minePos);
-                layingMines = true;
+                if (!isOnNaturalBunkerWall(minePos)) {
+                    unit.useTech(TechType.Spider_Mines, minePos);
+                    layingMines = true;
+                }
             }
             else if (enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
                 Position enemyPos = enemyUnit.getEnemyPosition();
@@ -736,15 +746,36 @@ public class Vulture extends CombatUnits {
                 Position minePos = new Position((int) moveX, (int) moveY);
 
                 unit.move(minePos);
-                unit.useTech(TechType.Spider_Mines, minePos);
-                layingMines = true;
+                if (!isOnNaturalBunkerWall(minePos)) {
+                    unit.useTech(TechType.Spider_Mines, minePos);
+                    layingMines = true;
+                }
             }
             else {
-                unit.useTech(TechType.Spider_Mines, unit.getPosition());
-                layingMines = true;
+                if (!isOnNaturalBunkerWall(unit.getPosition())) {
+                    unit.useTech(TechType.Spider_Mines, unit.getPosition());
+                    layingMines = true;
+                }
             }
         }
 
+    }
+
+    private boolean isOnNaturalBunkerWall(Position pos) {
+        TilePosition tile = pos.toTilePosition();
+        TilePosition ebayTile = mapInfo.getNaturalBunkerEbayPosition();
+        if (ebayTile != null
+                && tile.getX() >= ebayTile.getX() && tile.getX() < ebayTile.getX() + UnitType.Terran_Engineering_Bay.tileWidth()
+                && tile.getY() >= ebayTile.getY() && tile.getY() < ebayTile.getY() + UnitType.Terran_Engineering_Bay.tileHeight()) {
+            return true;
+        }
+        TilePosition barracksTile = mapInfo.getNaturalBunkerBarracksPosition();
+        if (barracksTile != null
+                && tile.getX() >= barracksTile.getX() && tile.getX() < barracksTile.getX() + UnitType.Terran_Barracks.tileWidth()
+                && tile.getY() >= barracksTile.getY() && tile.getY() < barracksTile.getY() + UnitType.Terran_Barracks.tileHeight()) {
+            return true;
+        }
+        return false;
     }
 
     private boolean allowMineLaying() {
