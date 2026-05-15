@@ -36,6 +36,8 @@ public class MapInfo {
     private ChokePoint mainChokePoint;
     private ChokePoint naturalChokePoint;
     private Unit initalCC = null;
+    private TilePosition naturalBunkerEbayPosition;
+    private TilePosition naturalBunkerBarracksPosition;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
@@ -852,7 +854,7 @@ public class MapInfo {
         }
 
         for (Base base : mapBases) {
-            if (base == startingBase || base == naturalBase || base == enemyMain || (base == enemyNatural && enemyNaturalHasDepot)) {
+            if (base == startingBase || base == naturalBase || base == enemyMain || base == enemyNatural) {
                 continue;
             }
 
@@ -912,6 +914,22 @@ public class MapInfo {
 
     public Base getNaturalBase() {
         return naturalBase;
+    }
+
+    public TilePosition getNaturalBunkerEbayPosition() {
+        return naturalBunkerEbayPosition;
+    }
+
+    public void setNaturalBunkerEbayPosition(TilePosition position) {
+        naturalBunkerEbayPosition = position;
+    }
+
+    public TilePosition getNaturalBunkerBarracksPosition() {
+        return naturalBunkerBarracksPosition;
+    }
+
+    public void setNaturalBunkerBarracksPosition(TilePosition position) {
+        naturalBunkerBarracksPosition = position;
     }
 
     public HashSet<TilePosition> getBaseTiles() {

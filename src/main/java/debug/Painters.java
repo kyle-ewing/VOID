@@ -99,7 +99,8 @@ public class Painters {
             paintLargeBuildTiles(gameState.getBuildTiles().getLargeBuildTiles(), Color.Green);
             paintLargeBuildTiles(gameState.getBuildTiles().getLargeBuildTilesNoGap(), Color.Yellow);
             paintMediumBuildTiles(gameState.getBuildTiles().getMediumBuildTiles(), Color.Blue);
-            paintEbayLandingLocation(gameState.getBuildTiles().getNaturalBunkerEbayPosition());
+            paintEbayLandingLocation(gameState.getBuildTiles().getNaturalBunkerEbayPosition(), Color.Orange);
+            paintEbayLandingLocation(gameState.getBuildTiles().getNaturalBunkerBarracksPosition(), Color.Red);
             paintLargeBuildTile(gameState.getBuildTiles().getMainBaseCCTile(), Color.Purple);
         }
 
@@ -569,7 +570,7 @@ public class Painters {
         game.drawBoxMap(start, end, Color.Teal);
     }
 
-    private void paintEbayLandingLocation(TilePosition tilePosition) {
+    private void paintEbayLandingLocation(TilePosition tilePosition, Color color) {
         if (tilePosition == null) {
             return;
         }
@@ -580,7 +581,7 @@ public class Painters {
                 start.getX() + UnitType.Terran_Engineering_Bay.tileWidth() * 32,
                 start.getY() + UnitType.Terran_Engineering_Bay.tileHeight() * 32
         );
-        game.drawBoxMap(start, end, Color.Orange);
+        game.drawBoxMap(start, end, color);
     }
 
     private void paintMineralLineTurrets(HashMap<Base, TilePosition> mineralLineTurrets) {

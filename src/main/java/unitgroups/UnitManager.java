@@ -381,7 +381,7 @@ public class UnitManager {
                                 case Protoss:
                                     TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
 
-                                    if (landPosition != null && !gameState.isEnemyInNatural() && !gameState.moveOutConditionsMet()) {
+                                    if (landPosition != null && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) && !gameState.moveOutConditionsMet()) {
                                         combatUnit.getUnit().land(landPosition);
                                     }
                                     else {
@@ -391,6 +391,20 @@ public class UnitManager {
                                     }
                                 default:
                                     //do nothing    
+                            }
+                        }
+                    }
+                    else if (combatUnit.getUnitType() == UnitType.Terran_Barracks) {
+                        if (game.enemy().getRace() == Race.Protoss) {
+                            TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
+
+                            if (landPosition != null && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) && !gameState.moveOutConditionsMet()) {
+                                combatUnit.getUnit().land(landPosition);
+                            }
+                            else {
+                                if (combatUnit.getRallyPoint() != null) {
+                                    //combatUnit.getUnit().move(combatUnit.getRallyPoint().toPosition());
+                                }
                             }
                         }
                     }
@@ -408,8 +422,12 @@ public class UnitManager {
 
                     if (game.self().hasResearched(TechType.Spider_Mines)
                             && combatUnit.getUnit().getSpiderMineCount() > 0) {
-                        if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(9, 0))) {
-                            if (gameState.getEnemyOpener() == null || (gameState.getEnemyOpener() != null && defendedEnemyOpener)) {
+                        if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(9, 30))) {
+                            if (gameState.getEnemyOpener() == null 
+                                    || (gameState.getEnemyOpener() != null && defendedEnemyOpener)
+                                    && mapInfo.getNaturalBase() != null 
+                                    && gameState.getKnownEnemyUnits().stream().noneMatch(eu -> eu.getEnemyPosition() != null 
+                                        && eu.getEnemyPosition().getDistance(mapInfo.getNaturalBase().getCenter()) < 500)) {
                                 ((Vulture) combatUnit).mineEnemyExpansions(claimedVultureBases);
                             }
                         }
@@ -981,28 +999,33 @@ public class UnitManager {
                     return;
                 }
 
-                TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
-
-                if (landPosition != null && building.getUnit().getTilePosition().getX() == landPosition.getX() 
-                    && building.getUnit().getTilePosition().getY() == landPosition.getY()) {
-                return;
-            }
-            } 
-
-            if (building.getUnitType() == UnitType.Terran_Barracks) {
-                if (combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)
-                        || gameState.getProductionQueue().stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
+                if (handleWallPassThroughLift(building, gameState.getBuildTiles().getNaturalBunkerEbayPosition())) {
                     return;
                 }
             }
 
-            //Don't lift if cannot build goliaths and air threats are seen
-            if (building.getUnitType() == UnitType.Terran_Barracks
-                    && !building.notNeeded()
+            if (building.getUnitType() == UnitType.Terran_Barracks) {
+                if (gameState.moveOutConditionsMet()) {
+                    building.getUnit().lift();
+                    return;
+                }
+                
+                if (combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)
+                        || gameState.getProductionQueue().stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
+                    return;
+                }
+
+                // Don't lift if cannot build goliaths and air threats are seen
+                if (!building.notNeeded()
                     && gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer)
                     && gameState.getUnitTypeCount().getOrDefault(UnitType.Terran_Armory, 0) == 0
                     && combatUnits.stream().anyMatch(cu -> cu.getUnitType() == UnitType.Terran_Goliath)) {
-                return;
+                        return;
+                    }
+
+                if (handleWallPassThroughLift(building, gameState.getBuildTiles().getNaturalBunkerBarracksPosition())) {
+                    return;
+                }
             }
 
             building.setNotNeeded(true);
@@ -1011,6 +1034,10 @@ public class UnitManager {
     }
 
     private void landBuilding(CombatUnits building) {
+        if (handleWallRecoveryLand(building)) {
+            return;
+        }
+
         if (building.notNeeded()) {
             return;
         }
@@ -1033,6 +1060,72 @@ public class UnitManager {
                 building.getUnitType() == UnitType.Terran_Barracks && gameState.getUnitTypeCount().get(UnitType.Terran_Armory) == 0) {
             building.getUnit().land(building.getUnit().getInitialTilePosition());
         }
+    }
+
+    private boolean handleWallPassThroughLift(CombatUnits building, TilePosition wallTile) {
+        if (wallTile == null) {
+            return false;
+        }
+        if (building.getUnit().getTilePosition().getX() != wallTile.getX()
+                || building.getUnit().getTilePosition().getY() != wallTile.getY()) {
+            return false;
+        }
+        if (enemyWithinRangeOfWall(building, 128)) {
+            return true;
+        }
+        if (friendlyPassingThroughWall(building, 80)) {
+            building.getUnit().lift();
+        }
+        return true;
+    }
+
+    private boolean handleWallRecoveryLand(CombatUnits building) {
+        if (gameState.moveOutConditionsMet()) {
+            return false;
+        }
+        if (!building.getUnit().isLifted()) {
+            return false;
+        }
+        TilePosition wallTile = null;
+        if (building.getUnitType() == UnitType.Terran_Engineering_Bay) {
+            wallTile = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
+        }
+        else if (building.getUnitType() == UnitType.Terran_Barracks) {
+            wallTile = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
+        }
+        if (wallTile == null) {
+            return false;
+        }
+        TilePosition initial = building.getUnit().getInitialTilePosition();
+        if (initial == null || initial.getX() != wallTile.getX() || initial.getY() != wallTile.getY()) {
+            return false;
+        }
+        if (enemyWithinRangeOfWall(building, 64)) {
+            return true;
+        }
+        if (friendlyPassingThroughWall(building, 64)) {
+            return true;
+        }
+        building.setNotNeeded(false);
+        building.getUnit().land(wallTile);
+        return true;
+    }
+
+    private boolean enemyWithinRangeOfWall(CombatUnits building, int range) {
+        return gameState.getKnownEnemyUnits().stream()
+                .anyMatch(eu -> eu.getEnemyPosition() != null
+                        && eu.getEnemyPosition().getDistance(building.getUnit().getPosition()) < range);
+    }
+
+    private boolean friendlyPassingThroughWall(CombatUnits building, int range) {
+        return combatUnits.stream().anyMatch(cu -> {
+            UnitStatus s = cu.getUnitStatus();
+            if (s != UnitStatus.POKE && s != UnitStatus.RETREAT
+                    && s != UnitStatus.ATTACK && s != UnitStatus.REGROUP) {
+                return false;
+            }
+            return cu.getUnit().getDistance(building.getUnit().getPosition()) < range;
+        });
     }
 
     public int naturalBunkerLeashRange() {

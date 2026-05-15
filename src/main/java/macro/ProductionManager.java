@@ -828,6 +828,10 @@ public class ProductionManager {
 
             if (!mapInfo.hasBunkerInNatural()) {
                 for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    if (enemyUnit.getEnemyPosition() == null) {
+                        continue;
+                    }
+
                     UnitType enemyType = enemyUnit.getEnemyType();
                     if (!enemyType.isFlyer() && !enemyType.isWorker()
                             && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {
@@ -1573,6 +1577,11 @@ public class ProductionManager {
             if (unit.getType().tileHeight() == 3 && unit.getType().tileWidth() == 4) {
                 if (unit.getType() == UnitType.Terran_Command_Center) {
                     mapInfo.readdExpansion(unit);
+                    return;
+                }
+
+                if (unit.getTilePosition().equals(buildTiles.getNaturalBunkerEbayPosition())
+                        || unit.getTilePosition().equals(buildTiles.getNaturalBunkerBarracksPosition())) {
                     return;
                 }
 
