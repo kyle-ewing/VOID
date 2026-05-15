@@ -1070,10 +1070,10 @@ public class UnitManager {
                 || building.getUnit().getTilePosition().getY() != wallTile.getY()) {
             return false;
         }
-        if (enemyWithinRangeOfWall(building, 64)) {
+        if (enemyWithinRangeOfWall(building, 128)) {
             return true;
         }
-        if (friendlyPassingThroughWall(building, 64)) {
+        if (friendlyPassingThroughWall(building, 32)) {
             building.getUnit().lift();
         }
         return true;

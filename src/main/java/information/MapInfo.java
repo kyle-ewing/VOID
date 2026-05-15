@@ -854,7 +854,7 @@ public class MapInfo {
         }
 
         for (Base base : mapBases) {
-            if (base == startingBase || base == naturalBase || base == enemyMain || (base == enemyNatural && enemyNaturalHasDepot)) {
+            if (base == startingBase || base == naturalBase || base == enemyMain || base == enemyNatural) {
                 continue;
             }
 

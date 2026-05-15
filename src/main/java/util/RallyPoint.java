@@ -80,6 +80,9 @@ public class RallyPoint {
                     combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
                 }
                 break;
+            case TWOFACTANK:
+                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                 break;
             default:
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
                 break;    
