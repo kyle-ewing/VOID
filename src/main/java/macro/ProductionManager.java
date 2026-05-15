@@ -828,6 +828,10 @@ public class ProductionManager {
 
             if (!mapInfo.hasBunkerInNatural()) {
                 for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    if (enemyUnit.getEnemyPosition() == null) {
+                        continue;
+                    }
+
                     UnitType enemyType = enemyUnit.getEnemyType();
                     if (!enemyType.isFlyer() && !enemyType.isWorker()
                             && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {

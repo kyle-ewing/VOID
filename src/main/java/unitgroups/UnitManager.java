@@ -1073,7 +1073,7 @@ public class UnitManager {
         if (enemyWithinRangeOfWall(building, 128)) {
             return true;
         }
-        if (friendlyPassingThroughWall(building, 32)) {
+        if (friendlyPassingThroughWall(building, 80)) {
             building.getUnit().lift();
         }
         return true;

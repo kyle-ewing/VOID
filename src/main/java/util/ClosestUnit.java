@@ -1,17 +1,17 @@
 package util;
 
-import bwapi.Position;
-import bwapi.Unit;
-import bwapi.UnitType;
-import information.enemy.EnemyUnits;
-import unitgroups.units.CombatUnits;
-import unitgroups.units.WorkerStatus;
-import unitgroups.units.Workers;
-import unitgroups.units.SiegeTank;
-import map.PathFinding;
-
 import java.util.HashSet;
 import java.util.List;
+
+import bwapi.Position;
+import bwapi.UnitType;
+import information.enemy.EnemyUnits;
+import map.PathFinding;
+import unitgroups.units.CombatUnits;
+import unitgroups.units.SiegeTank;
+import unitgroups.units.UnitStatus;
+import unitgroups.units.WorkerStatus;
+import unitgroups.units.Workers;
 
 public class ClosestUnit {
     public static void findClosestUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {
@@ -40,6 +40,13 @@ public class ClosestUnit {
 
         for (CombatUnits friendlyUnit : friendlyUnits) {
             if (friendlyUnit.getUnitID() == combatUnit.getUnitID()) {
+                continue;
+            }
+
+            if (friendlyUnit.getUnitStatus() == UnitStatus.LIFTABLE
+                    || friendlyUnit.getUnitStatus() == UnitStatus.BUILDING
+                    || friendlyUnit.getUnitStatus() == UnitStatus.MINE
+                    || friendlyUnit.getUnitStatus() == UnitStatus.WORKER) {
                 continue;
             }
 
