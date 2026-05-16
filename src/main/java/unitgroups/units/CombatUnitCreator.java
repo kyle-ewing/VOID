@@ -7,6 +7,7 @@ import information.enemy.EnemyInformation;
 public class CombatUnitCreator {
     private Game game;
     private EnemyInformation enemyInformation;
+    private UnitStatus unitStatus;
 
     public CombatUnitCreator(Game game, EnemyInformation enemyInformation) {
         this.game = game;
@@ -47,6 +48,15 @@ public class CombatUnitCreator {
                 return new Workers(game, unit);
             default:
                 return new CombatUnits(game, unit);
+        }
+    }
+
+    public CombatUnits createCombatUnit(Unit unit, UnitStatus unitStatus) {
+        if (unit.getType().isBuilding()) {
+            return new Building(game, unit, unitStatus);
+        } 
+        else {
+            return new CombatUnits(game, unit, unitStatus);
         }
     }
 }

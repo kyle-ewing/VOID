@@ -282,6 +282,9 @@ public class Vulture extends CombatUnits {
             else if (targetedEnemyExpansion != null && unit.getDistance(targetedEnemyExpansion.getCenter()) < 96) {
                 pulseCheck += 8;
             }
+            else if (unit.isIdle()) {
+                pulseCheck += 16;
+            }
 
             if (miningExpansion && targetedEnemyExpansion != null) {
                 detouringMine = false;

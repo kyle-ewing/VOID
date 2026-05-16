@@ -42,6 +42,7 @@ public class BuildTiles {
     private TilePosition naturalChokeBunker;
     private TilePosition naturalBunkerEbayPosition;
     private TilePosition naturalBunkerBarracksPosition;
+    private TilePosition naturalBunkerDepotPosition;
     private TilePosition closeBunkerTile;
     private TilePosition mainChokeTurret;
     private TilePosition naturalChokeTurret;
@@ -976,6 +977,7 @@ public class BuildTiles {
     private void computeNaturalBunkerWall(TilePosition bunkerTile, TilePosition chokeTile) {
         naturalBunkerEbayPosition = null;
         naturalBunkerBarracksPosition = null;
+        naturalBunkerDepotPosition = null;
 
         int dx = chokeTile.getX() - bunkerTile.getX();
         int dy = chokeTile.getY() - bunkerTile.getY();
@@ -1055,6 +1057,8 @@ public class BuildTiles {
         TilePosition bestEbay = null;
         TilePosition bestBarracks = null;
         boolean bestPairNearWall = false;
+        boolean bestEbayWallAdjacent = false;
+        boolean bestBarracksWallAdjacent = false;
         int bestSlack = Integer.MAX_VALUE;
         int bestSplitScore = Integer.MAX_VALUE;
         int bestPerpDist = Integer.MAX_VALUE;
@@ -1444,6 +1448,8 @@ public class BuildTiles {
                                 bestPairDist = pairDist;
                                 bestEbay = ebayCandidate;
                                 bestBarracks = barracksCandidate;
+                                bestEbayWallAdjacent = ebayWallAdjacent;
+                                bestBarracksWallAdjacent = barracksWallAdjacent;
                             }
                         }
                     }
@@ -1459,8 +1465,257 @@ public class BuildTiles {
             naturalBunkerBarracksPosition = bestBarracks;
         }
 
+        if (bestEbay != null && bestBarracks != null && !(bestEbayWallAdjacent && bestBarracksWallAdjacent)) {
+            int dW = UnitType.Terran_Supply_Depot.tileWidth();
+            int dH = UnitType.Terran_Supply_Depot.tileHeight();
+
+            int eX = bestEbay.getX();
+            int eY = bestEbay.getY();
+            int eXEnd = eX + eW;
+            int eYEnd = eY + eH;
+
+            int bX = bestBarracks.getX();
+            int bY = bestBarracks.getY();
+            int bXEnd = bX + bW;
+            int bYEnd = bY + bH;
+
+            int wallToucherCenterPerp;
+            if (bestEbayWallAdjacent) {
+                if (horizontalAxis) {
+                    wallToucherCenterPerp = (eY * 32 + (eH * 32) / 2) - (bunkerY * 32 + (bunkerH * 32) / 2);
+                }
+                else {
+                    wallToucherCenterPerp = (eX * 32 + (eW * 32) / 2) - (bunkerX * 32 + (bunkerW * 32) / 2);
+                }
+            }
+            else {
+                if (horizontalAxis) {
+                    wallToucherCenterPerp = (bY * 32 + (bH * 32) / 2) - (bunkerY * 32 + (bunkerH * 32) / 2);
+                }
+                else {
+                    wallToucherCenterPerp = (bX * 32 + (bW * 32) / 2) - (bunkerX * 32 + (bunkerW * 32) / 2);
+                }
+            }
+
+            int coveredSideSign;
+            if (wallToucherCenterPerp >= 0) {
+                coveredSideSign = 1;
+            }
+            else {
+                coveredSideSign = -1;
+            }
+
+            int depotSideSign = -coveredSideSign;
+
+            int chokeFrontSign;
+            if (horizontalAxis) {
+                if (dx >= 0) {
+                    chokeFrontSign = 1;
+                }
+                else {
+                    chokeFrontSign = -1;
+                }
+            }
+            else {
+                if (dy >= 0) {
+                    chokeFrontSign = 1;
+                }
+                else {
+                    chokeFrontSign = -1;
+                }
+            }
+
+            int bunkerCenterX = bunkerX * 32 + (bunkerW * 32) / 2;
+            int bunkerCenterY = bunkerY * 32 + (bunkerH * 32) / 2;
+
+            TilePosition bestDepot = null;
+            int bestSharedEdge = -1;
+            int bestManhattan = Integer.MAX_VALUE;
+
+            for (int dxOffset = -searchRange; dxOffset <= searchRange; dxOffset++) {
+                for (int dyOffset = -searchRange; dyOffset <= searchRange; dyOffset++) {
+                    int candX = bunkerX + dxOffset;
+                    int candY = bunkerY + dyOffset;
+
+                    TilePosition depotCandidate = new TilePosition(candX, candY);
+                    int candXEnd = candX + dW;
+                    int candYEnd = candY + dH;
+
+                    if (!tilePositionValidator.isBuildable(depotCandidate, UnitType.Terran_Supply_Depot)) {
+                        continue;
+                    }
+                    if (intersectsExclusionZones(depotCandidate)) {
+                        continue;
+                    }
+                    if (intersectsExistingBuildTiles(depotCandidate, UnitType.Terran_Supply_Depot, 0)) {
+                        continue;
+                    }
+                    if (rectanglesIntersect(candX, candY, candXEnd, candYEnd, eX, eY, eXEnd, eYEnd)) {
+                        continue;
+                    }
+                    if (rectanglesIntersect(candX, candY, candXEnd, candYEnd, bX, bY, bXEnd, bYEnd)) {
+                        continue;
+                    }
+                    if (rectanglesIntersect(candX, candY, candXEnd, candYEnd, bunkerX, bunkerY, bunkerXEnd, bunkerYEnd)) {
+                        continue;
+                    }
+
+                    int candCenterX = candX * 32 + (dW * 32) / 2;
+                    int candCenterY = candY * 32 + (dH * 32) / 2;
+
+                    int candSideSign;
+                    if (horizontalAxis) {
+                        int sidePerp = candCenterY - bunkerCenterY;
+                        if (sidePerp >= 0) {
+                            candSideSign = 1;
+                        }
+                        else {
+                            candSideSign = -1;
+                        }
+                    }
+                    else {
+                        int sidePerp = candCenterX - bunkerCenterX;
+                        if (sidePerp >= 0) {
+                            candSideSign = 1;
+                        }
+                        else {
+                            candSideSign = -1;
+                        }
+                    }
+
+                    if (candSideSign != depotSideSign) {
+                        continue;
+                    }
+
+                    int candFrontSign;
+                    if (horizontalAxis) {
+                        int frontPerp = candCenterX - bunkerCenterX;
+                        if (frontPerp >= 0) {
+                            candFrontSign = 1;
+                        }
+                        else {
+                            candFrontSign = -1;
+                        }
+                    }
+                    else {
+                        int frontPerp = candCenterY - bunkerCenterY;
+                        if (frontPerp >= 0) {
+                            candFrontSign = 1;
+                        }
+                        else {
+                            candFrontSign = -1;
+                        }
+                    }
+
+                    if (candFrontSign != chokeFrontSign) {
+                        continue;
+                    }
+
+                    boolean depotWallAdjacent = false;
+                    for (int i = 0; i < dW; i++) {
+                        if (!tilePositionValidator.isWalkable(new TilePosition(candX + i, candY - 1))) {
+                            depotWallAdjacent = true;
+                            break;
+                        }
+                        if (!tilePositionValidator.isWalkable(new TilePosition(candX + i, candY + dH))) {
+                            depotWallAdjacent = true;
+                            break;
+                        }
+                    }
+                    if (!depotWallAdjacent) {
+                        for (int j = 0; j < dH; j++) {
+                            if (!tilePositionValidator.isWalkable(new TilePosition(candX - 1, candY + j))) {
+                                depotWallAdjacent = true;
+                                break;
+                            }
+                            if (!tilePositionValidator.isWalkable(new TilePosition(candX + dW, candY + j))) {
+                                depotWallAdjacent = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!depotWallAdjacent) {
+                        continue;
+                    }
+
+                    int sharedEdge = 0;
+                    boolean depotEbayVerticalTouch = (candX == eXEnd) || (candXEnd == eX);
+                    if (depotEbayVerticalTouch) {
+                        int yOverlap = Math.min(candYEnd, eYEnd) - Math.max(candY, eY);
+                        if (yOverlap >= 1) {
+                            sharedEdge += yOverlap;
+                        }
+                    }
+                    boolean depotEbayHorizontalTouch = (candY == eYEnd) || (candYEnd == eY);
+                    if (depotEbayHorizontalTouch) {
+                        int xOverlap = Math.min(candXEnd, eXEnd) - Math.max(candX, eX);
+                        if (xOverlap >= 1) {
+                            sharedEdge += xOverlap;
+                        }
+                    }
+                    boolean depotBarracksVerticalTouch = (candX == bXEnd) || (candXEnd == bX);
+                    if (depotBarracksVerticalTouch) {
+                        int yOverlap = Math.min(candYEnd, bYEnd) - Math.max(candY, bY);
+                        if (yOverlap >= 1) {
+                            sharedEdge += yOverlap;
+                        }
+                    }
+                    boolean depotBarracksHorizontalTouch = (candY == bYEnd) || (candYEnd == bY);
+                    if (depotBarracksHorizontalTouch) {
+                        int xOverlap = Math.min(candXEnd, bXEnd) - Math.max(candX, bX);
+                        if (xOverlap >= 1) {
+                            sharedEdge += xOverlap;
+                        }
+                    }
+                    boolean depotBunkerVerticalTouch = (candX == bunkerXEnd) || (candXEnd == bunkerX);
+                    if (depotBunkerVerticalTouch) {
+                        int yOverlap = Math.min(candYEnd, bunkerYEnd) - Math.max(candY, bunkerY);
+                        if (yOverlap >= 1) {
+                            sharedEdge += yOverlap;
+                        }
+                    }
+                    boolean depotBunkerHorizontalTouch = (candY == bunkerYEnd) || (candYEnd == bunkerY);
+                    if (depotBunkerHorizontalTouch) {
+                        int xOverlap = Math.min(candXEnd, bunkerXEnd) - Math.max(candX, bunkerX);
+                        if (xOverlap >= 1) {
+                            sharedEdge += xOverlap;
+                        }
+                    }
+
+                    if (sharedEdge <= 0) {
+                        continue;
+                    }
+
+                    int manhattan = Math.abs(candCenterX - bunkerCenterX) + Math.abs(candCenterY - bunkerCenterY);
+
+                    boolean betterDepot = false;
+                    if (bestDepot == null) {
+                        betterDepot = true;
+                    }
+                    else if (sharedEdge > bestSharedEdge) {
+                        betterDepot = true;
+                    }
+                    else if (sharedEdge == bestSharedEdge && manhattan < bestManhattan) {
+                        betterDepot = true;
+                    }
+
+                    if (betterDepot) {
+                        bestDepot = depotCandidate;
+                        bestSharedEdge = sharedEdge;
+                        bestManhattan = manhattan;
+                    }
+                }
+            }
+
+            if (bestDepot != null) {
+                naturalBunkerDepotPosition = bestDepot;
+            }
+        }
+
         mapInfo.setNaturalBunkerEbayPosition(naturalBunkerEbayPosition);
         mapInfo.setNaturalBunkerBarracksPosition(naturalBunkerBarracksPosition);
+        mapInfo.setNaturalBunkerDepotPosition(naturalBunkerDepotPosition);
     }
 
     private TilePosition findValidTileNear(TilePosition center, UnitType unitType) {
@@ -2204,6 +2459,10 @@ public class BuildTiles {
 
     public TilePosition getNaturalBunkerBarracksPosition() {
         return naturalBunkerBarracksPosition;
+    }
+
+    public TilePosition getNaturalBunkerDepotPosition() {
+        return naturalBunkerDepotPosition;
     }
 
     public TilePosition getMainChokeBunker() {
