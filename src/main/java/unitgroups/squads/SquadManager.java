@@ -10,6 +10,7 @@ import information.GameState;
 import information.enemy.EnemyInformation;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
+import util.Time;
 
 public class SquadManager {
     private Game game;
@@ -18,6 +19,8 @@ public class SquadManager {
     private List<Squad> squads = new ArrayList<>();
     private HashMap<UnitType, Integer> compositionLimits = new HashMap<>();
     private float enemyArmySupply = 0;
+    private int runbySquadCooldown = 0;
+    private boolean runbySquadActive = false;
 
     public SquadManager(Game game, GameState gamestate, EnemyInformation enemyInformation) {
         this.game = game;
@@ -45,6 +48,9 @@ public class SquadManager {
         int limit = compositionLimits.getOrDefault(type, Integer.MAX_VALUE);
 
         for (Squad squad : squads) {
+            if (squad.isRunbySquad()) {
+                continue;
+            }
             if (squad.getCountOf(type) < limit) {
                 squad.addToSquad(unit);
                 return;
@@ -65,6 +71,11 @@ public class SquadManager {
         return null;
     }
 
+    public void transferUnit(CombatUnits unit, Squad fromSquad, Squad toSquad) {
+        fromSquad.removeFromSquad(unit);
+        toSquad.addToSquad(unit);
+    }
+
     public void removeUnitFromSquad(CombatUnits unit) {
         for (Squad squad : squads) {
             squad.removeFromSquad(unit);
@@ -72,6 +83,33 @@ public class SquadManager {
         squads.removeIf(squad -> squad.getSquadUnits().isEmpty());
         if (squads.isEmpty()) {
             squads.add(new Squad(game));
+        }
+    }
+
+    private void createRunbySquad() {
+        Squad runbySquad = new Squad(game, true);
+        int addedUnits = 0;
+        for (Squad squad : squads) {
+            if (squad.isRunbySquad()) {
+                continue;
+            }
+
+            if (addedUnits >= 4) {
+                break;
+            }
+            for (CombatUnits unit : new ArrayList<>(squad.getSquadUnits())) {
+                if (addedUnits >= 4) {
+                    break;
+                }
+                if (unit.getUnitType() == UnitType.Terran_Vulture) {
+                    transferUnit(unit, squad, runbySquad);
+                    addedUnits++;
+                }
+            }
+        }
+
+        if (addedUnits > 0) {
+            squads.add(runbySquad);
         }
     }
 
@@ -97,6 +135,25 @@ public class SquadManager {
 
             squad.onFrame();
         }
+
+        if (new Time(game.getFrameCount()).greaterThan(new Time(9,30))
+                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 4
+                && squads.stream().filter(s -> s.isRunbySquad()).count() == 0
+                && enemyInformation.getEnemyUnits().stream().filter(eu -> eu.getEnemyType().isResourceDepot()).count() >= 2
+                && !runbySquadActive) {
+            createRunbySquad();
+            runbySquadActive = true;
+        }
+
+        if (runbySquadActive) {
+            runbySquadCooldown++;
+
+            if (new Time(runbySquadCooldown).greaterThan(new Time(2,0))) {
+                runbySquadActive = false;
+                runbySquadCooldown = 0;
+            }
+        }
+
         updateRegroupPositions();
     }
 

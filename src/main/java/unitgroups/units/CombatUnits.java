@@ -42,6 +42,7 @@ public class CombatUnits {
     protected boolean priorityTargetLock = false;
     protected boolean notNeeded = false;
     protected boolean dtUndetected = false;
+    protected boolean inRunbySquad = false;
 
     protected static final int STUCK_CHECK_INTERVAL = 24;
     protected static final int STUCK_THRESHOLD = 2;
@@ -190,7 +191,9 @@ public class CombatUnits {
 
 
     public void hunting() {
+    }
 
+    public void runby() {
     }
 
     public void regroup() {
@@ -201,21 +204,21 @@ public class CombatUnits {
         if (!game.isWalkable(regroupPosition.toWalkPosition())) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
-            setUnitStatus(UnitStatus.ATTACK);
+            setUnitStatus(regroupExitStatus());
             return;
         }
 
         if (enemyUnit != null && enemyUnit.getEnemyUnit().getDistance(unit) < 200) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
-            setUnitStatus(UnitStatus.ATTACK);
+            setUnitStatus(regroupExitStatus());
             return;
         }
 
         if (unit.getPosition().getDistance(regroupPosition) < 225) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
-            setUnitStatus(UnitStatus.ATTACK);
+            setUnitStatus(regroupExitStatus());
             return;
         }
 
@@ -247,6 +250,21 @@ public class CombatUnits {
         }
 
         unit.move(regroupPosition);
+    }
+
+    private UnitStatus regroupExitStatus() {
+        if (inRunbySquad) {
+            return UnitStatus.RUNBY;
+        }
+        return UnitStatus.ATTACK;
+    }
+
+    public boolean isInRunbySquad() {
+        return inRunbySquad;
+    }
+
+    public void setInRunbySquad(boolean inRunbySquad) {
+        this.inRunbySquad = inRunbySquad;
     }
 
     public void poke() {

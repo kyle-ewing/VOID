@@ -38,6 +38,8 @@ public class Vulture extends CombatUnits {
     private boolean recentlyMined = false;
     private boolean detouringMine = false;
     private Base targetedEnemyExpansion = null;
+    private HashSet<Base> visitedExpansions = new HashSet<>();
+    private boolean runbyStagingComplete = false;
     private boolean lobotomyOverride = false;
     private Position prevEnemyPos = null;
     private int velocityUpdateFrame = 0;
@@ -288,106 +290,15 @@ public class Vulture extends CombatUnits {
 
             if (miningExpansion && targetedEnemyExpansion != null) {
                 detouringMine = false;
-                Position vulturePos = unit.getPosition();
                 Position destPos = targetedEnemyExpansion.getCenter();
-                double distToDest = vulturePos.getDistance(destPos);
-                double hazardRadius = 256.0;
+                double distToDest = unit.getPosition().getDistance(destPos);
 
-                double avoidDx = 0.0;
-                double avoidDy = 0.0;
-                boolean threatNearby = false;
-
-                for (EnemyUnits enemy : enemyUnits) {
-                    int range = getGroundThreatRange(enemy);
-                    if (range == 0) {
-                        continue;
-                    }
-                    if (enemy.getEnemyPosition() == null) {
-                        continue;
-                    }
-
-                    UnitType type = enemy.getEnemyType();
-
-                    if (type.isWorker()) {
-                        continue;
-                    }
-                    
-                    if (type.isBuilding() && enemy.getEnemyUnit() != null && enemy.getEnemyUnit().isVisible()) {
-                        if (type == UnitType.Terran_Bunker) {
-                            if (!enemy.getEnemyUnit().isCompleted()) {
-                                continue;
-                            }
-                        }
-                        else if (!enemy.getEnemyUnit().isCompleted() || enemy.getEnemyUnit().isMorphing()
-                                || !enemy.getEnemyUnit().isPowered()) {
-                            continue;
-                        }
-                    }
-
-                    double threatDist = vulturePos.getDistance(enemy.getEnemyPosition());
-                    double safeDistance = range + hazardRadius;
-
-                    if (threatDist < safeDistance) {
-                        threatNearby = true;
-                        double dx = vulturePos.getX() - enemy.getEnemyPosition().getX();
-                        double dy = vulturePos.getY() - enemy.getEnemyPosition().getY();
-                        double weight = (safeDistance - threatDist) / safeDistance;
-                        avoidDx += (dx / Math.max(1.0, threatDist)) * weight;
-                        avoidDy += (dy / Math.max(1.0, threatDist)) * weight;
-                    }
+                if (dodgeToward(destPos)) {
+                    detouringMine = true;
+                    return;
                 }
 
-                if (threatNearby && distToDest > 96) {
-                    double avoidLen = Math.sqrt(avoidDx * avoidDx + avoidDy * avoidDy);
-                    if (avoidLen >= 0.001) {
-                        double avoidNx = avoidDx / avoidLen;
-                        double avoidNy = avoidDy / avoidLen;
-
-                        double destDx = destPos.getX() - vulturePos.getX();
-                        double destDy = destPos.getY() - vulturePos.getY();
-                        double destLen = Math.sqrt(destDx * destDx + destDy * destDy);
-
-                        if (destLen >= 0.001) {
-                            double destNx = destDx / destLen;
-                            double destNy = destDy / destLen;
-
-                            double perpX = -destNy;
-                            double perpY = destNx;
-                            double sideDot = perpX * avoidNx + perpY * avoidNy;
-                            if (sideDot < 0) {
-                                perpX = -perpX;
-                                perpY = -perpY;
-                            }
-
-                            double stepLen = 160.0;
-                            double forwardWeight = 0.6;
-                            double sideWeight = 1.0;
-                            double rawX = vulturePos.getX() + (destNx * forwardWeight + perpX * sideWeight) * stepLen;
-                            double rawY = vulturePos.getY() + (destNy * forwardWeight + perpY * sideWeight) * stepLen;
-
-                            int maxX = game.mapWidth() * 32 - 1;
-                            int maxY = game.mapHeight() * 32 - 1;
-                            int clampedX = (int) Math.min(Math.max(rawX, 0), maxX);
-                            int clampedY = (int) Math.min(Math.max(rawY, 0), maxY);
-
-                            Position detourWaypoint = new Position(clampedX, clampedY);
-                            Position walkableWaypoint = mapInfo.getPathFinding().findNearestWalkable(detourWaypoint);
-                            detouringMine = true;
-                            if (walkableWaypoint == null) {
-                                return;
-                            }
-                            UnitCommand prevCmd = unit.getLastCommand();
-                            if (prevCmd.getType() != UnitCommandType.Move
-                                    || prevCmd.getTargetPosition() == null
-                                    || prevCmd.getTargetPosition().getDistance(walkableWaypoint) > 48) {
-                                unit.move(walkableWaypoint);
-                            }
-                            return;
-                        }
-                    }
-                }
-
-                if (!threatNearby && distToDest <= 96) {
+                if (distToDest <= 96) {
                     UnitCommand lastCmd = unit.getLastCommand();
                     if (lastCmd.getType() != UnitCommandType.Use_Tech_Position) {
                         unit.useTech(TechType.Spider_Mines, destPos);
@@ -496,6 +407,116 @@ public class Vulture extends CombatUnits {
         }
     }
 
+    @Override
+    public void runby() {
+        ArrayList<Base> enemyExpansions = mapInfo.scoredBestEnemyExpansion(enemyUnits);
+        Base enemyNatural = mapInfo.getEnemyNatural();
+        Base enemyMain = mapInfo.getEnemyMain();
+
+        List<Base> targets = new ArrayList<>();
+        for (Base base : enemyExpansions) {
+            targets.add(base);
+        }
+        for (Base base : mapInfo.getMapBases()) {
+            if (base == enemyNatural || base == enemyMain) {
+                continue;
+            }
+            if (enemyExpansions.contains(base)) {
+                continue;
+            }
+            if (!enemyDepotNearBase(base)) {
+                continue;
+            }
+            targets.add(base);
+        }
+
+        Position vulturePos = unit.getPosition();
+        targets.sort((a, b) -> Double.compare(
+                vulturePos.getDistance(a.getCenter()),
+                vulturePos.getDistance(b.getCenter())));
+
+        for (Base expansion : targets) {
+            if (visitedExpansions.contains(expansion)) {
+                continue;
+            }
+
+            targetedEnemyExpansion = expansion;
+
+            ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
+            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 100) {
+                approachingStagingBase = false;
+                runbyStagingComplete = true;
+            }
+            else if (!runbyStagingComplete && !ordered.isEmpty()
+                    && unit.getDistance(ordered.get(0).getCenter()) < unit.getDistance(expansion.getCenter())) {
+                Position stagingPos = ordered.get(0).getCenter();
+                approachingStagingBase = true;
+                if (unit.getDistance(stagingPos) > 500 && dodgeToward(stagingPos)) {
+                    return;
+                }
+                unit.move(stagingPos);
+                return;
+            }
+
+            if (unit.getDistance(expansion.getCenter()) >= 200) {
+                Position expansionPos = expansion.getCenter();
+                if (unit.getDistance(expansionPos) > 500 && dodgeToward(expansionPos)) {
+                    return;
+                }
+                unit.move(expansionPos);
+                return;
+            }
+
+            EnemyUnits depot = findDepotNearBase(expansion);
+            if (depot != null) {
+                attackBaseTarget(depot, expansion);
+                return;
+            }
+
+            visitedExpansions.add(expansion);
+        }
+
+        if (enemyNatural != null && !visitedExpansions.contains(enemyNatural)) {
+            targetedEnemyExpansion = enemyNatural;
+
+            if (unit.getDistance(enemyNatural.getCenter()) >= 200) {
+                Position naturalPos = enemyNatural.getCenter();
+                if (unit.getDistance(naturalPos) > 500 && dodgeToward(naturalPos)) {
+                    return;
+                }
+                unit.move(naturalPos);
+                return;
+            }
+
+            EnemyUnits naturalDepot = findDepotNearBase(enemyNatural);
+            if (naturalDepot != null) {
+                attackBaseTarget(naturalDepot, enemyNatural);
+                return;
+            }
+
+            visitedExpansions.add(enemyNatural);
+        }
+
+        if (enemyMain != null) {
+            targetedEnemyExpansion = enemyMain;
+
+            if (unit.getDistance(enemyMain.getCenter()) >= 200) {
+                Position mainPos = enemyMain.getCenter();
+                if (unit.getDistance(mainPos) > 500 && dodgeToward(mainPos)) {
+                    return;
+                }
+                unit.move(mainPos);
+                return;
+            }
+
+            EnemyUnits mainDepot = findDepotNearBase(enemyMain);
+            if (mainDepot != null) {
+                attackBaseTarget(mainDepot, enemyMain);
+                return;
+            }
+        }
+    }
+
     private Position patrolAngleFrom(Position enemyPos) {
         Position unitPos = unit.getPosition();
         double dx = enemyPos.getX() - unitPos.getX();
@@ -528,6 +549,122 @@ public class Vulture extends CombatUnits {
         moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
         moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
         return new Position((int) moveX, (int) moveY);
+    }
+
+    private boolean dodgeToward(Position destPos) {
+        Position vulturePos = unit.getPosition();
+        double distToDest = vulturePos.getDistance(destPos);
+        double hazardRadius = 256.0;
+
+        double avoidDx = 0.0;
+        double avoidDy = 0.0;
+        boolean threatNearby = false;
+
+        for (EnemyUnits enemy : enemyUnits) {
+            int range = getGroundThreatRange(enemy);
+            if (range == 0) {
+                continue;
+            }
+            if (enemy.getEnemyPosition() == null) {
+                continue;
+            }
+
+            UnitType type = enemy.getEnemyType();
+
+            if (type.isWorker()) {
+                continue;
+            }
+
+            if (type.isBuilding() && enemy.getEnemyUnit() != null && enemy.getEnemyUnit().isVisible()) {
+                if (type == UnitType.Terran_Bunker) {
+                    if (!enemy.getEnemyUnit().isCompleted()) {
+                        continue;
+                    }
+                }
+                else if (!enemy.getEnemyUnit().isCompleted() || enemy.getEnemyUnit().isMorphing()
+                        || !enemy.getEnemyUnit().isPowered()) {
+                    continue;
+                }
+            }
+
+            double threatDist = vulturePos.getDistance(enemy.getEnemyPosition());
+            double safeDistance = range + hazardRadius;
+
+            if (threatDist < safeDistance) {
+                threatNearby = true;
+                double dx = vulturePos.getX() - enemy.getEnemyPosition().getX();
+                double dy = vulturePos.getY() - enemy.getEnemyPosition().getY();
+                double weight = (safeDistance - threatDist) / safeDistance;
+                avoidDx += (dx / Math.max(1.0, threatDist)) * weight;
+                avoidDy += (dy / Math.max(1.0, threatDist)) * weight;
+            }
+        }
+
+        if (!threatNearby || distToDest <= 96) {
+            return false;
+        }
+
+        double avoidLen = Math.sqrt(avoidDx * avoidDx + avoidDy * avoidDy);
+        if (avoidLen < 0.001) {
+            return false;
+        }
+
+        double avoidNx = avoidDx / avoidLen;
+        double avoidNy = avoidDy / avoidLen;
+
+        double destDx = destPos.getX() - vulturePos.getX();
+        double destDy = destPos.getY() - vulturePos.getY();
+        double destLen = Math.sqrt(destDx * destDx + destDy * destDy);
+
+        if (destLen < 0.001) {
+            return false;
+        }
+
+        double destNx = destDx / destLen;
+        double destNy = destDy / destLen;
+
+        double perpX = -destNy;
+        double perpY = destNx;
+        double sideDot = perpX * avoidNx + perpY * avoidNy;
+        if (sideDot < 0) {
+            perpX = -perpX;
+            perpY = -perpY;
+        }
+
+        double stepLen = 160.0;
+        double forwardWeight = 0.6;
+        double sideWeight = 1.0;
+        double rawX = vulturePos.getX() + (destNx * forwardWeight + perpX * sideWeight) * stepLen;
+        double rawY = vulturePos.getY() + (destNy * forwardWeight + perpY * sideWeight) * stepLen;
+
+        int maxX = game.mapWidth() * 32 - 1;
+        int maxY = game.mapHeight() * 32 - 1;
+        int clampedX = (int) Math.min(Math.max(rawX, 0), maxX);
+        int clampedY = (int) Math.min(Math.max(rawY, 0), maxY);
+
+        Position detourWaypoint = new Position(clampedX, clampedY);
+
+        if (!game.isWalkable(detourWaypoint.toWalkPosition())) {
+            return false;
+        }
+
+        int sampleSteps = 4;
+        for (int s = 1; s <= sampleSteps; s++) {
+            int sx = vulturePos.getX() + (detourWaypoint.getX() - vulturePos.getX()) * s / sampleSteps;
+            int sy = vulturePos.getY() + (detourWaypoint.getY() - vulturePos.getY()) * s / sampleSteps;
+            if (!game.isWalkable(new Position(sx, sy).toWalkPosition())) {
+                return false;
+            }
+        }
+
+        UnitCommand prevCmd = unit.getLastCommand();
+        if (prevCmd.getType() != UnitCommandType.Move
+                || prevCmd.getTargetPosition() == null
+                || prevCmd.getTargetPosition().getDistance(detourWaypoint) > 48) {
+            unit.move(detourWaypoint);
+        }
+
+        return true;
     }
 
     private void attackMove() {
@@ -997,7 +1134,23 @@ public class Vulture extends CombatUnits {
         detouringMine = false;
     }
 
+    private void attackBaseTarget(EnemyUnits depot, Base base) {
+        if (enemyUnit != null && enemyUnit.getEnemyUnit() != null) {
+            unit.attack(enemyUnit.getEnemyUnit());
+            return;
+        }
+        if (depot != null && depot.getEnemyUnit() != null) {
+            unit.attack(depot.getEnemyUnit());
+            return;
+        }
+        unit.attack(base.getCenter());
+    }
+
     private boolean enemyDepotNearBase(Base base) {
+        return findDepotNearBase(base) != null;
+    }
+
+    private EnemyUnits findDepotNearBase(Base base) {
         for (EnemyUnits eu : enemyUnits) {
             if (!eu.getEnemyType().isResourceDepot()) {
                 continue;
@@ -1006,10 +1159,10 @@ public class Vulture extends CombatUnits {
                 continue;
             }
             if (eu.getEnemyPosition().getDistance(base.getCenter()) < 256) {
-                return true;
+                return eu;
             }
         }
-        return false;
+        return null;
     }
 
     public boolean isLobotomyOverride() {

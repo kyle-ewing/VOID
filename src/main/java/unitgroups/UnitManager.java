@@ -403,6 +403,9 @@ public class UnitManager {
                             TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
 
                             if (landPosition != null && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) && !gameState.moveOutConditionsMet()) {
+                                if (combatUnit.getUnit().isLifted() && !enemyWithinRangeOfWall(combatUnit, 120)) {
+                                    break;
+                                }
                                 if (!combatUnit.getUnit().isLifted() && combatUnit.getUnit().getTilePosition().equals(landPosition)) {
                                     ((Building) combatUnit).setInWall(true);
                                 }
@@ -444,6 +447,10 @@ public class UnitManager {
                     }
 
                     combatUnit.poke();
+                    break;
+                case RUNBY:
+                    ClosestUnit.findClosestWorkerOrEnemy(combatUnit, gameState.getKnownEnemyUnits(), 200);
+                    combatUnit.runby();
                     break;
             }
         }
@@ -1077,7 +1084,7 @@ public class UnitManager {
                 || building.getUnit().getTilePosition().getY() != wallTile.getY()) {
             return false;
         }
-        if (enemyWithinRangeOfWall(building, 128)) {
+        if (enemyWithinRangeOfWall(building, 160)) {
             return true;
         }
         if (friendlyPassingThroughWall(building, 152)) {
@@ -1108,6 +1115,16 @@ public class UnitManager {
         if (initial == null || initial.getX() != wallTile.getX() || initial.getY() != wallTile.getY()) {
             return false;
         }
+
+        if (building.getUnitType() == UnitType.Terran_Barracks) {
+            if (!enemyWithinRangeOfWall(building, 120)) {
+                return true;
+            }
+            building.setNotNeeded(false);
+            building.getUnit().land(wallTile);
+            return true;
+        }
+
         if (enemyWithinRangeOfWall(building, 64)) {
             return true;
         }
