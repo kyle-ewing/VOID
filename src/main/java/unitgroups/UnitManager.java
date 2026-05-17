@@ -403,7 +403,13 @@ public class UnitManager {
                             TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
 
                             if (landPosition != null && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) && !gameState.moveOutConditionsMet()) {
-                                if (combatUnit.getUnit().isLifted() && !enemyWithinRangeOfWall(combatUnit, 120)) {
+                                if (combatUnit.getUnit().isLifted() && !enemyWithinRangeOfWall(combatUnit, 224)) {
+                                    Position hoverPos = new Position(
+                                            landPosition.getX() * 32 + combatUnit.getUnitType().tileWidth() * 16,
+                                            landPosition.getY() * 32 + combatUnit.getUnitType().tileHeight() * 16 - 32);
+                                    if (combatUnit.getUnit().getPosition().getDistance(hoverPos) > 16) {
+                                        combatUnit.getUnit().move(hoverPos);
+                                    }
                                     break;
                                 }
                                 if (!combatUnit.getUnit().isLifted() && combatUnit.getUnit().getTilePosition().equals(landPosition)) {
@@ -1117,7 +1123,13 @@ public class UnitManager {
         }
 
         if (building.getUnitType() == UnitType.Terran_Barracks) {
-            if (!enemyWithinRangeOfWall(building, 120)) {
+            if (!enemyWithinRangeOfWall(building, 224)) {
+                Position hoverPos = new Position(
+                        wallTile.getX() * 32 + building.getUnitType().tileWidth() * 16,
+                        wallTile.getY() * 32 + building.getUnitType().tileHeight() * 16 - 32);
+                if (building.getUnit().getPosition().getDistance(hoverPos) > 16) {
+                    building.getUnit().move(hoverPos);
+                }
                 return true;
             }
             building.setNotNeeded(false);

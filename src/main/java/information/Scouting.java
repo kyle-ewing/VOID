@@ -37,6 +37,7 @@ public class Scouting {
     private boolean secondScoutSent = false;
     private boolean enemyBaseLocated = false;
     private boolean secondScoutFoundEnemy = false;
+    private boolean naturalScanned = false;
 
     private Time time;
 
@@ -261,8 +262,8 @@ public class Scouting {
         secondScoutFoundEnemy = secondScout.getUnit().getDistance(enemyPos) < scout.getUnit().getDistance(enemyPos);
     }
 
-    private void scanEnemyBase() {
-        if (gameState.getStartingEnemyBase() == null) {
+    private void scanEnemyBase(Position enemyBasePos) {
+        if (enemyBasePos == null) {
             return;
         }
 
@@ -270,8 +271,7 @@ public class Scouting {
             return;
         }
 
-        scanBase(gameState.getStartingEnemyBase().getEnemyPosition());
-        mainScanned = true;
+        scanBase(enemyBasePos);
     }
 
     private void scanRemainingMains() {
@@ -297,6 +297,12 @@ public class Scouting {
             return;
         }
 
+        if (mapInfo.getEnemyMain() != null && mapInfo.getEnemyMain().getCenter().getDistance(scanner.getUnit().getPosition()) < 100) {
+            mainScanned = true;
+        }
+        else if (mapInfo.getEnemyNatural() != null && mapInfo.getEnemyNatural().getCenter().getDistance(scanner.getUnit().getPosition()) < 100) {
+            naturalScanned = true;
+        }
         scanner.getUnit().useTech(TechType.Scanner_Sweep, basePosition);
     }
 
@@ -349,12 +355,20 @@ public class Scouting {
             completedScout = true;
         }
 
-        if (gameState.getEnemyOpener() == null && !mainScanned && time.greaterThan(new Time(5,0))) {
-            scanEnemyBase();
+        if (gameState.getEnemyOpener() == null 
+                && gameState.getStartingEnemyBase() != null
+                && !mainScanned && time.greaterThan(new Time(5,0))) {
+            scanEnemyBase(gameState.getStartingEnemyBase().getEnemyPosition());
         }
 
         if (gameState.getStartingEnemyBase() == null && time.greaterThan(new Time(5,0))) {
             scanRemainingMains();
+        }
+
+        if (!naturalScanned
+            && mapInfo.getEnemyNatural() != null
+            && time.greaterThan(new Time(9, 0))) {
+            scanEnemyBase(mapInfo.getEnemyNatural().getCenter());
         }
     }
 

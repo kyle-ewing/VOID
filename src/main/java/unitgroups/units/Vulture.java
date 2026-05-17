@@ -141,7 +141,7 @@ public class Vulture extends CombatUnits {
         if ((isOutRanged() || enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() + 32))
                 && !hasTankSupport
                 && !lobotomyOverride
-                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 160) {
+                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyGroundRange(enemyUnit) + 160) {
             unitStatus = UnitStatus.RETREAT;
             return;
         }
@@ -184,7 +184,7 @@ public class Vulture extends CombatUnits {
 
         boolean outRangingNearby = enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() + 32);
 
-        if (((isOutRanged() || outRangingNearby) && unit.getDistance(enemyUnit.getEnemyPosition()) > 450)
+        if (((isOutRanged() || outRangingNearby) && unit.getDistance(enemyUnit.getEnemyPosition()) > enemyGroundRange(enemyUnit) + 256)
                 || (!inRangeOfThreat && (!isOutRanged() || hasTankSupport) && !outRangingNearby)) {
             setUnitStatus(UnitStatus.POKE);
             return;
@@ -315,7 +315,7 @@ public class Vulture extends CombatUnits {
         }
 
         if (isOutRanged() && !hasTankSupport && !lobotomyOverride
-                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 128) {
+                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyGroundRange(enemyUnit) + 128) {
             unitStatus = UnitStatus.RETREAT;
             return;
         }
@@ -335,7 +335,7 @@ public class Vulture extends CombatUnits {
         Position currEnemyPos = enemyUnit.getEnemyPosition();
         double currDist = currVulturePos.getDistance(currEnemyPos);
         int myWeaponRange = weaponRange();
-        int enemyWeaponRange = enemyUnit.getEnemyType().groundWeapon().maxRange();
+        int enemyWeaponRange = enemyGroundRange(enemyUnit);
 
         boolean enemyFleeing = false;
 
@@ -385,6 +385,9 @@ public class Vulture extends CombatUnits {
             else if (enemyUnit.getEnemyUnit().isVisible()) {
                 if (enemyWeaponRange <= 32) {
                     unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange));
+                }
+                else if (currDist < enemyWeaponRange + 32) {
+                    unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange + 64));
                 }
                 else {
                     unit.patrol(patrolAngleFrom(currEnemyPos));
@@ -789,7 +792,7 @@ public class Vulture extends CombatUnits {
                 safeDistance = range + 160;
             }
             else {
-                safeDistance = Math.max(weaponRange(), range + 160);
+                safeDistance = Math.max(weaponRange() + 32, range + 192);
             }
 
             if (threatDist < safeDistance) {
@@ -845,12 +848,29 @@ public class Vulture extends CombatUnits {
     private int getGroundThreatRange(EnemyUnits enemy) {
         UnitType type = enemy.getEnemyType();
         if (type == UnitType.Terran_Bunker) {
+            if (game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.U_238_Shells) > 0) {
+                return 160;
+            }
             return UnitType.Terran_Marine.groundWeapon().maxRange();
         }
         if (type.groundWeapon() != WeaponType.None) {
-            return type.groundWeapon().maxRange();
+            return enemyGroundRange(enemy);
         }
         return 0;
+    }
+
+    private int enemyGroundRange(EnemyUnits e) {
+        UnitType type = e.getEnemyType();
+        if (type == UnitType.Protoss_Dragoon && game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.Singularity_Charge) > 0) {
+            return 192;
+        }
+        if (type == UnitType.Terran_Marine && game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.U_238_Shells) > 0) {
+            return 160;
+        }
+        if (type == UnitType.Zerg_Hydralisk && game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.Grooved_Spines) > 0) {
+            return 160;
+        }
+        return type.groundWeapon().maxRange();
     }
 
     private int weaponRange() {
@@ -895,7 +915,7 @@ public class Vulture extends CombatUnits {
             if (enemyUnit.getEnemyType().isBuilding() || enemyUnit.getEnemyType() == UnitType.Terran_Marine) {
                 return false;
             }
-            if (enemyUnit.getEnemyType().groundWeapon().maxRange() + 32 >= weaponRange()) {
+            if (enemyGroundRange(enemyUnit) + 32 >= weaponRange()) {
                 return true;
             }
         }
@@ -977,7 +997,7 @@ public class Vulture extends CombatUnits {
                     layingMines = true;
                 }
             }
-            else if (enemyUnit.getEnemyType().groundWeapon().maxRange() <= 64) {
+            else if (enemyGroundRange(enemyUnit) <= 64) {
                 Position minePos = kiteTo(256);
                 unit.move(minePos);
                 if (!isOnNaturalBunkerWall(minePos)) {
