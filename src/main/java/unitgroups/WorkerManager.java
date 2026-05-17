@@ -700,6 +700,10 @@ public class WorkerManager {
                 continue;
             }
 
+            if (unit.getLoadedUnits().isEmpty()) {
+                continue;
+            }
+
             if (mapInfo.hasBunkerInNatural() && mapInfo.getNaturalTiles().contains(unit.getTilePosition())) {
                 bunker = unit;
                 break;
@@ -719,7 +723,7 @@ public class WorkerManager {
                 baseCenter = mapInfo.getNaturalBase().getCenter();
             }
 
-            int openerSize = openerRepairForceSize();
+            int openerSize = openerRepairForceSize(bunker);
 
             if (openerSize > 0) {
                 createRepairForce(bunker, openerSize);
@@ -805,13 +809,19 @@ public class WorkerManager {
 //        }
     }
 
-    private int openerRepairForceSize() {
+    private int openerRepairForceSize(Unit bunker) {
         if (gameState.getEnemyOpener() == null || new Time(game.getFrameCount()).greaterThan(new Time(8, 0))) {
             return 0;
         }
 
         switch (gameState.getEnemyOpener().getStrategyName()) {
             case TWOGATE:
+                if (new Time(game.getFrameCount()).greaterThan(new Time(3, 10)) && gameState.getKnownEnemyUnits().stream()
+                        .anyMatch(unit -> unit.getEnemyType() == UnitType.Protoss_Zealot && unit.getEnemyPosition() != null
+                        && unit.getEnemyUnit().getDistance(bunker) < 500)) {
+                    return 3;
+                }
+
                 if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
                     return 3;
                 }

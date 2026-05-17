@@ -104,6 +104,7 @@ public class TwoGate extends EnemyStrategy {
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Bunker);
         getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Vulture);
         getBuildingResponse().add(UnitType.Terran_Vulture);
         getBuildingResponse().add(UnitType.Terran_Vulture);

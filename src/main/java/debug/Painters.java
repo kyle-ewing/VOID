@@ -35,6 +35,7 @@ public class Painters {
     GameState gameState;
     Config config;
     Scouting scouting;
+    boolean enemyOpenerPrinted = false;
 
     public Painters(Game game, GameState gameState, Config config, Scouting scouting) {
         this.game = game;
@@ -101,6 +102,7 @@ public class Painters {
             paintMediumBuildTiles(gameState.getBuildTiles().getMediumBuildTiles(), Color.Blue);
             paintEbayLandingLocation(gameState.getBuildTiles().getNaturalBunkerEbayPosition(), Color.Orange);
             paintEbayLandingLocation(gameState.getBuildTiles().getNaturalBunkerBarracksPosition(), Color.Red);
+            paintMediumBuildTile(gameState.getBuildTiles().getNaturalBunkerDepotPosition(), Color.Cyan);
             paintLargeBuildTile(gameState.getBuildTiles().getMainBaseCCTile(), Color.Purple);
         }
 
@@ -167,6 +169,10 @@ public class Painters {
         if (config.debugProdQueueOutput) {
             timeStamp();
         }
+
+        if (config.debugEnemyOpener) {
+            printEnemyOpener();
+        }
     }
 
     public void onEnd() {
@@ -178,6 +184,13 @@ public class Painters {
     private void timeStamp() {
         if (game.getFrameCount() % 1440 == 0) {
             printProductionQueue(gameState.getProductionQueue());
+        }
+    }
+
+    private void printEnemyOpener() {
+        if (gameState.getEnemyOpener() != null && !enemyOpenerPrinted) {
+            System.out.println("Enemy Opener: " + gameState.getEnemyOpener().getStrategyName() + " at " + new Time(game.getFrameCount()));
+            enemyOpenerPrinted = true;
         }
     }
 
@@ -539,7 +552,20 @@ public class Painters {
                 start.getX() + UnitType.Terran_Barracks.tileWidth() * 32,
                 start.getY() + UnitType.Terran_Barracks.tileHeight() * 32);
         game.drawBoxMap(start, end, color);
-        
+
+    }
+
+    private void paintMediumBuildTile(TilePosition buildTile, Color color) {
+        if (buildTile == null) {
+            return;
+        }
+
+        game.drawTextMap(buildTile.toPosition(), String.valueOf(buildTile));
+        Position start = buildTile.toPosition();
+        Position end = new Position(
+                start.getX() + UnitType.Terran_Supply_Depot.tileWidth() * 32,
+                start.getY() + UnitType.Terran_Supply_Depot.tileHeight() * 32);
+        game.drawBoxMap(start, end, color);
     }
 
     private void paintPaintBunkerTile(TilePosition tilePosition) {

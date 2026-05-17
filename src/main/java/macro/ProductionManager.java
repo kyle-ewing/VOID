@@ -766,6 +766,22 @@ public class ProductionManager {
                 return;
             }
 
+            if (pi.getUnitType() == UnitType.Terran_Supply_Depot) {
+                TilePosition naturalBunkerDepot = buildTiles.getNaturalBunkerDepotPosition();
+                if (naturalBunkerDepot != null && !tileTaken(naturalBunkerDepot)
+                        && unitTypeCount.get(UnitType.Terran_Supply_Depot) >= 2
+                        && game.enemy().getRace() == Race.Protoss
+                        && mapInfo.hasBunkerInNatural()) {
+                    boolean depotAlreadyBuilt = allBuildings.stream()
+                            .anyMatch(b -> b.getType() == UnitType.Terran_Supply_Depot
+                                    && b.getTilePosition().equals(naturalBunkerDepot));
+                    if (!depotAlreadyBuilt) {
+                        pi.setBuildPosition(naturalBunkerDepot);
+                        return;
+                    }
+                }
+            }
+
             int mediumBuildingsBuilt = (int) allBuildings.stream()
                     .filter(u -> u.getType().tileWidth() == 3 && u.getType().tileHeight() == 2)
                     .count();
@@ -894,8 +910,12 @@ public class ProductionManager {
                 case CANNONRUSH:
                 case FOURRAX:
                 case SCVRUSH:
-                case TWOGATE:
                     return buildTiles.getMainChokeBunker();
+                case TWOGATE:
+                    if (gameState.getKnownEnemyUnits().stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Zealot && eu.getEnemyPosition() != null && eu.getEnemyPosition().getDistance(mapInfo.getNaturalBase().getCenter()) < 2000)) {
+                        return buildTiles.getMainChokeBunker();
+                    }
+                    return buildTiles.getNaturalChokeBunker();
                 case FOURPOOL:
                     return buildTiles.getCloseBunkerTile();
             }

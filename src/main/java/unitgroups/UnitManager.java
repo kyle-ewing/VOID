@@ -25,6 +25,7 @@ import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 import unitgroups.squads.Squad;
 import unitgroups.squads.SquadManager;
+import unitgroups.units.Building;
 import unitgroups.units.CombatUnitCreator;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.SiegeTank;
@@ -376,12 +377,15 @@ public class UnitManager {
                         if (gameState.getBunkerPosition() != null && mapInfo.getNaturalBase() != null) {
                             switch (game.enemy().getRace()) {
                                 case Terran:
-                                    combatUnit.liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
+                                    ((Building) combatUnit).liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
                                     break;
                                 case Protoss:
                                     TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();
 
                                     if (landPosition != null && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) && !gameState.moveOutConditionsMet()) {
+                                        if (!combatUnit.getUnit().isLifted() && combatUnit.getUnit().getTilePosition().equals(landPosition)) {
+                                            ((Building) combatUnit).setInWall(true);
+                                        }
                                         combatUnit.getUnit().land(landPosition);
                                     }
                                     else {
@@ -399,6 +403,9 @@ public class UnitManager {
                             TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
 
                             if (landPosition != null && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) && !gameState.moveOutConditionsMet()) {
+                                if (!combatUnit.getUnit().isLifted() && combatUnit.getUnit().getTilePosition().equals(landPosition)) {
+                                    ((Building) combatUnit).setInWall(true);
+                                }
                                 combatUnit.getUnit().land(landPosition);
                             }
                             else {
@@ -1073,7 +1080,8 @@ public class UnitManager {
         if (enemyWithinRangeOfWall(building, 128)) {
             return true;
         }
-        if (friendlyPassingThroughWall(building, 80)) {
+        if (friendlyPassingThroughWall(building, 152)) {
+            ((Building) building).setInWall(false);
             building.getUnit().lift();
         }
         return true;
@@ -1118,13 +1126,25 @@ public class UnitManager {
     }
 
     private boolean friendlyPassingThroughWall(CombatUnits building, int range) {
-        return combatUnits.stream().anyMatch(cu -> {
+        boolean combatUnitNear = combatUnits.stream().anyMatch(cu -> {
             UnitStatus s = cu.getUnitStatus();
             if (s != UnitStatus.POKE && s != UnitStatus.RETREAT
                     && s != UnitStatus.ATTACK && s != UnitStatus.REGROUP) {
                 return false;
             }
             return cu.getUnit().getDistance(building.getUnit().getPosition()) < range;
+        });
+
+        if (combatUnitNear) {
+            return true;
+        }
+
+        return gameState.getWorkers().stream().anyMatch(w -> {
+            WorkerStatus ws = w.getWorkerStatus();
+            if (ws != WorkerStatus.MINERALS && ws != WorkerStatus.MOVING_TO_BUILD) {
+                return false;
+            }
+            return w.getUnit().getDistance(building.getUnit().getPosition()) < range;
         });
     }
 
@@ -1167,10 +1187,11 @@ public class UnitManager {
             CombatUnits combatUnit;
 
             if (UnitType.Terran_Missile_Turret == unit.getType()) {
+                combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.BUILDING);
                 combatUnit = new CombatUnits(game, unit, UnitStatus.BUILDING);
-            }
+            } 
             else {
-                combatUnit = new CombatUnits(game, unit, UnitStatus.LIFTABLE, false);
+                combatUnit = combatUnitCreator.createCombatUnit(unit, UnitStatus.LIFTABLE);
             }
 
 

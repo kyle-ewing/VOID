@@ -38,6 +38,7 @@ public class MapInfo {
     private Unit initalCC = null;
     private TilePosition naturalBunkerEbayPosition;
     private TilePosition naturalBunkerBarracksPosition;
+    private TilePosition naturalBunkerDepotPosition;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
@@ -930,6 +931,14 @@ public class MapInfo {
 
     public void setNaturalBunkerBarracksPosition(TilePosition position) {
         naturalBunkerBarracksPosition = position;
+    }
+
+    public TilePosition getNaturalBunkerDepotPosition() {
+        return naturalBunkerDepotPosition;
+    }
+
+    public void setNaturalBunkerDepotPosition(TilePosition position) {
+        naturalBunkerDepotPosition = position;
     }
 
     public HashSet<TilePosition> getBaseTiles() {
