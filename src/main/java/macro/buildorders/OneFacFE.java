@@ -28,8 +28,7 @@ public class OneFacFE extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 16, PlannedItemType.BUILDING, 1, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 16, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Bunker, 16, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 17, PlannedItemType.UNIT, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 23, PlannedItemType.BUILDING, 2));

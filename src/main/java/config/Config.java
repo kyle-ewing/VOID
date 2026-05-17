@@ -34,6 +34,7 @@ public final class Config {
 
     //Enemy Units
     public boolean debugEnemyUnits = false;
+    public boolean debugEnemyOpener = true;
 
     // Production and planning
     public boolean debugProductionQueue = false;
@@ -68,6 +69,7 @@ public final class Config {
 
         // Enemy Units
          this.debugEnemyUnits = getBooleanOrDefault("DEBUG_ENEMY_UNITS", this.debugEnemyUnits);
+        this.debugEnemyOpener = getBooleanOrDefault("DEBUG_ENEMY_OPENER", this.debugEnemyOpener);
 
         // Production and planning
         this.debugProductionQueue = getBooleanOrDefault("DEBUG_PRODUCTION_QUEUE", this.debugProductionQueue);

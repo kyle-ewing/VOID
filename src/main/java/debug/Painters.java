@@ -35,6 +35,7 @@ public class Painters {
     GameState gameState;
     Config config;
     Scouting scouting;
+    boolean enemyOpenerPrinted = false;
 
     public Painters(Game game, GameState gameState, Config config, Scouting scouting) {
         this.game = game;
@@ -168,6 +169,10 @@ public class Painters {
         if (config.debugProdQueueOutput) {
             timeStamp();
         }
+
+        if (config.debugEnemyOpener) {
+            printEnemyOpener();
+        }
     }
 
     public void onEnd() {
@@ -179,6 +184,13 @@ public class Painters {
     private void timeStamp() {
         if (game.getFrameCount() % 1440 == 0) {
             printProductionQueue(gameState.getProductionQueue());
+        }
+    }
+
+    private void printEnemyOpener() {
+        if (gameState.getEnemyOpener() != null && !enemyOpenerPrinted) {
+            System.out.println("Enemy Opener: " + gameState.getEnemyOpener().getStrategyName() + " at " + new Time(game.getFrameCount()));
+            enemyOpenerPrinted = true;
         }
     }
 

@@ -910,8 +910,12 @@ public class ProductionManager {
                 case CANNONRUSH:
                 case FOURRAX:
                 case SCVRUSH:
-                case TWOGATE:
                     return buildTiles.getMainChokeBunker();
+                case TWOGATE:
+                    if (gameState.getKnownEnemyUnits().stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Zealot && eu.getEnemyPosition() != null && eu.getEnemyPosition().getDistance(mapInfo.getNaturalBase().getCenter()) < 2000)) {
+                        return buildTiles.getMainChokeBunker();
+                    }
+                    return buildTiles.getNaturalChokeBunker();
                 case FOURPOOL:
                     return buildTiles.getCloseBunkerTile();
             }
