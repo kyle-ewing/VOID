@@ -420,9 +420,6 @@ public class Vulture extends CombatUnits {
 
     @Override
     public void runby() {
-        if (game.getFrameCount() % 24 == 0) {
-            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-TICK] Vulture " + unit.getID() + " pos=" + unit.getPosition() + " inRunbySquad=" + inRunbySquad + " wallStuckRetreat=" + wallStuckRetreatTimer);
-        }
         if (wallStuckRetreatTimer > 0 && rallyPoint != null) {
             unit.move(rallyPoint.toPosition());
             return;
@@ -472,9 +469,6 @@ public class Vulture extends CombatUnits {
 
             ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
             if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 160) {
-                if (!runbyStagingComplete) {
-                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " ARRIVED at staging base (pos=" + unit.getPosition() + ", stagingDist=" + (int) unit.getDistance(ordered.get(0).getCenter()) + ") -> marking stagingComplete");
-                }
                 approachingStagingBase = false;
                 runbyStagingComplete = true;
             }
@@ -483,11 +477,8 @@ public class Vulture extends CombatUnits {
                 Position stagingPos = ordered.get(0).getCenter();
                 approachingStagingBase = true;
                 if (unit.getDistance(stagingPos) > 500 && dodgeToward(stagingPos)) {
-                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " DODGING toward staging (pos=" + unit.getPosition() + ", stagingDist=" + (int) unit.getDistance(stagingPos) + ")");
                     return;
                 }
-                UnitCommand lcs = unit.getLastCommand();
-                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " moving toward STAGING " + stagingPos + " (pos=" + unit.getPosition() + ", stagingDist=" + (int) unit.getDistance(stagingPos) + ", expansionDist=" + (int) unit.getDistance(expansion.getCenter()) + ", isMoving=" + unit.isMoving() + ", isStuck=" + unit.isStuck() + ", isIdle=" + unit.isIdle() + ", lastCmd=" + (lcs != null ? lcs.getType() : "null") + ", lastTarget=" + (lcs != null ? lcs.getTargetPosition() : "null") + ")");
                 unit.move(stagingPos);
                 return;
             }
@@ -498,14 +489,11 @@ public class Vulture extends CombatUnits {
                 Position attackPos = runbyAttackPos(expansion, depot);
                 if (unit.getDistance(attackPos) >= 150) {
                     if (unit.getDistance(attackPos) > 500 && dodgeToward(attackPos)) {
-                        System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " for-loop depot DODGE to expansion=" + expansion.getCenter() + " attackPos=" + attackPos);
                         return;
                     }
-                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " for-loop depot MOVE to attackPos=" + attackPos + " (expansion=" + expansion.getCenter() + ")");
                     unit.move(attackPos);
                     return;
                 }
-                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " for-loop depot ATTACK at expansion=" + expansion.getCenter());
                 attackBaseTarget(depot, expansion);
                 return;
             }
@@ -514,24 +502,17 @@ public class Vulture extends CombatUnits {
                 runbyStagingComplete = true;
                 Position expansionPos = expansion.getCenter();
                 if (unit.getDistance(expansionPos) > 500 && dodgeToward(expansionPos)) {
-                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " DODGING toward scored expansion " + expansionPos + " (pos=" + unit.getPosition() + ", dist=" + (int) unit.getDistance(expansionPos) + ")");
                     return;
                 }
-                UnitCommand lce = unit.getLastCommand();
-                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " moving toward SCORED EXPANSION " + expansionPos + " (pos=" + unit.getPosition() + ", dist=" + (int) unit.getDistance(expansionPos) + ", isMoving=" + unit.isMoving() + ", isStuck=" + unit.isStuck() + ", isIdle=" + unit.isIdle() + ", lastCmd=" + (lce != null ? lce.getType() : "null") + ", lastTarget=" + (lce != null ? lce.getTargetPosition() : "null") + ")");
                 unit.move(expansionPos);
                 return;
             }
 
-            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " arrived at scored expansion " + expansion.getCenter());
             runbyStagingComplete = true;
             visitedExpansions.add(expansion);
         }
 
-        System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " fully traversed scored list (visited=" + visitedExpansions.size() + ", targets=" + targets.size() + ")");
-
         if (enemyNatural != null) {
-            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " entering NATURAL branch (depot known=" + (findDepotNearBase(enemyNatural) != null) + ", dist=" + (int) unit.getDistance(enemyNatural.getCenter()) + ")");
             targetedEnemyExpansion = enemyNatural;
             runbyStagingComplete = true;
 
@@ -539,24 +520,17 @@ public class Vulture extends CombatUnits {
             if (naturalDepot != null) {
                 Position attackPos = runbyAttackPos(enemyNatural, naturalDepot);
                 if (unit.getDistance(attackPos) >= 150) {
-                    UnitCommand lc = unit.getLastCommand();
-                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " natural depot MOVE attackPos=" + attackPos + " (pos=" + unit.getPosition() + ", isMoving=" + unit.isMoving() + ", isStuck=" + unit.isStuck() + ", isIdle=" + unit.isIdle() + ", lastCmd=" + (lc != null ? lc.getType() : "null") + ", lastTarget=" + (lc != null ? lc.getTargetPosition() : "null") + ")");
                     unit.move(attackPos);
                     return;
                 }
-                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " natural depot ATTACK");
                 attackBaseTarget(naturalDepot, enemyNatural);
                 return;
             }
 
             if (unit.getDistance(enemyNatural.getCenter()) >= 200) {
-                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " natural MOVE to center=" + enemyNatural.getCenter());
                 unit.move(enemyNatural.getCenter());
                 return;
             }
-        }
-        else {
-            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " enemyNatural is NULL, falling to main");
         }
 
         if (enemyMain != null) {
@@ -567,26 +541,19 @@ public class Vulture extends CombatUnits {
             if (mainDepot != null) {
                 Position attackPos = runbyAttackPos(enemyMain, mainDepot);
                 if (unit.getDistance(attackPos) >= 150) {
-                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " main depot MOVE attackPos=" + attackPos);
                     unit.move(attackPos);
                     return;
                 }
-                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " main depot ATTACK");
                 attackBaseTarget(mainDepot, enemyMain);
                 return;
             }
 
-            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " main ATTACK-MOVE to center=" + enemyMain.getCenter());
             unit.attack(enemyMain.getCenter());
             return;
         }
 
         if (rallyPoint != null) {
-            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " RALLY fallback to " + rallyPoint.toPosition());
             unit.move(rallyPoint.toPosition());
-        }
-        else {
-            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " NO COMMAND ISSUED (all branches skipped)");
         }
     }
 

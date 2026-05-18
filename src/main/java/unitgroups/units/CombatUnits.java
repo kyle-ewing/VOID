@@ -197,9 +197,6 @@ public class CombatUnits {
     }
 
     public void regroup() {
-        if (inRunbySquad && unit.getType() == bwapi.UnitType.Terran_Vulture && game.getFrameCount() % 24 == 0) {
-            System.out.println("[" + new util.Time(game.getFrameCount()) + "] [REGROUP-TICK] Vulture " + unit.getID() + " pos=" + unit.getPosition() + " regroupPos=" + regroupPosition + " dist=" + (regroupPosition != null ? (int) unit.getPosition().getDistance(regroupPosition) : -1));
-        }
         if (regroupPosition == null) {
             return;
         }
@@ -295,9 +292,6 @@ public class CombatUnits {
     }
 
     public void setUnitStatus(UnitStatus unitStatus) {
-        if (inRunbySquad && this.unitStatus != unitStatus && unit.getType() == bwapi.UnitType.Terran_Vulture) {
-            System.out.println("[" + new util.Time(game.getFrameCount()) + "] [STATUS] Vulture " + unit.getID() + " " + this.unitStatus + " -> " + unitStatus);
-        }
         this.unitStatus = unitStatus;
     }
 
