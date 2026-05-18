@@ -1587,6 +1587,9 @@ public class ProductionManager {
                 if (mapInfo.getBaseTiles().contains(unit.getTilePosition())) {
                     addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
                 }
+                else if (unit.getTilePosition() != unit.getInitialTilePosition()) {
+                    addToQueue(unit.getType(), PlannedItemType.BUILDING, 2);
+                }
                 else {
                     addToQueue(unit.getType(), PlannedItemType.BUILDING, 5);
                 }
@@ -1600,8 +1603,8 @@ public class ProductionManager {
                     return;
                 }
 
-                if (unit.getTilePosition().equals(buildTiles.getNaturalBunkerEbayPosition())
-                        || unit.getTilePosition().equals(buildTiles.getNaturalBunkerBarracksPosition())) {
+                if (unit.getTilePosition() != unit.getInitialTilePosition()) {
+                    buildTiles.getLargeBuildTiles().add(unit.getInitialTilePosition());
                     return;
                 }
 
