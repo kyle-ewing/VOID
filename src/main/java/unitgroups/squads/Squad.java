@@ -17,6 +17,7 @@ public class Squad {
     private HashSet<CombatUnits> squadUnits = new HashSet<>();
     private HashMap<Integer, UnitType> squadComposition = new HashMap<>();
     private boolean enemyArmyExists = false;
+    private boolean isRunbySquad = false;
 
     private static final double SMOOTHING_ALPHA = 0.85;
     private static final int CLUSTER_RADIUS = 300;
@@ -25,6 +26,11 @@ public class Squad {
 
     public Squad(Game game) {
         this.game = game;
+    }
+
+    public Squad(Game game, boolean isRunbySquad) {
+        this.game = game;
+        this.isRunbySquad = isRunbySquad;
     }
 
     private void updateRegroupPosition() {
@@ -113,7 +119,7 @@ public class Squad {
         }
 
         for (CombatUnits unit : squadUnits) {
-            if (unit.getUnitStatus() != UnitStatus.ATTACK) {
+            if (unit.getUnitStatus() != UnitStatus.ATTACK && unit.getUnitStatus() != UnitStatus.RUNBY) {
                 continue; 
             }
 
@@ -148,6 +154,15 @@ public class Squad {
 
     public void onFrame() {
         updateRegroupPosition();
+
+        for (CombatUnits unit : squadUnits) {
+            unit.setInRunbySquad(isRunbySquad);
+
+            if (isRunbySquad && unit.getUnitStatus() != UnitStatus.REGROUP) {
+                unit.setUnitStatus(UnitStatus.RUNBY);
+            }
+        }
+
         checkRegroup();
     }
 
@@ -191,6 +206,10 @@ public class Squad {
 
     public void setEnemyArmyExists(boolean enemyArmyExists) {
         this.enemyArmyExists = enemyArmyExists;
+    }
+
+    public boolean isRunbySquad() {
+        return isRunbySquad;
     }
     
 }

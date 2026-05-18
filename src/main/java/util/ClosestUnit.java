@@ -29,6 +29,28 @@ public class ClosestUnit {
         combatUnit.setEnemyUnit(closestEnemy);
     }
 
+    public static void findClosestWorkerOrEnemy(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {
+        if (combatUnit.getUnitType() == UnitType.Terran_Medic) {
+            return;
+        }
+
+        HashSet<EnemyUnits> workers = new HashSet<>();
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType().isWorker()) {
+                workers.add(enemyUnit);
+            }
+        }
+
+        EnemyUnits closestWorker = findClosestEnemyUnit(combatUnit, workers, range);
+        if (closestWorker != null) {
+            combatUnit.setEnemyUnit(closestWorker);
+            return;
+        }
+
+        EnemyUnits closestEnemy = findClosestEnemyUnit(combatUnit, enemyUnits, range);
+        combatUnit.setEnemyUnit(closestEnemy);
+    }
+
     //UnitType looks for specific unit type to assign as friendly unit
     public static void findClosestFriendlyUnit(CombatUnits combatUnit, HashSet<CombatUnits> friendlyUnits, UnitType unitType) {
         CombatUnits closestUnit = null;

@@ -1,15 +1,18 @@
 package information.neutral;
 
+import bwapi.Position;
 import bwapi.Unit;
 import bwem.Mineral;
 
 public class MineralPatch {
     private Mineral mineral;
+    private Position position;
     private int lastKnownResources;
     private boolean destroyed = false;
 
     public MineralPatch(Mineral mineral) {
         this.mineral = mineral;
+        this.position = mineral.getUnit().getPosition();
         int initial = mineral.getInitialAmount();
         if (initial > 0) {
             this.lastKnownResources = initial;
@@ -17,6 +20,10 @@ public class MineralPatch {
         else {
             this.lastKnownResources = 1500;
         }
+    }
+
+    public Position getPosition() {
+        return position;
     }
 
     public int getResources() {

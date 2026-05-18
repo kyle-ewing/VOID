@@ -249,7 +249,10 @@ public class Painters {
                 break;    
             case POKE:
                 game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Blue, true);
-                break;    
+                break;  
+            case RUNBY:
+                game.drawCircleMap(unit.getUnit().getPosition(), 3, Color.Orange, true);
+                break;
         }
     }
 

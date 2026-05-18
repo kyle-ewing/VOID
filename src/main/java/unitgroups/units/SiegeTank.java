@@ -289,7 +289,7 @@ public class SiegeTank extends CombatUnits {
                 boolean enemyInRange = enemyUnit != null
                         && !enemyUnit.getEnemyType().isWorker()
                         && unit.getDistance(enemyUnit.getEnemyUnit()) < SIEGE_RANGE;
-                boolean atSiegeTile = unit.getDistance(siegeTile.toPosition()) <= 64;
+                boolean atSiegeTile = unit.getDistance(siegeTile.toPosition()) <= 48;
                 if (!enemyInRange && !atSiegeTile) {
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();

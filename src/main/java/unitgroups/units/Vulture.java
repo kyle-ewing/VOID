@@ -18,7 +18,9 @@ import bwapi.UpgradeType;
 import bwapi.WeaponType;
 import bwem.Base;
 import bwem.ChokePoint;
+import bwem.Mineral;
 import information.MapInfo;
+import information.neutral.MineralPatch;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import util.Time;
@@ -37,7 +39,11 @@ public class Vulture extends CombatUnits {
     private boolean approachingStagingBase = false;
     private boolean recentlyMined = false;
     private boolean detouringMine = false;
+    private boolean miningStagingComplete = false;
+    private int dodgeSideSign = 0;
     private Base targetedEnemyExpansion = null;
+    private HashSet<Base> visitedExpansions = new HashSet<>();
+    private boolean runbyStagingComplete = false;
     private boolean lobotomyOverride = false;
     private Position prevEnemyPos = null;
     private int velocityUpdateFrame = 0;
@@ -70,7 +76,7 @@ public class Vulture extends CombatUnits {
             mineTimer += 8;
         }
 
-        if (unitStatus != UnitStatus.POKE && unitStatus != UnitStatus.ATTACK) {
+        if (unitStatus != UnitStatus.POKE && unitStatus != UnitStatus.ATTACK && unitStatus != UnitStatus.RUNBY) {
             wallStuckTimer = 0;
             wallStuckCheckPos = null;
             wallStuckRetreatTimer = 0;
@@ -139,7 +145,7 @@ public class Vulture extends CombatUnits {
         if ((isOutRanged() || enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() + 32))
                 && !hasTankSupport
                 && !lobotomyOverride
-                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 160) {
+                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyGroundRange(enemyUnit) + 160) {
             unitStatus = UnitStatus.RETREAT;
             return;
         }
@@ -182,7 +188,7 @@ public class Vulture extends CombatUnits {
 
         boolean outRangingNearby = enemyInformation.outRangingUnitNearby(enemyUnit, unit.getType(), unit.getType().groundWeapon().maxRange() + 32);
 
-        if (((isOutRanged() || outRangingNearby) && unit.getDistance(enemyUnit.getEnemyPosition()) > 450)
+        if (((isOutRanged() || outRangingNearby) && unit.getDistance(enemyUnit.getEnemyPosition()) > enemyGroundRange(enemyUnit) + 256)
                 || (!inRangeOfThreat && (!isOutRanged() || hasTankSupport) && !outRangingNearby)) {
             setUnitStatus(UnitStatus.POKE);
             return;
@@ -253,6 +259,7 @@ public class Vulture extends CombatUnits {
             approachingStagingBase = false;
             targetedEnemyExpansion = null;
             detouringMine = false;
+            miningStagingComplete = false;
         }
 
         if (pulseCheck > 64) {
@@ -262,6 +269,7 @@ public class Vulture extends CombatUnits {
             approachingStagingBase = false;
             targetedEnemyExpansion = null;
             detouringMine = false;
+            miningStagingComplete = false;
         }
 
         if (layingMines) {
@@ -273,6 +281,7 @@ public class Vulture extends CombatUnits {
                 recentlyMined = true;
                 pulseCheck = 0;
                 detouringMine = false;
+                miningStagingComplete = false;
                 return;
             }
 
@@ -288,106 +297,16 @@ public class Vulture extends CombatUnits {
 
             if (miningExpansion && targetedEnemyExpansion != null) {
                 detouringMine = false;
-                Position vulturePos = unit.getPosition();
                 Position destPos = targetedEnemyExpansion.getCenter();
-                double distToDest = vulturePos.getDistance(destPos);
-                double hazardRadius = 256.0;
+                double distToDest = unit.getPosition().getDistance(destPos);
 
-                double avoidDx = 0.0;
-                double avoidDy = 0.0;
-                boolean threatNearby = false;
-
-                for (EnemyUnits enemy : enemyUnits) {
-                    int range = getGroundThreatRange(enemy);
-                    if (range == 0) {
-                        continue;
-                    }
-                    if (enemy.getEnemyPosition() == null) {
-                        continue;
-                    }
-
-                    UnitType type = enemy.getEnemyType();
-
-                    if (type.isWorker()) {
-                        continue;
-                    }
-                    
-                    if (type.isBuilding() && enemy.getEnemyUnit() != null && enemy.getEnemyUnit().isVisible()) {
-                        if (type == UnitType.Terran_Bunker) {
-                            if (!enemy.getEnemyUnit().isCompleted()) {
-                                continue;
-                            }
-                        }
-                        else if (!enemy.getEnemyUnit().isCompleted() || enemy.getEnemyUnit().isMorphing()
-                                || !enemy.getEnemyUnit().isPowered()) {
-                            continue;
-                        }
-                    }
-
-                    double threatDist = vulturePos.getDistance(enemy.getEnemyPosition());
-                    double safeDistance = range + hazardRadius;
-
-                    if (threatDist < safeDistance) {
-                        threatNearby = true;
-                        double dx = vulturePos.getX() - enemy.getEnemyPosition().getX();
-                        double dy = vulturePos.getY() - enemy.getEnemyPosition().getY();
-                        double weight = (safeDistance - threatDist) / safeDistance;
-                        avoidDx += (dx / Math.max(1.0, threatDist)) * weight;
-                        avoidDy += (dy / Math.max(1.0, threatDist)) * weight;
-                    }
+                if (dodgeToward(destPos)) {
+                    detouringMine = true;
+                    miningStagingComplete = true;
+                    return;
                 }
 
-                if (threatNearby && distToDest > 96) {
-                    double avoidLen = Math.sqrt(avoidDx * avoidDx + avoidDy * avoidDy);
-                    if (avoidLen >= 0.001) {
-                        double avoidNx = avoidDx / avoidLen;
-                        double avoidNy = avoidDy / avoidLen;
-
-                        double destDx = destPos.getX() - vulturePos.getX();
-                        double destDy = destPos.getY() - vulturePos.getY();
-                        double destLen = Math.sqrt(destDx * destDx + destDy * destDy);
-
-                        if (destLen >= 0.001) {
-                            double destNx = destDx / destLen;
-                            double destNy = destDy / destLen;
-
-                            double perpX = -destNy;
-                            double perpY = destNx;
-                            double sideDot = perpX * avoidNx + perpY * avoidNy;
-                            if (sideDot < 0) {
-                                perpX = -perpX;
-                                perpY = -perpY;
-                            }
-
-                            double stepLen = 160.0;
-                            double forwardWeight = 0.6;
-                            double sideWeight = 1.0;
-                            double rawX = vulturePos.getX() + (destNx * forwardWeight + perpX * sideWeight) * stepLen;
-                            double rawY = vulturePos.getY() + (destNy * forwardWeight + perpY * sideWeight) * stepLen;
-
-                            int maxX = game.mapWidth() * 32 - 1;
-                            int maxY = game.mapHeight() * 32 - 1;
-                            int clampedX = (int) Math.min(Math.max(rawX, 0), maxX);
-                            int clampedY = (int) Math.min(Math.max(rawY, 0), maxY);
-
-                            Position detourWaypoint = new Position(clampedX, clampedY);
-                            Position walkableWaypoint = mapInfo.getPathFinding().findNearestWalkable(detourWaypoint);
-                            detouringMine = true;
-                            if (walkableWaypoint == null) {
-                                return;
-                            }
-                            UnitCommand prevCmd = unit.getLastCommand();
-                            if (prevCmd.getType() != UnitCommandType.Move
-                                    || prevCmd.getTargetPosition() == null
-                                    || prevCmd.getTargetPosition().getDistance(walkableWaypoint) > 48) {
-                                unit.move(walkableWaypoint);
-                            }
-                            return;
-                        }
-                    }
-                }
-
-                if (!threatNearby && distToDest <= 96) {
+                if (distToDest <= 96) {
                     UnitCommand lastCmd = unit.getLastCommand();
                     if (lastCmd.getType() != UnitCommandType.Use_Tech_Position) {
                         unit.useTech(TechType.Spider_Mines, destPos);
@@ -404,7 +323,7 @@ public class Vulture extends CombatUnits {
         }
 
         if (isOutRanged() && !hasTankSupport && !lobotomyOverride
-                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyUnit.getEnemyType().groundWeapon().maxRange() + 128) {
+                && unit.getDistance(enemyUnit.getEnemyPosition()) < enemyGroundRange(enemyUnit) + 128) {
             unitStatus = UnitStatus.RETREAT;
             return;
         }
@@ -424,7 +343,7 @@ public class Vulture extends CombatUnits {
         Position currEnemyPos = enemyUnit.getEnemyPosition();
         double currDist = currVulturePos.getDistance(currEnemyPos);
         int myWeaponRange = weaponRange();
-        int enemyWeaponRange = enemyUnit.getEnemyType().groundWeapon().maxRange();
+        int enemyWeaponRange = enemyGroundRange(enemyUnit);
 
         boolean enemyFleeing = false;
 
@@ -473,7 +392,10 @@ public class Vulture extends CombatUnits {
             }
             else if (enemyUnit.getEnemyUnit().isVisible()) {
                 if (enemyWeaponRange <= 32) {
-                    unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange));
+                    unit.patrol(patrolAngleFrom(currEnemyPos));
+                }
+                else if (currDist < enemyWeaponRange + 32) {
+                    unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange + 64));
                 }
                 else {
                     unit.patrol(patrolAngleFrom(currEnemyPos));
@@ -493,6 +415,145 @@ public class Vulture extends CombatUnits {
         if (allowMineLaying()) {
             layMinesAtChokepoints();
             layMinesAnyWhere();
+        }
+    }
+
+    @Override
+    public void runby() {
+        if (wallStuckRetreatTimer > 0 && rallyPoint != null) {
+            unit.move(rallyPoint.toPosition());
+            return;
+        }
+
+        ArrayList<Base> enemyExpansions = mapInfo.scoredBestEnemyExpansion(enemyUnits);
+        Base enemyNatural = mapInfo.getEnemyNatural();
+        Base enemyMain = mapInfo.getEnemyMain();
+
+        List<Base> enemyOwnedBeyondNatural = new ArrayList<>();
+        for (Base base : mapInfo.getMapBases()) {
+            if (base == enemyNatural || base == enemyMain) {
+                continue;
+            }
+            if (!enemyDepotNearBase(base)) {
+                continue;
+            }
+            enemyOwnedBeyondNatural.add(base);
+        }
+
+        Position vulturePos = unit.getPosition();
+
+        List<Base> targets = new ArrayList<>();
+        if (!enemyOwnedBeyondNatural.isEmpty()) {
+            enemyOwnedBeyondNatural.sort((a, b) -> Double.compare(
+                    vulturePos.getDistance(a.getCenter()),
+                    vulturePos.getDistance(b.getCenter())));
+            targets.addAll(enemyOwnedBeyondNatural);
+        }
+
+        List<Base> scoredSorted = new ArrayList<>(enemyExpansions);
+        scoredSorted.sort((a, b) -> Double.compare(
+                vulturePos.getDistance(a.getCenter()),
+                vulturePos.getDistance(b.getCenter())));
+        for (Base scored : scoredSorted) {
+            if (!targets.contains(scored)) {
+                targets.add(scored);
+            }
+        }
+
+        for (Base expansion : targets) {
+            if (visitedExpansions.contains(expansion)) {
+                continue;
+            }
+
+            targetedEnemyExpansion = expansion;
+
+            ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
+            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 160) {
+                approachingStagingBase = false;
+                runbyStagingComplete = true;
+            }
+            else if (!runbyStagingComplete && !ordered.isEmpty()
+                    && unit.getDistance(ordered.get(0).getCenter()) < unit.getDistance(expansion.getCenter())) {
+                Position stagingPos = ordered.get(0).getCenter();
+                approachingStagingBase = true;
+                if (unit.getDistance(stagingPos) > 500 && dodgeToward(stagingPos)) {
+                    return;
+                }
+                unit.move(stagingPos);
+                return;
+            }
+
+            EnemyUnits depot = findDepotNearBase(expansion);
+            if (depot != null) {
+                runbyStagingComplete = true;
+                Position attackPos = runbyAttackPos(expansion, depot);
+                if (unit.getDistance(attackPos) >= 150) {
+                    if (unit.getDistance(attackPos) > 500 && dodgeToward(attackPos)) {
+                        return;
+                    }
+                    unit.move(attackPos);
+                    return;
+                }
+                attackBaseTarget(depot, expansion);
+                return;
+            }
+
+            if (unit.getDistance(expansion.getCenter()) >= 200) {
+                runbyStagingComplete = true;
+                Position expansionPos = expansion.getCenter();
+                if (unit.getDistance(expansionPos) > 500 && dodgeToward(expansionPos)) {
+                    return;
+                }
+                unit.move(expansionPos);
+                return;
+            }
+
+            runbyStagingComplete = true;
+            visitedExpansions.add(expansion);
+        }
+
+        if (enemyNatural != null) {
+            targetedEnemyExpansion = enemyNatural;
+            runbyStagingComplete = true;
+
+            EnemyUnits naturalDepot = findDepotNearBase(enemyNatural);
+            if (naturalDepot != null) {
+                Position attackPos = runbyAttackPos(enemyNatural, naturalDepot);
+                if (unit.getDistance(attackPos) >= 150) {
+                    unit.move(attackPos);
+                    return;
+                }
+                attackBaseTarget(naturalDepot, enemyNatural);
+                return;
+            }
+
+            if (unit.getDistance(enemyNatural.getCenter()) >= 200) {
+                unit.move(enemyNatural.getCenter());
+                return;
+            }
+        }
+
+        if (enemyMain != null) {
+            targetedEnemyExpansion = enemyMain;
+            runbyStagingComplete = true;
+
+            EnemyUnits mainDepot = findDepotNearBase(enemyMain);
+            if (mainDepot != null) {
+                Position attackPos = runbyAttackPos(enemyMain, mainDepot);
+                if (unit.getDistance(attackPos) >= 150) {
+                    unit.move(attackPos);
+                    return;
+                }
+                attackBaseTarget(mainDepot, enemyMain);
+                return;
+            }
+
+            unit.attack(enemyMain.getCenter());
+            return;
+        }
+
+        if (rallyPoint != null) {
+            unit.move(rallyPoint.toPosition());
         }
     }
 
@@ -528,6 +589,120 @@ public class Vulture extends CombatUnits {
         moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
         moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
         return new Position((int) moveX, (int) moveY);
+    }
+
+    private boolean dodgeToward(Position destPos) {
+        Position vulturePos = unit.getPosition();
+        double distToDest = vulturePos.getDistance(destPos);
+        double hazardRadius = 256.0;
+
+        double avoidDx = 0.0;
+        double avoidDy = 0.0;
+        boolean threatNearby = false;
+
+        for (EnemyUnits enemy : enemyUnits) {
+            int range = getGroundThreatRange(enemy);
+            if (range == 0) {
+                continue;
+            }
+            if (enemy.getEnemyPosition() == null) {
+                continue;
+            }
+
+            UnitType type = enemy.getEnemyType();
+
+            if (type.isWorker()) {
+                continue;
+            }
+
+            if (type.isBuilding() && enemy.getEnemyUnit() != null && enemy.getEnemyUnit().isVisible()) {
+                if (type == UnitType.Terran_Bunker) {
+                    if (!enemy.getEnemyUnit().isCompleted()) {
+                        continue;
+                    }
+                }
+                else if (!enemy.getEnemyUnit().isCompleted() || enemy.getEnemyUnit().isMorphing()
+                        || !enemy.getEnemyUnit().isPowered()) {
+                    continue;
+                }
+            }
+
+            double threatDist = vulturePos.getDistance(enemy.getEnemyPosition());
+            double safeDistance = range + hazardRadius;
+
+            if (threatDist < safeDistance) {
+                threatNearby = true;
+                double dx = vulturePos.getX() - enemy.getEnemyPosition().getX();
+                double dy = vulturePos.getY() - enemy.getEnemyPosition().getY();
+                double weight = (safeDistance - threatDist) / safeDistance;
+                avoidDx += (dx / Math.max(1.0, threatDist)) * weight;
+                avoidDy += (dy / Math.max(1.0, threatDist)) * weight;
+            }
+        }
+
+        if (!threatNearby || distToDest <= 96) {
+            dodgeSideSign = 0;
+            return false;
+        }
+
+        double avoidLen = Math.sqrt(avoidDx * avoidDx + avoidDy * avoidDy);
+        if (avoidLen < 0.001) {
+            return false;
+        }
+
+        double avoidNx = avoidDx / avoidLen;
+        double avoidNy = avoidDy / avoidLen;
+
+        double destDx = destPos.getX() - vulturePos.getX();
+        double destDy = destPos.getY() - vulturePos.getY();
+        double destLen = Math.sqrt(destDx * destDx + destDy * destDy);
+
+        if (destLen < 0.001) {
+            return false;
+        }
+
+        double destNx = destDx / destLen;
+        double destNy = destDy / destLen;
+
+        double perpX = -destNy;
+        double perpY = destNx;
+        if (dodgeSideSign == 0) {
+            double sideDot = perpX * avoidNx + perpY * avoidNy;
+            dodgeSideSign = sideDot < 0 ? -1 : 1;
+        }
+        if (dodgeSideSign < 0) {
+            perpX = -perpX;
+            perpY = -perpY;
+        }
+
+        double stepLen = 160.0;
+        double forwardWeight = 0.6;
+        double sideWeight = 1.0;
+        double rawX = vulturePos.getX() + (destNx * forwardWeight + perpX * sideWeight) * stepLen;
+        double rawY = vulturePos.getY() + (destNy * forwardWeight + perpY * sideWeight) * stepLen;
+
+        int maxX = game.mapWidth() * 32 - 1;
+        int maxY = game.mapHeight() * 32 - 1;
+        int clampedX = (int) Math.min(Math.max(rawX, 0), maxX);
+        int clampedY = (int) Math.min(Math.max(rawY, 0), maxY);
+
+        Position detourWaypoint = new Position(clampedX, clampedY);
+
+        if (!game.isWalkable(detourWaypoint.toWalkPosition())) {
+            return false;
+        }
+
+        int sampleSteps = 8;
+        for (int s = 1; s <= sampleSteps; s++) {
+            int sx = vulturePos.getX() + (detourWaypoint.getX() - vulturePos.getX()) * s / sampleSteps;
+            int sy = vulturePos.getY() + (detourWaypoint.getY() - vulturePos.getY()) * s / sampleSteps;
+            if (!game.isWalkable(new Position(sx, sy).toWalkPosition())) {
+                return false;
+            }
+        }
+
+        unit.move(detourWaypoint);
+        return true;
     }
 
     private void attackMove() {
@@ -603,12 +778,22 @@ public class Vulture extends CombatUnits {
         int dy = unitPos.getY() - enemyPos.getY();
         double dist = Math.max(1, unitPos.getDistance(enemyPos));
 
-        double moveX = unitPos.getX() + (dx * distance / dist);
-        double moveY = unitPos.getY() + (dy * distance / dist);
+        double dirX = dx / dist;
+        double dirY = dy / dist;
 
-        moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
-        moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
-        return new Position((int) moveX, (int) moveY);
+        int maxX = game.mapWidth() * 32 - 1;
+        int maxY = game.mapHeight() * 32 - 1;
+
+        for (int d = distance; d >= 32; d -= 32) {
+            int tx = (int) Math.min(Math.max(unitPos.getX() + dirX * d, 0), maxX);
+            int ty = (int) Math.min(Math.max(unitPos.getY() + dirY * d, 0), maxY);
+            Position candidate = new Position(tx, ty);
+            if (game.isWalkable(candidate.toWalkPosition())) {
+                return candidate;
+            }
+        }
+
+        return unitPos;
     }
 
     private Position getKitePosition() {
@@ -652,7 +837,7 @@ public class Vulture extends CombatUnits {
                 safeDistance = range + 160;
             }
             else {
-                safeDistance = Math.max(weaponRange(), range + 160);
+                safeDistance = Math.max(weaponRange() + 32, range + 192);
             }
 
             if (threatDist < safeDistance) {
@@ -702,18 +887,39 @@ public class Vulture extends CombatUnits {
             moveY = Math.min(Math.max(rawY, 0), maxY);
         }
 
-        return new Position((int) moveX, (int) moveY);
+        Position kitePos = new Position((int) moveX, (int) moveY);
+        if (!game.isWalkable(kitePos.toWalkPosition())) {
+            return null;
+        }
+        return kitePos;
     }
 
     private int getGroundThreatRange(EnemyUnits enemy) {
         UnitType type = enemy.getEnemyType();
         if (type == UnitType.Terran_Bunker) {
+            if (game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.U_238_Shells) > 0) {
+                return 160;
+            }
             return UnitType.Terran_Marine.groundWeapon().maxRange();
         }
         if (type.groundWeapon() != WeaponType.None) {
-            return type.groundWeapon().maxRange();
+            return enemyGroundRange(enemy);
         }
         return 0;
+    }
+
+    private int enemyGroundRange(EnemyUnits e) {
+        UnitType type = e.getEnemyType();
+        if (type == UnitType.Protoss_Dragoon && game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.Singularity_Charge) > 0) {
+            return 192;
+        }
+        if (type == UnitType.Terran_Marine && game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.U_238_Shells) > 0) {
+            return 160;
+        }
+        if (type == UnitType.Zerg_Hydralisk && game.enemy() != null && game.enemy().getUpgradeLevel(UpgradeType.Grooved_Spines) > 0) {
+            return 160;
+        }
+        return type.groundWeapon().maxRange();
     }
 
     private int weaponRange() {
@@ -758,7 +964,7 @@ public class Vulture extends CombatUnits {
             if (enemyUnit.getEnemyType().isBuilding() || enemyUnit.getEnemyType() == UnitType.Terran_Marine) {
                 return false;
             }
-            if (enemyUnit.getEnemyType().groundWeapon().maxRange() + 32 >= weaponRange()) {
+            if (enemyGroundRange(enemyUnit) + 32 >= weaponRange()) {
                 return true;
             }
         }
@@ -840,7 +1046,7 @@ public class Vulture extends CombatUnits {
                     layingMines = true;
                 }
             }
-            else if (enemyUnit.getEnemyType().groundWeapon().maxRange() <= 64) {
+            else if (enemyGroundRange(enemyUnit) <= 64) {
                 Position minePos = kiteTo(256);
                 unit.move(minePos);
                 if (!isOnNaturalBunkerWall(minePos)) {
@@ -920,17 +1126,20 @@ public class Vulture extends CombatUnits {
             approachingStagingBase = false;
             targetedEnemyExpansion = null;
             detouringMine = false;
+            miningStagingComplete = false;
         }
 
         if (approachingStagingBase && targetedEnemyExpansion != null) {
             ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
             if (unit.getDistance(targetedEnemyExpansion.getCenter()) <= 800) {
                 approachingStagingBase = false;
+                miningStagingComplete = true;
                 unit.useTech(TechType.Spider_Mines, targetedEnemyExpansion.getCenter());
                 return;
             }
             if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 96) {
                 approachingStagingBase = false;
+                miningStagingComplete = true;
                 unit.useTech(TechType.Spider_Mines, targetedEnemyExpansion.getCenter());
             }
             return;
@@ -977,7 +1186,7 @@ public class Vulture extends CombatUnits {
                 layingMines = true;
                 miningExpansion = true;
 
-                if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < unit.getDistance(expansion.getCenter())) {
+                if (!miningStagingComplete && !ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < unit.getDistance(expansion.getCenter())) {
                     unit.move(ordered.get(0).getCenter());
                     approachingStagingBase = true;
                 }
@@ -995,9 +1204,26 @@ public class Vulture extends CombatUnits {
         approachingStagingBase = false;
         targetedEnemyExpansion = null;
         detouringMine = false;
+        miningStagingComplete = false;
+    }
+
+    private void attackBaseTarget(EnemyUnits depot, Base base) {
+        if (enemyUnit != null && enemyUnit.getEnemyUnit() != null) {
+            unit.attack(enemyUnit.getEnemyUnit());
+            return;
+        }
+        if (depot != null && depot.getEnemyUnit() != null) {
+            unit.attack(depot.getEnemyUnit());
+            return;
+        }
+        unit.attack(base.getCenter());
     }
 
     private boolean enemyDepotNearBase(Base base) {
+        return findDepotNearBase(base) != null;
+    }
+
+    private EnemyUnits findDepotNearBase(Base base) {
         for (EnemyUnits eu : enemyUnits) {
             if (!eu.getEnemyType().isResourceDepot()) {
                 continue;
@@ -1006,10 +1232,40 @@ public class Vulture extends CombatUnits {
                 continue;
             }
             if (eu.getEnemyPosition().getDistance(base.getCenter()) < 256) {
-                return true;
+                return eu;
             }
         }
-        return false;
+        return null;
+    }
+
+    private Position runbyAttackPos(Base base, EnemyUnits depot) {
+        Position depotPos = depot.getEnemyPosition();
+        if (depotPos == null) {
+            depotPos = base.getCenter();
+        }
+
+        List<MineralPatch> patches = mapInfo.getBasePatches(base);
+        int sumX = 0;
+        int sumY = 0;
+        int count = 0;
+        for (MineralPatch patch : patches) {
+            Position p = patch.getPosition();
+            if (p == null) {
+                continue;
+            }
+            sumX += p.getX();
+            sumY += p.getY();
+            count++;
+        }
+
+        if (count == 0) {
+            return depotPos;
+        }
+
+        Position mineralCentroid = new Position(sumX / count, sumY / count);
+        return new Position(
+                (depotPos.getX() + mineralCentroid.getX()) / 2,
+                (depotPos.getY() + mineralCentroid.getY()) / 2);
     }
 
     public boolean isLobotomyOverride() {
