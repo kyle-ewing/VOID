@@ -245,6 +245,7 @@ public class EnemyInformation {
         for (EnemyTechBuilding enemyBuilding : enemyStrategyManager.getEnemyBuildings()) {
             if (!enemyBuilding.hasTriggeredResponse() && enemyBuilding.isEnemyBuilding(enemyUnits)) {
                 enemyBuilding.friendlyBuildingResponse();
+                enemyBuilding.friendlyUpgradeResponse();
                 enemyBuilding.setTriggeredResponse(true);
                 enemyTechBuildings.add(enemyBuilding);
             }

@@ -1239,34 +1239,72 @@ public class ProductionManager {
         }
 
         for (EnemyTechBuilding techBuilding : gameState.getKnownEnemyTechBuildings()) {
-            if (techBuilding.getFriendlyBuildingResponse().isEmpty()) {
+            if (!techBuilding.getFriendlyBuildingResponse().isEmpty()) {
+                techBuilding.getFriendlyBuildingResponse().removeIf(buildingResponse ->
+                        allBuildings.stream().anyMatch(unit -> unit.getType() == buildingResponse));
+
+                techBuilding.getFriendlyBuildingResponse().removeIf(buildingPriority ->
+                        productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
+                        && (pi.getPriority() == 1 || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
+
+                for (UnitType buildingResponse : techBuilding.getFriendlyBuildingResponse()) {
+                    productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() != 1);
+
+                    if (buildingResponse.isAddon()) {
+                        addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
+                    }
+                    else {
+                        if (buildingResponse.canBuildAddon()) {
+                            addToQueue(buildingResponse, PlannedItemType.BUILDING, 1, true);
+                        }
+                        else {
+                            addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                        }
+                    }
+                }
+            }
+
+            if (techBuilding.getFriendlyUpgradeResponse().isEmpty()) {
                 continue;
             }
 
-            techBuilding.getFriendlyBuildingResponse().removeIf(buildingResponse -> 
-                    allBuildings.stream().anyMatch(unit -> unit.getType() == buildingResponse));
+            for (PlannedItem upgradeResponse : techBuilding.getFriendlyUpgradeResponse()) {
+                boolean existingUpgrade = false;
 
-            techBuilding.getFriendlyBuildingResponse().removeIf(buildingPriority ->
-                    productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
-                    && (pi.getPriority() == 1 || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
+                for (PlannedItem pi : productionQueue) {
+                    if (pi.getTechUpgrade() != null && upgradeResponse.getTechUpgrade() != null) {
+                        if (pi.getTechUpgrade() == upgradeResponse.getTechUpgrade()) {
+                            existingUpgrade = true;
+                            break;
+                        }
+                    }
 
-            for (UnitType buildingResponse : techBuilding.getFriendlyBuildingResponse()) {
-                productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() != 1);
-
-                if (buildingResponse.isAddon()) {
-                    addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
+                    if (pi.getUpgradeType() != null && upgradeResponse.getUpgradeType() != null) {
+                        if (pi.getUpgradeType() == upgradeResponse.getUpgradeType()) {
+                            existingUpgrade = true;
+                            break;
+                        }
+                    }
                 }
-                else {
-                    if (buildingResponse.canBuildAddon()) {
-                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1, true);
+
+                if (upgradeResponse.getTechUpgrade() != null) {
+                    if (game.self().hasResearched(upgradeResponse.getTechUpgrade())) {
+                        existingUpgrade = true;
                     }
-                    else {
-                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                }
+
+                if (upgradeResponse.getUpgradeType() != null) {
+                    if (game.self().getUpgradeLevel(upgradeResponse.getUpgradeType()) >= upgradeResponse.getUpgradeLevel()) {
+                        existingUpgrade = true;
                     }
+                }
+
+                if (!existingUpgrade) {
+                    productionQueue.add(upgradeResponse);
                 }
             }
         }
-                
+
     }
 
     private boolean hasTurretAtBase(TilePosition location) {

@@ -22,7 +22,7 @@ public class Carrier extends EnemyTechUnits {
                 continue;
             }
 
-            if (enemyUnit.getEnemyType() == UnitType.Protoss_Carrier || enemyUnit.getEnemyType() == UnitType.Protoss_Fleet_Beacon) {
+            if (enemyUnit.getEnemyType() == UnitType.Protoss_Carrier) {
                 return true;
             }
         }
