@@ -18,7 +18,9 @@ import bwapi.UpgradeType;
 import bwapi.WeaponType;
 import bwem.Base;
 import bwem.ChokePoint;
+import bwem.Mineral;
 import information.MapInfo;
+import information.neutral.MineralPatch;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import util.Time;
@@ -37,6 +39,8 @@ public class Vulture extends CombatUnits {
     private boolean approachingStagingBase = false;
     private boolean recentlyMined = false;
     private boolean detouringMine = false;
+    private boolean miningStagingComplete = false;
+    private int dodgeSideSign = 0;
     private Base targetedEnemyExpansion = null;
     private HashSet<Base> visitedExpansions = new HashSet<>();
     private boolean runbyStagingComplete = false;
@@ -72,7 +76,7 @@ public class Vulture extends CombatUnits {
             mineTimer += 8;
         }
 
-        if (unitStatus != UnitStatus.POKE && unitStatus != UnitStatus.ATTACK) {
+        if (unitStatus != UnitStatus.POKE && unitStatus != UnitStatus.ATTACK && unitStatus != UnitStatus.RUNBY) {
             wallStuckTimer = 0;
             wallStuckCheckPos = null;
             wallStuckRetreatTimer = 0;
@@ -255,6 +259,7 @@ public class Vulture extends CombatUnits {
             approachingStagingBase = false;
             targetedEnemyExpansion = null;
             detouringMine = false;
+            miningStagingComplete = false;
         }
 
         if (pulseCheck > 64) {
@@ -264,6 +269,7 @@ public class Vulture extends CombatUnits {
             approachingStagingBase = false;
             targetedEnemyExpansion = null;
             detouringMine = false;
+            miningStagingComplete = false;
         }
 
         if (layingMines) {
@@ -275,6 +281,7 @@ public class Vulture extends CombatUnits {
                 recentlyMined = true;
                 pulseCheck = 0;
                 detouringMine = false;
+                miningStagingComplete = false;
                 return;
             }
 
@@ -295,6 +302,7 @@ public class Vulture extends CombatUnits {
 
                 if (dodgeToward(destPos)) {
                     detouringMine = true;
+                    miningStagingComplete = true;
                     return;
                 }
 
@@ -384,7 +392,7 @@ public class Vulture extends CombatUnits {
             }
             else if (enemyUnit.getEnemyUnit().isVisible()) {
                 if (enemyWeaponRange <= 32) {
-                    unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange));
+                    unit.patrol(patrolAngleFrom(currEnemyPos));
                 }
                 else if (currDist < enemyWeaponRange + 32) {
                     unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange + 64));
@@ -412,31 +420,48 @@ public class Vulture extends CombatUnits {
 
     @Override
     public void runby() {
+        if (game.getFrameCount() % 24 == 0) {
+            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-TICK] Vulture " + unit.getID() + " pos=" + unit.getPosition() + " inRunbySquad=" + inRunbySquad + " wallStuckRetreat=" + wallStuckRetreatTimer);
+        }
+        if (wallStuckRetreatTimer > 0 && rallyPoint != null) {
+            unit.move(rallyPoint.toPosition());
+            return;
+        }
+
         ArrayList<Base> enemyExpansions = mapInfo.scoredBestEnemyExpansion(enemyUnits);
         Base enemyNatural = mapInfo.getEnemyNatural();
         Base enemyMain = mapInfo.getEnemyMain();
 
-        List<Base> targets = new ArrayList<>();
-        for (Base base : enemyExpansions) {
-            targets.add(base);
-        }
+        List<Base> enemyOwnedBeyondNatural = new ArrayList<>();
         for (Base base : mapInfo.getMapBases()) {
             if (base == enemyNatural || base == enemyMain) {
-                continue;
-            }
-            if (enemyExpansions.contains(base)) {
                 continue;
             }
             if (!enemyDepotNearBase(base)) {
                 continue;
             }
-            targets.add(base);
+            enemyOwnedBeyondNatural.add(base);
         }
 
         Position vulturePos = unit.getPosition();
-        targets.sort((a, b) -> Double.compare(
+
+        List<Base> targets = new ArrayList<>();
+        if (!enemyOwnedBeyondNatural.isEmpty()) {
+            enemyOwnedBeyondNatural.sort((a, b) -> Double.compare(
+                    vulturePos.getDistance(a.getCenter()),
+                    vulturePos.getDistance(b.getCenter())));
+            targets.addAll(enemyOwnedBeyondNatural);
+        }
+
+        List<Base> scoredSorted = new ArrayList<>(enemyExpansions);
+        scoredSorted.sort((a, b) -> Double.compare(
                 vulturePos.getDistance(a.getCenter()),
                 vulturePos.getDistance(b.getCenter())));
+        for (Base scored : scoredSorted) {
+            if (!targets.contains(scored)) {
+                targets.add(scored);
+            }
+        }
 
         for (Base expansion : targets) {
             if (visitedExpansions.contains(expansion)) {
@@ -446,7 +471,10 @@ public class Vulture extends CombatUnits {
             targetedEnemyExpansion = expansion;
 
             ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
-            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 100) {
+            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 160) {
+                if (!runbyStagingComplete) {
+                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " ARRIVED at staging base (pos=" + unit.getPosition() + ", stagingDist=" + (int) unit.getDistance(ordered.get(0).getCenter()) + ") -> marking stagingComplete");
+                }
                 approachingStagingBase = false;
                 runbyStagingComplete = true;
             }
@@ -455,68 +483,110 @@ public class Vulture extends CombatUnits {
                 Position stagingPos = ordered.get(0).getCenter();
                 approachingStagingBase = true;
                 if (unit.getDistance(stagingPos) > 500 && dodgeToward(stagingPos)) {
+                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " DODGING toward staging (pos=" + unit.getPosition() + ", stagingDist=" + (int) unit.getDistance(stagingPos) + ")");
                     return;
                 }
+                UnitCommand lcs = unit.getLastCommand();
+                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " moving toward STAGING " + stagingPos + " (pos=" + unit.getPosition() + ", stagingDist=" + (int) unit.getDistance(stagingPos) + ", expansionDist=" + (int) unit.getDistance(expansion.getCenter()) + ", isMoving=" + unit.isMoving() + ", isStuck=" + unit.isStuck() + ", isIdle=" + unit.isIdle() + ", lastCmd=" + (lcs != null ? lcs.getType() : "null") + ", lastTarget=" + (lcs != null ? lcs.getTargetPosition() : "null") + ")");
                 unit.move(stagingPos);
-                return;
-            }
-
-            if (unit.getDistance(expansion.getCenter()) >= 200) {
-                Position expansionPos = expansion.getCenter();
-                if (unit.getDistance(expansionPos) > 500 && dodgeToward(expansionPos)) {
-                    return;
-                }
-                unit.move(expansionPos);
                 return;
             }
 
             EnemyUnits depot = findDepotNearBase(expansion);
             if (depot != null) {
+                runbyStagingComplete = true;
+                Position attackPos = runbyAttackPos(expansion, depot);
+                if (unit.getDistance(attackPos) >= 150) {
+                    if (unit.getDistance(attackPos) > 500 && dodgeToward(attackPos)) {
+                        System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " for-loop depot DODGE to expansion=" + expansion.getCenter() + " attackPos=" + attackPos);
+                        return;
+                    }
+                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " for-loop depot MOVE to attackPos=" + attackPos + " (expansion=" + expansion.getCenter() + ")");
+                    unit.move(attackPos);
+                    return;
+                }
+                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " for-loop depot ATTACK at expansion=" + expansion.getCenter());
                 attackBaseTarget(depot, expansion);
                 return;
             }
 
-            visitedExpansions.add(expansion);
-        }
-
-        if (enemyNatural != null && !visitedExpansions.contains(enemyNatural)) {
-            targetedEnemyExpansion = enemyNatural;
-
-            if (unit.getDistance(enemyNatural.getCenter()) >= 200) {
-                Position naturalPos = enemyNatural.getCenter();
-                if (unit.getDistance(naturalPos) > 500 && dodgeToward(naturalPos)) {
+            if (unit.getDistance(expansion.getCenter()) >= 200) {
+                runbyStagingComplete = true;
+                Position expansionPos = expansion.getCenter();
+                if (unit.getDistance(expansionPos) > 500 && dodgeToward(expansionPos)) {
+                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " DODGING toward scored expansion " + expansionPos + " (pos=" + unit.getPosition() + ", dist=" + (int) unit.getDistance(expansionPos) + ")");
                     return;
                 }
-                unit.move(naturalPos);
+                UnitCommand lce = unit.getLastCommand();
+                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " moving toward SCORED EXPANSION " + expansionPos + " (pos=" + unit.getPosition() + ", dist=" + (int) unit.getDistance(expansionPos) + ", isMoving=" + unit.isMoving() + ", isStuck=" + unit.isStuck() + ", isIdle=" + unit.isIdle() + ", lastCmd=" + (lce != null ? lce.getType() : "null") + ", lastTarget=" + (lce != null ? lce.getTargetPosition() : "null") + ")");
+                unit.move(expansionPos);
                 return;
             }
 
+            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " arrived at scored expansion " + expansion.getCenter());
+            runbyStagingComplete = true;
+            visitedExpansions.add(expansion);
+        }
+
+        System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " fully traversed scored list (visited=" + visitedExpansions.size() + ", targets=" + targets.size() + ")");
+
+        if (enemyNatural != null) {
+            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " entering NATURAL branch (depot known=" + (findDepotNearBase(enemyNatural) != null) + ", dist=" + (int) unit.getDistance(enemyNatural.getCenter()) + ")");
+            targetedEnemyExpansion = enemyNatural;
+            runbyStagingComplete = true;
+
             EnemyUnits naturalDepot = findDepotNearBase(enemyNatural);
             if (naturalDepot != null) {
+                Position attackPos = runbyAttackPos(enemyNatural, naturalDepot);
+                if (unit.getDistance(attackPos) >= 150) {
+                    UnitCommand lc = unit.getLastCommand();
+                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " natural depot MOVE attackPos=" + attackPos + " (pos=" + unit.getPosition() + ", isMoving=" + unit.isMoving() + ", isStuck=" + unit.isStuck() + ", isIdle=" + unit.isIdle() + ", lastCmd=" + (lc != null ? lc.getType() : "null") + ", lastTarget=" + (lc != null ? lc.getTargetPosition() : "null") + ")");
+                    unit.move(attackPos);
+                    return;
+                }
+                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " natural depot ATTACK");
                 attackBaseTarget(naturalDepot, enemyNatural);
                 return;
             }
 
-            visitedExpansions.add(enemyNatural);
+            if (unit.getDistance(enemyNatural.getCenter()) >= 200) {
+                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " natural MOVE to center=" + enemyNatural.getCenter());
+                unit.move(enemyNatural.getCenter());
+                return;
+            }
+        }
+        else {
+            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY] Vulture " + unit.getID() + " enemyNatural is NULL, falling to main");
         }
 
         if (enemyMain != null) {
             targetedEnemyExpansion = enemyMain;
-
-            if (unit.getDistance(enemyMain.getCenter()) >= 200) {
-                Position mainPos = enemyMain.getCenter();
-                if (unit.getDistance(mainPos) > 500 && dodgeToward(mainPos)) {
-                    return;
-                }
-                unit.move(mainPos);
-                return;
-            }
+            runbyStagingComplete = true;
 
             EnemyUnits mainDepot = findDepotNearBase(enemyMain);
             if (mainDepot != null) {
+                Position attackPos = runbyAttackPos(enemyMain, mainDepot);
+                if (unit.getDistance(attackPos) >= 150) {
+                    System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " main depot MOVE attackPos=" + attackPos);
+                    unit.move(attackPos);
+                    return;
+                }
+                System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " main depot ATTACK");
                 attackBaseTarget(mainDepot, enemyMain);
                 return;
             }
+
+            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " main ATTACK-MOVE to center=" + enemyMain.getCenter());
+            unit.attack(enemyMain.getCenter());
+            return;
+        }
+
+        if (rallyPoint != null) {
+            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " RALLY fallback to " + rallyPoint.toPosition());
+            unit.move(rallyPoint.toPosition());
+        }
+        else {
+            System.out.println("[" + new Time(game.getFrameCount()) + "] [RUNBY-RET] Vulture " + unit.getID() + " NO COMMAND ISSUED (all branches skipped)");
         }
     }
 
@@ -604,6 +674,7 @@ public class Vulture extends CombatUnits {
         }
 
         if (!threatNearby || distToDest <= 96) {
+            dodgeSideSign = 0;
             return false;
         }
 
@@ -628,8 +699,11 @@ public class Vulture extends CombatUnits {
 
         double perpX = -destNy;
         double perpY = destNx;
-        double sideDot = perpX * avoidNx + perpY * avoidNy;
-        if (sideDot < 0) {
+        if (dodgeSideSign == 0) {
+            double sideDot = perpX * avoidNx + perpY * avoidNy;
+            dodgeSideSign = sideDot < 0 ? -1 : 1;
+        }
+        if (dodgeSideSign < 0) {
             perpX = -perpX;
             perpY = -perpY;
         }
@@ -651,7 +725,7 @@ public class Vulture extends CombatUnits {
             return false;
         }
 
-        int sampleSteps = 4;
+        int sampleSteps = 8;
         for (int s = 1; s <= sampleSteps; s++) {
             int sx = vulturePos.getX() + (detourWaypoint.getX() - vulturePos.getX()) * s / sampleSteps;
             int sy = vulturePos.getY() + (detourWaypoint.getY() - vulturePos.getY()) * s / sampleSteps;
@@ -660,13 +734,7 @@ public class Vulture extends CombatUnits {
             }
         }
 
-        UnitCommand prevCmd = unit.getLastCommand();
-        if (prevCmd.getType() != UnitCommandType.Move
-                || prevCmd.getTargetPosition() == null
-                || prevCmd.getTargetPosition().getDistance(detourWaypoint) > 48) {
-            unit.move(detourWaypoint);
-        }
-
+        unit.move(detourWaypoint);
         return true;
     }
 
@@ -743,12 +811,22 @@ public class Vulture extends CombatUnits {
         int dy = unitPos.getY() - enemyPos.getY();
         double dist = Math.max(1, unitPos.getDistance(enemyPos));
 
-        double moveX = unitPos.getX() + (dx * distance / dist);
-        double moveY = unitPos.getY() + (dy * distance / dist);
+        double dirX = dx / dist;
+        double dirY = dy / dist;
 
-        moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
-        moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
-        return new Position((int) moveX, (int) moveY);
+        int maxX = game.mapWidth() * 32 - 1;
+        int maxY = game.mapHeight() * 32 - 1;
+
+        for (int d = distance; d >= 32; d -= 32) {
+            int tx = (int) Math.min(Math.max(unitPos.getX() + dirX * d, 0), maxX);
+            int ty = (int) Math.min(Math.max(unitPos.getY() + dirY * d, 0), maxY);
+            Position candidate = new Position(tx, ty);
+            if (game.isWalkable(candidate.toWalkPosition())) {
+                return candidate;
+            }
+        }
+
+        return unitPos;
     }
 
     private Position getKitePosition() {
@@ -842,7 +920,11 @@ public class Vulture extends CombatUnits {
             moveY = Math.min(Math.max(rawY, 0), maxY);
         }
 
-        return new Position((int) moveX, (int) moveY);
+        Position kitePos = new Position((int) moveX, (int) moveY);
+        if (!game.isWalkable(kitePos.toWalkPosition())) {
+            return null;
+        }
+        return kitePos;
     }
 
     private int getGroundThreatRange(EnemyUnits enemy) {
@@ -1077,17 +1159,20 @@ public class Vulture extends CombatUnits {
             approachingStagingBase = false;
             targetedEnemyExpansion = null;
             detouringMine = false;
+            miningStagingComplete = false;
         }
 
         if (approachingStagingBase && targetedEnemyExpansion != null) {
             ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
             if (unit.getDistance(targetedEnemyExpansion.getCenter()) <= 800) {
                 approachingStagingBase = false;
+                miningStagingComplete = true;
                 unit.useTech(TechType.Spider_Mines, targetedEnemyExpansion.getCenter());
                 return;
             }
             if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 96) {
                 approachingStagingBase = false;
+                miningStagingComplete = true;
                 unit.useTech(TechType.Spider_Mines, targetedEnemyExpansion.getCenter());
             }
             return;
@@ -1134,7 +1219,7 @@ public class Vulture extends CombatUnits {
                 layingMines = true;
                 miningExpansion = true;
 
-                if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < unit.getDistance(expansion.getCenter())) {
+                if (!miningStagingComplete && !ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < unit.getDistance(expansion.getCenter())) {
                     unit.move(ordered.get(0).getCenter());
                     approachingStagingBase = true;
                 }
@@ -1152,6 +1237,7 @@ public class Vulture extends CombatUnits {
         approachingStagingBase = false;
         targetedEnemyExpansion = null;
         detouringMine = false;
+        miningStagingComplete = false;
     }
 
     private void attackBaseTarget(EnemyUnits depot, Base base) {
@@ -1183,6 +1269,36 @@ public class Vulture extends CombatUnits {
             }
         }
         return null;
+    }
+
+    private Position runbyAttackPos(Base base, EnemyUnits depot) {
+        Position depotPos = depot.getEnemyPosition();
+        if (depotPos == null) {
+            depotPos = base.getCenter();
+        }
+
+        List<MineralPatch> patches = mapInfo.getBasePatches(base);
+        int sumX = 0;
+        int sumY = 0;
+        int count = 0;
+        for (MineralPatch patch : patches) {
+            Position p = patch.getPosition();
+            if (p == null) {
+                continue;
+            }
+            sumX += p.getX();
+            sumY += p.getY();
+            count++;
+        }
+
+        if (count == 0) {
+            return depotPos;
+        }
+
+        Position mineralCentroid = new Position(sumX / count, sumY / count);
+        return new Position(
+                (depotPos.getX() + mineralCentroid.getX()) / 2,
+                (depotPos.getY() + mineralCentroid.getY()) / 2);
     }
 
     public boolean isLobotomyOverride() {
