@@ -46,8 +46,7 @@ public class ShuttleRush extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Vulture);
-        getBuildingResponse().add(UnitType.Terran_Vulture);
+        getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
     public void upgradeResponse() {
@@ -59,5 +58,10 @@ public class ShuttleRush extends EnemyStrategy{
 
     public HashSet<UnitType> removeBuildings() {
         return new HashSet<>();
+    }
+
+    @Override
+    public boolean overrideBuildingLift() {
+        return true;
     }
 }

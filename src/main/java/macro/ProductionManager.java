@@ -99,7 +99,7 @@ public class ProductionManager {
                 hasHighPriorityBuilding = false;
             }
 
-            if (blockedByHigherPriority && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+            if (blockedByHigherPriority && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPriority() != 1) {
                 continue;
             }
 
@@ -619,6 +619,11 @@ public class ProductionManager {
                 if (unitTypeCount.get(UnitType.Terran_SCV) < 16 && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                         || unitTypeCount.get(UnitType.Terran_SCV) < 24 && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
+                }
+                else if (unitTypeCount.get(UnitType.Terran_SCV) < 24 
+                        && (gameState.getEnemyOpener() != null 
+                        && (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST || gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.CCFIRST))) {
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
                 }
                 else {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);

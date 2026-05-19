@@ -277,6 +277,12 @@ public class EnemyInformation {
                         return;
                     }
                     break;
+                case SHUTTLERUSH:
+                    if (currentTime.greaterThan(new Time(6,30))) {
+                        enemyOpener.setDefendedStrategy(true);
+                        return;
+                    }
+                    break;
                 default:
                     if (!gameState.isEnemyInBase() && currentTime.greaterThan(new Time(5,0))) {
                         enemyOpener.setDefendedStrategy(true);

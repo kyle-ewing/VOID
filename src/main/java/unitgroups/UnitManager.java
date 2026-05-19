@@ -659,9 +659,9 @@ public class UnitManager {
     }
 
     private void rallyClockReset(CombatUnits combatUnit) {
-        combatUnit.setResetClock(combatUnit.getResetClock() + 12);
+        combatUnit.setResetClock(combatUnit.getResetClock() + 8);
 
-        if (new Time(combatUnit.getResetClock()).greaterThan(new Time(0, 30))) {
+        if (new Time(combatUnit.getResetClock()).greaterThan(new Time(1, 30))) {
             rallyPoint.setRallyPoint(combatUnit);
             combatUnit.setResetClock(0);
         }

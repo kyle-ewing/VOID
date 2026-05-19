@@ -58,6 +58,7 @@ public class RallyPoint {
 
         switch (enemyStrategy.getStrategyName()) {
             case FOURPOOL:
+            case SHUTTLERUSH:
                 combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
                 break;
             case GASSTEAL:
