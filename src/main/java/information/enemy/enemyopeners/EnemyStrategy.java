@@ -57,6 +57,10 @@ public abstract class EnemyStrategy {
         return new HashSet<>();
     }
 
+    public boolean mineralLineTurretsOnly() {
+        return false;
+    }
+
     public boolean isStrategyDefended() {
         return defendedStrategy;
     }

@@ -16,6 +16,7 @@ import information.enemy.enemyopeners.NexusFirst;
 import information.enemy.enemyopeners.OneBaseLurker;
 import information.enemy.enemyopeners.OneBaseMuta;
 import information.enemy.enemyopeners.SCVRush;
+import information.enemy.enemyopeners.ShuttleRush;
 import information.enemy.enemyopeners.TwoBaseLurker;
 import information.enemy.enemyopeners.TwoFacTank;
 import information.enemy.enemyopeners.TwoGate;
@@ -83,6 +84,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new TwoGate(mapInfo));
         enemyStrategies.add(new NexusFirst(mapInfo));
         enemyStrategies.add(new DragoonRangeRush(mapInfo));
+        enemyStrategies.add(new ShuttleRush());
     }
 
     private void addEnemyTechUnits() {
