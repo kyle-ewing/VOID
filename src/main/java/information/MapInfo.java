@@ -60,6 +60,7 @@ public class MapInfo {
     private HashSet<TilePosition> naturalChokeEdge = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
     private HashSet<TilePosition> outsideNaturalSiegeTiles = new HashSet<>();
+    private HashSet<TilePosition> claimedSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> backupMainSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
@@ -473,6 +474,24 @@ public class MapInfo {
         }
 
         return result;
+    }
+
+    public void addClaimedSiegeTile(TilePosition tile) {
+        if (tile == null) {
+            return;
+        }
+        claimedSiegeTiles.add(tile);
+    }
+
+    public void removeClaimedSiegeTile(TilePosition tile) {
+        if (tile == null) {
+            return;
+        }
+        claimedSiegeTiles.remove(tile);
+    }
+
+    public HashSet<TilePosition> getClaimedSiegeTiles() {
+        return claimedSiegeTiles;
     }
 
     public boolean hasExpansionPastNatural() {
