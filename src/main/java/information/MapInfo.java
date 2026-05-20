@@ -1,6 +1,8 @@
 package information;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -63,7 +65,8 @@ public class MapInfo {
     private HashMap<Base, List<Position>> allPathsMap;
     private HashMap<Base, HashSet<TilePosition>> baseTilesAllBases = new HashMap<>();
     private HashMap<Area, HashSet<TilePosition>> areaTiles = new HashMap<>();
-    private HashMap<Base, HashSet<Area>> baseAddedAreas = new HashMap<>();
+    private HashMap<Base, List<Area>> basePathAreas = new HashMap<>();
+    private HashMap<Base, HashSet<TilePosition>> basePathTiles = new HashMap<>();
     private HashMap<Unit, Position> blockingMineralFields = new HashMap<>();
     private HashMap<Base, Integer> originalMineralCounts = new HashMap<>();
     private HashMap<Base, Integer> originalPatchCounts = new HashMap<>();
@@ -71,7 +74,6 @@ public class MapInfo {
     private HashMap<Base, List<MineralPatch>> basePatches = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
-    private boolean naturalAreaAdded = false;
 
     public MapInfo(BWEM bwem, Game game) {
         this.bwem = bwem;
@@ -671,58 +673,264 @@ public class MapInfo {
         }
     }
 
-    private void addAreaTiles(Base newBase) {
-        HashSet<Area> areasToAdd = new HashSet<>();
-        HashSet<ChokePoint> chokePointsToCheck = new HashSet<>();
-
-        for (ChokePoint choke : newBase.getArea().getChokePoints()) {
-            chokePointsToCheck.add(choke);
+    public boolean baseCloseToNatural(Base base) {
+        if (base == null || naturalBase == null) {
+            return false;
         }
 
-        for (ChokePoint choke : chokePointsToCheck) {
-            Area firstArea = choke.getAreas().getFirst();
-            Area secondArea = choke.getAreas().getSecond();
+        if (base == naturalBase) {
+            return false;
+        }
 
-            if (firstArea != null && areaTiles.containsKey(firstArea)) {
-                areasToAdd.add(firstArea);
+        Area baseArea = base.getArea();
+        Area naturalArea = naturalBase.getArea();
+
+        if (baseArea == null || naturalArea == null) {
+            return false;
+        }
+
+        if (baseArea == naturalArea) {
+            return false;
+        }
+
+        List<Area> path = areaBfsPath(naturalArea, baseArea);
+
+        if (path == null) {
+            return false;
+        }
+
+        return path.size() <= 3;
+    }
+
+    private List<Area> areaBfsPath(Area from, Area to) {
+        if (from == null || to == null) {
+            return null;
+        }
+
+        if (from == to) {
+            List<Area> singleton = new ArrayList<>();
+            singleton.add(from);
+            return singleton;
+        }
+
+        HashMap<Area, Area> parents = new HashMap<>();
+        HashSet<Area> visited = new HashSet<>();
+        Deque<Area> queue = new ArrayDeque<>();
+
+        visited.add(from);
+        queue.add(from);
+
+        boolean found = false;
+
+        while (!queue.isEmpty() && visited.size() <= 64) {
+            Area current = queue.poll();
+
+            for (ChokePoint choke : current.getChokePoints()) {
+                Area neighbor = choke.getAreas().getFirst();
+                if (neighbor == current) {
+                    neighbor = choke.getAreas().getSecond();
+                }
+
+                if (neighbor == null || visited.contains(neighbor)) {
+                    continue;
+                }
+
+                visited.add(neighbor);
+                parents.put(neighbor, current);
+
+                if (neighbor == to) {
+                    found = true;
+                    break;
+                }
+
+                queue.add(neighbor);
             }
 
-            if (secondArea != null && areaTiles.containsKey(secondArea)) {
-                areasToAdd.add(secondArea);
+            if (found) {
+                break;
             }
         }
 
-        baseAddedAreas.put(newBase, areasToAdd);
+        if (!found) {
+            return null;
+        }
 
-        for (Area area : areasToAdd) {
-            HashSet<TilePosition> tiles = areaTiles.get(area);
+        ArrayList<Area> reversed = new ArrayList<>();
+        Area step = to;
+        while (step != null) {
+            reversed.add(step);
+            if (step == from) {
+                break;
+            }
+            step = parents.get(step);
+        }
+
+        ArrayList<Area> path = new ArrayList<>();
+        for (int i = reversed.size() - 1; i >= 0; i--) {
+            path.add(reversed.get(i));
+        }
+
+        return path;
+    }
+
+    private void addPathAreasForBase(Base newBase) {
+        if (newBase == null || newBase == naturalBase || naturalBase == null) {
+            return;
+        }
+
+        Area newBaseArea = newBase.getArea();
+        Area naturalArea = naturalBase.getArea();
+
+        if (newBaseArea == null || naturalArea == null) {
+            return;
+        }
+
+        List<Area> path = areaBfsPath(naturalArea, newBaseArea);
+
+        if (path == null) {
+            return;
+        }
+
+        basePathAreas.put(newBase, path);
+
+        HashSet<Area> massiveAreas = new HashSet<>();
+        for (int i = 1; i <= path.size() - 2; i++) {
+            Area intermediate = path.get(i);
+            HashSet<TilePosition> tiles = areaTiles.get(intermediate);
+            if (tiles != null && tiles.size() > 1000) {
+                massiveAreas.add(intermediate);
+            }
+        }
+
+        if (massiveAreas.isEmpty()) {
+            for (int i = 1; i <= path.size() - 2; i++) {
+                Area intermediate = path.get(i);
+                HashSet<TilePosition> tiles = areaTiles.get(intermediate);
+                if (tiles != null) {
+                    baseTiles.addAll(tiles);
+                }
+            }
+            return;
+        }
+
+        for (int i = 1; i <= path.size() - 2; i++) {
+            Area intermediate = path.get(i);
+            if (massiveAreas.contains(intermediate)) {
+                continue;
+            }
+            HashSet<TilePosition> tiles = areaTiles.get(intermediate);
             if (tiles != null) {
                 baseTiles.addAll(tiles);
             }
         }
-    }
 
-    private void removeAreaTiles(Base removedBase) {
-        HashSet<Area> areasToRemove = baseAddedAreas.remove(removedBase);
-        if (areasToRemove == null) {
+        List<Position> tilePath = pathFinding.findPath(naturalBase.getLocation().toPosition(), newBase.getLocation().toPosition());
+
+        if (tilePath == null || tilePath.isEmpty()) {
             return;
         }
 
-        HashSet<Area> stillNeededAreas = new HashSet<>();
-        for (HashSet<Area> areas : baseAddedAreas.values()) {
-            stillNeededAreas.addAll(areas);
-        }
+        int mapWidth = game.mapWidth();
+        int mapHeight = game.mapHeight();
+        HashSet<TilePosition> radiusContribution = basePathTiles.computeIfAbsent(newBase, k -> new HashSet<>());
 
-        for (Area area : areasToRemove) {
-            if (!stillNeededAreas.contains(area)) {
-                HashSet<TilePosition> tiles = areaTiles.get(area);
-                if (tiles != null) {
-                    baseTiles.removeAll(tiles);
+        for (Position p : tilePath) {
+            TilePosition pathTile = p.toTilePosition();
+            Area pathArea = bwem.getMap().getArea(pathTile);
+
+            if (pathArea == null || !massiveAreas.contains(pathArea)) {
+                continue;
+            }
+
+            for (int dx = -3; dx <= 3; dx++) {
+                for (int dy = -3; dy <= 3; dy++) {
+                    int cx = pathTile.getX() + dx;
+                    int cy = pathTile.getY() + dy;
+
+                    if (cx < 0 || cy < 0 || cx >= mapWidth || cy >= mapHeight) {
+                        continue;
+                    }
+
+                    TilePosition candidateTile = new TilePosition(cx, cy);
+                    baseTiles.add(candidateTile);
+                    radiusContribution.add(candidateTile);
                 }
             }
         }
     }
-    
+
+    private void removePathAreasForBase(Base deadBase) {
+        List<Area> deadPath = basePathAreas.remove(deadBase);
+
+        if (deadPath == null) {
+            return;
+        }
+
+        if (deadPath.size() <= 2) {
+            return;
+        }
+
+        HashSet<Area> stillNeeded = new HashSet<>();
+
+        for (List<Area> remainingPath : basePathAreas.values()) {
+            for (int i = 1; i <= remainingPath.size() - 2; i++) {
+                stillNeeded.add(remainingPath.get(i));
+            }
+        }
+
+        for (Base owned : ownedBases) {
+            if (owned.getArea() != null) {
+                stillNeeded.add(owned.getArea());
+            }
+        }
+
+        for (int i = 1; i <= deadPath.size() - 2; i++) {
+            Area intermediate = deadPath.get(i);
+            if (stillNeeded.contains(intermediate)) {
+                continue;
+            }
+            HashSet<TilePosition> tiles = areaTiles.get(intermediate);
+            if (tiles == null) {
+                continue;
+            }
+            if (tiles.size() > 1000) {
+                continue;
+            }
+            baseTiles.removeAll(tiles);
+        }
+
+        HashSet<TilePosition> deadContribution = basePathTiles.remove(deadBase);
+
+        if (deadContribution == null || deadContribution.isEmpty()) {
+            return;
+        }
+
+        HashSet<TilePosition> stillNeededTiles = new HashSet<>();
+
+        for (HashSet<TilePosition> remaining : basePathTiles.values()) {
+            stillNeededTiles.addAll(remaining);
+        }
+
+        stillNeededTiles.addAll(naturalTiles);
+
+        for (Base owned : ownedBases) {
+            if (owned == deadBase) {
+                continue;
+            }
+            HashSet<TilePosition> ownedTiles = baseTilesAllBases.get(owned);
+            if (ownedTiles != null) {
+                stillNeededTiles.addAll(ownedTiles);
+            }
+        }
+
+        for (TilePosition t : deadContribution) {
+            if (stillNeededTiles.contains(t)) {
+                continue;
+            }
+            baseTiles.remove(t);
+        }
+    }
+
     private void setAllBaseTiles() {
 
         for (Base base : mapBases) {
@@ -1104,6 +1312,10 @@ public class MapInfo {
         return areaTiles;
     }
 
+    public HashMap<Base, List<Area>> getBasePathAreas() {
+        return basePathAreas;
+    }
+
     public void onUnitCreate(Unit unit) {
         if (unit.getType() != UnitType.Terran_Command_Center) {
             return;
@@ -1130,6 +1342,7 @@ public class MapInfo {
             if (expansionTiles != null) {
                 baseTiles.addAll(expansionTiles);
             }
+            addPathAreasForBase(baseTaken);
         }
     }
 
@@ -1148,10 +1361,8 @@ public class MapInfo {
             }
 
             if (unit.getPosition().getApproxDistance(naturalBase.getCenter()) < 100) {
-                removeAreaTiles(naturalBase);
                 baseTiles.removeAll(naturalTiles);
                 naturalOwned = false;
-                naturalAreaAdded = false;
                 return;
             }
 
@@ -1160,18 +1371,7 @@ public class MapInfo {
                 if (expansionTiles != null) {
                     baseTiles.removeAll(expansionTiles);
                 }
-            }
-
-            boolean hasOtherExpansion = false;
-            for (Base base : ownedBases) {
-                if (base != startingBase && base != naturalBase) {
-                    hasOtherExpansion = true;
-                    break;
-                }
-            }
-
-            if (!hasOtherExpansion) {
-                naturalAreaAdded = false;
+                removePathAreasForBase(destroyedBase);
             }
 
             return;
