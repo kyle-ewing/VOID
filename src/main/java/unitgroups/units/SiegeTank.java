@@ -27,6 +27,7 @@ public class SiegeTank extends CombatUnits {
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
     private boolean wasNaturalOwned = false;
+    private boolean wasExpandedPastNatural = false;
     private int unsiegeClock = 0;
 
     private static final int SIEGE_RANGE = 384;
@@ -276,6 +277,13 @@ public class SiegeTank extends CombatUnits {
             wasNaturalOwned = true;
         }
 
+        boolean expandedPastNatural = mapInfo.hasExpansionPastNatural();
+        if (expandedPastNatural && !wasExpandedPastNatural) {
+            siegeTile = null;
+            foundSiegeTile = false;
+            wasExpandedPastNatural = true;
+        }
+
         if (siegeTile == null) {
             setSiegeTile();
         }
@@ -321,8 +329,9 @@ public class SiegeTank extends CombatUnits {
     }
 
     private void setSiegeTile() {
-        if (!combinedTankTiles.isEmpty() && mapInfo.isNaturalOwned()) {
-            pickSiegeDefTile(combinedTankTiles);
+        HashSet<TilePosition> siegeDefTiles = mapInfo.getSiegeDefTiles();
+        if (!siegeDefTiles.isEmpty() && mapInfo.isNaturalOwned()) {
+            pickSiegeDefTile(siegeDefTiles);
         }
         else if (!mainEdgeTiles.isEmpty()) {
             pickSiegeDefTile(mainEdgeTiles);

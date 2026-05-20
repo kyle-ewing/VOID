@@ -59,6 +59,7 @@ public class MapInfo {
     private HashSet<TilePosition> mainCliffEdge = new HashSet<>();
     private HashSet<TilePosition> naturalChokeEdge = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
+    private HashSet<TilePosition> outsideNaturalSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> backupMainSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
     private HashMap<Base, TilePosition> geyserTiles = new HashMap<>();
@@ -118,6 +119,7 @@ public class MapInfo {
         setCcExclusionTiles();
         setAllBaseTiles();
         setAreaTiles();
+        setOutsideNaturalSiegeTiles();
         setBlockingMinerals();
 
         //Handle edge cases where bases are split into multiple areas
@@ -412,6 +414,86 @@ public class MapInfo {
                 }
             }
         }
+    }
+
+    private void setOutsideNaturalSiegeTiles() {
+        if (naturalChokePoint == null || naturalBase == null || naturalBase.getArea() == null) {
+            return;
+        }
+
+        Area outsideArea;
+        if (naturalChokePoint.getAreas().getFirst() != naturalBase.getArea()) {
+            outsideArea = naturalChokePoint.getAreas().getFirst();
+        }
+        else {
+            outsideArea = naturalChokePoint.getAreas().getSecond();
+        }
+
+        if (outsideArea == null) {
+            return;
+        }
+
+        HashSet<TilePosition> outsideAreaTiles = areaTiles.get(outsideArea);
+
+        if (outsideAreaTiles == null) {
+            return;
+        }
+
+        int minDistance = 96;
+        int maxDistance = 275;
+
+        for (ChokePoint choke : outsideArea.getChokePoints()) {
+            if (choke == naturalChokePoint) {
+                continue;
+            }
+
+            if (choke.getAreas().getFirst() == null || choke.getAreas().getSecond() == null) {
+                continue;
+            }
+
+            Position chokeCenter = choke.getCenter().toPosition();
+
+            for (TilePosition tile : outsideAreaTiles) {
+                int distanceToChoke = chokeCenter.getApproxDistance(tile.toPosition());
+
+                if (distanceToChoke >= minDistance && distanceToChoke <= maxDistance) {
+                    if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
+                        outsideNaturalSiegeTiles.add(tile);
+                    }
+                }
+            }
+        }
+    }
+
+    public HashSet<TilePosition> getSiegeDefTiles() {
+        HashSet<TilePosition> result = new HashSet<>(combinedTankTiles);
+
+        if (hasExpansionPastNatural()) {
+            result.addAll(outsideNaturalSiegeTiles);
+        }
+
+        return result;
+    }
+
+    public boolean hasExpansionPastNatural() {
+        if (startingBase == null || naturalBase == null) {
+            return false;
+        }
+
+        Area startingArea = startingBase.getArea();
+        Area naturalArea = naturalBase.getArea();
+
+        for (Base owned : ownedBases) {
+            Area ownedArea = owned.getArea();
+            if (ownedArea == null) {
+                continue;
+            }
+            if (ownedArea != startingArea && ownedArea != naturalArea) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void setNaturalChokeEdgeFromBunker(TilePosition bunkerTile) {
@@ -1224,6 +1306,10 @@ public class MapInfo {
 
     public HashSet<TilePosition> getCombinedTankTiles() {
         return combinedTankTiles;
+    }
+
+    public HashSet<TilePosition> getOutsideNaturalSiegeTiles() {
+        return outsideNaturalSiegeTiles;
     }
 
     public HashSet<TilePosition> getBackupMainSiegeTiles() {

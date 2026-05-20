@@ -148,6 +148,7 @@ public class Painters {
 
         if (config.debugSiegeDefTiles) {
             paintTileZone(gameState.getBaseInfo().getCombinedTankTiles(), Color.Yellow);
+            paintTileZone(gameState.getBaseInfo().getOutsideNaturalSiegeTiles(), Color.Orange);
         }
 
         if (config.debugCCExclusionZone) {
