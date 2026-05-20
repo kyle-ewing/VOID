@@ -99,7 +99,10 @@ public class EnemyInformation {
 
     private void enemyInBase() {
         for (EnemyUnits enemyUnit : enemyUnits) {
-            if (!enemyUnit.getEnemyType().canAttack() && enemyUnit.getEnemyType() != UnitType.Zerg_Extractor) {
+            if (!enemyUnit.getEnemyType().canAttack()
+                    && enemyUnit.getEnemyType() != UnitType.Zerg_Extractor
+                    && enemyUnit.getEnemyType() != UnitType.Protoss_Shuttle
+                    && enemyUnit.getEnemyType() != UnitType.Terran_Dropship) {
                 continue;
             }
 
@@ -121,29 +124,16 @@ public class EnemyInformation {
                 gameState.setEnemyInBase(true);
                 return;
             }
-            else if (enemyUnit.getEnemyType().isFlyer()) {
-                int mainChokeLeash = 700;
-                int naturalChokeLeash = 250;
-
-                if (mapInfo.getMainChoke() != null) {
-                     mainChokeLeash = (int) mapInfo.getMainChoke().getCenter().toPosition().getDistance(mapInfo.getStartingBase().getCenter()) + 32;
-                }
-
-
-                if (mapInfo.getNaturalChoke() != null ) {
-                    naturalChokeLeash = (int) mapInfo.getNaturalChoke().getCenter().toPosition().getDistance(mapInfo.getNaturalBase().getCenter()) + 32;
-                }
-
-                boolean inMainBase = enemyPos.getDistance(mapInfo.getStartingBase().getCenter()) < mainChokeLeash;
-                boolean inNaturalBase = enemyPos.getDistance(mapInfo.getStartingBase().getCenter()) < naturalChokeLeash;
-
-                if (inMainBase || (mapInfo.getNaturalBase() != null && inNaturalBase && mapInfo.isNaturalOwned())) {
+            else if (enemyUnit.getEnemyType().isFlyer() && !enemyUnit.getEnemyType().isBuilding()) {
+                if (mapInfo.isFlyerInOwnedBase(enemyPos)) {
                     gameState.setEnemyInBase(true);
+                    gameState.setEnemyFlyerInBase(true);
                     return;
                 }
             }
         }
         gameState.setEnemyInBase(false);
+        gameState.setEnemyFlyerInBase(false);
     }
 
     private void enemyInNatural() {
@@ -181,13 +171,11 @@ public class EnemyInformation {
             else if (enemyUnit.getEnemyType().isFlyer()) {
                 if (enemyPos.getDistance(mapInfo.getNaturalBase().getCenter()) < 400 && mapInfo.isNaturalOwned()) {
                     gameState.setEnemyInNatural(true);
-                    gameState.setEnemyFlyerInBase(true);
                     return;
                 }
             }
         }
         gameState.setEnemyInNatural(false);
-        gameState.setEnemyFlyerInBase(false);
     }
 
     public boolean hasType(UnitType unitType) {

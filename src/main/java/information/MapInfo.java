@@ -24,6 +24,8 @@ import map.AllBasePaths;
 import map.PathFinding;
 
 public class MapInfo {
+    private static final int FLYER_BASE_TILE_BUFFER = 2;
+
     private BWEM bwem;
     private Game game;
     private PathFinding pathFinding;
@@ -575,6 +577,33 @@ public class MapInfo {
                 return true;
             }
         }
+        return false;
+    }
+
+    public boolean isFlyerInOwnedBase(Position flyerPos) {
+        if (flyerPos == null) {
+            return false;
+        }
+
+        TilePosition flyerTile = flyerPos.toTilePosition();
+        int mapWidth = game.mapWidth();
+        int mapHeight = game.mapHeight();
+
+        for (int dx = -FLYER_BASE_TILE_BUFFER; dx <= FLYER_BASE_TILE_BUFFER; dx++) {
+            for (int dy = -FLYER_BASE_TILE_BUFFER; dy <= FLYER_BASE_TILE_BUFFER; dy++) {
+                int checkX = flyerTile.getX() + dx;
+                int checkY = flyerTile.getY() + dy;
+
+                if (checkX < 0 || checkY < 0 || checkX >= mapWidth || checkY >= mapHeight) {
+                    continue;
+                }
+
+                if (baseTiles.contains(new TilePosition(checkX, checkY))) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
