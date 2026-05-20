@@ -1272,6 +1272,10 @@ public class UnitManager {
                     }
                 }
 
+                if (combatUnit instanceof SiegeTank) {
+                    mapInfo.removeClaimedSiegeTile(((SiegeTank) combatUnit).getSiegeTile());
+                }
+
                 iterator.remove();
                 squadManager.onUnitDestroy(combatUnit);
                 break;

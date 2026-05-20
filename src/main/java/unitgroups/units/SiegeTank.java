@@ -27,6 +27,7 @@ public class SiegeTank extends CombatUnits {
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
     private boolean wasNaturalOwned = false;
+    private boolean wasExpandedPastNatural = false;
     private int unsiegeClock = 0;
 
     private static final int SIEGE_RANGE = 384;
@@ -271,9 +272,18 @@ public class SiegeTank extends CombatUnits {
     public void siegeDef() {
         boolean naturalOwned = mapInfo.isNaturalOwned();
         if (naturalOwned && !wasNaturalOwned) {
+            mapInfo.removeClaimedSiegeTile(siegeTile);
             siegeTile = null;
             foundSiegeTile = false;
             wasNaturalOwned = true;
+        }
+
+        boolean expandedPastNatural = mapInfo.hasExpansionPastNatural();
+        if (expandedPastNatural && !wasExpandedPastNatural) {
+            mapInfo.removeClaimedSiegeTile(siegeTile);
+            siegeTile = null;
+            foundSiegeTile = false;
+            wasExpandedPastNatural = true;
         }
 
         if (siegeTile == null) {
@@ -321,8 +331,9 @@ public class SiegeTank extends CombatUnits {
     }
 
     private void setSiegeTile() {
-        if (!combinedTankTiles.isEmpty() && mapInfo.isNaturalOwned()) {
-            pickSiegeDefTile(combinedTankTiles);
+        HashSet<TilePosition> siegeDefTiles = mapInfo.getSiegeDefTiles();
+        if (!siegeDefTiles.isEmpty() && mapInfo.isNaturalOwned()) {
+            pickSiegeDefTile(siegeDefTiles);
         }
         else if (!mainEdgeTiles.isEmpty()) {
             pickSiegeDefTile(mainEdgeTiles);
@@ -334,18 +345,59 @@ public class SiegeTank extends CombatUnits {
     }
 
     private void pickSiegeDefTile(HashSet<TilePosition> tileSet) {
+        if (tileSet.isEmpty()) {
+            return;
+        }
+
+        if (siegeTile != null) {
+            mapInfo.removeClaimedSiegeTile(siegeTile);
+        }
+
+        HashSet<TilePosition> claimedTiles = mapInfo.getClaimedSiegeTiles();
+        int minSeparationPixels = 128;
+
         Random rand = new Random(unitID);
         ArrayList<TilePosition> tiles = new ArrayList<>(tileSet);
         int startIndex = rand.nextInt(tiles.size());
 
         for (int i = 0; i < tiles.size(); i++) {
             TilePosition targetTile = tiles.get((startIndex + i) % tiles.size());
-            if (!ccExclusionTiles.contains(targetTile)) {
-                siegeTile = targetTile;
-                foundSiegeTile = true;
-                return;
+            if (ccExclusionTiles.contains(targetTile)) {
+                continue;
+            }
+            if (tooCloseToClaimed(targetTile, claimedTiles, minSeparationPixels)) {
+                continue;
+            }
+            siegeTile = targetTile;
+            foundSiegeTile = true;
+            mapInfo.addClaimedSiegeTile(siegeTile);
+            return;
+        }
+
+        for (int i = 0; i < tiles.size(); i++) {
+            TilePosition targetTile = tiles.get((startIndex + i) % tiles.size());
+            if (ccExclusionTiles.contains(targetTile)) {
+                continue;
+            }
+            siegeTile = targetTile;
+            foundSiegeTile = true;
+            mapInfo.addClaimedSiegeTile(siegeTile);
+            return;
+        }
+    }
+
+    private boolean tooCloseToClaimed(TilePosition target, HashSet<TilePosition> claimedTiles, int minSeparationPixels) {
+        Position targetPosition = target.toPosition();
+        for (TilePosition claimed : claimedTiles) {
+            if (targetPosition.getApproxDistance(claimed.toPosition()) < minSeparationPixels) {
+                return true;
             }
         }
+        return false;
+    }
+
+    public TilePosition getSiegeTile() {
+        return siegeTile;
     }
 
     private void siegeLogic() {
