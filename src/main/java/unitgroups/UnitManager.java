@@ -247,7 +247,7 @@ public class UnitManager {
                     //Avoid units who can't shoot up trying to defend against air
                     if (gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
                         combatUnit.setEnemyInBase(true);
-                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
+                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     }
                     else if (gameState.isEnemyInBase() && !gameState.enemyFlyerInBase()) {
                         combatUnit.setEnemyInBase(true);
@@ -284,7 +284,11 @@ public class UnitManager {
                     loadBunker(combatUnit);
                     break;
                 case DEFEND:
-                    if (gameState.isEnemyInBase()) {
+                    if (gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
+                        combatUnit.setEnemyInBase(true);
+                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
+                    }
+                    else if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                         ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 1000);
                     }
@@ -659,9 +663,9 @@ public class UnitManager {
     }
 
     private void rallyClockReset(CombatUnits combatUnit) {
-        combatUnit.setResetClock(combatUnit.getResetClock() + 12);
+        combatUnit.setResetClock(combatUnit.getResetClock() + 8);
 
-        if (new Time(combatUnit.getResetClock()).greaterThan(new Time(0, 30))) {
+        if (new Time(combatUnit.getResetClock()).greaterThan(new Time(1, 30))) {
             rallyPoint.setRallyPoint(combatUnit);
             combatUnit.setResetClock(0);
         }

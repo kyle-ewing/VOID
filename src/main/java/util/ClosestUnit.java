@@ -72,6 +72,10 @@ public class ClosestUnit {
                 continue;
             }
 
+            if (friendlyUnit.getUnit().getType().isBuilding()) {
+                continue;
+            }
+
             if (friendlyUnit.getUnitType().isMechanical() && combatUnit.getUnitType() == UnitType.Terran_Medic ) {
                 continue;
             }
