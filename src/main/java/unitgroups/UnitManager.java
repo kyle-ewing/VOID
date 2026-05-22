@@ -19,6 +19,8 @@ import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import macro.buildorders.buildpivots.BuildPivot;
+import macro.buildorders.buildpivots.BunkerRush;
 import map.PathFinding;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
@@ -215,7 +217,18 @@ public class UnitManager {
                 case ATTACK:
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
 
+                    BuildPivot selectedPivot = gameState.getSelectedPivot();
+                    if (selectedPivot != null && !selectedPivot.isRushActive() && !gameState.moveOutConditionsMet()) {
+                        System.out.println("setting to rally");
+                        combatUnit.setUnitStatus(UnitStatus.RALLY);
+                        break;
+                    }
+
                     if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
+                        if (fleeToProxyBunker(combatUnit)) {
+                            combatUnit.setUnitStatus(UnitStatus.LOAD);
+                            break;
+                        }
                         if (combatUnit.isInRangeOfThreat() && typeOfThreat(combatUnit) == UnitType.Zerg_Lurker) {
                             avoidThreat(combatUnit);
                             combatUnit.setUnitStatus(UnitStatus.AVOID);
@@ -229,6 +242,8 @@ public class UnitManager {
                         combatUnit.attack();
                         break;
                     }
+
+
 
                     if (combatUnit.isDtUndetected()) {
                         combatUnit.setUnitStatus(UnitStatus.RETREAT);
@@ -604,6 +619,32 @@ public class UnitManager {
         if (enemyNearBunker() && combatUnit.getUnit().getDistance(bunker.getPosition()) < 200) {
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
+    }
+
+    private boolean fleeToProxyBunker(CombatUnits combatUnit) {
+        if (!(gameState.getSelectedPivot() instanceof BunkerRush)) {
+            return false;
+        }
+
+        if (bunker == null || !bunker.exists()) {
+            return false;
+        }
+
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+
+            if (combatUnit.getUnit().getDistance(enemyUnit.getEnemyPosition()) < 288) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean enemyNearBunker() {

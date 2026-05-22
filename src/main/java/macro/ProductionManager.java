@@ -597,6 +597,10 @@ public class ProductionManager {
             if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL && !gameState.moveOutConditionsMet() && game.enemy().getRace() == Race.Zerg) {
                 workerCap = 12;
             }
+            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
+                workerCap = 14;
+            }
         }
 
         if (unitTypeCount.get(UnitType.Terran_SCV) >= workerCap) {
@@ -634,7 +638,7 @@ public class ProductionManager {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
                 else {
-                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 4);
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
                 }
             }
         }
@@ -768,6 +772,17 @@ public class ProductionManager {
 
             if (pi.getUnitType() == UnitType.Terran_Bunker) {
                 pi.setBuildPosition(setBunkerPosition());
+
+                if (pi.getBuildPosition() != null && buildTiles.getProxyBunkerTile() != null && pi.getBuildPosition().equals(buildTiles.getProxyBunkerTile())) {
+                    System.out.println("Proxy bunker position set, assigning scout to build");
+                    for (Workers scout : gameState.getWorkers()) {
+                        if (scout.getWorkerStatus() == WorkerStatus.SCOUTING) {
+                            scout.setWorkerStatus(WorkerStatus.MINERALS);
+                            pi.setAssignedBuilder(scout);
+                            break;
+                        }
+                    }
+                }
                 return;
             }
 
@@ -872,6 +887,10 @@ public class ProductionManager {
 
                 boolean enemyGroundNearNatural = false;
                 for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    if (enemyUnit.getEnemyPosition() == null) {
+                        continue;
+                    }
+
                     UnitType enemyType = enemyUnit.getEnemyType();
                     if (!enemyType.isFlyer() && !enemyType.isWorker()
                             && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {
@@ -923,11 +942,26 @@ public class ProductionManager {
                     return buildTiles.getNaturalChokeBunker();
                 case FOURPOOL:
                     return buildTiles.getCloseBunkerTile();
+                case NEXUSFIRST:
+                    if (new Time(game.getFrameCount()).greaterThan(new Time(4, 0)) 
+                            || (gameState.getSelectedPivot() != null && !gameState.getSelectedPivot().isRushActive())) {
+                        return buildTiles.getNaturalChokeBunker();
+                    }
+
+                    if (mapInfo.getEnemyNatural() == null) {
+                        System.out.println("Enemy natural not detected");
+                        break;
+                    }
+                    if (buildTiles.getProxyBunkerTile() == null) {
+                        buildTiles.generateProxyBunkerTile(mapInfo.getEnemyNatural());
+                    }
+                    return buildTiles.getProxyBunkerTile();
             }
         }
 
         if (bunkerPosition != null) {
-           return bunkerPosition;
+            System.out.println("Using previously set bunker position: " + bunkerPosition + " at time " + new Time(game.getFrameCount()));
+            return bunkerPosition;
         }
 
         return null;

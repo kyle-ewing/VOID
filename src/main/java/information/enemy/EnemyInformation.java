@@ -13,6 +13,8 @@ import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import macro.buildorders.buildpivots.BuildPivot;
+import macro.buildorders.buildpivots.BuildPivotName;
 import util.Time;
 
 public class EnemyInformation {
@@ -423,6 +425,58 @@ public class EnemyInformation {
             }
         }
 
+        if (unit.getType().isResourceDepot()) {
+            System.out.println("[INFER DEBUG] depot discovered id=" + unit.getID() + " type=" + unit.getType()
+                    + " tile=" + unit.getTilePosition()
+                    + " enemyMain=" + mapInfo.getEnemyMain()
+                    + " enemyNatural=" + mapInfo.getEnemyNatural()
+                    + " startingBases=" + mapInfo.getStartingBases().size()
+                    + " mapBases=" + mapInfo.getMapBases().size());
+            for (Base sb : mapInfo.getStartingBases()) {
+                System.out.println("[INFER DEBUG]   startingBase " + sb.getLocation() + " distToDepot=" + sb.getLocation().getDistance(unit.getTilePosition()));
+            }
+        }
+
+        if (mapInfo.getEnemyMain() == null && mapInfo.getEnemyNatural() == null && unit.getType().isResourceDepot()) {
+            boolean atStartingBase = mapInfo.getStartingBases().stream()
+                    .anyMatch(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10);
+
+            System.out.println("[INFER DEBUG] entered block. atStartingBase=" + atStartingBase);
+
+            if (!atStartingBase) {
+                Position depotPosition = unit.getTilePosition().toPosition();
+
+                Base seenBase = null;
+                double closestBaseDistance = Double.MAX_VALUE;
+
+                for (Base base : mapInfo.getMapBases()) {
+                    double distance = base.getLocation().getDistance(unit.getTilePosition());
+                    if (distance < closestBaseDistance) {
+                        closestBaseDistance = distance;
+                        seenBase = base;
+                    }
+                }
+
+                Base inferredMain = null;
+                int shortestStartingPath = Integer.MAX_VALUE;
+
+                for (Base startingBase : mapInfo.getStartingBases()) {
+                    List<Position> path = mapInfo.getPathFinding().findPath(startingBase.getLocation().toPosition(), depotPosition);
+                    if (path != null && !path.isEmpty() && path.size() < shortestStartingPath) {
+                        shortestStartingPath = path.size();
+                        inferredMain = startingBase;
+                    }
+                }
+
+                if (seenBase != null && inferredMain != null) {
+                    System.out.println("Enemy main inferred at " + inferredMain.getLocation() + " based on discovered resource depot at " + depotPosition);
+                    System.out.println("Enemy natural inferred at " + seenBase.getLocation());
+                    mapInfo.setEnemyMain(inferredMain);
+                    mapInfo.setEnemyNatural(seenBase);
+                }
+            }
+        }
+
         if (isThreat(unit)) {
             for (EnemyUnits threat : validThreats) {
                 if (threat.getEnemyID() == unit.getID()) {
@@ -479,6 +533,18 @@ public class EnemyInformation {
 
         if (!checkForBuildings() && unit.getType().isBuilding()) {
             gameState.setEnemyBuildingDiscovered(false);
+        }
+
+        BuildPivot selectedPivot = gameState.getSelectedPivot();
+        if (selectedPivot != null && selectedPivot.isRushActive()) {
+            if (selectedPivot.getBuildPivotName() == BuildPivotName.BUNKERRUSH) {
+                if (unit.getType() == UnitType.Protoss_Nexus && mapInfo.getEnemyNatural() != null 
+                        && mapInfo.getEnemyNatural().getLocation().getDistance(unit.getTilePosition()) < 10) {
+                    System.out.println("[BUNKER RUSH] Natural nexus destroyed, deactivating rush");
+                    selectedPivot.setRushActive(false);
+                    return;
+                }
+            }
         }
     }
 

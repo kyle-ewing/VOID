@@ -14,6 +14,7 @@ import bwapi.Game;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwem.Area;
 import bwem.Base;
 import bwem.ChokePoint;
 import bwem.Geyser;
@@ -44,6 +45,7 @@ public class BuildTiles {
     private TilePosition naturalBunkerBarracksPosition;
     private TilePosition naturalBunkerDepotPosition;
     private TilePosition closeBunkerTile;
+    private TilePosition proxyBunkerTile;
     private TilePosition mainChokeTurret;
     private TilePosition naturalChokeTurret;
     private TilePosition mainBaseCCTile;
@@ -740,6 +742,191 @@ public class BuildTiles {
                 }
             }
         }
+    }
+
+    public void generateProxyBunkerTile(Base enemyNatural) {
+        proxyBunkerTile = null;
+
+        if (enemyNatural == null || enemyNatural.getArea() == null) {
+            return;
+        }
+
+        List<ChokePoint> enemyNaturalChokes = enemyNatural.getArea().getChokePoints();
+
+        if (enemyNaturalChokes == null || enemyNaturalChokes.isEmpty()) {
+            return;
+        }
+
+        Base enemyMain = mapInfo.getEnemyMain();
+        if (enemyMain == null || enemyMain.getArea() == null) {
+            return;
+        }
+
+        ChokePoint facingChoke = null;
+        for (ChokePoint candidateChoke : enemyNaturalChokes) {
+            Area otherArea = candidateChoke.getAreas().getFirst();
+            if (otherArea == enemyNatural.getArea()) {
+                otherArea = candidateChoke.getAreas().getSecond();
+            }
+            if (otherArea != enemyMain.getArea()) {
+                facingChoke = candidateChoke;
+                break;
+            }
+        }
+
+        if (facingChoke == null) {
+            return;
+        }
+
+        Area outsideArea;
+        if (facingChoke.getAreas().getFirst() != enemyNatural.getArea()) {
+            outsideArea = facingChoke.getAreas().getFirst();
+        }
+        else {
+            outsideArea = facingChoke.getAreas().getSecond();
+        }
+
+        if (outsideArea == null) {
+            return;
+        }
+
+        HashSet<TilePosition> outsideTiles = mapInfo.getAreaTiles().get(outsideArea);
+        HashSet<TilePosition> enemyNaturalAreaTiles = mapInfo.getAreaTiles().get(enemyNatural.getArea());
+
+        HashSet<TilePosition> resourceTiles = new HashSet<>();
+        for (Mineral mineral : enemyNatural.getMinerals()) {
+            TilePosition tl = mineral.getTopLeft();
+            for (int rx = 0; rx < 2; rx++) {
+                resourceTiles.add(new TilePosition(tl.getX() + rx, tl.getY()));
+            }
+        }
+        for (Geyser geyser : enemyNatural.getGeysers()) {
+            TilePosition tl = geyser.getTopLeft();
+            for (int rx = 0; rx < 4; rx++) {
+                for (int ry = 0; ry < 2; ry++) {
+                    resourceTiles.add(new TilePosition(tl.getX() + rx, tl.getY() + ry));
+                }
+            }
+        }
+
+        TilePosition enemyDepotTile = enemyNatural.getLocation();
+        int depotMinXPx = enemyDepotTile.getX() * 32;
+        int depotMinYPx = enemyDepotTile.getY() * 32;
+        int depotMaxXPx = depotMinXPx + CC_WIDTH * 32;
+        int depotMaxYPx = depotMinYPx + CC_HEIGHT * 32;
+
+        TilePosition chokeTile = facingChoke.getCenter().toTilePosition();
+        TilePosition depotCenterTile = new TilePosition(enemyDepotTile.getX() + CC_WIDTH / 2, enemyDepotTile.getY() + CC_HEIGHT / 2);
+
+        int chokeDirX = chokeTile.getX() - depotCenterTile.getX();
+        int chokeDirY = chokeTile.getY() - depotCenterTile.getY();
+
+        TilePosition bestProxy = null;
+        int bestDistanceToDepot = Integer.MAX_VALUE;
+        long bestPerpFromLine = Long.MAX_VALUE;
+
+        for (int dx = -14; dx <= 14; dx++) {
+            for (int dy = -14; dy <= 14; dy++) {
+                TilePosition candidateTile = new TilePosition(depotCenterTile.getX() + dx, depotCenterTile.getY() + dy);
+
+                if (!tilePositionValidator.isWithinMap(candidateTile)) {
+                    continue;
+                }
+
+                if (!tilePositionValidator.isBuildable(candidateTile, UnitType.Terran_Bunker)) {
+                    continue;
+                }
+
+                int candidateDirX = candidateTile.getX() - depotCenterTile.getX();
+                int candidateDirY = candidateTile.getY() - depotCenterTile.getY();
+                int dotProduct = chokeDirX * candidateDirX + chokeDirY * candidateDirY;
+                if (dotProduct <= 0) {
+                    continue;
+                }
+
+                boolean footprintValid = true;
+                boolean anyFootprintInNatural = false;
+
+                for (int fx = 0; fx < BUNKER_WIDTH && footprintValid; fx++) {
+                    for (int fy = 0; fy < BUNKER_HEIGHT; fy++) {
+                        TilePosition footprintTile = new TilePosition(candidateTile.getX() + fx, candidateTile.getY() + fy);
+
+                        if (!tilePositionValidator.isWithinMap(footprintTile)) {
+                            footprintValid = false;
+                            break;
+                        }
+
+                        if (outsideTiles != null && outsideTiles.contains(footprintTile)) {
+                            footprintValid = false;
+                            break;
+                        }
+
+                        if (resourceTiles.contains(footprintTile)) {
+                            footprintValid = false;
+                            break;
+                        }
+
+                        if (enemyNaturalAreaTiles != null && enemyNaturalAreaTiles.contains(footprintTile)) {
+                            anyFootprintInNatural = true;
+                        }
+                    }
+                }
+
+                if (!footprintValid) {
+                    continue;
+                }
+
+                if (!anyFootprintInNatural) {
+                    continue;
+                }
+
+                int bunkerCenterPxX = candidateTile.getX() * 32 + BUNKER_WIDTH * 32 / 2;
+                int bunkerCenterPxY = candidateTile.getY() * 32 + BUNKER_HEIGHT * 32 / 2;
+                int depotCenterPxX = (depotMinXPx + depotMaxXPx) / 2;
+                int depotCenterPxY = (depotMinYPx + depotMaxYPx) / 2;
+
+                int centerDX = bunkerCenterPxX - depotCenterPxX;
+                int centerDY = bunkerCenterPxY - depotCenterPxY;
+                double centerToCenterPx = Math.sqrt((double) centerDX * centerDX + (double) centerDY * centerDY);
+
+                if (centerToCenterPx <= 4 * 32) {
+                    continue;
+                }
+
+                int dxC = 0;
+                if (bunkerCenterPxX < depotMinXPx) {
+                    dxC = depotMinXPx - bunkerCenterPxX;
+                }
+                else if (bunkerCenterPxX > depotMaxXPx) {
+                    dxC = bunkerCenterPxX - depotMaxXPx;
+                }
+
+                int dyC = 0;
+                if (bunkerCenterPxY < depotMinYPx) {
+                    dyC = depotMinYPx - bunkerCenterPxY;
+                }
+                else if (bunkerCenterPxY > depotMaxYPx) {
+                    dyC = bunkerCenterPxY - depotMaxYPx;
+                }
+
+                int bunkerCenterToDepotEdgePx = (int) Math.sqrt((double) dxC * dxC + (double) dyC * dyC);
+
+                if (bunkerCenterToDepotEdgePx > 5 * 32) {
+                    continue;
+                }
+
+                long perpFromLine = Math.abs((long) chokeDirX * candidateDirY - (long) chokeDirY * candidateDirX);
+                int distToDepot = candidateTile.getApproxDistance(depotCenterTile);
+
+                if (perpFromLine < bestPerpFromLine || (perpFromLine == bestPerpFromLine && distToDepot < bestDistanceToDepot)) {
+                    bestPerpFromLine = perpFromLine;
+                    bestDistanceToDepot = distToDepot;
+                    bestProxy = candidateTile;
+                }
+            }
+        }
+
+        proxyBunkerTile = bestProxy;
     }
 
     private void generateChokeBunkerTiles() {
@@ -2049,6 +2236,14 @@ public class BuildTiles {
 
     public TilePosition getCloseBunkerTile() {
         return closeBunkerTile;
+    }
+
+    public TilePosition getProxyBunkerTile() {
+        return proxyBunkerTile;
+    }
+
+    public void setProxyBunkerTile(TilePosition tile) {
+        proxyBunkerTile = tile;
     }
 
     public TilePosition getNaturalChokeBunker() {

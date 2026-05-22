@@ -20,6 +20,7 @@ import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderName;
+import macro.buildorders.BuildType;
 import macro.buildorders.MechBuildOrder;
 import map.BuildTiles;
 import planner.PlannedItem;
@@ -36,6 +37,7 @@ public class UnitProduction {
     private final BuildTiles buildTiles;
     private final PriorityQueue<PlannedItem> productionQueue;
     private final EnemyArmyCompManager armyCompositionManager;
+    private BuildType currentBuildType;
     private EnemyStrategy enemyOpener = null;
 
     private static final Set<UnitType> TANK_TRIGGERS = new HashSet<>(Arrays.asList(
@@ -59,6 +61,7 @@ public class UnitProduction {
         this.buildTiles = gameState.getBuildTiles();
         this.productionQueue = gameState.getProductionQueue();
         this.armyCompositionManager = gameState.getArmyCompositionManager();
+        this.currentBuildType = buildOrder.buildType();
     }
 
     public void onFrame() {
@@ -66,8 +69,13 @@ public class UnitProduction {
             enemyOpener = gameState.getEnemyOpener();
         }
 
+        if (gameState.hasPivoted() && gameState.getSelectedPivot().buildType() != currentBuildType) {
+            System.out.println("Pivoting to " + gameState.getSelectedPivot().getBuildPivotName() + " due to enemy strategy " + enemyOpener.getStrategyName());
+            currentBuildType = gameState.getSelectedPivot().buildType();
+        }
+
         List<PlannedItem> items;
-        switch (buildOrder.buildType()) {
+        switch (currentBuildType) {
             case BIO:  items = getBioUnits();  break;
             case MECH: items = getMechUnits(); break;
             default:   return;

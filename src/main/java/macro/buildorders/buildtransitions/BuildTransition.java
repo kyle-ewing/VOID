@@ -1,9 +1,9 @@
 package macro.buildorders.buildtransitions;
 
-import macro.buildorders.BuildOrder;
-import planner.PlannedItem;
-
 import java.util.ArrayList;
+
+import macro.buildorders.BuildType;
+import planner.PlannedItem;
 
 public abstract class BuildTransition {
     public abstract BuildTransitionName getBuildTransitionName();
@@ -14,7 +14,7 @@ public abstract class BuildTransition {
         return new ArrayList<>();
     }
 
-    public boolean transitionsFrom(BuildOrder buildOrder) {
+    public boolean transitionsFrom(BuildType buildType) {
         return false;
     }
 }

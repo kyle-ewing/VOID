@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import bwapi.UnitType;
 import bwapi.UpgradeType;
-import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildType;
 import planner.PlannedItem;
 import planner.PlannedItemType;
@@ -40,7 +39,7 @@ public class TvPMech extends BuildTransition {
     }
 
     @Override
-    public boolean transitionsFrom(BuildOrder buildOrder) {
-        return buildOrder.buildType() == BuildType.MECH;
+    public boolean transitionsFrom(BuildType buildType) {
+        return buildType == BuildType.MECH;
     }
 }
