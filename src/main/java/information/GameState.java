@@ -47,6 +47,7 @@ public class GameState {
 
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
+    private EnemyUnits enemyScout = null;
     private TilePosition bunkerPosition = null;
     private Time time = new Time(0);
 
@@ -396,6 +397,14 @@ public class GameState {
 
     public void setStartingEnemyBase(EnemyUnits startingEnemyBase) {
         this.startingEnemyBase = startingEnemyBase;
+    }
+
+    public EnemyUnits getEnemyScout() {
+        return enemyScout;
+    }
+
+    public void setEnemyScout(EnemyUnits enemyScout) {
+        this.enemyScout = enemyScout;
     }
 
     public void setEnemyOpener(EnemyStrategy enemyOpener) {

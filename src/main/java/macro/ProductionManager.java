@@ -28,6 +28,7 @@ import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildType;
 import map.BuildTiles;
 import map.TilePositionValidator;
+import planner.BuildComparator;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
@@ -87,7 +88,9 @@ public class ProductionManager {
         boolean blockedByHigherPriority = false;
         Workers worker = null;
 
-        for (PlannedItem pi : new PriorityQueue<>(productionQueue)) {
+        List<PlannedItem> sortedQueue = new ArrayList<>(productionQueue);
+        sortedQueue.sort(new BuildComparator());
+        for (PlannedItem pi : sortedQueue) {
             if (pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
@@ -624,11 +627,11 @@ public class ProductionManager {
                         || unitTypeCount.get(UnitType.Terran_SCV) < 24 && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
-                else if (unitTypeCount.get(UnitType.Terran_SCV) < 24 
-                        && (gameState.getEnemyOpener() != null 
-                        && (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST || gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.CCFIRST))) {
-                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
-                }
+                // else if (unitTypeCount.get(UnitType.Terran_SCV) < 24 
+                //         && (gameState.getEnemyOpener() != null 
+                //         && (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST || gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.CCFIRST))) {
+                //     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
+                // }
                 else {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
                 }
@@ -775,10 +778,10 @@ public class ProductionManager {
 
                 if (pi.getBuildPosition() != null && buildTiles.getProxyBunkerTile() != null && pi.getBuildPosition().equals(buildTiles.getProxyBunkerTile())) {
                     System.out.println("Proxy bunker position set, assigning scout to build");
-                    for (Workers scout : gameState.getWorkers()) {
-                        if (scout.getWorkerStatus() == WorkerStatus.SCOUTING) {
-                            scout.setWorkerStatus(WorkerStatus.MINERALS);
-                            pi.setAssignedBuilder(scout);
+                    for (Workers attackingSCV : gameState.getWorkers()) {
+                        if (attackingSCV.getWorkerStatus() == WorkerStatus.ATTACKING) {
+                            attackingSCV.setWorkerStatus(WorkerStatus.MINERALS);
+                            pi.setAssignedBuilder(attackingSCV);
                             break;
                         }
                     }

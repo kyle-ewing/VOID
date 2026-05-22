@@ -61,6 +61,7 @@ public class UnitManager {
     private Unit bunker = null;
     private boolean beingAllInned = false;
     private boolean defendedEnemyOpener = false;
+    private boolean pivotRushCompleted = false;
     private Unit naturalBaseCC = null;
 
     public UnitManager(EnemyInformation enemyInformation, GameState gameState, MapInfo mapInfo, Game game, Scouting scouting) {
@@ -103,6 +104,7 @@ public class UnitManager {
         }
 
         flyNaturalBaseCC();
+        pivotRushRecall();
 
         //TODO: this is all horrible
         for (CombatUnits combatUnit : combatUnits) {
@@ -215,14 +217,12 @@ public class UnitManager {
 
             switch (unitStatus) {
                 case ATTACK:
-                    ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
-
-                    BuildPivot selectedPivot = gameState.getSelectedPivot();
-                    if (selectedPivot != null && !selectedPivot.isRushActive() && !gameState.moveOutConditionsMet()) {
-                        System.out.println("setting to rally");
-                        combatUnit.setUnitStatus(UnitStatus.RALLY);
-                        break;
+                    HashSet<EnemyUnits> attackCandidates = gameState.getKnownEnemyUnits();
+                    if (gameState.getEnemyScout() != null) {
+                        attackCandidates = new HashSet<>(attackCandidates);
+                        attackCandidates.remove(gameState.getEnemyScout());
                     }
+                    ClosestUnit.findClosestUnit(combatUnit, attackCandidates, Integer.MAX_VALUE);
 
                     if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
                         if (fleeToProxyBunker(combatUnit)) {
@@ -538,6 +538,25 @@ public class UnitManager {
             return;
         }
         naturalBaseCC.land(mapInfo.getNaturalBase().getLocation());
+    }
+
+    private void pivotRushRecall() {
+        if (pivotRushCompleted) {
+            return;
+        }
+
+        BuildPivot pivot = gameState.getSelectedPivot();
+        if (pivot == null || pivot.isRushActive() || gameState.moveOutConditionsMet()) {
+            return;
+        }
+
+        for (CombatUnits combatUnit : combatUnits) {
+            if (combatUnit.getUnitStatus() == UnitStatus.ATTACK) {
+                combatUnit.setUnitStatus(UnitStatus.RALLY);
+            }
+        }
+
+        pivotRushCompleted = true;
     }
 
     private void queueNaturalBunker() {

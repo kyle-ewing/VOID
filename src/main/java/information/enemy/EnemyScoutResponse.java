@@ -15,7 +15,6 @@ public class EnemyScoutResponse {
     private GameState gameState;
     private WorkerManager workerManager;
     private MapInfo mapInfo;
-    private EnemyUnits enemyScout;
     private Workers counterScout;
 
     public EnemyScoutResponse(Game game, GameState gameState, WorkerManager workerManager, MapInfo mapInfo) {
@@ -77,8 +76,8 @@ public class EnemyScoutResponse {
 
     private void followScout() {
         if (counterScout != null) {
-            if (enemyScout.getEnemyPosition() != null) {
-                counterScout.getUnit().attack(enemyScout.getEnemyUnit());
+            if (gameState.getEnemyScout().getEnemyPosition() != null) {
+                counterScout.getUnit().attack(gameState.getEnemyScout().getEnemyUnit());
             }
 
         }
@@ -89,7 +88,7 @@ public class EnemyScoutResponse {
             return;
         }
 
-        Position scoutPosition = enemyScout.getEnemyPosition();
+        Position scoutPosition = gameState.getEnemyScout().getEnemyPosition();
         if (scoutPosition == null) {
             return;
         }
@@ -128,9 +127,9 @@ public class EnemyScoutResponse {
            return;
        }
 
-        if (enemyScout != null) {
-            if (enemyScout.getEnemyPosition() == null
-                    || (!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase())) {
+        if (gameState.getEnemyScout() != null) {
+            if (gameState.getEnemyScout().getEnemyPosition() == null
+                    || (!gameState.getKnownEnemyUnits().contains(gameState.getEnemyScout()) && !gameState.isEnemyInBase())) {
                 counterScout.setWorkerStatus(WorkerStatus.IDLE);
                 counterScout = null;
             }
@@ -142,23 +141,23 @@ public class EnemyScoutResponse {
     }
 
     private void clearEnemyScout() {
-        if (enemyScout.getEnemyPosition() == null
-                || (!gameState.getKnownEnemyUnits().contains(enemyScout) && !gameState.isEnemyInBase())) {
-            enemyScout = null;
+        if (gameState.getEnemyScout().getEnemyPosition() == null
+                || (!gameState.getKnownEnemyUnits().contains(gameState.getEnemyScout()) && !gameState.isEnemyInBase())) {
+            gameState.setEnemyScout(null);
             return;
         }
 
-        if (!isInDefendedTiles(enemyScout.getEnemyTilePosition())) {
-            enemyScout = null;
+        if (!isInDefendedTiles(gameState.getEnemyScout().getEnemyTilePosition())) {
+            gameState.setEnemyScout(null);
         }
     }
 
     private void setEnemyScout (EnemyUnits enemyScout) {
-        this.enemyScout = enemyScout;
+        gameState.setEnemyScout(enemyScout);
     }
 
     public void onFrame() {
-        if (new Time(game.getFrameCount()).greaterThan(new Time(3,30)) && enemyScout == null) {
+        if (new Time(game.getFrameCount()).greaterThan(new Time(3,30)) && gameState.getEnemyScout() == null) {
             if (counterScout == null) {
                 return;
             }
@@ -167,16 +166,16 @@ public class EnemyScoutResponse {
             return;
         }
 
-        if (enemyScout == null) {
+        if (gameState.getEnemyScout() == null) {
             initialScoutInBase();
         }
 
-        if (enemyScout == null) {
+        if (gameState.getEnemyScout() == null) {
             clearCounterScout();
         }
 
 
-        if (enemyScout != null) {
+        if (gameState.getEnemyScout() != null) {
             assignCounterScout();
             followScout();
             clearEnemyScout();

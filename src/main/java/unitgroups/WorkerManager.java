@@ -175,41 +175,41 @@ public class WorkerManager {
                         enemyNaturalTiles = mapInfo.getBaseTilesAllBases().get(enemyNatural);
                     }
 
-                    if (enemyNaturalTiles != null && !enemyNaturalTiles.contains(worker.getUnit().getTilePosition())) {
-                        Position retreatPos = null;
-
+                    Unit naturalBunker = null;
+                    if (enemyNaturalTiles != null) {
                         for (Unit building : gameState.getAllBuildings()) {
                             if (building.getType() == UnitType.Terran_Bunker
                                     && enemyNaturalTiles.contains(building.getTilePosition())) {
-                                retreatPos = building.getPosition();
+                                naturalBunker = building;
                                 break;
                             }
                         }
+                    }
 
-                        if (retreatPos == null) {
-                            for (EnemyUnits depotCandidate : gameState.getKnownEnemyUnits()) {
-                                if (depotCandidate.getEnemyType().isResourceDepot() && depotCandidate.getEnemyPosition() != null) {
-                                    retreatPos = depotCandidate.getEnemyPosition();
-                                    break;
-                                }
-                            }
-                        }
+                    Unit attackDamaged = null;
+                    if (pulledScvs.contains(worker) && naturalBunker != null
+                            && naturalBunker.getHitPoints() < naturalBunker.getType().maxHitPoints()) {
+                        attackDamaged = naturalBunker;
+                    }
+                    else {
+                        attackDamaged = findNearbyDamagedBuilding(worker, 300);
+                    }
 
-                        if (retreatPos != null) {
-                            worker.getUnit().move(retreatPos);
-                        }
+                    if (attackDamaged != null) {
+                        worker.repair(attackDamaged);
                         break;
+                    }
+
+                    if (naturalBunker != null) {
+                        if (worker.getUnit().getDistance(naturalBunker.getPosition()) > 150) {
+                            worker.getUnit().move(naturalBunker.getPosition());
+                            break;
+                        }
                     }
 
                     ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 160);
                     if (worker.getEnemyUnit() != null) {
                         worker.selfDefense();
-                        break;
-                    }
-
-                    Unit attackDamaged = findNearbyDamagedBuilding(worker, 300);
-                    if (attackDamaged != null) {
-                        worker.repair(attackDamaged);
                         break;
                     }
 
@@ -626,7 +626,7 @@ public class WorkerManager {
         while (iterator.hasNext()) {
             Workers worker = iterator.next();
 
-            if (worker.getUnit().getHitPoints() < 20) {
+            if (worker.getUnit().getHitPoints() < 15) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
                 iterator.remove();
                 continue;
