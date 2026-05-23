@@ -28,6 +28,7 @@ import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildType;
 import map.BuildTiles;
 import map.TilePositionValidator;
+import planner.BuildComparator;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
@@ -87,7 +88,9 @@ public class ProductionManager {
         boolean blockedByHigherPriority = false;
         Workers worker = null;
 
-        for (PlannedItem pi : new PriorityQueue<>(productionQueue)) {
+        List<PlannedItem> sortedQueue = new ArrayList<>(productionQueue);
+        sortedQueue.sort(new BuildComparator());
+        for (PlannedItem pi : sortedQueue) {
             if (pi.getPriority() == 1 && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getPlannedItemType() == PlannedItemType.BUILDING && meetsRequirements(pi.getUnitType()) && pi.getSupply() <= player.supplyUsed() / 2) {
                 priorityStop = true;
             }
@@ -597,6 +600,10 @@ public class ProductionManager {
             if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL && !gameState.moveOutConditionsMet() && game.enemy().getRace() == Race.Zerg) {
                 workerCap = 12;
             }
+            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
+                workerCap = 14;
+            }
         }
 
         if (unitTypeCount.get(UnitType.Terran_SCV) >= workerCap) {
@@ -620,11 +627,11 @@ public class ProductionManager {
                         || unitTypeCount.get(UnitType.Terran_SCV) < 24 && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
-                else if (unitTypeCount.get(UnitType.Terran_SCV) < 24 
-                        && (gameState.getEnemyOpener() != null 
-                        && (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST || gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.CCFIRST))) {
-                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
-                }
+                // else if (unitTypeCount.get(UnitType.Terran_SCV) < 24 
+                //         && (gameState.getEnemyOpener() != null 
+                //         && (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST || gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.CCFIRST))) {
+                //     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
+                // }
                 else {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
                 }
@@ -634,7 +641,7 @@ public class ProductionManager {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
                 else {
-                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 4);
+                    addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 3);
                 }
             }
         }
@@ -768,6 +775,16 @@ public class ProductionManager {
 
             if (pi.getUnitType() == UnitType.Terran_Bunker) {
                 pi.setBuildPosition(setBunkerPosition());
+
+                if (pi.getBuildPosition() != null && buildTiles.getProxyBunkerTile() != null && pi.getBuildPosition().equals(buildTiles.getProxyBunkerTile())) {
+                    for (Workers attackingSCV : gameState.getWorkers()) {
+                        if (attackingSCV.getWorkerStatus() == WorkerStatus.ATTACKING) {
+                            attackingSCV.setWorkerStatus(WorkerStatus.MINERALS);
+                            pi.setAssignedBuilder(attackingSCV);
+                            break;
+                        }
+                    }
+                }
                 return;
             }
 
@@ -872,6 +889,10 @@ public class ProductionManager {
 
                 boolean enemyGroundNearNatural = false;
                 for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    if (enemyUnit.getEnemyPosition() == null) {
+                        continue;
+                    }
+
                     UnitType enemyType = enemyUnit.getEnemyType();
                     if (!enemyType.isFlyer() && !enemyType.isWorker()
                             && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {
@@ -923,11 +944,24 @@ public class ProductionManager {
                     return buildTiles.getNaturalChokeBunker();
                 case FOURPOOL:
                     return buildTiles.getCloseBunkerTile();
+                case NEXUSFIRST:
+                    if (new Time(game.getFrameCount()).greaterThan(new Time(4, 0)) 
+                            || (gameState.getSelectedPivot() != null && !gameState.getSelectedPivot().isRushActive())) {
+                        return buildTiles.getNaturalChokeBunker();
+                    }
+
+                    if (mapInfo.getEnemyNatural() == null) {
+                        break;
+                    }
+                    if (buildTiles.getProxyBunkerTile() == null) {
+                        buildTiles.generateProxyBunkerTile(mapInfo.getEnemyNatural());
+                    }
+                    return buildTiles.getProxyBunkerTile();
             }
         }
 
         if (bunkerPosition != null) {
-           return bunkerPosition;
+            return bunkerPosition;
         }
 
         return null;

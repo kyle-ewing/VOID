@@ -22,10 +22,12 @@ import macro.ResourceTracking;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
 import macro.buildorders.BunkerLocation;
+import macro.buildorders.buildpivots.BuildPivot;
 import macro.buildorders.buildtransitions.BuildTransition;
 import map.BuildTiles;
 import planner.BuildComparator;
 import planner.PlannedItem;
+import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.Workers;
@@ -41,9 +43,11 @@ public class GameState {
     private ResourceTracking resourceTracking;
     private BuildOrderManager buildOrderManager;
     private EnemyStrategy enemyOpener = null;
+    private BuildPivot selectedPivot = null;
 
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
+    private EnemyUnits enemyScout = null;
     private TilePosition bunkerPosition = null;
     private Time time = new Time(0);
 
@@ -53,8 +57,7 @@ public class GameState {
     private boolean enemyFlyerInBase = false;
     private boolean canExpand = false;
     private boolean hasDepletingBase = false;
-    private boolean enemyOpenerIdentified = false;
-    private boolean moveOutConditionsMet = false;
+    private boolean hasPivoted = false;
     private boolean hasTransitioned = false;
     private boolean beingSieged = false;
 
@@ -105,6 +108,11 @@ public class GameState {
             hasTransitioned = true;
         }
 
+        if (!hasPivoted && shouldPivot()) {
+            pivotBuild();
+            hasPivoted = true;
+        }
+
     }
 
     //Change when learning is added
@@ -126,8 +134,12 @@ public class GameState {
     private void addBuildTransition() {
         buildTransition = buildOrderManager.getBuildTransitions();
 
-        for (BuildTransition bt : buildTransition) {
-            if (!bt.transitionsFrom(startingOpener)) {
+        for (BuildTransition bt : buildTransition) {           
+            if (!bt.transitionsFrom(startingOpener.buildType()) && selectedPivot == null) {
+                continue;
+            }
+
+            if(selectedPivot != null && !bt.transitionsFrom(selectedPivot.buildType())) {
                 continue;
             }
 
@@ -142,6 +154,36 @@ public class GameState {
 
             productionQueue.addAll(bt.getTransitionBuild());
         }
+    }
+
+    private void pivotBuild() {
+        for (BuildPivot bp : buildOrderManager.getBuildPivots()) {
+            if (!bp.pivotsFrom(enemyOpener.getStrategyName())) {
+                continue;
+            }
+
+            selectedPivot = bp;
+            break;
+        }
+
+        if (selectedPivot == null) {
+            return;
+        }
+
+        productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
+
+        int currentSupply = game.self().supplyUsed() / 2;
+
+        for (PlannedItem pi : selectedPivot.getPivotBuild()) {
+            if (pi.getSupply() > 0 && pi.getSupply() < currentSupply) {
+                continue;
+            }
+
+            productionQueue.add(pi);
+        }
+
+        liftableBuildings.clear();
+        liftableBuildings.addAll(selectedPivot.getLiftableBuildings());
     }
 
     private void setBunkerPosition(BunkerLocation bunkerLocation) {
@@ -206,7 +248,13 @@ public class GameState {
             HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(startingOpener.buildType(), time);
 
             if (enemyMoveOutCondition.isEmpty()) {
-                openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits);
+                if (selectedPivot != null) {
+                    openerMoveOutCondition = selectedPivot.getMoveOutCondition(time, knownEnemyUnits);
+                    return;
+                }
+                else {
+                    openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits);
+                }
                 return;
             }
 
@@ -256,6 +304,14 @@ public class GameState {
 
     private boolean shouldTransition() {
         return productionQueue.stream().noneMatch(pi -> pi.getSupply() > 0 && pi.getPlannedItemType() == PlannedItemType.BUILDING);
+    }
+
+    private boolean shouldPivot() {
+        if (enemyOpener == null) {
+            return false;
+        }
+
+        return buildOrderManager.getBuildPivots().stream().anyMatch(bp -> bp.pivotsFrom(enemyOpener.getStrategyName()));
     }
 
 
@@ -343,6 +399,14 @@ public class GameState {
         this.startingEnemyBase = startingEnemyBase;
     }
 
+    public EnemyUnits getEnemyScout() {
+        return enemyScout;
+    }
+
+    public void setEnemyScout(EnemyUnits enemyScout) {
+        this.enemyScout = enemyScout;
+    }
+
     public void setEnemyOpener(EnemyStrategy enemyOpener) {
         this.enemyOpener = enemyOpener;
     }
@@ -417,5 +481,13 @@ public class GameState {
 
     public EnemyArmyCompManager getArmyCompositionManager() {
         return armyCompositionManager;
+    }
+
+    public BuildPivot getSelectedPivot() {
+        return selectedPivot;
+    }
+
+    public boolean hasPivoted() {
+        return hasPivoted;
     }
 }

@@ -4,7 +4,10 @@ import java.util.HashSet;
 
 import bwapi.Race;
 import information.enemy.EnemyInformation;
+import macro.buildorders.buildpivots.BuildPivot;
+import macro.buildorders.buildpivots.BunkerRush;
 import macro.buildorders.buildtransitions.BuildTransition;
+import macro.buildorders.buildtransitions.TvPBio;
 import macro.buildorders.buildtransitions.TvPMech;
 import macro.buildorders.buildtransitions.TvTMech;
 import macro.buildorders.buildtransitions.TvZBio;
@@ -18,6 +21,7 @@ public class BuildOrderManager {
     private HashSet<BuildTransition> protossTransitions = new HashSet<>();
     private HashSet<BuildTransition> terranTransitions = new HashSet<>();
     private HashSet<BuildTransition> zergTransitions = new HashSet<>();
+    private HashSet<BuildPivot> buildPivots = new HashSet<>();
     private Race enemyRace;
 
     public BuildOrderManager(Race enemyRace) {
@@ -25,6 +29,7 @@ public class BuildOrderManager {
 
         initBuildOrders();
         initBuildTransitions();
+        initBuildPivots();
     }
 
     private void initBuildOrders() {
@@ -51,6 +56,11 @@ public class BuildOrderManager {
         zergTransitions.add(new TvZBio());
         terranTransitions.add(new TvTMech());
         protossTransitions.add(new TvPMech());
+        protossTransitions.add(new TvPBio());
+    }
+
+    private void initBuildPivots() {
+        buildPivots.add(new BunkerRush());
     }
 
     public HashSet<BuildOrder> getOpenersForRace() {
@@ -79,4 +89,7 @@ public class BuildOrderManager {
         }
     }
 
+    public HashSet<BuildPivot> getBuildPivots() {
+        return buildPivots;
+    }
 }

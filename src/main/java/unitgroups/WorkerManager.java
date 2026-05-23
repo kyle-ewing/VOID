@@ -36,12 +36,15 @@ public class WorkerManager {
     private HashSet<Workers> workers;
     private HashSet<Workers> defenseForce = new HashSet<>();
     private HashSet<Workers> repairForce = new HashSet<>();
+    private HashSet<Workers> pulledScvs = new HashSet<>();
     private HashMap<Unit, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private HashMap<Base, HashSet<Workers>> mineralSaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
     private boolean openerResponse = false;
     private boolean initialMineralAssignmentDone = false;
     private boolean mineralBlockersCleared = false;
+    private boolean scvsPulled = false;
+    private int pullFrame = 0;
 
     public WorkerManager(MapInfo mapInfo, Player player, Game game, GameState gameState, EnemyInformation enemyInformation) {
         this.mapInfo = mapInfo;
@@ -61,6 +64,7 @@ public class WorkerManager {
         workerBuildClock();
         buildingHealthCheck();
         preemptiveBunkerRepair();
+        releasePulledScvs();
         clearNaturalDefenseForce();
         enemyScoutResponse.onFrame();
         transferDepletedBaseWorkers();
@@ -158,6 +162,62 @@ public class WorkerManager {
                         worker.setAttackClock(0);
                         worker.setAssignedToBase(false);
                         removeDefenseForce(worker);
+                    }
+                    break;
+                case ATTACKING:
+                    if (frameCount % 8 != 0) {
+                        break;
+                    }
+
+                    Base enemyNatural = mapInfo.getEnemyNatural();
+                    HashSet<TilePosition> enemyNaturalTiles = null;
+                    if (enemyNatural != null) {
+                        enemyNaturalTiles = mapInfo.getBaseTilesAllBases().get(enemyNatural);
+                    }
+
+                    Unit naturalBunker = null;
+                    if (enemyNaturalTiles != null) {
+                        for (Unit building : gameState.getAllBuildings()) {
+                            if (building.getType() == UnitType.Terran_Bunker
+                                    && enemyNaturalTiles.contains(building.getTilePosition())) {
+                                naturalBunker = building;
+                                break;
+                            }
+                        }
+                    }
+
+                    Unit attackDamaged = null;
+                    if (pulledScvs.contains(worker) && naturalBunker != null
+                            && naturalBunker.getHitPoints() < naturalBunker.getType().maxHitPoints()) {
+                        attackDamaged = naturalBunker;
+                    }
+                    else {
+                        attackDamaged = findNearbyDamagedBuilding(worker, 300);
+                    }
+
+                    if (attackDamaged != null) {
+                        worker.repair(attackDamaged);
+                        break;
+                    }
+
+                    if (naturalBunker != null) {
+                        if (worker.getUnit().getDistance(naturalBunker.getPosition()) > 150) {
+                            worker.getUnit().move(naturalBunker.getPosition());
+                            break;
+                        }
+                    }
+
+                    ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 160);
+                    if (worker.getEnemyUnit() != null) {
+                        worker.selfDefense();
+                        break;
+                    }
+
+                    if (mapInfo.getEnemyNatural() != null) {
+                        Position enemyNaturalPos = mapInfo.getEnemyNatural().getCenter();
+                        if (worker.getUnit().getDistance(enemyNaturalPos) > 64) {
+                            worker.getUnit().move(enemyNaturalPos);
+                        }
                     }
                     break;
                 case BUILDING:
@@ -530,6 +590,76 @@ public class WorkerManager {
         defenseForce.remove(worker);
     }
 
+    private void createPulledScvs(int count) {
+        if (scvsPulled) {
+            return;
+        }
+
+        if (pulledScvs.isEmpty()) {
+            pullFrame = game.getFrameCount();
+        }
+
+        for (Workers worker : workers) {
+            if (worker.getWorkerStatus() == WorkerStatus.MINERALS && pulledScvs.size() < count) {
+                pulledScvs.add(worker);
+                removeMineralSaturation(worker);
+                worker.setAssignedToBase(false);
+                worker.setWorkerStatus(WorkerStatus.ATTACKING);
+            }
+
+            if (pulledScvs.size() >= count) {
+                scvsPulled = true;
+                return;
+            }
+        }
+    }
+
+    private void releasePulledScvs() {
+        if (pulledScvs.isEmpty()) {
+            return;
+        }
+
+        boolean rushGate = new Time(game.getFrameCount() - pullFrame).lessThanOrEqual(new Time(2, 0))
+                && gameState.getSelectedPivot() != null && gameState.getSelectedPivot().isRushActive();
+
+        Iterator<Workers> iterator = pulledScvs.iterator();
+        while (iterator.hasNext()) {
+            Workers worker = iterator.next();
+
+            if (worker.getUnit().getHitPoints() < 15) {
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                iterator.remove();
+                continue;
+            }
+
+            if (rushGate) {
+                continue;
+            }
+
+            boolean enemyNearby = false;
+            for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                if (enemyUnit.getEnemyPosition() == null) {
+                    continue;
+                }
+                if (enemyUnit.getEnemyUnit().getDistance(worker.getUnit()) < 600) {
+                    enemyNearby = true;
+                    break;
+                }
+            }
+
+            if (enemyNearby) {
+                continue;
+            }
+
+            if (findNearbyDamagedBuilding(worker, 300) != null) {
+                continue;
+            }
+
+            worker.setWorkerStatus(WorkerStatus.IDLE);
+            iterator.remove();
+        }
+    }
+
     private boolean hasBunker() {
         for (Unit building : gameState.getAllBuildings()) {
             if (building.getType() == UnitType.Terran_Bunker && building.isCompleted()) {
@@ -654,12 +784,22 @@ public class WorkerManager {
                 if (gameState.isEnemyInNatural()) {
                     createDefenseForce(3);
                 }
+                break;
+            case NEXUSFIRST:
+                createPulledScvs(6);
+                break;
         }
     }
 
     private void buildingHealthCheck() {
         for (Unit building : player.getUnits()) {
             if (building.getType().isBuilding() && building.getHitPoints() < building.getType().maxHitPoints() && building.isCompleted()) {
+                if (building.getType() == UnitType.Terran_Bunker
+                        && !mapInfo.getBaseTiles().contains(building.getTilePosition())
+                        && !mapInfo.getNaturalTiles().contains(building.getTilePosition())) {
+                    continue;
+                }
+
                 if (!buildingRepair.containsKey(building)) {
                     buildingRepair.put(building, null);
                 }
@@ -693,6 +833,10 @@ public class WorkerManager {
     }
 
     private void preemptiveBunkerRepair() {
+        if (!pulledScvs.isEmpty()) {
+            return;
+        }
+
         Unit bunker = null;
 
         for (Unit unit : gameState.getAllBuildings()) {
@@ -708,7 +852,7 @@ public class WorkerManager {
                 bunker = unit;
                 break;
             }
-            else {
+            else if (mapInfo.getBaseTiles().contains(unit.getTilePosition())) {
                 bunker = unit;
             }
         }
@@ -1068,6 +1212,7 @@ public class WorkerManager {
                 }
 
                 repairForce.remove(worker);
+                pulledScvs.remove(worker);
 
                 for (Unit geyser : refinerySaturation.keySet()) {
                     refinerySaturation.get(geyser).remove(worker);

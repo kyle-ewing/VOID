@@ -125,7 +125,8 @@ public class Marine extends CombatUnits {
     private void attackUnit() {
         kite();
 
-        if (minimnumThreshold()) {
+        if (unitStatus != UnitStatus.SALLYOUT
+                && unit.getPosition().getDistance(enemyUnit.getEnemyPosition()) < 64) {
             return;
         }
 
@@ -181,19 +182,6 @@ public class Marine extends CombatUnits {
             Position kitePos = new Position(targetX, targetY);
             unit.move(kitePos);
         }
-    }
-
-    private boolean minimnumThreshold() {
-        if (unitStatus == UnitStatus.SALLYOUT) {
-            return false;
-        }
-
-        double halfRange = weaponRange() * 0.25;
-        Position enemyPosition = enemyUnit.getEnemyPosition();
-        Position unitPosition = unit.getPosition();
-        double distanceToEnemy = unitPosition.getDistance(enemyPosition);
-
-        return distanceToEnemy < halfRange;
     }
 
     private int weaponRange() {

@@ -13,6 +13,8 @@ import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import macro.buildorders.buildpivots.BuildPivot;
+import macro.buildorders.buildpivots.BuildPivotName;
 import util.Time;
 
 public class EnemyInformation {
@@ -423,6 +425,42 @@ public class EnemyInformation {
             }
         }
 
+        if (mapInfo.getEnemyMain() == null && mapInfo.getEnemyNatural() == null && unit.getType().isResourceDepot()) {
+            boolean atStartingBase = mapInfo.getStartingBases().stream()
+                    .anyMatch(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10);
+
+            if (!atStartingBase) {
+                Position depotPosition = unit.getTilePosition().toPosition();
+
+                Base seenBase = null;
+                double closestBaseDistance = Double.MAX_VALUE;
+
+                for (Base base : mapInfo.getMapBases()) {
+                    double distance = base.getLocation().getDistance(unit.getTilePosition());
+                    if (distance < closestBaseDistance) {
+                        closestBaseDistance = distance;
+                        seenBase = base;
+                    }
+                }
+
+                Base inferredMain = null;
+                int shortestStartingPath = Integer.MAX_VALUE;
+
+                for (Base startingBase : mapInfo.getStartingBases()) {
+                    List<Position> path = mapInfo.getPathFinding().findPath(startingBase.getLocation().toPosition(), depotPosition);
+                    if (path != null && !path.isEmpty() && path.size() < shortestStartingPath) {
+                        shortestStartingPath = path.size();
+                        inferredMain = startingBase;
+                    }
+                }
+
+                if (seenBase != null && inferredMain != null) {
+                    mapInfo.setEnemyMain(inferredMain);
+                    mapInfo.setEnemyNatural(seenBase);
+                }
+            }
+        }
+
         if (isThreat(unit)) {
             for (EnemyUnits threat : validThreats) {
                 if (threat.getEnemyID() == unit.getID()) {
@@ -479,6 +517,17 @@ public class EnemyInformation {
 
         if (!checkForBuildings() && unit.getType().isBuilding()) {
             gameState.setEnemyBuildingDiscovered(false);
+        }
+
+        BuildPivot selectedPivot = gameState.getSelectedPivot();
+        if (selectedPivot != null && selectedPivot.isRushActive()) {
+            if (selectedPivot.getBuildPivotName() == BuildPivotName.BUNKERRUSH) {
+                if (unit.getType() == UnitType.Protoss_Nexus && mapInfo.getEnemyNatural() != null 
+                        && mapInfo.getEnemyNatural().getLocation().getDistance(unit.getTilePosition()) < 10) {
+                    selectedPivot.setRushActive(false);
+                    return;
+                }
+            }
         }
     }
 
