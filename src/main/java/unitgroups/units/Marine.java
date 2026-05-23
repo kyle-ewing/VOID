@@ -156,7 +156,7 @@ public class Marine extends CombatUnits {
     }
 
     private void kite() {
-        if (enemyUnit.getEnemyType().isBuilding()) {
+        if (enemyUnit.getEnemyType().isBuilding() || enemyUnit.getEnemyType().isFlyer()) {
             return;
         }
 
