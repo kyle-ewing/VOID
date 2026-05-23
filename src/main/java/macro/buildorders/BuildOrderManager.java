@@ -7,6 +7,7 @@ import information.enemy.EnemyInformation;
 import macro.buildorders.buildpivots.BuildPivot;
 import macro.buildorders.buildpivots.BunkerRush;
 import macro.buildorders.buildtransitions.BuildTransition;
+import macro.buildorders.buildtransitions.TvPBio;
 import macro.buildorders.buildtransitions.TvPMech;
 import macro.buildorders.buildtransitions.TvTMech;
 import macro.buildorders.buildtransitions.TvZBio;
@@ -55,7 +56,7 @@ public class BuildOrderManager {
         zergTransitions.add(new TvZBio());
         terranTransitions.add(new TvTMech());
         protossTransitions.add(new TvPMech());
-        protossTransitions.add(new TvZBio());
+        protossTransitions.add(new TvPBio());
     }
 
     private void initBuildPivots() {

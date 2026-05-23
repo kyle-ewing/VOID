@@ -34,7 +34,7 @@ public class BunkerRush extends BuildPivot {
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 14, PlannedItemType.UNIT, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 12, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 16, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 16, PlannedItemType.BUILDING, 4, true));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 16, PlannedItemType.BUILDING, 2, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 20, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 21, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 21, PlannedItemType.BUILDING, 2));
@@ -49,7 +49,7 @@ public class BunkerRush extends BuildPivot {
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 45, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 50, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Weapons, 38, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 2));
-        buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 38, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 2));
+        buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 45, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 50, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 3));
 
         return buildOrder;
