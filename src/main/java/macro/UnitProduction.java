@@ -70,7 +70,6 @@ public class UnitProduction {
         }
 
         if (gameState.hasPivoted() && gameState.getSelectedPivot().buildType() != currentBuildType) {
-            System.out.println("Pivoting to " + gameState.getSelectedPivot().getBuildPivotName() + " due to enemy strategy " + enemyOpener.getStrategyName());
             currentBuildType = gameState.getSelectedPivot().buildType();
         }
 

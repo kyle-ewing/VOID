@@ -3,8 +3,8 @@ package information.enemy;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
-import information.MapInfo;
 import information.GameState;
+import information.MapInfo;
 import unitgroups.WorkerManager;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
@@ -147,7 +147,7 @@ public class EnemyScoutResponse {
             return;
         }
 
-        if (!isInDefendedTiles(gameState.getEnemyScout().getEnemyTilePosition())) {
+        if (!isInDefendedTiles(gameState.getEnemyScout().getEnemyTilePosition()) && new Time(game.getFrameCount()).greaterThan(new Time(3,30))) {
             gameState.setEnemyScout(null);
         }
     }

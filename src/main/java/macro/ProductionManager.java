@@ -777,7 +777,6 @@ public class ProductionManager {
                 pi.setBuildPosition(setBunkerPosition());
 
                 if (pi.getBuildPosition() != null && buildTiles.getProxyBunkerTile() != null && pi.getBuildPosition().equals(buildTiles.getProxyBunkerTile())) {
-                    System.out.println("Proxy bunker position set, assigning scout to build");
                     for (Workers attackingSCV : gameState.getWorkers()) {
                         if (attackingSCV.getWorkerStatus() == WorkerStatus.ATTACKING) {
                             attackingSCV.setWorkerStatus(WorkerStatus.MINERALS);
@@ -952,7 +951,6 @@ public class ProductionManager {
                     }
 
                     if (mapInfo.getEnemyNatural() == null) {
-                        System.out.println("Enemy natural not detected");
                         break;
                     }
                     if (buildTiles.getProxyBunkerTile() == null) {
@@ -963,7 +961,6 @@ public class ProductionManager {
         }
 
         if (bunkerPosition != null) {
-            System.out.println("Using previously set bunker position: " + bunkerPosition + " at time " + new Time(game.getFrameCount()));
             return bunkerPosition;
         }
 

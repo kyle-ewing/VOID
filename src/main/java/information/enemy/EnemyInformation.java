@@ -425,23 +425,9 @@ public class EnemyInformation {
             }
         }
 
-        if (unit.getType().isResourceDepot()) {
-            System.out.println("[INFER DEBUG] depot discovered id=" + unit.getID() + " type=" + unit.getType()
-                    + " tile=" + unit.getTilePosition()
-                    + " enemyMain=" + mapInfo.getEnemyMain()
-                    + " enemyNatural=" + mapInfo.getEnemyNatural()
-                    + " startingBases=" + mapInfo.getStartingBases().size()
-                    + " mapBases=" + mapInfo.getMapBases().size());
-            for (Base sb : mapInfo.getStartingBases()) {
-                System.out.println("[INFER DEBUG]   startingBase " + sb.getLocation() + " distToDepot=" + sb.getLocation().getDistance(unit.getTilePosition()));
-            }
-        }
-
         if (mapInfo.getEnemyMain() == null && mapInfo.getEnemyNatural() == null && unit.getType().isResourceDepot()) {
             boolean atStartingBase = mapInfo.getStartingBases().stream()
                     .anyMatch(base -> base.getLocation().getDistance(unit.getTilePosition()) < 10);
-
-            System.out.println("[INFER DEBUG] entered block. atStartingBase=" + atStartingBase);
 
             if (!atStartingBase) {
                 Position depotPosition = unit.getTilePosition().toPosition();
@@ -469,8 +455,6 @@ public class EnemyInformation {
                 }
 
                 if (seenBase != null && inferredMain != null) {
-                    System.out.println("Enemy main inferred at " + inferredMain.getLocation() + " based on discovered resource depot at " + depotPosition);
-                    System.out.println("Enemy natural inferred at " + seenBase.getLocation());
                     mapInfo.setEnemyMain(inferredMain);
                     mapInfo.setEnemyNatural(seenBase);
                 }
@@ -540,7 +524,6 @@ public class EnemyInformation {
             if (selectedPivot.getBuildPivotName() == BuildPivotName.BUNKERRUSH) {
                 if (unit.getType() == UnitType.Protoss_Nexus && mapInfo.getEnemyNatural() != null 
                         && mapInfo.getEnemyNatural().getLocation().getDistance(unit.getTilePosition()) < 10) {
-                    System.out.println("[BUNKER RUSH] Natural nexus destroyed, deactivating rush");
                     selectedPivot.setRushActive(false);
                     return;
                 }
