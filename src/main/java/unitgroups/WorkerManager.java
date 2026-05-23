@@ -867,9 +867,9 @@ public class WorkerManager {
                 baseCenter = mapInfo.getNaturalBase().getCenter();
             }
 
-            int openerSize = openerRepairForceSize(bunker);
+            Integer openerSize = openerRepairForceSize(bunker);
 
-            if (openerSize > 0) {
+            if (openerSize != null) {
                 createRepairForce(bunker, openerSize);
             }
             else if (enemyInRange(200) && enemyInformation.getEnemySupplyInRange(bunker) >= 10) {
@@ -953,9 +953,9 @@ public class WorkerManager {
 //        }
     }
 
-    private int openerRepairForceSize(Unit bunker) {
+    private Integer openerRepairForceSize(Unit bunker) {
         if (gameState.getEnemyOpener() == null || new Time(game.getFrameCount()).greaterThan(new Time(8, 0))) {
-            return 0;
+            return null;
         }
 
         switch (gameState.getEnemyOpener().getStrategyName()) {
@@ -976,8 +976,10 @@ public class WorkerManager {
                 return 0;
             case FOURPOOL:
                 return 2;
-            default:
+            case SHUTTLERUSH:
                 return 0;
+            default:
+                return null;
         }
     }
 

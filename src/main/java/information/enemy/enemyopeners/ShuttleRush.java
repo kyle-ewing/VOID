@@ -45,8 +45,6 @@ public class ShuttleRush extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
     public void upgradeResponse() {

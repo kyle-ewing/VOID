@@ -62,6 +62,7 @@ public class UnitManager {
     private boolean beingAllInned = false;
     private boolean defendedEnemyOpener = false;
     private boolean pivotRushCompleted = false;
+    private boolean rushUnloadActive = false;
     private Unit naturalBaseCC = null;
 
     public UnitManager(EnemyInformation enemyInformation, GameState gameState, MapInfo mapInfo, Game game, Scouting scouting) {
@@ -134,6 +135,24 @@ public class UnitManager {
 
             switch (combatUnit.getUnitType()) {
                 case Terran_Marine:
+                    if (bunker != null && combatUnit.isInBunker() && gameState.isEnemyInBase() && !enemyNearBunker()) {
+                        unLoadBunker(combatUnit);
+                    }
+
+                    if (rushUnloadActive && enemyNearBunker()) {
+                        rushUnloadActive = false;
+                    }
+                    else if (rushUnloadActive && gameState.getEnemyOpener() != null && gameState.getEnemyOpener().isStrategyDefended()) {
+                        rushUnloadActive = false;
+                    }
+
+                    if (bunker != null && combatUnit.isInBunker() && isRushUnloadOpener()
+                            && gameState.getEnemyOpener() != null && !gameState.getEnemyOpener().isStrategyDefended()) {
+                        rushUnloadActive = true;
+                        unLoadBunker(combatUnit);
+                        combatUnit.setUnitStatus(UnitStatus.RALLY);
+                    }
+
                     bunkerStatus(combatUnit);
                     break;
                 case Terran_Medic:
@@ -477,6 +496,8 @@ public class UnitManager {
                     ClosestUnit.findClosestWorkerOrEnemy(combatUnit, gameState.getKnownEnemyUnits(), 200);
                     combatUnit.runby();
                     break;
+                default:
+                    //nothing
             }
         }
     }
@@ -600,6 +621,9 @@ public class UnitManager {
         if (gameState.isBeingSieged()) {
             combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
         }
+        else if (gameState.isEnemyInBase()) {
+            combatUnit.setUnitStatus(UnitStatus.DEFEND);
+        }
         else {
             combatUnit.setUnitStatus(UnitStatus.ATTACK);
         }
@@ -613,6 +637,10 @@ public class UnitManager {
                 bunkerLoad--;
             }
 
+            return;
+        }
+
+        if (rushUnloadActive) {
             return;
         }
 
@@ -728,6 +756,19 @@ public class UnitManager {
         if (new Time(combatUnit.getResetClock()).greaterThan(new Time(1, 30))) {
             rallyPoint.setRallyPoint(combatUnit);
             combatUnit.setResetClock(0);
+        }
+    }
+
+    private boolean isRushUnloadOpener() {
+        if (gameState.getEnemyOpener() == null) {
+            return false;
+        }
+
+        switch (gameState.getEnemyOpener().getStrategyName()) {
+            case SHUTTLERUSH:
+                return true;
+            default:
+                return false;
         }
     }
 
