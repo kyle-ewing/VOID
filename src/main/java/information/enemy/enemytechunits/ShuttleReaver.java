@@ -1,14 +1,9 @@
 package information.enemy.enemytechunits;
 
-import bwapi.UnitType;
-import bwapi.UpgradeType;
-import information.enemy.EnemyUnits;
-import planner.PlannedItem;
-import planner.PlannedItemStatus;
-import planner.PlannedItemType;
-
-import java.util.ArrayList;
 import java.util.HashSet;
+
+import bwapi.UnitType;
+import information.enemy.EnemyUnits;
 
 public class ShuttleReaver extends EnemyTechUnits {
     public ShuttleReaver() {
@@ -31,7 +26,6 @@ public class ShuttleReaver extends EnemyTechUnits {
     }
 
     public void techBuildingResponse() {
-        getFriendlyBuildingResponse().add(UnitType.Terran_Starport);
     }
 
     public void techUpgradeResponse() {

@@ -861,6 +861,10 @@ public class WorkerManager {
             return;
         }
 
+        if (bunker.getLoadedUnits().isEmpty()) {
+            return;
+        }
+
         if (bunker.isCompleted()) {
             Position baseCenter = mapInfo.getStartingBase().getCenter();
             if (gameState.isNaturalCCCompleted()) {

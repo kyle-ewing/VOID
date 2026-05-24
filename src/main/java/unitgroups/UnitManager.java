@@ -644,6 +644,10 @@ public class UnitManager {
             return;
         }
 
+        if (gameState.isEnemyInBase() && !enemyNearBunker()) {
+            return;
+        }
+
         //temp to allow early marines to clean up inside the base
         if (gameState.getEnemyOpener() != null) {
             if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.SCVRUSH && gameState.isEnemyInBase()) {
@@ -1163,6 +1167,14 @@ public class UnitManager {
             return;
         }
 
+        if (building.getUnitType() == UnitType.Terran_Barracks
+                && building.getUnit().isLifted()
+                && gameState.getProductionQueue().stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
+            building.setNotNeeded(false);
+            building.getUnit().land(building.getUnit().getInitialTilePosition());
+            return;
+        }
+
         if (building.notNeeded()) {
             return;
         }
@@ -1228,7 +1240,8 @@ public class UnitManager {
         }
 
         if (building.getUnitType() == UnitType.Terran_Barracks) {
-            if (!enemyWithinRangeOfWall(building, 224)) {
+            if (!enemyWithinRangeOfWall(building, 224)
+                    && gameState.getProductionQueue().stream().noneMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
                 Position hoverPos = new Position(
                         wallTile.getX() * 32 + building.getUnitType().tileWidth() * 16,
                         wallTile.getY() * 32 + building.getUnitType().tileHeight() * 16 - 32);
