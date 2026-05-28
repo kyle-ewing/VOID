@@ -318,13 +318,19 @@ public class UnitManager {
                     loadBunker(combatUnit);
                     break;
                 case DEFEND:
+                    HashSet<EnemyUnits> defendCandidates = gameState.getKnownEnemyUnits();
+                    if (gameState.moveOutConditionsMet()) {
+                        defendCandidates = new HashSet<>(defendCandidates);
+                        defendCandidates.removeIf(eu -> eu.getEnemyType().isWorker());
+                    }
+
                     if (gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
                         combatUnit.setEnemyInBase(true);
-                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
+                        ClosestUnit.findClosestUnit(combatUnit, defendCandidates, Integer.MAX_VALUE);
                     }
                     else if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
-                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 1000);
+                        ClosestUnit.findClosestUnit(combatUnit, defendCandidates, 1000);
                     }
                     else if (priorityTarget != null) {
                         combatUnit.setEnemyInBase(true);
@@ -332,7 +338,7 @@ public class UnitManager {
                     }
                     else {
                         combatUnit.setEnemyInBase(false);
-                        ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 250);
+                        ClosestUnit.findClosestUnit(combatUnit, defendCandidates, 250);
                     }
 
                     if (obstructingBuild(combatUnit)) {
@@ -618,14 +624,21 @@ public class UnitManager {
         bunkerLoad = 0;
         combatUnit.setInBunker(false);
 
+        boolean bunkerAtHome = bunker != null
+                && (mapInfo.getBaseTiles().contains(bunker.getTilePosition())
+                    || mapInfo.getNaturalTiles().contains(bunker.getTilePosition()));
+
         if (gameState.isBeingSieged()) {
             combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
         }
-        else if (gameState.isEnemyInBase()) {
+        else if (gameState.isEnemyInBase() && bunkerAtHome) {
             combatUnit.setUnitStatus(UnitStatus.DEFEND);
         }
-        else {
+        else if (gameState.moveOutConditionsMet()) {
             combatUnit.setUnitStatus(UnitStatus.ATTACK);
+        }
+        else {
+            combatUnit.setUnitStatus(UnitStatus.RALLY);
         }
     }
 

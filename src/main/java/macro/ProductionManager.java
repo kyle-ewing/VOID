@@ -236,17 +236,18 @@ public class ProductionManager {
                         }
 
                         if (pi.getBuildPosition() != null && pi.getAssignedBuilder() == null) {
-                            worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), mapInfo.getPathFinding());
+                            boolean preferAttacking = !mapInfo.getBaseTiles().contains(pi.getBuildPosition()) && !mapInfo.getNaturalTiles().contains(pi.getBuildPosition());
+                            worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), mapInfo.getPathFinding(), preferAttacking);
                             pi.setAssignedBuilder(worker);
                         }
 
                         if (pi.getAssignedBuilder() != null) {
                             worker = pi.getAssignedBuilder();
 
-                            if (worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().canBuild(pi.getUnitType())) {
+                            if ((worker.getWorkerStatus() == WorkerStatus.MINERALS || worker.getWorkerStatus() == WorkerStatus.ATTACKING) && worker.getUnit().canBuild(pi.getUnitType())) {
                                 worker.build(pi, gameState.getResourceTracking());
                             }
-                            else if (worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+                            else if (worker.getWorkerStatus() != WorkerStatus.MINERALS && worker.getWorkerStatus() != WorkerStatus.ATTACKING) {
                                 pi.setAssignedBuilder(null);
                                 continue;
                             }
@@ -376,12 +377,11 @@ public class ProductionManager {
                         }
 
                         if (builderHasDied) {
-                            for (Workers newWorker : gameState.getWorkers()) {
-                                if (newWorker.getWorkerStatus() == WorkerStatus.MINERALS) {
-                                    pi.setAssignedBuilder(newWorker);
-                                    newWorker.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
-                                    break;
-                                }
+                            boolean preferAttacking = !mapInfo.getBaseTiles().contains(pi.getBuildPosition()) && !mapInfo.getNaturalTiles().contains(pi.getBuildPosition());
+                            Workers replacement = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), mapInfo.getPathFinding(), preferAttacking);
+                            if (replacement != null) {
+                                pi.setAssignedBuilder(replacement);
+                                replacement.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
                             }
                         }
 
@@ -775,16 +775,6 @@ public class ProductionManager {
 
             if (pi.getUnitType() == UnitType.Terran_Bunker) {
                 pi.setBuildPosition(setBunkerPosition());
-
-                if (pi.getBuildPosition() != null && buildTiles.getProxyBunkerTile() != null && pi.getBuildPosition().equals(buildTiles.getProxyBunkerTile())) {
-                    for (Workers attackingSCV : gameState.getWorkers()) {
-                        if (attackingSCV.getWorkerStatus() == WorkerStatus.ATTACKING) {
-                            attackingSCV.setWorkerStatus(WorkerStatus.MINERALS);
-                            pi.setAssignedBuilder(attackingSCV);
-                            break;
-                        }
-                    }
-                }
                 return;
             }
 
@@ -945,17 +935,16 @@ public class ProductionManager {
                 case FOURPOOL:
                     return buildTiles.getCloseBunkerTile();
                 case NEXUSFIRST:
-                    if (new Time(game.getFrameCount()).greaterThan(new Time(4, 0)) 
+                    if (new Time(game.getFrameCount()).greaterThan(new Time(4, 0))
                             || (gameState.getSelectedPivot() != null && !gameState.getSelectedPivot().isRushActive())) {
                         return buildTiles.getNaturalChokeBunker();
                     }
 
-                    if (mapInfo.getEnemyNatural() == null) {
+                    Base rushTarget = mapInfo.getEnemyRushTargetBase(gameState.getKnownEnemyUnits());
+                    if (rushTarget == null) {
                         break;
                     }
-                    if (buildTiles.getProxyBunkerTile() == null) {
-                        buildTiles.generateProxyBunkerTile(mapInfo.getEnemyNatural());
-                    }
+                    buildTiles.generateProxyBunkerTile(rushTarget);
                     return buildTiles.getProxyBunkerTile();
             }
         }

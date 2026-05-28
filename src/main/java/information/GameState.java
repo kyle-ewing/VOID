@@ -30,6 +30,7 @@ import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
 import unitgroups.units.CombatUnits;
+import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.Time;
 
@@ -169,6 +170,38 @@ public class GameState {
         if (selectedPivot == null) {
             return;
         }
+
+        HashSet<UnitType> cancelableBuildings = selectedPivot.getCancelableBuildings();
+        for (PlannedItem pi : productionQueue) {
+            if (!cancelableBuildings.contains(pi.getUnitType())) {
+                continue;
+            }
+            if (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED) {
+                Workers builder = pi.getAssignedBuilder();
+                if (builder != null) {
+                    builder.buildReset(pi, resourceTracking);
+                }
+            }
+            else if (pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS) {
+                if (pi.getBuildPosition() != null) {
+                    for (Unit building : allBuildings) {
+                        if (building.getType() == pi.getUnitType()
+                                && building.getTilePosition().equals(pi.getBuildPosition())
+                                && !building.isCompleted()) {
+                            building.cancelConstruction();
+                            break;
+                        }
+                    }
+                }
+                Workers builder = pi.getAssignedBuilder();
+                if (builder != null && builder.getUnit().exists()) {
+                    builder.setWorkerStatus(WorkerStatus.IDLE);
+                    builder.setBuildingPosition(null);
+                }
+                resourceTracking.unreserveResources(pi.getUnitType());
+            }
+        }
+        productionQueue.removeIf(pi -> cancelableBuildings.contains(pi.getUnitType()));
 
         productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
 

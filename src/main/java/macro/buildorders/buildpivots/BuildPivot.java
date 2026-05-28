@@ -33,6 +33,10 @@ public abstract class BuildPivot {
         return new HashSet<>();
     }
 
+    public HashSet<UnitType> getCancelableBuildings() {
+        return new HashSet<>();
+    }
+
     public boolean isRushActive() {
         return rushActive;
     }

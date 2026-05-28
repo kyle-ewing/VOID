@@ -156,10 +156,14 @@ public class ClosestUnit {
         combatUnit.setEnemyUnit(closestEnemy);
     }
 
-    //Closest worker to build position
-    public static Workers findClosestWorker(Position position, HashSet<Workers> workers, PathFinding pathFinding) {
-        Workers closestWorker = null;
-        int closestDistance = Integer.MAX_VALUE;
+    //Closest worker to build position. When preferAttacking is true, returns the closest
+    //ATTACKING (pulled rush) SCV if any, falling back to MINERALS only when none have a
+    //valid path. When false, returns the closest of either pool.
+    public static Workers findClosestWorker(Position position, HashSet<Workers> workers, PathFinding pathFinding, boolean preferAttacking) {
+        Workers closestAttacking = null;
+        int closestAttackingDistance = Integer.MAX_VALUE;
+        Workers closestMineral = null;
+        int closestMineralDistance = Integer.MAX_VALUE;
 
         Position walkableGoal = pathFinding.findNearestWalkable(position);
         if (walkableGoal == null) {
@@ -167,7 +171,8 @@ public class ClosestUnit {
         }
 
         for (Workers worker : workers) {
-            if (worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+            WorkerStatus status = worker.getWorkerStatus();
+            if (status != WorkerStatus.MINERALS && status != WorkerStatus.ATTACKING) {
                 continue;
             }
 
@@ -179,14 +184,36 @@ public class ClosestUnit {
             }
 
             int pathLen = path.size();
-            if (pathLen < closestDistance) {
-                closestDistance = pathLen;
-                closestWorker = worker;
+            if (status == WorkerStatus.ATTACKING) {
+                if (pathLen < closestAttackingDistance) {
+                    closestAttackingDistance = pathLen;
+                    closestAttacking = worker;
+                }
+            }
+            else {
+                if (pathLen < closestMineralDistance) {
+                    closestMineralDistance = pathLen;
+                    closestMineral = worker;
+                }
             }
         }
 
+        if (preferAttacking && closestAttacking != null) {
+            return closestAttacking;
+        }
 
-        return closestWorker;
+        if (closestAttacking == null) {
+            return closestMineral;
+        }
+
+        if (closestMineral == null) {
+            return closestAttacking;
+        }
+
+        if (closestAttackingDistance <= closestMineralDistance) {
+            return closestAttacking;
+        }
+        return closestMineral;
     }
 
     public static EnemyUnits findClosestEnemyUnit(CombatUnits combatUnit, HashSet<EnemyUnits> enemyUnits, int range) {

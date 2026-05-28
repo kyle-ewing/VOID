@@ -169,7 +169,7 @@ public class WorkerManager {
                         break;
                     }
 
-                    Base enemyNatural = mapInfo.getEnemyNatural();
+                    Base enemyNatural = mapInfo.getEnemyRushTargetBase(gameState.getKnownEnemyUnits());
                     HashSet<TilePosition> enemyNaturalTiles = null;
                     if (enemyNatural != null) {
                         enemyNaturalTiles = mapInfo.getBaseTilesAllBases().get(enemyNatural);
@@ -207,14 +207,19 @@ public class WorkerManager {
                         }
                     }
 
-                    ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 160);
+                    HashSet<EnemyUnits> attackCandidates = gameState.getKnownEnemyUnits();
+                    if (gameState.getEnemyScout() != null) {
+                        attackCandidates = new HashSet<>(attackCandidates);
+                        attackCandidates.remove(gameState.getEnemyScout());
+                    }
+                    ClosestUnit.findClosestUnit(worker, attackCandidates, 160);
                     if (worker.getEnemyUnit() != null) {
                         worker.selfDefense();
                         break;
                     }
 
-                    if (mapInfo.getEnemyNatural() != null) {
-                        Position enemyNaturalPos = mapInfo.getEnemyNatural().getCenter();
+                    if (enemyNatural != null) {
+                        Position enemyNaturalPos = enemyNatural.getCenter();
                         if (worker.getUnit().getDistance(enemyNaturalPos) > 64) {
                             worker.getUnit().move(enemyNaturalPos);
                         }
@@ -359,9 +364,13 @@ public class WorkerManager {
                 }
             }
             else if (currentCount < gasTarget) {
-                scv = ClosestUnit.findClosestWorker(geyser.getPosition(), workers, mapInfo.getPathFinding());
+                scv = ClosestUnit.findClosestWorker(geyser.getPosition(), workers, mapInfo.getPathFinding(), false);
 
                 if (scv == null) {
+                    continue;
+                }
+
+                if (scv.getWorkerStatus() == WorkerStatus.ATTACKING) {
                     continue;
                 }
 
@@ -626,7 +635,12 @@ public class WorkerManager {
         while (iterator.hasNext()) {
             Workers worker = iterator.next();
 
-            if (worker.getUnit().getHitPoints() < 15) {
+            if (worker.getWorkerStatus() != WorkerStatus.ATTACKING) {
+                iterator.remove();
+                continue;
+            }
+
+            if (worker.getUnit().getHitPoints() < 10) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
                 iterator.remove();
                 continue;
@@ -788,6 +802,8 @@ public class WorkerManager {
             case NEXUSFIRST:
                 createPulledScvs(6);
                 break;
+            default:
+                break;
         }
     }
 
@@ -932,7 +948,7 @@ public class WorkerManager {
         HashSet<Workers> availableWorkers = (HashSet<Workers>) new HashSet<>(workers).stream()
                 .filter(worker -> worker.getWorkerStatus() == WorkerStatus.MINERALS).collect(Collectors.toSet());
 
-        Workers repairWorker = ClosestUnit.findClosestWorker(bunker.getPosition(), availableWorkers, mapInfo.getPathFinding());
+        Workers repairWorker = ClosestUnit.findClosestWorker(bunker.getPosition(), availableWorkers, mapInfo.getPathFinding(), false);
 
         if (repairWorker != null) {
             removeMineralSaturation(repairWorker);

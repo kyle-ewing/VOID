@@ -10,6 +10,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import bwapi.Game;
+import bwapi.Race;
 import bwapi.Unit;
 import bwapi.UnitType;
 import information.GameState;
@@ -41,10 +42,8 @@ public class UnitProduction {
     private EnemyStrategy enemyOpener = null;
 
     private static final Set<UnitType> TANK_TRIGGERS = new HashSet<>(Arrays.asList(
-            UnitType.Protoss_Reaver,
             UnitType.Zerg_Hydralisk,
             UnitType.Zerg_Lurker,
-            UnitType.Protoss_Dragoon,
             UnitType.Zerg_Ultralisk,
             UnitType.Terran_Siege_Tank_Tank_Mode,
             UnitType.Terran_Siege_Tank_Siege_Mode
@@ -172,6 +171,10 @@ public class UnitProduction {
     private boolean shouldBuildTanks() {
         for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {
             if (TANK_TRIGGERS.contains(enemy.getEnemyType())) return true;
+        }
+
+        if (game.enemy().getRace() == Race.Protoss) {
+            return true;
         }
 
         return false;

@@ -8,6 +8,7 @@ import information.enemy.EnemyUnits;
 import macro.ResourceTracking;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
+import util.Time;
 
 public class Workers extends CombatUnits {
     private Unit repairTarget;
@@ -165,6 +166,11 @@ public class Workers extends CombatUnits {
     }
 
     public void setWorkerStatus(WorkerStatus workerStatus) {
+        if (this.workerStatus == WorkerStatus.ATTACKING || workerStatus == WorkerStatus.ATTACKING) {
+            StackTraceElement caller = new Throwable().getStackTrace()[1];
+            String msg = "[" + new Time(game.getFrameCount()) + "] SCV " + unit.getID() + " status " + this.workerStatus + " -> " + workerStatus + " @ " + caller.getClassName() + "." + caller.getMethodName() + ":" + caller.getLineNumber();
+            System.out.println(msg);
+        }
         this.workerStatus = workerStatus;
     }
 
