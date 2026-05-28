@@ -74,6 +74,7 @@ public class MapInfo {
     private HashMap<Base, Integer> originalPatchCounts = new HashMap<>();
     private HashMap<Base, Integer> livePatchCounts = new HashMap<>();
     private HashMap<Base, List<MineralPatch>> basePatches = new HashMap<>();
+    private HashMap<Base, Base> startingBaseMinOnlys = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
@@ -125,6 +126,7 @@ public class MapInfo {
 
         //Handle edge cases where bases are split into multiple areas
         combineBaseAreas();
+        setStartingBaseMinOnlys();
 
         allBasePaths = new AllBasePaths(this);
         allPathsMap = new HashMap<>(allBasePaths.getBasePathLists());
@@ -743,6 +745,91 @@ public class MapInfo {
             }
         }
 
+    }
+
+    private void setStartingBaseMinOnlys() {
+        if (minOnlyBase != null) {
+            startingBaseMinOnlys.put(startingBase, minOnlyBase);
+        }
+
+        for (Base sb : startingBases) {
+            Base sbMinOnly = findMinOnlyForStartingBase(sb);
+            if (sbMinOnly != null) {
+                startingBaseMinOnlys.put(sb, sbMinOnly);
+            }
+        }
+    }
+
+    private Base findMinOnlyForStartingBase(Base sb) {
+        Base sbNatural = null;
+        int shortestPath = Integer.MAX_VALUE;
+        for (Base other : mapBases) {
+            if (other.equals(sb) || other.getGeysers().isEmpty()) {
+                continue;
+            }
+            List<Position> path = pathFinding.findPath(sb.getLocation().toPosition(), other.getLocation().toPosition());
+            if (path != null && !path.isEmpty() && path.size() < shortestPath) {
+                shortestPath = path.size();
+                sbNatural = other;
+            }
+        }
+        if (sbNatural == null) {
+            return null;
+        }
+
+        List<Position> pathToNatural = pathFinding.findPath(sb.getLocation().toPosition(), sbNatural.getLocation().toPosition());
+        if (pathToNatural == null || pathToNatural.isEmpty()) {
+            return null;
+        }
+
+        ChokePoint sbMainChoke = null;
+        int minChokeDistance = Integer.MAX_VALUE;
+        for (ChokePoint choke : bwem.getMap().getChokePoints()) {
+            Position chokePos = choke.getCenter().toPosition();
+            for (Position pathPos : pathToNatural) {
+                int d = chokePos.getApproxDistance(pathPos);
+                if (d < minChokeDistance) {
+                    minChokeDistance = d;
+                    sbMainChoke = choke;
+                }
+            }
+        }
+        if (sbMainChoke == null) {
+            return null;
+        }
+
+        Area firstArea = sbMainChoke.getAreas().getFirst();
+        Area secondArea = sbMainChoke.getAreas().getSecond();
+
+        if (firstArea.getBases().contains(sb) || secondArea.getBases().contains(sb)) {
+            return null;
+        }
+
+        if (!firstArea.getBases().isEmpty() && !firstArea.getBases().get(0).equals(sbNatural)) {
+            return firstArea.getBases().get(0);
+        }
+        if (!secondArea.getBases().isEmpty() && !secondArea.getBases().get(0).equals(sbNatural)) {
+            return secondArea.getBases().get(0);
+        }
+        return null;
+    }
+
+    public Base getEnemyRushTargetBase(HashSet<EnemyUnits> knownEnemyUnits) {
+        if (enemyMain == null) {
+            return enemyNatural;
+        }
+        Base candidateMinOnly = startingBaseMinOnlys.get(enemyMain);
+        if (candidateMinOnly == null) {
+            return enemyNatural;
+        }
+        for (EnemyUnits enemyUnit : knownEnemyUnits) {
+            if (enemyUnit.getEnemyType().isResourceDepot()
+                    && enemyUnit.getEnemyPosition() != null
+                    && enemyUnit.getEnemyPosition().getDistance(candidateMinOnly.getLocation().toPosition()) < 200) {
+                return candidateMinOnly;
+            }
+        }
+        return enemyNatural;
     }
 
     //WIP, hacky solution for Andromeda

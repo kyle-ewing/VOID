@@ -34,10 +34,10 @@ public class BunkerRush extends BuildPivot {
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 14, PlannedItemType.UNIT, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 12, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 16, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 16, PlannedItemType.BUILDING, 2, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 20, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 21, PlannedItemType.ADDON, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 21, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 24, PlannedItemType.BUILDING, 2, true));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 28, PlannedItemType.ADDON, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 25, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 23, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 23, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(TechType.Stim_Packs, 26, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 2));
@@ -57,14 +57,25 @@ public class BunkerRush extends BuildPivot {
 
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+        float enemyArmySupply = 0;
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType().isWorker() || enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+            enemyArmySupply += enemyUnit.getEnemyType().supplyProvided() / 2;
+        }
 
-        if (time.lessThanOrEqual(new Time(4,30)) && rushActive) {
+        if (time.lessThanOrEqual(new Time(5,0)) && rushActive) {
             moveOutCondition.put(UnitType.Terran_Marine, 1);
+        }
+        else if (time.lessThanOrEqual(new Time(12,30)) && !rushActive && enemyArmySupply < 15 ) {
+            moveOutCondition.put(UnitType.Terran_Marine, 15);
+            moveOutCondition.put(UnitType.Terran_Medic, 4);
         }
         else {
             moveOutCondition.put(UnitType.Terran_Marine, 15);
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 3);
-            moveOutCondition.put(UnitType.Terran_Marine, 4);
+            moveOutCondition.put(UnitType.Terran_Medic, 4);
         }
 
 
@@ -102,4 +113,10 @@ public class BunkerRush extends BuildPivot {
         return liftableBuildings;
     }
 
+    @Override
+    public HashSet<UnitType> getCancelableBuildings() {
+        HashSet<UnitType> cancelableBuildings = new HashSet<>();
+        cancelableBuildings.add(UnitType.Terran_Factory);
+        return cancelableBuildings;
+    }
 }
