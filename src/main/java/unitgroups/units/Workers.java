@@ -100,10 +100,6 @@ public class Workers extends CombatUnits {
     public void stuckCheck() {
         lastFrameChecked++;
 
-        if (lastFrameChecked < 240) {
-            return;
-        }
-
         if (distanceToBuildTarget == null || buildingPosition == null) {
             return;
         }
@@ -117,7 +113,12 @@ public class Workers extends CombatUnits {
             nearTargetFrameCount = 0;
         }
 
-        if (Math.abs(distanceToBuildTarget - currentDistance) < 32 && distanceToBuildTarget > 96) {
+        if (currentDistance < distanceToBuildTarget - 32) {
+            distanceToBuildTarget = currentDistance;
+            lastFrameChecked = 0;
+        }
+
+        if (lastFrameChecked > 240 && currentDistance > 96) {
             setWorkerStatus(WorkerStatus.STUCK);
         }
 
