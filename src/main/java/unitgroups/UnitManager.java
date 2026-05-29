@@ -478,6 +478,33 @@ public class UnitManager {
                         break;
                     }
 
+                    if (combatUnit.getUnitType() == UnitType.Terran_Vulture && gameState.isEnemyInBase()) {
+                        boolean meleeEnemyInBaseNear = false;
+                        for (EnemyUnits eu : gameState.getKnownEnemyUnits()) {
+                            if (eu.getEnemyPosition() == null) {
+                                continue;
+                            }
+                            if (eu.getEnemyType().groundWeapon().maxRange() >= 32) {
+                                continue;
+                            }
+                            TilePosition euTile = eu.getEnemyUnit().getTilePosition();
+                            boolean inBase = mapInfo.getBaseTiles().contains(euTile)
+                                    || mapInfo.getMinBaseTiles().contains(euTile)
+                                    || ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && mapInfo.getNaturalTiles().contains(euTile));
+                            if (!inBase) {
+                                continue;
+                            }
+                            if (combatUnit.getUnit().getDistance(eu.getEnemyPosition()) < 500) {
+                                meleeEnemyInBaseNear = true;
+                                break;
+                            }
+                        }
+                        if (meleeEnemyInBaseNear) {
+                            combatUnit.setUnitStatus(UnitStatus.DEFEND);
+                            break;
+                        }
+                    }
+
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
 
                     if (game.self().hasResearched(TechType.Spider_Mines)

@@ -76,7 +76,7 @@ public class Vulture extends CombatUnits {
             mineTimer += 8;
         }
 
-        if (unitStatus != UnitStatus.POKE && unitStatus != UnitStatus.ATTACK && unitStatus != UnitStatus.RUNBY) {
+        if (unitStatus != UnitStatus.POKE && unitStatus != UnitStatus.ATTACK && unitStatus != UnitStatus.RUNBY && unitStatus != UnitStatus.DEFEND) {
             wallStuckTimer = 0;
             wallStuckCheckPos = null;
             wallStuckRetreatTimer = 0;
@@ -213,36 +213,33 @@ public class Vulture extends CombatUnits {
 
     @Override
     public void defend() {
-        if (rallyPoint == null) {
-            return;
-        }
-
         if (enemyUnit == null) {
             setUnitStatus(UnitStatus.POKE);
             return;
         }
 
-        if (isOutRanged() && inBase) {
-            attackMove();
-
-            if (hasTankSupport) {
-                setUnitStatus(UnitStatus.POKE);
+        EnemyUnits closestMelee = null;
+        double closestMeleeDist = Double.MAX_VALUE;
+        for (EnemyUnits e : enemyUnits) {
+            if (e.getEnemyPosition() == null) {
+                continue;
             }
+            if (enemyGroundRange(e) >= 32) {
+                continue;
+            }
+            double d = unit.getDistance(e.getEnemyPosition());
+            if (d < closestMeleeDist) {
+                closestMeleeDist = d;
+                closestMelee = e;
+            }
+        }
 
+        if (closestMelee != null && closestMeleeDist <= 96) {
+            unit.move(kiteAwayFrom(closestMelee.getEnemyPosition(), weaponRange()));
             return;
         }
 
-        if (!enemyInBase && inBase) {
-            setUnitStatus(UnitStatus.POKE);
-            return;
-        }
-
-        if (!isOutRanged()) {
-            setUnitStatus(UnitStatus.POKE);
-            return;
-        }
-
-        attackMove();
+        unit.attack(enemyUnit.getEnemyUnit());
     }
 
     @Override
