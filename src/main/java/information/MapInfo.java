@@ -1570,7 +1570,11 @@ public class MapInfo {
         }
 
         if (unit.getType().isMineralField()) {
-            bwem.getMap().onUnitDestroyed(unit);
+            try {
+                bwem.getMap().onUnitDestroyed(unit);
+            }
+            catch (IllegalStateException e) {
+            }
             decrementLivePatchCount(unit);
             for (List<MineralPatch> patches : basePatches.values()) {
                 for (MineralPatch patch : patches) {
