@@ -135,7 +135,7 @@ public class UnitManager {
 
             switch (combatUnit.getUnitType()) {
                 case Terran_Marine:
-                    if (bunker != null && combatUnit.isInBunker() && gameState.isEnemyInBase() && !enemyNearBunker()) {
+                    if (bunker != null && combatUnit.isInBunker() && gameState.isEnemyInBase() && !enemyWithinBunkerDefenseRange()) {
                         unLoadBunker(combatUnit);
                     }
 
@@ -645,6 +645,8 @@ public class UnitManager {
     }
 
     private void unLoadBunker(CombatUnits combatUnit) {
+        System.out.println("unLoadBunker at " + new Time(game.getFrameCount()) + " enemyInBase=" + gameState.isEnemyInBase() + " naturalOwned=" + mapInfo.isNaturalOwned() + " bunkerInNatural=" + mapInfo.hasBunkerInNatural());
+
         if (bunker != null) {
             bunker.unloadAll();
         }
@@ -684,7 +686,7 @@ public class UnitManager {
             return;
         }
 
-        if (gameState.isEnemyInBase() && !enemyNearBunker()) {
+        if (gameState.isEnemyInBase() && !enemyWithinBunkerDefenseRange()) {
             return;
         }
 
@@ -749,6 +751,23 @@ public class UnitManager {
             }
 
             if (enemyUnit.getEnemyPosition().getDistance(bunker.getPosition()) < 192) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean enemyWithinBunkerDefenseRange() {
+        if (bunker == null) {
+            return false;
+        }
+
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyPosition().getDistance(bunker.getPosition()) < 300) {
                 return true;
             }
         }

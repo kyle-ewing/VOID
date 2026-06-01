@@ -286,6 +286,14 @@ public class ProductionManager {
 
                 case SCV_ASSIGNED:
                     worker = pi.getAssignedBuilder();
+
+                    if (worker == null || worker.getUnit() == null || !worker.getUnit().exists()) {
+                        gameState.getResourceTracking().unreserveResources(pi.getUnitType());
+                        pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+                        pi.setAssignedBuilder(null);
+                        break;
+                    }
+
                     if (worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                         if (worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
                             if (pi.getUnitType() == UnitType.Terran_Command_Center
@@ -309,10 +317,6 @@ public class ProductionManager {
                                 worker.buildReset(pi, gameState.getResourceTracking());
                             }
                         }
-
-                        if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
-                            mapInfo.setNaturalOwned(true);
-                        }
                     }
 
                     if (worker.getWorkerStatus() == WorkerStatus.MINERALS) {
@@ -323,20 +327,6 @@ public class ProductionManager {
                         gameState.getResourceTracking().unreserveResources(pi.getUnitType());
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                         pi.setAssignedBuilder(null);
-
-                        if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
-                            mapInfo.setNaturalOwned(false);
-                        }
-                    }
-
-                    if (!worker.getUnit().exists()) {
-                        gameState.getResourceTracking().unreserveResources(pi.getUnitType());
-                        pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
-                        pi.setAssignedBuilder(null);
-
-                        if (mapInfo.getNaturalBase().getLocation().getDistance(pi.getBuildPosition()) < 10) {
-                            mapInfo.setNaturalOwned(false);
-                        }
                     }
 
                     if (buildingInProduction(pi.getBuildPosition(), pi.getUnitType())) {
@@ -926,6 +916,7 @@ public class ProductionManager {
                 case CANNONRUSH:
                 case FOURRAX:
                 case SCVRUSH:
+                case DOUBLEEIGHTRAX:
                     return buildTiles.getMainChokeBunker();
                 case TWOGATE:
                     if (gameState.getKnownEnemyUnits().stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Zealot && eu.getEnemyPosition() != null && eu.getEnemyPosition().getDistance(mapInfo.getNaturalBase().getCenter()) < 2000)) {
