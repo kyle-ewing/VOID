@@ -6,6 +6,7 @@ import information.MapInfo;
 import information.enemy.enemyopeners.BunkerRush;
 import information.enemy.enemyopeners.CannonRush;
 import information.enemy.enemyopeners.DTRush;
+import information.enemy.enemyopeners.DoubleEightRax;
 import information.enemy.enemyopeners.DragoonRangeRush;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.FFE;
@@ -75,6 +76,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new TwoFacTank());
         enemyStrategies.add(new BunkerRush(mapInfo));
         enemyStrategies.add(new SCVRush(mapInfo));
+        enemyStrategies.add(new DoubleEightRax(mapInfo));
         enemyStrategies.add(new OneBaseMuta(mapInfo));
         enemyStrategies.add(new OneBaseLurker(mapInfo));
         // enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
