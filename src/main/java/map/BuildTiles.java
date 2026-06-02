@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import bwapi.Game;
+import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -1004,10 +1005,31 @@ public class BuildTiles {
         ChokePoint naturalChoke = mapInfo.getNaturalChoke();
 
         if (naturalChoke != null) {
-            TilePosition chokeTile = naturalChoke.getCenter().toTilePosition();
+            ChokePoint secondaryNaturalChoke = mapInfo.getSecondaryNaturalChoke();
+            TilePosition chokeTile;
+            if (secondaryNaturalChoke == null) {
+                chokeTile = naturalChoke.getCenter().toTilePosition();
+            }
+            else {
+                TilePosition primaryChokeTile = naturalChoke.getCenter().toTilePosition();
+                TilePosition secondaryChokeTile = secondaryNaturalChoke.getCenter().toTilePosition();
+                Position mainChokeCenter = mapInfo.getMainChoke().getCenter().toPosition();
+
+                double primaryWeight = 0.6;
+                double secondaryWeight = 0.4;
+                if (secondaryChokeTile.toPosition().getApproxDistance(mainChokeCenter) < primaryChokeTile.toPosition().getApproxDistance(mainChokeCenter)) {
+                    primaryWeight = 0.4;
+                    secondaryWeight = 0.6;
+                }
+
+                int midX = (int) (primaryChokeTile.getX() * primaryWeight + secondaryChokeTile.getX() * secondaryWeight);
+                int midY = (int) (primaryChokeTile.getY() * primaryWeight + secondaryChokeTile.getY() * secondaryWeight);
+                chokeTile = new TilePosition(midX, midY);
+            }
+
             TilePosition baseTile = mapInfo.getNaturalBase().getLocation();
             TilePosition closerNatural = PositionInterpolator.interpolate(chokeTile, baseTile, 0.10);
-            TilePosition naturalBunker = findValidTileNear(closerNatural, UnitType.Terran_Bunker);
+            TilePosition naturalBunker = findValidTileNear(closerNatural, UnitType.Terran_Bunker, mapInfo.getNaturalTiles());
 
             if (naturalBunker != null) {
                 naturalChokeBunker = naturalBunker;
@@ -1035,6 +1057,22 @@ public class BuildTiles {
 
         boolean horizontalAxis = Math.abs(dx) >= Math.abs(dy);
 
+        int barracksFrontExtent;
+        if (horizontalAxis) {
+            barracksFrontExtent = BARRACKS_WIDTH;
+        }
+        else {
+            barracksFrontExtent = BARRACKS_HEIGHT;
+        }
+
+        int frontStaggerBound = barracksFrontExtent - 1;
+        int[] barracksFrontOffsets = new int[frontStaggerBound * 2 + 1];
+        barracksFrontOffsets[0] = 0;
+        for (int magnitude = 1; magnitude <= frontStaggerBound; magnitude++) {
+            barracksFrontOffsets[magnitude * 2 - 1] = magnitude;
+            barracksFrontOffsets[magnitude * 2] = -magnitude;
+        }
+
         int barracksPreferredSign;
         if (horizontalAxis) {
             int naturalDy = mapInfo.getNaturalBase().getLocation().getY() - bunkerTile.getY();
@@ -1060,6 +1098,7 @@ public class BuildTiles {
 
         TilePosition bestEbay = null;
         TilePosition bestBarracks = null;
+        boolean bestBothWalls = false;
         boolean bestPairNearWall = false;
         boolean bestEbayWallAdjacent = false;
         boolean bestBarracksWallAdjacent = false;
@@ -1135,13 +1174,17 @@ public class BuildTiles {
                     int eXEnd = eX + EBAY_WIDTH;
                     int eYEnd = eY + EBAY_HEIGHT;
 
+                    if (rectanglesIntersect(eX, eY, eXEnd, eYEnd, bunkerX, bunkerY, bunkerXEnd, bunkerYEnd)) {
+                        continue;
+                    }
+
                     boolean ebayBunkerAdjacent = rectanglesShareEdge(eX, eY, eXEnd, eYEnd, bunkerX, bunkerY, bunkerXEnd, bunkerYEnd);
 
                     WallAdjacency ebayAdj = scanFootprintWallAdjacency(eX, eY, EBAY_WIDTH, EBAY_HEIGHT, bunkerX, bunkerY, horizontalAxis, mainSideSign);
                     boolean ebayWallAdjacent = ebayAdj.wallAdjacent;
                     boolean ebayNearWall = ebayAdj.nearWall;
 
-                    for (int bFrontOffset : frontOffsets) {
+                    for (int bFrontOffset : barracksFrontOffsets) {
                         for (int bStackOffset : frontOffsets) {
                             int bX;
                             int bY;
@@ -1207,6 +1250,12 @@ public class BuildTiles {
                             if (rectanglesIntersect(eX, eY, eXEnd, eYEnd, bX, bY, bXEnd, bYEnd)) {
                                 continue;
                             }
+                            if (rectanglesIntersect(bX, bY, bXEnd, bYEnd, bunkerX, bunkerY, bunkerXEnd, bunkerYEnd)) {
+                                continue;
+                            }
+                            if (!rectanglesShareEdge(eX, eY, eXEnd, eYEnd, bX, bY, bXEnd, bYEnd)) {
+                                continue;
+                            }
 
                             boolean barracksBunkerAdjacent = rectanglesShareEdge(bX, bY, bXEnd, bYEnd, bunkerX, bunkerY, bunkerXEnd, bunkerYEnd);
 
@@ -1227,6 +1276,53 @@ public class BuildTiles {
                             int slack = Math.abs(eFrontOffset) + Math.abs(eSideOffset) + Math.abs(bFrontOffset) + Math.abs(bStackOffset);
 
                             boolean pairNearWall = ebayNearWall || barracksNearWall;
+
+                            int pMin;
+                            int pMax;
+                            int fMin;
+                            int fMax;
+                            if (horizontalAxis) {
+                                pMin = Math.min(eY, bY);
+                                pMax = Math.max(eYEnd, bYEnd);
+                                fMin = Math.min(eX, bX);
+                                fMax = Math.max(eXEnd, bXEnd);
+                            }
+                            else {
+                                pMin = Math.min(eX, bX);
+                                pMax = Math.max(eXEnd, bXEnd);
+                                fMin = Math.min(eY, bY);
+                                fMax = Math.max(eYEnd, bYEnd);
+                            }
+
+                            boolean lowSideContacted = false;
+                            boolean highSideContacted = false;
+                            for (int f = fMin; f < fMax; f++) {
+                                int lowTileX;
+                                int lowTileY;
+                                int highTileX;
+                                int highTileY;
+                                if (horizontalAxis) {
+                                    lowTileX = f;
+                                    lowTileY = pMin - 1;
+                                    highTileX = f;
+                                    highTileY = pMax;
+                                }
+                                else {
+                                    lowTileX = pMin - 1;
+                                    lowTileY = f;
+                                    highTileX = pMax;
+                                    highTileY = f;
+                                }
+
+                                if (!tilePositionValidator.isWalkable(new TilePosition(lowTileX, lowTileY))) {
+                                    lowSideContacted = true;
+                                }
+                                if (!tilePositionValidator.isWalkable(new TilePosition(highTileX, highTileY))) {
+                                    highSideContacted = true;
+                                }
+                            }
+
+                            boolean bothWallsContacted = lowSideContacted && highSideContacted;
 
                             int splitScore;
                             boolean ebayCovers = ebayBunkerAdjacent && ebayWallAdjacent;
@@ -1261,6 +1357,12 @@ public class BuildTiles {
                             if (bestEbay == null) {
                                 better = true;
                             }
+                            else if (bothWallsContacted && !bestBothWalls) {
+                                better = true;
+                            }
+                            else if (!bothWallsContacted && bestBothWalls) {
+                                better = false;
+                            }
                             else if (pairNearWall && !bestPairNearWall) {
                                 better = true;
                             }
@@ -1287,6 +1389,7 @@ public class BuildTiles {
                             }
 
                             if (better) {
+                                bestBothWalls = bothWallsContacted;
                                 bestPairNearWall = pairNearWall;
                                 bestSlack = slack;
                                 bestSplitScore = splitScore;
@@ -1580,6 +1683,10 @@ public class BuildTiles {
     }
 
     private TilePosition findValidTileNear(TilePosition center, UnitType unitType) {
+        return findValidTileNear(center, unitType, null);
+    }
+
+    private TilePosition findValidTileNear(TilePosition center, UnitType unitType, HashSet<TilePosition> requiredTiles) {
         int searchRadius = 6;
 
         for (int r = 0; r <= searchRadius; r++) {
@@ -1587,6 +1694,9 @@ public class BuildTiles {
                 for (int dy = -r; dy <= r; dy++) {
                     if (Math.abs(dx) != r && Math.abs(dy) != r) continue;
                     TilePosition test = new TilePosition(center.getX() + dx, center.getY() + dy);
+                    if (requiredTiles != null && !requiredTiles.contains(test)) {
+                        continue;
+                    }
                     if (tilePositionValidator.isBuildable(test, unitType) && !intersectsExclusionZones(test) && !intersectsExistingBuildTiles(test, unitType, 0)) {
                         return test;
                     }
