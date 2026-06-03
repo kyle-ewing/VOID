@@ -115,7 +115,7 @@ public class ProductionManager {
                 }
             }
 
-            if (gameState.isEnemyInNatural() && (pi.getBuildPosition() != null && !mapInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
+            if (gameState.isEnemyInNatural() && pi.getPlannedItemStatus() != PlannedItemStatus.SCV_ASSIGNED && (pi.getBuildPosition() != null && !mapInfo.getBaseTiles().contains(pi.getBuildPosition()))) {
                 priorityStop = false;
                 hasHighPriorityBuilding = false;
                 continue;
