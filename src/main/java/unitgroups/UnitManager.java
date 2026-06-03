@@ -421,7 +421,9 @@ public class UnitManager {
                         if (gameState.getBunkerPosition() != null && mapInfo.getNaturalBase() != null) {
                             switch (game.enemy().getRace()) {
                                 case Terran:
-                                    ((Building) combatUnit).liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
+                                    if (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) {
+                                        ((Building) combatUnit).liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
+                                    }
                                     break;
                                 case Protoss:
                                     TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerEbayPosition();

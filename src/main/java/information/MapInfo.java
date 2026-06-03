@@ -39,6 +39,7 @@ public class MapInfo {
     private Base enemyNatural;
     private ChokePoint mainChokePoint;
     private ChokePoint naturalChokePoint;
+    private ChokePoint secondaryNaturalChokePoint;
     private Unit initalCC = null;
     private TilePosition naturalBunkerEbayPosition;
     private TilePosition naturalBunkerBarracksPosition;
@@ -716,12 +717,17 @@ public class MapInfo {
         return  naturalChokePoint;
     }
 
+    public ChokePoint getSecondaryNaturalChoke() {
+        return secondaryNaturalChokePoint;
+    }
+
     public void setNaturalChoke() {
         if (naturalBase == null) {
             return;
         }
 
         naturalChokePoint = null;
+        secondaryNaturalChokePoint = null;
         int closestDistance = Integer.MAX_VALUE;
 
         List<ChokePoint> naturalChokes = naturalBase.getArea().getChokePoints();
@@ -745,6 +751,50 @@ public class MapInfo {
             }
         }
 
+        setSecondaryNaturalChoke();
+    }
+
+    private void setSecondaryNaturalChoke() {
+        if (naturalChokePoint == null || naturalBase.getArea() == null) {
+            return;
+        }
+
+        Area primaryOutsideArea;
+        if (naturalChokePoint.getAreas().getFirst() != naturalBase.getArea()) {
+            primaryOutsideArea = naturalChokePoint.getAreas().getFirst();
+        }
+        else {
+            primaryOutsideArea = naturalChokePoint.getAreas().getSecond();
+        }
+
+        if (primaryOutsideArea == null) {
+            return;
+        }
+
+        Position primaryChokeCenter = naturalChokePoint.getCenter().toPosition();
+        Position naturalCenter = naturalBase.getCenter();
+
+        for (ChokePoint choke : primaryOutsideArea.getChokePoints()) {
+            if (choke == naturalChokePoint) {
+                continue;
+            }
+
+            Position candidateChokeCenter = choke.getCenter().toPosition();
+            int distToPrimary = candidateChokeCenter.getApproxDistance(primaryChokeCenter);
+            int distToNatural = candidateChokeCenter.getApproxDistance(naturalCenter);
+
+
+            if (distToPrimary > 320) {
+                continue;
+            }
+
+            if (distToNatural > 550) {
+                continue;
+            }
+
+            secondaryNaturalChokePoint = choke;
+            return;
+        }
     }
 
     private void setStartingBaseMinOnlys() {
