@@ -2155,6 +2155,10 @@ public class BuildTiles {
     }
 
     private void mineralExclusionZone(Base base) {
+        if (base.getMinerals().isEmpty()) {
+            return;
+        }
+
         TilePosition lowestXTile = null;
         TilePosition highestXTile = null;
         TilePosition lowestYTile = null;
