@@ -39,16 +39,15 @@ public class OneFacFE extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 38, PlannedItemType.BUILDING, 2, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Vulture, 30, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 24, PlannedItemType.ADDON, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 40, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 39, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 44, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 48, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 48, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 50, PlannedItemType.BUILDING, 3));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 51, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 51, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 58, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 56, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 56, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 56, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1, 3));
-
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, 70, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 4));
 
         return buildOrder;

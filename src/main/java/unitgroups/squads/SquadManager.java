@@ -137,7 +137,7 @@ public class SquadManager {
         }
 
         if (new Time(game.getFrameCount()).greaterThan(new Time(9,30))
-                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 4
+                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 6
                 && squads.stream().filter(s -> s.isRunbySquad()).count() == 0
                 && enemyInformation.getEnemyUnits().stream().filter(eu -> eu.getEnemyType().isResourceDepot()).count() >= 2
                 && !runbySquadActive) {

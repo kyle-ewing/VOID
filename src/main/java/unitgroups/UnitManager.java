@@ -210,10 +210,6 @@ public class UnitManager {
                     }
 
                 }
-
-                if (combatUnit.getUnitType() == UnitType.Terran_Vulture) {
-                    ((Vulture) combatUnit).setLobotomyOverride(false);
-                }
             }
 
             if ((scouting.isCompletedScout() || scouting.attemptsMaxed()) 
@@ -1301,7 +1297,7 @@ public class UnitManager {
         }
 
         if (building.getUnitType() == UnitType.Terran_Barracks) {
-            if (!enemyWithinRangeOfWall(building, 224)
+            if (!enemyWithinRangeOfWall(building, 256)
                     && gameState.getProductionQueue().stream().noneMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
                 Position hoverPos = new Position(
                         wallTile.getX() * 32 + building.getUnitType().tileWidth() * 16,
@@ -1316,7 +1312,7 @@ public class UnitManager {
             return true;
         }
 
-        if (enemyWithinRangeOfWall(building, 64)) {
+        if (enemyWithinRangeOfWall(building, 256)) {
             return true;
         }
         if (friendlyPassingThroughWall(building, 64)) {
