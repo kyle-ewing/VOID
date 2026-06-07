@@ -76,6 +76,7 @@ public class MapInfo {
     private HashMap<Base, Integer> livePatchCounts = new HashMap<>();
     private HashMap<Base, List<MineralPatch>> basePatches = new HashMap<>();
     private HashMap<Base, Base> startingBaseMinOnlys = new HashMap<>();
+    private HashMap<Base, ChokePoint> startingBaseMainChokes = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
@@ -848,6 +849,8 @@ public class MapInfo {
             return null;
         }
 
+        startingBaseMainChokes.put(sb, sbMainChoke);
+
         Area firstArea = sbMainChoke.getAreas().getFirst();
         Area secondArea = sbMainChoke.getAreas().getSecond();
 
@@ -1544,6 +1547,10 @@ public class MapInfo {
 
     public void setEnemyMain(Base enemyMain) {
         this.enemyMain = enemyMain;
+    }
+
+    public ChokePoint getStartingBaseMainChoke(Base base) {
+        return startingBaseMainChokes.get(base);
     }
 
     public HashMap<Base, HashSet<TilePosition>> getBaseTilesAllBases() {

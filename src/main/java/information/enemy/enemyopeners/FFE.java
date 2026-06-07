@@ -7,6 +7,7 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwem.Base;
+import bwem.ChokePoint;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
@@ -40,10 +41,15 @@ public class FFE extends EnemyStrategy{
                         continue;
                     }
 
-                    HashSet<TilePosition> baseTiles = mapInfo.getBaseTilesAllBases().get(startingBase);                            
-                    if (baseTiles != null && baseTiles.contains(enemyUnit.getEnemyPosition().toTilePosition())) {                
+                    HashSet<TilePosition> baseTiles = mapInfo.getBaseTilesAllBases().get(startingBase);
+                    if (baseTiles != null && baseTiles.contains(enemyUnit.getEnemyPosition().toTilePosition())) {
+                        ChokePoint mainChoke = mapInfo.getStartingBaseMainChoke(startingBase);
+                        if (mainChoke != null && enemyUnit.getEnemyPosition().getDistance(mainChoke.getCenter().toPosition()) < 500) {
+                            continue;
+                        }
+
                         return false;
-                    } 
+                    }
                 }
                 return true;
             }
