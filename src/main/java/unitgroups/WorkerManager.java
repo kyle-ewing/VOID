@@ -860,10 +860,6 @@ public class WorkerManager {
                 continue;
             }
 
-            if (unit.getLoadedUnits().isEmpty()) {
-                continue;
-            }
-
             if (mapInfo.hasBunkerInNatural() && mapInfo.getNaturalTiles().contains(unit.getTilePosition())) {
                 bunker = unit;
                 break;
@@ -878,6 +874,14 @@ public class WorkerManager {
         }
 
         if (bunker.getLoadedUnits().isEmpty()) {
+            if (!enemyInRange(400)) {
+                for (Workers worker : repairForce) {
+                    worker.setWorkerStatus(WorkerStatus.IDLE);
+                    worker.setRepairTarget(null);
+                    worker.setPreemptiveRepair(false);
+                }
+                repairForce.clear();
+            }
             return;
         }
 
@@ -1119,6 +1123,10 @@ public class WorkerManager {
                     && gameState.getResourceTracking().getAvailableMinerals() > 300) {
                 return true;
             }
+        }
+
+        if (workers.size() < 60 && gameState.getResourceTracking().getAvailableGas() > 1800) {
+            return true;
         }
 
         return workers.size() <= 10 && gameState.getResourceTracking().getAvailableGas() > 300 && gameState.getResourceTracking().getAvailableMinerals() < 300;
