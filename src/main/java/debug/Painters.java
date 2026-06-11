@@ -128,6 +128,7 @@ public class Painters {
 
         if (config.debugChokes) {
             paintNaturalChoke(gameState.getBaseInfo().getNaturalChoke());
+            paintAllChokes(gameState.getBaseInfo().getChokePoints(), Color.White);
         }
 
         if (config.debugOwnedTiles) {
@@ -136,6 +137,10 @@ public class Painters {
 
         if (config.debugAreaTiles) {
             paintAreaTiles(gameState.getBaseInfo().getAreaTiles());
+        }
+
+        if (config.debugOwnedAreaTiles) {
+            paintOwnedAreaTiles(gameState.getBaseInfo().getBaseTiles(), gameState.getBaseInfo().getAreaTiles());
         }
 
         if (config.debugBaseTiles) {
@@ -651,6 +656,12 @@ public class Painters {
         game.drawCircleMap(chokePoint.getCenter().toPosition(), 40, Color.Yellow);
     }
 
+    private void paintAllChokes(HashSet<ChokePoint> chokePoints, Color color) {
+        for (ChokePoint chokePoint : chokePoints) {
+             game.drawCircleMap(chokePoint.getCenter().toPosition(), 40, color);
+        }
+    }
+
     private void paintBasePosition(HashSet<Base> bases) {
         for (Base base : bases) {
             game.drawTextMap(base.getCenter(), String.valueOf(base.getCenter()));
@@ -690,6 +701,30 @@ public class Painters {
             Color color = colors[colorIndex % colors.length];
             colorIndex++;
             for (TilePosition tile : tiles) {
+                game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
+            }
+        }
+    }
+
+    private void paintOwnedAreaTiles(HashSet<TilePosition> baseTiles, HashMap<Area, HashSet<TilePosition>> areaTiles) {
+        Color[] colors = {
+            Color.Red, Color.Blue, Color.Teal, Color.Purple,
+            Color.Orange, Color.Yellow, Color.Green, Color.Cyan,
+            Color.White, Color.Grey
+        };
+        int colorIndex = 0;
+        for (HashSet<TilePosition> tiles : areaTiles.values()) {
+            HashSet<TilePosition> ownedInArea = new HashSet<>(tiles);
+            ownedInArea.retainAll(baseTiles);
+
+            if (ownedInArea.isEmpty()) {
+                continue;
+            }
+
+            Color color = colors[colorIndex % colors.length];
+            colorIndex++;
+
+            for (TilePosition tile : ownedInArea) {
                 game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
             }
         }

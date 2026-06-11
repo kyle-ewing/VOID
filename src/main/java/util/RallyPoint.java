@@ -5,6 +5,7 @@ import java.util.List;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
+import bwapi.UnitType;
 import bwem.Base;
 import information.GameState;
 import information.MapInfo;
@@ -22,6 +23,7 @@ public class RallyPoint {
     private Base naturalBase;
     private Position mainRallyPoint;
     private Position naturalRallyPoint;
+    private Position lateGameRallyPoint;
 
     public RallyPoint(Game game, PathFinding pathFinding, GameState gameState, MapInfo mapInfo) {
         this.game = game;
@@ -36,7 +38,11 @@ public class RallyPoint {
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
-        if (enemyStrategy == null || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
+        if (gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center) > 2 && lateGameRallyPoint != null) {
+            combatUnit.setRallyPoint(lateGameRallyPoint.toTilePosition());
+            return;
+        }
+        else if (enemyStrategy == null || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
             if (mapInfo.hasBunkerInNatural() || mapInfo.isNaturalOwned()) {
                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             }
@@ -115,6 +121,7 @@ public class RallyPoint {
     private void setInitialRallyPoints() {
         mainRallyPoint = rallyPath(startingBase.getCenter(), mapInfo.getMainChoke().getCenter().toPosition(), 0.72);
         naturalRallyPoint = rallyPath(naturalBase.getCenter(), mapInfo.getNaturalChoke().getCenter().toPosition(), 0.62);
+        lateGameRallyPoint = rallyPath(mapInfo.getOutsideNaturalChoke().getCenter().toPosition(), mapInfo.getNaturalChoke().getCenter().toPosition(), 0.6);
     }
 
     public void onFrame() {

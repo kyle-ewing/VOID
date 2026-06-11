@@ -44,6 +44,7 @@ public class MapInfo {
     private TilePosition naturalBunkerEbayPosition;
     private TilePosition naturalBunkerBarracksPosition;
     private TilePosition naturalBunkerDepotPosition;
+    private ChokePoint outsideNaturalChoke;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
@@ -111,6 +112,7 @@ public class MapInfo {
         setNaturalBase();
         setMainChoke();
         setNaturalChoke();
+        setOutsideNaturalChoke();
         setStartingBaseTiles();
         setNaturalBaseTiles();
         extendNaturalTiles();
@@ -417,6 +419,44 @@ public class MapInfo {
                 if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
                     naturalChokeEdge.add(tile);
                 }
+            }
+        }
+    }
+
+    private void setOutsideNaturalChoke() {
+        if (naturalChokePoint == null || naturalBase == null || naturalBase.getArea() == null) {
+            return;
+        }
+
+        Area outsideNaturalArea;
+        if (naturalChokePoint.getAreas().getFirst() != naturalBase.getArea()) {
+            outsideNaturalArea = naturalChokePoint.getAreas().getFirst();
+        }
+        else {
+            outsideNaturalArea = naturalChokePoint.getAreas().getSecond();
+        }
+
+        if (outsideNaturalArea == null) {
+            return;
+        }
+
+        Position mapCenter = new Position(game.mapWidth() * 16, game.mapHeight() * 16);
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (ChokePoint choke : outsideNaturalArea.getChokePoints()) {
+            if (choke == naturalChokePoint) {
+                continue;
+            }
+
+            if (choke.getAreas().getFirst() == null || choke.getAreas().getSecond() == null) {
+                continue;
+            }
+
+            int distanceToCenter = choke.getCenter().toPosition().getApproxDistance(mapCenter);
+
+            if (distanceToCenter < closestDistance) {
+                closestDistance = distanceToCenter;
+                outsideNaturalChoke = choke;
             }
         }
     }
@@ -1563,6 +1603,14 @@ public class MapInfo {
 
     public HashMap<Base, List<Area>> getBasePathAreas() {
         return basePathAreas;
+    }
+
+    public ChokePoint getOutsideNaturalChoke() {
+        return outsideNaturalChoke;
+    }
+
+    public void setOutsideNaturalChoke(ChokePoint outsideNaturalChoke) {
+        this.outsideNaturalChoke = outsideNaturalChoke;
     }
 
     public void onUnitCreate(Unit unit) {
