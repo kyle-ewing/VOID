@@ -19,6 +19,7 @@ public final class Config {
     public boolean debugGeyserExclusionZone = false;
     public boolean debugCCExclusionZone = false;
     public boolean debugOwnedTiles = false;
+    public boolean debugOwnedAreaTiles = false;
     public boolean debugSiegeDefTiles = false;
 
     // Bases and buildings
@@ -53,6 +54,7 @@ public final class Config {
         this.debugGeyserExclusionZone = getBooleanOrDefault("DEBUG_GEYSER_EXCLUSION_ZONE", this.debugGeyserExclusionZone);
         this.debugCCExclusionZone = getBooleanOrDefault("DEBUG_CC_EXCLUSION_ZONE", this.debugCCExclusionZone);
         this.debugOwnedTiles = getBooleanOrDefault("DEBUG_OWNED_TILES", this.debugOwnedTiles);
+        this.debugOwnedAreaTiles = getBooleanOrDefault("DEBUG_OWNED_AREA_TILES", this.debugOwnedAreaTiles);
         this.debugSiegeDefTiles = getBooleanOrDefault("DEBUG_SIEGEDEF_TILES", this.debugSiegeDefTiles);
 
         // Bases and buildings
@@ -68,12 +70,12 @@ public final class Config {
         this.debugDetailedUnitInfo = getBooleanOrDefault("DEBUG_DETAILED_UNIT_INFO", this.debugDetailedUnitInfo);
 
         // Enemy Units
-         this.debugEnemyUnits = getBooleanOrDefault("DEBUG_ENEMY_UNITS", this.debugEnemyUnits);
+        this.debugEnemyUnits = getBooleanOrDefault("DEBUG_ENEMY_UNITS", this.debugEnemyUnits);
         this.debugEnemyOpener = getBooleanOrDefault("DEBUG_ENEMY_OPENER", this.debugEnemyOpener);
 
         // Production and planning
         this.debugProductionQueue = getBooleanOrDefault("DEBUG_PRODUCTION_QUEUE", this.debugProductionQueue);
-            this.debugProdQueueOutput = getBooleanOrDefault("DEBUG_PROD_QUEUE_OUTPUT", this.debugProdQueueOutput);
+        this.debugProdQueueOutput = getBooleanOrDefault("DEBUG_PROD_QUEUE_OUTPUT", this.debugProdQueueOutput);
     }
 
     private boolean getBooleanOrDefault(String key, boolean defaultValue) {
