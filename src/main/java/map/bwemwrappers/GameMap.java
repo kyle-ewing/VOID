@@ -1,7 +1,10 @@
 package map.bwemwrappers;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import bwapi.Game;
@@ -27,6 +30,8 @@ public class GameMap {
     private HashMap<bwem.Base, Base> basesByBwemBase = new HashMap<>();
     private HashMap<bwem.ChokePoint, ChokePoint> chokesByBwemChoke = new HashMap<>();
     private HashMap<Unit, Neutral> neutralsByUnit = new HashMap<>();
+    private HashMap<bwem.Area, ArrayList<Area>> subAreasByParent = new HashMap<>();
+    private HashMap<Base, Base> naturalsByStartingBase = new HashMap<>();
     private Area[][] areaByTile;
     private boolean[][] walkableByTile;
     private GroundHeight[][] heightByTile;
@@ -53,6 +58,7 @@ public class GameMap {
         setPathsFromMain();
         setNaturalBases();
         markBaseAreas();
+        splitAreas();
     }
 
     private void setGrids() {
@@ -67,7 +73,7 @@ public class GameMap {
                 TilePosition tile = new TilePosition(x, y);
                 walkableByTile[x][y] = bwem.getMap().getTile(tile).isWalkable();
 
-                int height = game.getGroundHeight(tile);
+                int height = game.getGroundHeight(tile) / 2;
                 if (height >= 2) {
                     heightByTile[x][y] = GroundHeight.VERY_HIGH_GROUND;
                 }
@@ -365,6 +371,7 @@ public class GameMap {
 
             if (natural != null) {
                 natural.setNatural(true);
+                naturalsByStartingBase.put(startingLocationBase, natural);
             }
         }
     }
@@ -384,6 +391,412 @@ public class GameMap {
             if (base.isNatural()) {
                 area.setNaturalArea(true);
             }
+        }
+    }
+
+    private void splitAreas() {
+        HashSet<Area> exemptAreas = new HashSet<>();
+
+        for (Area area : areas) {
+            if (area.isStartingArea() || area.isNaturalArea()) {
+                exemptAreas.add(area);
+            }
+        }
+
+        exemptAreas.addAll(minOnlyExemptAreas());
+
+        int nextAreaId = 0;
+        for (Area area : areas) {
+            if (area.getId() > nextAreaId) {
+                nextAreaId = area.getId();
+            }
+        }
+        nextAreaId++;
+
+        for (Area area : new ArrayList<>(areas)) {
+            if (area.getTiles().isEmpty()) {
+                continue;
+            }
+
+            GroundHeight uniformHeight = null;
+            boolean uniform = true;
+
+            for (TilePosition tile : area.getTiles()) {
+                GroundHeight tileHeight = getGroundHeight(tile);
+
+                if (uniformHeight == null) {
+                    uniformHeight = tileHeight;
+                }
+                else if (tileHeight != uniformHeight) {
+                    uniform = false;
+                    break;
+                }
+            }
+
+            if (uniform) {
+                area.setGroundHeight(uniformHeight);
+                continue;
+            }
+
+            if (exemptAreas.contains(area)) {
+                continue;
+            }
+
+            ArrayList<HashSet<TilePosition>> components = new ArrayList<>();
+            ArrayList<GroundHeight> componentHeights = new ArrayList<>();
+            floodFillByHeight(area, components, componentHeights);
+            mergeSmallComponents(components, componentHeights);
+
+            if (components.size() == 1) {
+                area.setGroundHeight(componentHeights.get(0));
+                continue;
+            }
+
+            ArrayList<Area> subAreas = new ArrayList<>();
+            HashMap<TilePosition, Integer> componentByTile = new HashMap<>();
+
+            for (int i = 0; i < components.size(); i++) {
+                Area subArea = new Area(nextAreaId, area.getBwemArea(), componentHeights.get(i), components.get(i));
+                nextAreaId++;
+                subAreas.add(subArea);
+
+                for (TilePosition tile : components.get(i)) {
+                    areaByTile[tile.getX()][tile.getY()] = subArea;
+                    componentByTile.put(tile, i);
+                }
+            }
+
+            areas.remove(area);
+            areas.addAll(subAreas);
+            subAreasByParent.put(area.getBwemArea(), subAreas);
+
+            Area largestSubArea = subAreas.get(0);
+            for (Area subArea : subAreas) {
+                if (subArea.getTiles().size() > largestSubArea.getTiles().size()) {
+                    largestSubArea = subArea;
+                }
+            }
+            areasByBwemArea.put(area.getBwemArea(), largestSubArea);
+
+            createFrontierChokes(components, componentByTile, subAreas);
+        }
+    }
+
+    private HashSet<Area> minOnlyExemptAreas() {
+        HashSet<Area> exempt = new HashSet<>();
+
+        for (Base startingLocationBase : naturalsByStartingBase.keySet()) {
+            Base natural = naturalsByStartingBase.get(startingLocationBase);
+            List<Position> path = pathFinding.findPath(startingLocationBase.getLocation().toPosition(), natural.getLocation().toPosition());
+
+            if (path == null || path.isEmpty()) {
+                continue;
+            }
+
+            ChokePoint mainChoke = null;
+            int minDistance = Integer.MAX_VALUE;
+
+            for (ChokePoint choke : chokes) {
+                for (Position pathPos : path) {
+                    int distance = choke.getCenter().getApproxDistance(pathPos);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        mainChoke = choke;
+                    }
+                }
+            }
+
+            if (mainChoke == null) {
+                continue;
+            }
+
+            Area firstArea = mainChoke.getFirstArea();
+            Area secondArea = mainChoke.getSecondArea();
+
+            if (firstArea == null || secondArea == null) {
+                continue;
+            }
+
+            if (firstArea.getBases().contains(startingLocationBase) || secondArea.getBases().contains(startingLocationBase)) {
+                continue;
+            }
+
+            for (Base areaBase : firstArea.getBases()) {
+                if (areaBase != natural) {
+                    exempt.add(firstArea);
+                }
+            }
+
+            for (Base areaBase : secondArea.getBases()) {
+                if (areaBase != natural) {
+                    exempt.add(secondArea);
+                }
+            }
+        }
+
+        return exempt;
+    }
+
+    private void floodFillByHeight(Area area, ArrayList<HashSet<TilePosition>> components, ArrayList<GroundHeight> componentHeights) {
+        HashSet<TilePosition> remaining = new HashSet<>(area.getTiles());
+        int[][] offsets = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+        while (!remaining.isEmpty()) {
+            TilePosition seed = remaining.iterator().next();
+            GroundHeight seedHeight = getGroundHeight(seed);
+            HashSet<TilePosition> component = new HashSet<>();
+            Deque<TilePosition> queue = new ArrayDeque<>();
+
+            remaining.remove(seed);
+            component.add(seed);
+            queue.add(seed);
+
+            while (!queue.isEmpty()) {
+                TilePosition current = queue.poll();
+
+                for (int[] offset : offsets) {
+                    TilePosition neighborTile = new TilePosition(current.getX() + offset[0], current.getY() + offset[1]);
+
+                    if (!remaining.contains(neighborTile)) {
+                        continue;
+                    }
+
+                    if (getGroundHeight(neighborTile) != seedHeight) {
+                        continue;
+                    }
+
+                    remaining.remove(neighborTile);
+                    component.add(neighborTile);
+                    queue.add(neighborTile);
+                }
+            }
+
+            components.add(component);
+            componentHeights.add(seedHeight);
+        }
+    }
+
+    private void mergeSmallComponents(ArrayList<HashSet<TilePosition>> components, ArrayList<GroundHeight> componentHeights) {
+        boolean merged = true;
+
+        while (merged && components.size() > 1) {
+            merged = false;
+
+            for (int i = 0; i < components.size(); i++) {
+                if (components.get(i).size() >= 20) {
+                    continue;
+                }
+
+                int largestNeighbor = -1;
+                int largestNeighborSize = -1;
+
+                for (int j = 0; j < components.size(); j++) {
+                    if (j == i) {
+                        continue;
+                    }
+
+                    if (!componentsAdjacent(components.get(i), components.get(j))) {
+                        continue;
+                    }
+
+                    if (components.get(j).size() > largestNeighborSize) {
+                        largestNeighborSize = components.get(j).size();
+                        largestNeighbor = j;
+                    }
+                }
+
+                if (largestNeighbor < 0) {
+                    continue;
+                }
+
+                components.get(largestNeighbor).addAll(components.get(i));
+                components.remove(i);
+                componentHeights.remove(i);
+                merged = true;
+                break;
+            }
+        }
+    }
+
+    private boolean componentsAdjacent(HashSet<TilePosition> first, HashSet<TilePosition> second) {
+        HashSet<TilePosition> smaller;
+        HashSet<TilePosition> larger;
+
+        if (first.size() <= second.size()) {
+            smaller = first;
+            larger = second;
+        }
+        else {
+            smaller = second;
+            larger = first;
+        }
+
+        int[][] offsets = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+        for (TilePosition tile : smaller) {
+            for (int[] offset : offsets) {
+                if (larger.contains(new TilePosition(tile.getX() + offset[0], tile.getY() + offset[1]))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void createFrontierChokes(ArrayList<HashSet<TilePosition>> components, HashMap<TilePosition, Integer> componentByTile, ArrayList<Area> subAreas) {
+        HashMap<Integer, ArrayList<int[]>> edgesByPair = new HashMap<>();
+        int[][] forwardOffsets = {{1, 0}, {0, 1}};
+
+        for (TilePosition tile : componentByTile.keySet()) {
+            int tileComponent = componentByTile.get(tile);
+
+            for (int[] offset : forwardOffsets) {
+                TilePosition neighborTile = new TilePosition(tile.getX() + offset[0], tile.getY() + offset[1]);
+                Integer neighborComponent = componentByTile.get(neighborTile);
+
+                if (neighborComponent == null || neighborComponent == tileComponent) {
+                    continue;
+                }
+
+                int first = Math.min(tileComponent, neighborComponent);
+                int second = Math.max(tileComponent, neighborComponent);
+                int pairKey = first * components.size() + second;
+
+                edgesByPair.computeIfAbsent(pairKey, k -> new ArrayList<>()).add(new int[]{tile.getX(), tile.getY(), neighborTile.getX(), neighborTile.getY()});
+            }
+        }
+
+        for (Integer pairKey : edgesByPair.keySet()) {
+            int firstComponent = pairKey / components.size();
+            int secondComponent = pairKey % components.size();
+            ArrayList<int[]> edges = edgesByPair.get(pairKey);
+            boolean[] assigned = new boolean[edges.size()];
+
+            for (int i = 0; i < edges.size(); i++) {
+                if (assigned[i]) {
+                    continue;
+                }
+
+                ArrayList<int[]> segment = new ArrayList<>();
+                Deque<Integer> queue = new ArrayDeque<>();
+                assigned[i] = true;
+                queue.add(i);
+
+                while (!queue.isEmpty()) {
+                    int current = queue.poll();
+                    segment.add(edges.get(current));
+
+                    for (int j = 0; j < edges.size(); j++) {
+                        if (assigned[j]) {
+                            continue;
+                        }
+
+                        if (edgesTouch(edges.get(current), edges.get(j))) {
+                            assigned[j] = true;
+                            queue.add(j);
+                        }
+                    }
+                }
+
+                buildChokeFromSegment(segment, subAreas.get(firstComponent), subAreas.get(secondComponent));
+            }
+        }
+    }
+
+    private boolean edgesTouch(int[] firstEdge, int[] secondEdge) {
+        int[][] firstTiles = {{firstEdge[0], firstEdge[1]}, {firstEdge[2], firstEdge[3]}};
+        int[][] secondTiles = {{secondEdge[0], secondEdge[1]}, {secondEdge[2], secondEdge[3]}};
+
+        for (int[] firstTile : firstTiles) {
+            for (int[] secondTile : secondTiles) {
+                if (Math.abs(firstTile[0] - secondTile[0]) <= 1 && Math.abs(firstTile[1] - secondTile[1]) <= 1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void buildChokeFromSegment(ArrayList<int[]> segment, Area firstArea, Area secondArea) {
+        ArrayList<WalkPosition> geometry = new ArrayList<>();
+
+        for (int[] edge : segment) {
+            boolean horizontalAdjacency = edge[2] - edge[0] == 1;
+
+            for (int i = 0; i < 4; i++) {
+                if (horizontalAdjacency) {
+                    geometry.add(new WalkPosition(edge[2] * 4, edge[1] * 4 + i));
+                }
+                else {
+                    geometry.add(new WalkPosition(edge[0] * 4 + i, edge[3] * 4));
+                }
+            }
+        }
+
+        if (geometry.isEmpty()) {
+            return;
+        }
+
+        WalkPosition firstExtreme = geometry.get(0);
+        WalkPosition secondExtreme = geometry.get(0);
+        int longestSpan = -1;
+
+        for (WalkPosition first : geometry) {
+            for (WalkPosition second : geometry) {
+                int span = first.toPosition().getApproxDistance(second.toPosition());
+
+                if (span > longestSpan) {
+                    longestSpan = span;
+                    firstExtreme = first;
+                    secondExtreme = second;
+                }
+            }
+        }
+
+        Position bestEnd1 = marchToUnwalkable(firstExtreme, secondExtreme);
+        Position bestEnd2 = marchToUnwalkable(secondExtreme, firstExtreme);
+        int bestWidth = (int) bestEnd1.getDistance(bestEnd2);
+
+        Position midpoint = new Position((bestEnd1.getX() + bestEnd2.getX()) / 2, (bestEnd1.getY() + bestEnd2.getY()) / 2);
+        WalkPosition centerWalk = geometry.get(0);
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (WalkPosition boundaryWalk : geometry) {
+            int distance = boundaryWalk.toPosition().getApproxDistance(midpoint);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                centerWalk = boundaryWalk;
+            }
+        }
+
+        Position center = centerWalk.toPosition();
+
+        for (ChokePoint existing : chokes) {
+            if (existing.getBwemChoke() == null) {
+                continue;
+            }
+
+            for (WalkPosition boundaryWalk : geometry) {
+                if (existing.getCenter().getApproxDistance(boundaryWalk.toPosition()) < 64) {
+                    return;
+                }
+            }
+        }
+
+        ChokePoint choke = new ChokePoint(center, firstArea, secondArea, geometry, bestEnd1, bestEnd2, bestWidth);
+        chokes.add(choke);
+        firstArea.getChokes().add(choke);
+        secondArea.getChokes().add(choke);
+
+        if (!firstArea.getNeighbors().contains(secondArea)) {
+            firstArea.getNeighbors().add(secondArea);
+        }
+        if (!secondArea.getNeighbors().contains(firstArea)) {
+            secondArea.getNeighbors().add(firstArea);
         }
     }
 

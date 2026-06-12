@@ -29,6 +29,20 @@ public class ChokePoint {
         pseudo = bwemChoke.isPseudo();
     }
 
+    public ChokePoint(Position center, Area firstArea, Area secondArea, List<WalkPosition> geometry, Position end1, Position end2, int width) {
+        this.center = center;
+        this.firstArea = firstArea;
+        this.secondArea = secondArea;
+        this.geometry = geometry;
+        this.end1 = end1;
+        this.end2 = end2;
+        this.width = width;
+        blocked = false;
+        pseudo = false;
+        synthetic = true;
+        heightTransition = true;
+    }
+
     public Area getOtherArea(Area area) {
         if (area == firstArea) {
             return secondArea;
