@@ -24,12 +24,14 @@ import information.neutral.MineralPatch;
 import macro.buildorders.BuildOrderName;
 import map.AllBasePaths;
 import map.PathFinding;
+import map.bwemwrappers.GameMap;
 
 public class MapInfo {
     private static final int FLYER_BASE_TILE_BUFFER = 2;
 
     private BWEM bwem;
     private Game game;
+    private GameMap gameMap;
     private PathFinding pathFinding;
     private AllBasePaths allBasePaths;
     private Base startingBase;
@@ -81,13 +83,18 @@ public class MapInfo {
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
-    public MapInfo(BWEM bwem, Game game) {
+    public MapInfo(BWEM bwem, Game game, GameMap gameMap) {
         this.bwem = bwem;
         this.game = game;
+        this.gameMap = gameMap;
 
         pathFinding = new PathFinding(bwem, game);
 
         init();
+    }
+
+    public GameMap getGameMap() {
+        return gameMap;
     }
 
     public void init() {

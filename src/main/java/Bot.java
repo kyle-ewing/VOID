@@ -1,18 +1,25 @@
-import debug.Painters;
-import information.MapInfo;
-import information.GameState;
-import information.enemy.EnemyInformation;
-import information.Scouting;
-import macro.ProductionManager;
-import unitgroups.WorkerManager;
-import bwapi.*;
+import bwapi.BWClient;
+import bwapi.DefaultBWListener;
+import bwapi.Game;
+import bwapi.Player;
+import bwapi.Unit;
+import bwapi.UnitType;
 import bwem.BWEM;
+import debug.Painters;
+import information.GameState;
+import information.MapInfo;
+import information.Scouting;
+import information.enemy.EnemyInformation;
+import macro.ProductionManager;
+import map.bwemwrappers.GameMap;
 import unitgroups.UnitManager;
+import unitgroups.WorkerManager;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
     private Game game;
     private BWEM bwem;
+    private GameMap gameMap;
     private Player player;
     private GameState gameState;
     private MapInfo mapInfo;
@@ -33,7 +40,8 @@ public class Bot extends DefaultBWListener {
         bwem = new BWEM(game);
         bwem.initialize();
 
-        mapInfo = new MapInfo(bwem, game);
+        gameMap = new GameMap(bwem, game);
+        mapInfo = new MapInfo(bwem, game, gameMap);
         gameState = new GameState(game, bwem, mapInfo);
         enemyInformation = new EnemyInformation(mapInfo, game, gameState);
         workerManager = new WorkerManager(mapInfo, player, game, gameState, enemyInformation);
@@ -94,6 +102,7 @@ public class Bot extends DefaultBWListener {
 
         if (unit.getType() == UnitType.Terran_Command_Center || unit.getType().isMineralField()) {
             mapInfo.onUnitDestroy(unit);
+            gameMap.onUnitDestroyed(unit);
         }
 
         scouting.onEnemyDestroy(unit);
