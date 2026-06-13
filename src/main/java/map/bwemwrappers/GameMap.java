@@ -61,6 +61,10 @@ public class GameMap {
         markBaseAreas();
         splitAreas();
         cutSnakingAreas();
+        rehomeChokes();
+        rebuildAreaWiring();
+        rehomeBasesAndResources();
+        validateGraph();
     }
 
     private void setGrids() {
@@ -441,6 +445,7 @@ public class GameMap {
             }
 
             if (exemptAreas.contains(area)) {
+                area.setGroundHeight(dominantHeight(area));
                 continue;
             }
 
@@ -480,6 +485,36 @@ public class GameMap {
 
             createFrontierChokes(subAreas);
         }
+    }
+
+    private GroundHeight dominantHeight(Area area) {
+        int lowCount = 0;
+        int highCount = 0;
+        int veryHighCount = 0;
+
+        for (TilePosition tile : area.getTiles()) {
+            GroundHeight tileHeight = getGroundHeight(tile);
+
+            if (tileHeight == GroundHeight.LOW_GROUND) {
+                lowCount++;
+            }
+            else if (tileHeight == GroundHeight.HIGH_GROUND) {
+                highCount++;
+            }
+            else {
+                veryHighCount++;
+            }
+        }
+
+        if (lowCount >= highCount && lowCount >= veryHighCount) {
+            return GroundHeight.LOW_GROUND;
+        }
+
+        if (highCount >= veryHighCount) {
+            return GroundHeight.HIGH_GROUND;
+        }
+
+        return GroundHeight.VERY_HIGH_GROUND;
     }
 
     private HashSet<Area> minOnlyExemptAreas() {
@@ -1091,6 +1126,333 @@ public class GameMap {
         return true;
     }
 
+    private void rehomeChokes() {
+        for (ChokePoint choke : chokes) {
+            bwem.ChokePoint bwemChoke = choke.getBwemChoke();
+
+            if (bwemChoke == null) {
+                continue;
+            }
+
+            bwem.Area bwemFirst = bwemChoke.getAreas().getFirst();
+            bwem.Area bwemSecond = bwemChoke.getAreas().getSecond();
+
+            if (bwemFirst != null) {
+                choke.setFirstArea(resolveChokeSide(bwemChoke, bwemFirst));
+            }
+            if (bwemSecond != null) {
+                choke.setSecondArea(resolveChokeSide(bwemChoke, bwemSecond));
+            }
+
+            Area firstArea = choke.getFirstArea();
+            Area secondArea = choke.getSecondArea();
+
+            if (firstArea == null || secondArea == null) {
+                continue;
+            }
+
+            if (firstArea.getGroundHeight() != null && secondArea.getGroundHeight() != null) {
+                choke.setHeightTransition(firstArea.getGroundHeight() != secondArea.getGroundHeight());
+            }
+        }
+    }
+
+    private Area resolveChokeSide(bwem.ChokePoint bwemChoke, bwem.Area bwemSide) {
+        TilePosition sideTile = bwemChoke.getNodePositionInArea(Node.MIDDLE, bwemSide).toTilePosition();
+        Area resolved = getArea(sideTile);
+
+        if (resolved != null) {
+            return resolved;
+        }
+
+        return getNearestArea(sideTile);
+    }
+
+    private void rebuildAreaWiring() {
+        for (Area area : areas) {
+            area.getChokes().clear();
+            area.getNeighbors().clear();
+        }
+
+        for (ChokePoint choke : chokes) {
+            Area firstArea = choke.getFirstArea();
+            Area secondArea = choke.getSecondArea();
+
+            if (firstArea == null || secondArea == null || firstArea == secondArea) {
+                continue;
+            }
+
+            firstArea.getChokes().add(choke);
+            secondArea.getChokes().add(choke);
+
+            if (!firstArea.getNeighbors().contains(secondArea)) {
+                firstArea.getNeighbors().add(secondArea);
+            }
+            if (!secondArea.getNeighbors().contains(firstArea)) {
+                secondArea.getNeighbors().add(firstArea);
+            }
+        }
+    }
+
+    private void rehomeBasesAndResources() {
+        for (Area area : areas) {
+            area.getBases().clear();
+            area.getMinerals().clear();
+            area.getGeysers().clear();
+        }
+
+        for (Base base : bases) {
+            Area area = getArea(base.getLocation());
+
+            if (area == null) {
+                area = getNearestArea(base.getLocation());
+            }
+
+            base.setArea(area);
+
+            if (area == null) {
+                continue;
+            }
+
+            area.getBases().add(base);
+
+            if (base.isStartingLocation()) {
+                area.setStartingArea(true);
+            }
+            if (base.isNatural()) {
+                area.setNaturalArea(true);
+            }
+        }
+
+        for (Mineral mineral : minerals) {
+            Area area = getArea(mineral.getTopLeft());
+
+            if (area == null) {
+                continue;
+            }
+
+            area.getMinerals().add(mineral);
+        }
+
+        for (Geyser geyser : geysers) {
+            Area area = getArea(geyser.getTopLeft());
+
+            if (area == null && geyser.getBase() != null) {
+                area = geyser.getBase().getArea();
+            }
+
+            if (area == null) {
+                continue;
+            }
+
+            area.getGeysers().add(geyser);
+        }
+    }
+
+    private void validateGraph() {
+        int tilesWithoutArea = 0;
+        int mapWidth = game.mapWidth();
+        int mapHeight = game.mapHeight();
+
+        for (int x = 0; x < mapWidth; x++) {
+            for (int y = 0; y < mapHeight; y++) {
+                if (walkableByTile[x][y] && areaByTile[x][y] == null) {
+                    tilesWithoutArea++;
+                }
+            }
+        }
+
+        HashSet<Area> liveAreas = new HashSet<>(areas);
+        int chokesWithDeadAreas = 0;
+
+        for (ChokePoint choke : chokes) {
+            if (choke.getFirstArea() == null || choke.getSecondArea() == null) {
+                chokesWithDeadAreas++;
+                continue;
+            }
+
+            if (!liveAreas.contains(choke.getFirstArea()) || !liveAreas.contains(choke.getSecondArea())) {
+                chokesWithDeadAreas++;
+            }
+        }
+
+        HashMap<Area, Integer> componentIds = new HashMap<>();
+        int componentId = 0;
+
+        for (Area area : areas) {
+            if (componentIds.containsKey(area)) {
+                continue;
+            }
+
+            Deque<Area> queue = new ArrayDeque<>();
+            componentIds.put(area, componentId);
+            queue.add(area);
+
+            while (!queue.isEmpty()) {
+                Area current = queue.poll();
+
+                for (ChokePoint choke : current.getChokes()) {
+                    if (choke.isBlocked()) {
+                        continue;
+                    }
+
+                    Area neighbor = choke.getOtherArea(current);
+
+                    if (neighbor == null || componentIds.containsKey(neighbor)) {
+                        continue;
+                    }
+
+                    componentIds.put(neighbor, componentId);
+                    queue.add(neighbor);
+                }
+            }
+
+            componentId++;
+        }
+
+        int accessibilityMismatches = 0;
+
+        for (Area first : areas) {
+            for (Area second : areas) {
+                if (first == second || first.isSynthetic() || second.isSynthetic()) {
+                    continue;
+                }
+
+                boolean bwemAccessible = first.getBwemArea().isAccessibleFrom(second.getBwemArea());
+                boolean wrapperAccessible = componentIds.get(first).equals(componentIds.get(second));
+
+                if (bwemAccessible != wrapperAccessible) {
+                    accessibilityMismatches++;
+                }
+            }
+        }
+
+        if (tilesWithoutArea > 0) {
+            System.out.println("GameMap: " + tilesWithoutArea + " walkable tiles without an area");
+        }
+        if (chokesWithDeadAreas > 0) {
+            System.out.println("GameMap: " + chokesWithDeadAreas + " chokes referencing dead or missing areas");
+        }
+        if (accessibilityMismatches > 0) {
+            System.out.println("GameMap: " + accessibilityMismatches + " area pairs disagree with BWEM accessibility");
+        }
+    }
+
+    public List<Area> areaPath(Area from, Area to) {
+        if (from == null || to == null) {
+            return null;
+        }
+
+        if (from == to) {
+            ArrayList<Area> single = new ArrayList<>();
+            single.add(from);
+            return single;
+        }
+
+        HashMap<Area, Area> parents = new HashMap<>();
+        HashSet<Area> visited = new HashSet<>();
+        Deque<Area> queue = new ArrayDeque<>();
+
+        visited.add(from);
+        queue.add(from);
+
+        while (!queue.isEmpty()) {
+            Area current = queue.poll();
+
+            if (current == to) {
+                break;
+            }
+
+            for (ChokePoint choke : current.getChokes()) {
+                if (choke.isBlocked()) {
+                    continue;
+                }
+
+                Area neighbor = choke.getOtherArea(current);
+
+                if (neighbor == null || visited.contains(neighbor)) {
+                    continue;
+                }
+
+                visited.add(neighbor);
+                parents.put(neighbor, current);
+                queue.add(neighbor);
+            }
+        }
+
+        if (!visited.contains(to)) {
+            return null;
+        }
+
+        ArrayList<Area> reversed = new ArrayList<>();
+        Area step = to;
+
+        while (step != null) {
+            reversed.add(step);
+            step = parents.get(step);
+        }
+
+        ArrayList<Area> path = new ArrayList<>();
+        for (int i = reversed.size() - 1; i >= 0; i--) {
+            path.add(reversed.get(i));
+        }
+
+        return path;
+    }
+
+    public List<ChokePoint> chokePath(Area from, Area to) {
+        List<Area> path = areaPath(from, to);
+
+        if (path == null) {
+            return null;
+        }
+
+        ArrayList<ChokePoint> chokeList = new ArrayList<>();
+
+        if (path.size() < 2) {
+            return chokeList;
+        }
+
+        Position previousPoint = from.getTop();
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            Area current = path.get(i);
+            Area next = path.get(i + 1);
+
+            ChokePoint best = null;
+            int bestDistance = Integer.MAX_VALUE;
+
+            for (ChokePoint choke : current.getChokes()) {
+                if (choke.isBlocked()) {
+                    continue;
+                }
+
+                if (choke.getOtherArea(current) != next) {
+                    continue;
+                }
+
+                int distance = 0;
+                if (previousPoint != null) {
+                    distance = choke.getCenter().getApproxDistance(previousPoint);
+                }
+
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = choke;
+                }
+            }
+
+            if (best == null) {
+                return null;
+            }
+
+            chokeList.add(best);
+            previousPoint = best.getCenter();
+        }
+
+        return chokeList;
+    }
+
     public void onUnitDestroyed(Unit unit) {
         if (!unit.getType().isMineralField()) {
             return;
@@ -1120,13 +1482,31 @@ public class GameMap {
     }
 
     public Area getNearestArea(TilePosition tile) {
-        bwem.Area bwemArea = bwem.getMap().getNearestArea(tile);
+        Area direct = getArea(tile);
 
-        if (bwemArea == null) {
-            return null;
+        if (direct != null) {
+            return direct;
         }
 
-        return areasByBwemArea.get(bwemArea);
+        int maxRadius = Math.max(game.mapWidth(), game.mapHeight());
+
+        for (int radius = 1; radius < maxRadius; radius++) {
+            for (int offsetX = -radius; offsetX <= radius; offsetX++) {
+                for (int offsetY = -radius; offsetY <= radius; offsetY++) {
+                    if (Math.abs(offsetX) != radius && Math.abs(offsetY) != radius) {
+                        continue;
+                    }
+
+                    Area candidate = getArea(new TilePosition(tile.getX() + offsetX, tile.getY() + offsetY));
+
+                    if (candidate != null) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public boolean isWalkable(TilePosition tile) {

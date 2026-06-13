@@ -156,9 +156,16 @@ public class Painters {
             paintTileZone(gameState.getBaseInfo().getOutsideNaturalSiegeTiles(), Color.Orange);
         }
 
+        //Synthetic areas/chokes only
         if (config.debugGameMap) {
             paintGameMapAreas();
             paintGameMapChokes();
+        }
+
+        //All areas/chokes with bwem wrapper
+        if (config.debugGameMapFull) {
+            paintAllGameMapAreas();
+            paintAllGameMapChokes();
         }
 
         if (config.debugCCExclusionZone) {
@@ -765,6 +772,34 @@ public class Painters {
                 continue;
             }
 
+            game.drawLineMap(choke.getEnd1(), choke.getEnd2(), Color.Cyan);
+            game.drawCircleMap(choke.getCenter(), 6, Color.Cyan, true);
+            game.drawTextMap(choke.getCenter(), "Width: " + choke.getWidth());
+        }
+    }
+
+    private void paintAllGameMapAreas() {
+        Color[] colors = {
+            Color.Red, Color.Blue, Color.Teal, Color.Purple,
+            Color.Orange, Color.Yellow, Color.Green, Color.Cyan,
+            Color.White, Color.Grey
+        };
+        int colorIndex = 0;
+
+        for (map.bwemwrappers.Area area : gameState.getBaseInfo().getGameMap().getAreas()) {
+            Color color = colors[colorIndex % colors.length];
+            colorIndex++;
+
+            for (TilePosition tile : area.getTiles()) {
+                game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
+            }
+
+            game.drawTextMap(area.getTop(), "Area " + area.getId() + " " + area.getGroundHeight());
+        }
+    }
+
+    private void paintAllGameMapChokes() {
+        for (map.bwemwrappers.ChokePoint choke : gameState.getBaseInfo().getGameMap().getChokes()) {
             game.drawLineMap(choke.getEnd1(), choke.getEnd2(), Color.Cyan);
             game.drawCircleMap(choke.getCenter(), 6, Color.Cyan, true);
             game.drawTextMap(choke.getCenter(), "Width: " + choke.getWidth());

@@ -22,6 +22,7 @@ public final class Config {
     public boolean debugOwnedAreaTiles = false;
     public boolean debugSiegeDefTiles = false;
     public boolean debugGameMap = false;
+    public boolean debugGameMapFull = false;
 
     // Bases and buildings
     public boolean debugBuildTiles = true;
@@ -58,6 +59,7 @@ public final class Config {
         this.debugOwnedAreaTiles = getBooleanOrDefault("DEBUG_OWNED_AREA_TILES", this.debugOwnedAreaTiles);
         this.debugSiegeDefTiles = getBooleanOrDefault("DEBUG_SIEGEDEF_TILES", this.debugSiegeDefTiles);
         this.debugGameMap = getBooleanOrDefault("DEBUG_GAME_MAP", this.debugGameMap);
+        this.debugGameMapFull = getBooleanOrDefault("DEBUG_GAME_MAP_FULL", this.debugGameMapFull);
 
         // Bases and buildings
         this.debugBases = getBooleanOrDefault("DEBUG_BASES", this.debugBases);
