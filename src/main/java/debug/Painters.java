@@ -736,21 +736,20 @@ public class Painters {
     }
 
     private void paintGameMapAreas() {
+        Color[] colors = {
+            Color.Red, Color.Blue, Color.Teal, Color.Purple,
+            Color.Orange, Color.Yellow, Color.Green, Color.Cyan,
+            Color.White, Color.Grey
+        };
+        int colorIndex = 0;
+
         for (map.bwemwrappers.Area area : gameState.getBaseInfo().getGameMap().getAreas()) {
             if (!area.isSynthetic()) {
                 continue;
             }
 
-            Color color;
-            if (area.getGroundHeight() == map.bwemwrappers.GroundHeight.LOW_GROUND) {
-                color = Color.Green;
-            }
-            else if (area.getGroundHeight() == map.bwemwrappers.GroundHeight.HIGH_GROUND) {
-                color = Color.Orange;
-            }
-            else {
-                color = Color.Red;
-            }
+            Color color = colors[colorIndex % colors.length];
+            colorIndex++;
 
             for (TilePosition tile : area.getTiles()) {
                 game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);

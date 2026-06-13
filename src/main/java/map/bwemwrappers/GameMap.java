@@ -36,6 +36,7 @@ public class GameMap {
     private boolean[][] walkableByTile;
     private GroundHeight[][] heightByTile;
     private Base startingBase;
+    private int nextSyntheticAreaId;
 
     public GameMap(BWEM bwem, Game game) {
         this.bwem = bwem;
@@ -59,6 +60,7 @@ public class GameMap {
         setNaturalBases();
         markBaseAreas();
         splitAreas();
+        cutSnakingAreas();
     }
 
     private void setGrids() {
@@ -405,13 +407,13 @@ public class GameMap {
 
         exemptAreas.addAll(minOnlyExemptAreas());
 
-        int nextAreaId = 0;
+        nextSyntheticAreaId = 0;
         for (Area area : areas) {
-            if (area.getId() > nextAreaId) {
-                nextAreaId = area.getId();
+            if (area.getId() > nextSyntheticAreaId) {
+                nextSyntheticAreaId = area.getId();
             }
         }
-        nextAreaId++;
+        nextSyntheticAreaId++;
 
         for (Area area : new ArrayList<>(areas)) {
             if (area.getTiles().isEmpty()) {
@@ -453,16 +455,14 @@ public class GameMap {
             }
 
             ArrayList<Area> subAreas = new ArrayList<>();
-            HashMap<TilePosition, Integer> componentByTile = new HashMap<>();
 
             for (int i = 0; i < components.size(); i++) {
-                Area subArea = new Area(nextAreaId, area.getBwemArea(), componentHeights.get(i), components.get(i));
-                nextAreaId++;
+                Area subArea = new Area(nextSyntheticAreaId, area.getBwemArea(), componentHeights.get(i), components.get(i));
+                nextSyntheticAreaId++;
                 subAreas.add(subArea);
 
                 for (TilePosition tile : components.get(i)) {
                     areaByTile[tile.getX()][tile.getY()] = subArea;
-                    componentByTile.put(tile, i);
                 }
             }
 
@@ -478,7 +478,7 @@ public class GameMap {
             }
             areasByBwemArea.put(area.getBwemArea(), largestSubArea);
 
-            createFrontierChokes(components, componentByTile, subAreas);
+            createFrontierChokes(subAreas);
         }
     }
 
@@ -584,7 +584,7 @@ public class GameMap {
             merged = false;
 
             for (int i = 0; i < components.size(); i++) {
-                if (components.get(i).size() >= 20) {
+                if (components.get(i).size() >= 70) {
                     continue;
                 }
 
@@ -645,32 +645,60 @@ public class GameMap {
         return false;
     }
 
-    private void createFrontierChokes(ArrayList<HashSet<TilePosition>> components, HashMap<TilePosition, Integer> componentByTile, ArrayList<Area> subAreas) {
-        HashMap<Integer, ArrayList<int[]>> edgesByPair = new HashMap<>();
-        int[][] forwardOffsets = {{1, 0}, {0, 1}};
+    private void createFrontierChokes(ArrayList<Area> targetAreas) {
+        HashSet<Area> targetSet = new HashSet<>(targetAreas);
+        HashMap<Long, ArrayList<int[]>> edgesByPair = new HashMap<>();
+        HashMap<Long, Area[]> areasByPair = new HashMap<>();
+        int[][] offsets = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 
-        for (TilePosition tile : componentByTile.keySet()) {
-            int tileComponent = componentByTile.get(tile);
+        for (Area target : targetAreas) {
+            for (TilePosition tile : target.getTiles()) {
+                for (int[] offset : offsets) {
+                    TilePosition neighborTile = new TilePosition(tile.getX() + offset[0], tile.getY() + offset[1]);
+                    Area neighbor = getArea(neighborTile);
 
-            for (int[] offset : forwardOffsets) {
-                TilePosition neighborTile = new TilePosition(tile.getX() + offset[0], tile.getY() + offset[1]);
-                Integer neighborComponent = componentByTile.get(neighborTile);
+                    if (neighbor == null || neighbor == target) {
+                        continue;
+                    }
 
-                if (neighborComponent == null || neighborComponent == tileComponent) {
-                    continue;
+                    if (neighbor.getBwemArea() != target.getBwemArea()) {
+                        continue;
+                    }
+
+                    boolean forward = offset[0] > 0 || offset[1] > 0;
+
+                    if (!forward && targetSet.contains(neighbor)) {
+                        continue;
+                    }
+
+                    int[] edge;
+                    if (forward) {
+                        edge = new int[]{tile.getX(), tile.getY(), neighborTile.getX(), neighborTile.getY()};
+                    }
+                    else {
+                        edge = new int[]{neighborTile.getX(), neighborTile.getY(), tile.getX(), tile.getY()};
+                    }
+
+                    Area lowArea;
+                    Area highArea;
+                    if (target.getId() < neighbor.getId()) {
+                        lowArea = target;
+                        highArea = neighbor;
+                    }
+                    else {
+                        lowArea = neighbor;
+                        highArea = target;
+                    }
+
+                    long pairKey = ((long) lowArea.getId() << 32) | highArea.getId();
+                    edgesByPair.computeIfAbsent(pairKey, k -> new ArrayList<>()).add(edge);
+                    areasByPair.put(pairKey, new Area[]{lowArea, highArea});
                 }
-
-                int first = Math.min(tileComponent, neighborComponent);
-                int second = Math.max(tileComponent, neighborComponent);
-                int pairKey = first * components.size() + second;
-
-                edgesByPair.computeIfAbsent(pairKey, k -> new ArrayList<>()).add(new int[]{tile.getX(), tile.getY(), neighborTile.getX(), neighborTile.getY()});
             }
         }
 
-        for (Integer pairKey : edgesByPair.keySet()) {
-            int firstComponent = pairKey / components.size();
-            int secondComponent = pairKey % components.size();
+        for (Long pairKey : edgesByPair.keySet()) {
+            Area[] pairAreas = areasByPair.get(pairKey);
             ArrayList<int[]> edges = edgesByPair.get(pairKey);
             boolean[] assigned = new boolean[edges.size()];
 
@@ -700,7 +728,7 @@ public class GameMap {
                     }
                 }
 
-                buildChokeFromSegment(segment, subAreas.get(firstComponent), subAreas.get(secondComponent));
+                buildChokeFromSegment(segment, pairAreas[0], pairAreas[1]);
             }
         }
     }
@@ -788,6 +816,11 @@ public class GameMap {
         }
 
         ChokePoint choke = new ChokePoint(center, firstArea, secondArea, geometry, bestEnd1, bestEnd2, bestWidth);
+
+        if (firstArea.getGroundHeight() != null && firstArea.getGroundHeight() == secondArea.getGroundHeight()) {
+            choke.setHeightTransition(false);
+        }
+
         chokes.add(choke);
         firstArea.getChokes().add(choke);
         secondArea.getChokes().add(choke);
@@ -798,6 +831,264 @@ public class GameMap {
         if (!secondArea.getNeighbors().contains(firstArea)) {
             secondArea.getNeighbors().add(firstArea);
         }
+    }
+
+    private void cutSnakingAreas() {
+        HashSet<ChokePoint> uncuttable = new HashSet<>();
+        boolean cut = true;
+
+        while (cut) {
+            cut = false;
+
+            for (ChokePoint choke : new ArrayList<>(chokes)) {
+                if (!choke.isSynthetic() || uncuttable.contains(choke)) {
+                    continue;
+                }
+
+                if (choke.getWidth() <= 1100) {
+                    continue;
+                }
+
+                Area thinSide = null;
+                if (isThinStrip(choke.getFirstArea(), choke)) {
+                    thinSide = choke.getFirstArea();
+                }
+                else if (isThinStrip(choke.getSecondArea(), choke)) {
+                    thinSide = choke.getSecondArea();
+                }
+
+                if (thinSide == null) {
+                    uncuttable.add(choke);
+                    continue;
+                }
+
+                if (cutAreaInHalf(thinSide, choke)) {
+                    cut = true;
+                    break;
+                }
+
+                uncuttable.add(choke);
+            }
+        }
+
+        for (ChokePoint choke : new ArrayList<>(chokes)) {
+            if (!choke.isSynthetic()) {
+                continue;
+            }
+
+            if (choke.getWidth() <= 1100) {
+                continue;
+            }
+
+            chokes.remove(choke);
+
+            Area firstArea = choke.getFirstArea();
+            Area secondArea = choke.getSecondArea();
+
+            if (firstArea != null) {
+                firstArea.getChokes().remove(choke);
+            }
+            if (secondArea != null) {
+                secondArea.getChokes().remove(choke);
+            }
+
+            if (firstArea == null || secondArea == null) {
+                continue;
+            }
+
+            boolean stillConnected = false;
+            for (ChokePoint remaining : firstArea.getChokes()) {
+                if (remaining.getOtherArea(firstArea) == secondArea) {
+                    stillConnected = true;
+                    break;
+                }
+            }
+
+            if (!stillConnected) {
+                firstArea.getNeighbors().remove(secondArea);
+                secondArea.getNeighbors().remove(firstArea);
+            }
+        }
+    }
+
+    private boolean isThinStrip(Area area, ChokePoint divide) {
+        if (area == null) {
+            return false;
+        }
+
+        HashSet<TilePosition> seeds = new HashSet<>();
+
+        for (WalkPosition boundaryWalk : divide.getGeometry()) {
+            TilePosition geometryTile = boundaryWalk.toTilePosition();
+
+            for (int offsetX = -1; offsetX <= 1; offsetX++) {
+                for (int offsetY = -1; offsetY <= 1; offsetY++) {
+                    TilePosition candidateTile = new TilePosition(geometryTile.getX() + offsetX, geometryTile.getY() + offsetY);
+
+                    if (area.getTiles().contains(candidateTile)) {
+                        seeds.add(candidateTile);
+                    }
+                }
+            }
+        }
+
+        if (seeds.isEmpty()) {
+            return false;
+        }
+
+        HashMap<TilePosition, Integer> depths = new HashMap<>();
+        Deque<TilePosition> queue = new ArrayDeque<>(seeds);
+
+        for (TilePosition seed : seeds) {
+            depths.put(seed, 1);
+        }
+
+        int[][] offsets = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+        while (!queue.isEmpty()) {
+            TilePosition current = queue.poll();
+            int depth = depths.get(current);
+
+            if (depth >= 4) {
+                continue;
+            }
+
+            for (int[] offset : offsets) {
+                TilePosition neighborTile = new TilePosition(current.getX() + offset[0], current.getY() + offset[1]);
+
+                if (depths.containsKey(neighborTile) || !area.getTiles().contains(neighborTile)) {
+                    continue;
+                }
+
+                depths.put(neighborTile, depth + 1);
+                queue.add(neighborTile);
+            }
+        }
+
+        return depths.size() == area.getTiles().size();
+    }
+
+    private boolean cutAreaInHalf(Area snake, ChokePoint divide) {
+        TilePosition firstSeed = null;
+        TilePosition secondSeed = null;
+        int firstSeedDistance = Integer.MAX_VALUE;
+        int secondSeedDistance = Integer.MAX_VALUE;
+
+        for (TilePosition tile : snake.getTiles()) {
+            Position tilePosition = tile.toPosition();
+            int distanceToEnd1 = tilePosition.getApproxDistance(divide.getEnd1());
+            int distanceToEnd2 = tilePosition.getApproxDistance(divide.getEnd2());
+
+            if (distanceToEnd1 < firstSeedDistance) {
+                firstSeedDistance = distanceToEnd1;
+                firstSeed = tile;
+            }
+
+            if (distanceToEnd2 < secondSeedDistance) {
+                secondSeedDistance = distanceToEnd2;
+                secondSeed = tile;
+            }
+        }
+
+        if (firstSeed == null || secondSeed == null || firstSeed.equals(secondSeed)) {
+            return false;
+        }
+
+        HashMap<TilePosition, Integer> labels = new HashMap<>();
+        Deque<TilePosition> queue = new ArrayDeque<>();
+        labels.put(firstSeed, 0);
+        labels.put(secondSeed, 1);
+        queue.add(firstSeed);
+        queue.add(secondSeed);
+
+        int[][] offsets = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+        while (!queue.isEmpty()) {
+            TilePosition current = queue.poll();
+            int label = labels.get(current);
+
+            for (int[] offset : offsets) {
+                TilePosition neighborTile = new TilePosition(current.getX() + offset[0], current.getY() + offset[1]);
+
+                if (labels.containsKey(neighborTile) || !snake.getTiles().contains(neighborTile)) {
+                    continue;
+                }
+
+                labels.put(neighborTile, label);
+                queue.add(neighborTile);
+            }
+        }
+
+        HashSet<TilePosition> firstHalf = new HashSet<>();
+        HashSet<TilePosition> secondHalf = new HashSet<>();
+
+        for (TilePosition tile : snake.getTiles()) {
+            Integer label = labels.get(tile);
+
+            if (label == null || label == 0) {
+                firstHalf.add(tile);
+            }
+            else {
+                secondHalf.add(tile);
+            }
+        }
+
+        if (firstHalf.isEmpty() || secondHalf.isEmpty()) {
+            return false;
+        }
+
+        Area firstHalfArea = new Area(nextSyntheticAreaId, snake.getBwemArea(), snake.getGroundHeight(), firstHalf);
+        nextSyntheticAreaId++;
+        Area secondHalfArea = new Area(nextSyntheticAreaId, snake.getBwemArea(), snake.getGroundHeight(), secondHalf);
+        nextSyntheticAreaId++;
+
+        for (TilePosition tile : firstHalf) {
+            areaByTile[tile.getX()][tile.getY()] = firstHalfArea;
+        }
+        for (TilePosition tile : secondHalf) {
+            areaByTile[tile.getX()][tile.getY()] = secondHalfArea;
+        }
+
+        areas.remove(snake);
+        areas.add(firstHalfArea);
+        areas.add(secondHalfArea);
+
+        ArrayList<Area> siblings = subAreasByParent.get(snake.getBwemArea());
+
+        if (siblings != null) {
+            siblings.remove(snake);
+            siblings.add(firstHalfArea);
+            siblings.add(secondHalfArea);
+
+            Area largestSubArea = siblings.get(0);
+            for (Area sibling : siblings) {
+                if (sibling.getTiles().size() > largestSubArea.getTiles().size()) {
+                    largestSubArea = sibling;
+                }
+            }
+            areasByBwemArea.put(snake.getBwemArea(), largestSubArea);
+        }
+
+        for (ChokePoint attached : new ArrayList<>(chokes)) {
+            if (attached.getFirstArea() != snake && attached.getSecondArea() != snake) {
+                continue;
+            }
+
+            chokes.remove(attached);
+            Area other = attached.getOtherArea(snake);
+
+            if (other != null) {
+                other.getChokes().remove(attached);
+                other.getNeighbors().remove(snake);
+            }
+        }
+
+        ArrayList<Area> halves = new ArrayList<>();
+        halves.add(firstHalfArea);
+        halves.add(secondHalfArea);
+        createFrontierChokes(halves);
+
+        return true;
     }
 
     public void onUnitDestroyed(Unit unit) {
