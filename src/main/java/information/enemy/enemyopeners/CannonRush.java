@@ -28,7 +28,7 @@ public class CannonRush extends EnemyStrategy {
             }
 
             if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) || mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
-                if (enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon || enemyUnit.getEnemyType() == UnitType.Protoss_Pylon) {
+                if (enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon || enemyUnit.getEnemyType() == UnitType.Protoss_Pylon || enemyUnit.getEnemyType() == UnitType.Protoss_Forge) {
                     if (new Time(3, 30).greaterThan(time)) {
                         return true;
                     }
