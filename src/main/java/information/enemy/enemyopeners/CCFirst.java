@@ -1,7 +1,7 @@
 package information.enemy.enemyopeners;
 
 import bwapi.UnitType;
-import bwem.Base;
+import map.bwemwrappers.Base;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;

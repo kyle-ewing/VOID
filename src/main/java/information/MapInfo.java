@@ -13,23 +13,20 @@ import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Area;
-import bwem.BWEM;
-import bwem.Base;
-import bwem.ChokePoint;
-import bwem.Geyser;
-import bwem.Mineral;
 import information.enemy.EnemyUnits;
-import information.neutral.MineralPatch;
 import macro.buildorders.BuildOrderName;
 import map.AllBasePaths;
 import map.PathFinding;
+import map.bwemwrappers.Area;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import map.bwemwrappers.GameMap;
+import map.bwemwrappers.Geyser;
+import map.bwemwrappers.Mineral;
 
 public class MapInfo {
     private static final int FLYER_BASE_TILE_BUFFER = 2;
 
-    private BWEM bwem;
     private Game game;
     private GameMap gameMap;
     private PathFinding pathFinding;
@@ -77,18 +74,17 @@ public class MapInfo {
     private HashMap<Base, Integer> originalMineralCounts = new HashMap<>();
     private HashMap<Base, Integer> originalPatchCounts = new HashMap<>();
     private HashMap<Base, Integer> livePatchCounts = new HashMap<>();
-    private HashMap<Base, List<MineralPatch>> basePatches = new HashMap<>();
+    private HashMap<Base, List<Mineral>> basePatches = new HashMap<>();
     private HashMap<Base, Base> startingBaseMinOnlys = new HashMap<>();
     private HashMap<Base, ChokePoint> startingBaseMainChokes = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private boolean naturalOwned = false;
 
-    public MapInfo(BWEM bwem, Game game, GameMap gameMap) {
-        this.bwem = bwem;
+    public MapInfo(Game game, GameMap gameMap) {
         this.game = game;
         this.gameMap = gameMap;
 
-        pathFinding = new PathFinding(bwem, game);
+        pathFinding = gameMap.getPathFinding();
 
         init();
     }
@@ -144,7 +140,7 @@ public class MapInfo {
     }
 
     private void addAllBases() {
-        for (Base base : bwem.getMap().getBases()) {
+        for (Base base : gameMap.getBases()) {
             mapBases.add(base);
         }
     }
@@ -190,7 +186,7 @@ public class MapInfo {
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
                 TilePosition tile = new TilePosition(x, y);
-                Area tileArea = bwem.getMap().getArea(tile);
+                Area tileArea = gameMap.getArea(tile);
                 if (tileArea != null && tileArea.getId() == baseArea.getId()) {
                     tiles.add(tile);
                 }
@@ -206,7 +202,7 @@ public class MapInfo {
             return;
         }
 
-        Position chokeCenter = naturalChokePoint.getCenter().toPosition();
+        Position chokeCenter = naturalChokePoint.getCenter();
         int maxDistance = 96;
 
         int mapWidth = game.mapWidth();
@@ -245,7 +241,11 @@ public class MapInfo {
     }
 
     private void setChokePoints() {
-        chokePoints.addAll(bwem.getMap().getChokePoints());
+        for (ChokePoint choke : gameMap.getChokes()) {
+            if (choke.getBwemChoke() != null) {
+                chokePoints.add(choke);
+            }
+        }
     }
 
     private void setStartingBase() {
@@ -368,8 +368,8 @@ public class MapInfo {
         }
 
         for (TilePosition tile : baseTiles) {
-            int distanceToMainChoke = mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
-            int distanceToNaturalChoke = naturalChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
+            int distanceToMainChoke = mainChoke.getCenter().getApproxDistance(tile.toPosition());
+            int distanceToNaturalChoke = naturalChoke.getCenter().getApproxDistance(tile.toPosition());
 
             if (distanceToMainChoke < 160 || distanceToMainChoke > 256 || distanceToNaturalChoke > 225) {
                 continue;
@@ -415,7 +415,7 @@ public class MapInfo {
             return;
         }
 
-        Position chokeCenter = naturalChoke.getCenter().toPosition();
+        Position chokeCenter = naturalChoke.getCenter();
         int minDistance = 96;
         int maxDistance = 188;
 
@@ -436,11 +436,11 @@ public class MapInfo {
         }
 
         Area outsideNaturalArea;
-        if (naturalChokePoint.getAreas().getFirst() != naturalBase.getArea()) {
-            outsideNaturalArea = naturalChokePoint.getAreas().getFirst();
+        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
+            outsideNaturalArea = naturalChokePoint.getFirstArea();
         }
         else {
-            outsideNaturalArea = naturalChokePoint.getAreas().getSecond();
+            outsideNaturalArea = naturalChokePoint.getSecondArea();
         }
 
         if (outsideNaturalArea == null) {
@@ -450,16 +450,16 @@ public class MapInfo {
         Position mapCenter = new Position(game.mapWidth() * 16, game.mapHeight() * 16);
         int closestDistance = Integer.MAX_VALUE;
 
-        for (ChokePoint choke : outsideNaturalArea.getChokePoints()) {
+        for (ChokePoint choke : outsideNaturalArea.getChokes()) {
             if (choke == naturalChokePoint) {
                 continue;
             }
 
-            if (choke.getAreas().getFirst() == null || choke.getAreas().getSecond() == null) {
+            if (choke.getFirstArea() == null || choke.getSecondArea() == null) {
                 continue;
             }
 
-            int distanceToCenter = choke.getCenter().toPosition().getApproxDistance(mapCenter);
+            int distanceToCenter = choke.getCenter().getApproxDistance(mapCenter);
 
             if (distanceToCenter < closestDistance) {
                 closestDistance = distanceToCenter;
@@ -474,11 +474,11 @@ public class MapInfo {
         }
 
         Area outsideArea;
-        if (naturalChokePoint.getAreas().getFirst() != naturalBase.getArea()) {
-            outsideArea = naturalChokePoint.getAreas().getFirst();
+        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
+            outsideArea = naturalChokePoint.getFirstArea();
         }
         else {
-            outsideArea = naturalChokePoint.getAreas().getSecond();
+            outsideArea = naturalChokePoint.getSecondArea();
         }
 
         if (outsideArea == null) {
@@ -494,16 +494,16 @@ public class MapInfo {
         int minDistance = 96;
         int maxDistance = 275;
 
-        for (ChokePoint choke : outsideArea.getChokePoints()) {
+        for (ChokePoint choke : outsideArea.getChokes()) {
             if (choke == naturalChokePoint) {
                 continue;
             }
 
-            if (choke.getAreas().getFirst() == null || choke.getAreas().getSecond() == null) {
+            if (choke.getFirstArea() == null || choke.getSecondArea() == null) {
                 continue;
             }
 
-            Position chokeCenter = choke.getCenter().toPosition();
+            Position chokeCenter = choke.getCenter();
 
             for (TilePosition tile : outsideAreaTiles) {
                 int distanceToChoke = chokeCenter.getApproxDistance(tile.toPosition());
@@ -628,8 +628,8 @@ public class MapInfo {
         }
 
         for (TilePosition tile : baseTiles) {
-            int distanceToMainChoke = mainChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
-            int distanceToNaturalChoke = naturalChoke.getCenter().toPosition().getApproxDistance(tile.toPosition());
+            int distanceToMainChoke = mainChoke.getCenter().getApproxDistance(tile.toPosition());
+            int distanceToNaturalChoke = naturalChoke.getCenter().getApproxDistance(tile.toPosition());
 
             if (distanceToMainChoke < 160 || distanceToMainChoke > 256) {
                 continue;
@@ -708,8 +708,8 @@ public class MapInfo {
         mainChokePoint = null;
         int minDistance = Integer.MAX_VALUE;
 
-        for (ChokePoint chokePoint : bwem.getMap().getChokePoints()) {
-            Position chokePos = chokePoint.getCenter().toPosition();
+        for (ChokePoint chokePoint : chokePoints) {
+            Position chokePos = chokePoint.getCenter();
 
             for (Position pathPos : path) {
                 int distance = chokePos.getApproxDistance(pathPos);
@@ -778,7 +778,7 @@ public class MapInfo {
         secondaryNaturalChokePoint = null;
         int closestDistance = Integer.MAX_VALUE;
 
-        List<ChokePoint> naturalChokes = naturalBase.getArea().getChokePoints();
+        List<ChokePoint> naturalChokes = naturalBase.getArea().getChokes();
         HashMap<ChokePoint, Double> chokeDistances = new HashMap<>();
 
         Base potentialEnemyBase = startingBases.iterator().next();
@@ -789,7 +789,7 @@ public class MapInfo {
                 continue;
             }
 
-            chokeDistances.put(choke, choke.getCenter().toPosition().getDistance(potentialEnemyBase.getCenter()));
+            chokeDistances.put(choke, choke.getCenter().getDistance(potentialEnemyBase.getCenter()));
         }
 
         for (ChokePoint choke : chokeDistances.keySet()) {
@@ -808,26 +808,26 @@ public class MapInfo {
         }
 
         Area primaryOutsideArea;
-        if (naturalChokePoint.getAreas().getFirst() != naturalBase.getArea()) {
-            primaryOutsideArea = naturalChokePoint.getAreas().getFirst();
+        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
+            primaryOutsideArea = naturalChokePoint.getFirstArea();
         }
         else {
-            primaryOutsideArea = naturalChokePoint.getAreas().getSecond();
+            primaryOutsideArea = naturalChokePoint.getSecondArea();
         }
 
         if (primaryOutsideArea == null) {
             return;
         }
 
-        Position primaryChokeCenter = naturalChokePoint.getCenter().toPosition();
+        Position primaryChokeCenter = naturalChokePoint.getCenter();
         Position naturalCenter = naturalBase.getCenter();
 
-        for (ChokePoint choke : primaryOutsideArea.getChokePoints()) {
+        for (ChokePoint choke : primaryOutsideArea.getChokes()) {
             if (choke == naturalChokePoint) {
                 continue;
             }
 
-            Position candidateChokeCenter = choke.getCenter().toPosition();
+            Position candidateChokeCenter = choke.getCenter();
             int distToPrimary = candidateChokeCenter.getApproxDistance(primaryChokeCenter);
             int distToNatural = candidateChokeCenter.getApproxDistance(naturalCenter);
 
@@ -882,8 +882,8 @@ public class MapInfo {
 
         ChokePoint sbMainChoke = null;
         int minChokeDistance = Integer.MAX_VALUE;
-        for (ChokePoint choke : bwem.getMap().getChokePoints()) {
-            Position chokePos = choke.getCenter().toPosition();
+        for (ChokePoint choke : chokePoints) {
+            Position chokePos = choke.getCenter();
             for (Position pathPos : pathToNatural) {
                 int d = chokePos.getApproxDistance(pathPos);
                 if (d < minChokeDistance) {
@@ -898,8 +898,8 @@ public class MapInfo {
 
         startingBaseMainChokes.put(sb, sbMainChoke);
 
-        Area firstArea = sbMainChoke.getAreas().getFirst();
-        Area secondArea = sbMainChoke.getAreas().getSecond();
+        Area firstArea = sbMainChoke.getFirstArea();
+        Area secondArea = sbMainChoke.getSecondArea();
 
         if (firstArea.getBases().contains(sb) || secondArea.getBases().contains(sb)) {
             return null;
@@ -938,8 +938,8 @@ public class MapInfo {
             return;
         }
 
-        Area firstArea = mainChokePoint.getAreas().getFirst();
-        Area secondArea = mainChokePoint.getAreas().getSecond();
+        Area firstArea = mainChokePoint.getFirstArea();
+        Area secondArea = mainChokePoint.getSecondArea();
 
         //If starting base is in either area of the main choke point ignore this (Andromeda edge case)
         if (firstArea.getBases().contains(startingBase) || secondArea.getBases().contains(startingBase)) {
@@ -1013,10 +1013,10 @@ public class MapInfo {
         while (!queue.isEmpty() && visited.size() <= 64) {
             Area current = queue.poll();
 
-            for (ChokePoint choke : current.getChokePoints()) {
-                Area neighbor = choke.getAreas().getFirst();
+            for (ChokePoint choke : current.getChokes()) {
+                Area neighbor = choke.getFirstArea();
                 if (neighbor == current) {
-                    neighbor = choke.getAreas().getSecond();
+                    neighbor = choke.getSecondArea();
                 }
 
                 if (neighbor == null || visited.contains(neighbor)) {
@@ -1124,7 +1124,7 @@ public class MapInfo {
 
         for (Position p : tilePath) {
             TilePosition pathTile = p.toTilePosition();
-            Area pathArea = bwem.getMap().getArea(pathTile);
+            Area pathArea = gameMap.getArea(pathTile);
 
             if (pathArea == null || !massiveAreas.contains(pathArea)) {
                 continue;
@@ -1238,7 +1238,7 @@ public class MapInfo {
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
                 TilePosition tile = new TilePosition(x, y);
-                Area tileArea = bwem.getMap().getArea(tile);
+                Area tileArea = gameMap.getArea(tile);
                 if (tileArea == null) {
                     continue;
                 }
@@ -1250,10 +1250,10 @@ public class MapInfo {
     private void setOriginalMineralCounts() {
         for (Base base : mapBases) {
             int totalResources = 0;
-            List<MineralPatch> patches = new ArrayList<>();
+            List<Mineral> patches = new ArrayList<>();
             for (Mineral mineral : base.getMinerals()) {
                 totalResources += mineral.getUnit().getResources();
-                patches.add(new MineralPatch(mineral));
+                patches.add(mineral);
             }
             originalMineralCounts.put(base, totalResources);
             int patchCount = base.getMinerals().size();
@@ -1554,7 +1554,7 @@ public class MapInfo {
         return livePatchCounts;
     }
 
-    public List<MineralPatch> getBasePatches(Base base) {
+    public List<Mineral> getBasePatches(Base base) {
         return basePatches.getOrDefault(base, new ArrayList<>());
     }
 
@@ -1682,14 +1682,9 @@ public class MapInfo {
         }
 
         if (unit.getType().isMineralField()) {
-            try {
-                bwem.getMap().onUnitDestroyed(unit);
-            }
-            catch (IllegalStateException e) {
-            }
             decrementLivePatchCount(unit);
-            for (List<MineralPatch> patches : basePatches.values()) {
-                for (MineralPatch patch : patches) {
+            for (List<Mineral> patches : basePatches.values()) {
+                for (Mineral patch : patches) {
                     if (patch.getUnit().getID() == unit.getID()) {
                         patch.markDestroyed();
                     }

@@ -17,9 +17,9 @@ import bwapi.Text;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Area;
-import bwem.Base;
-import bwem.ChokePoint;
+import map.bwemwrappers.Area;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import config.Config;
 import information.GameState;
 import information.Scouting;
@@ -665,12 +665,12 @@ public class Painters {
     }
 
     private void paintNaturalChoke(ChokePoint chokePoint) {
-        game.drawCircleMap(chokePoint.getCenter().toPosition(), 40, Color.Yellow);
+        game.drawCircleMap(chokePoint.getCenter(), 40, Color.Yellow);
     }
 
     private void paintAllChokes(HashSet<ChokePoint> chokePoints, Color color) {
         for (ChokePoint chokePoint : chokePoints) {
-             game.drawCircleMap(chokePoint.getCenter().toPosition(), 40, color);
+             game.drawCircleMap(chokePoint.getCenter(), 40, color);
         }
     }
 

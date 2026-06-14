@@ -6,7 +6,7 @@ import java.util.HashSet;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
-import bwem.Base;
+import map.bwemwrappers.Base;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;

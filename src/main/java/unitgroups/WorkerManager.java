@@ -12,15 +12,14 @@ import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Base;
-import bwem.Mineral;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategyName;
-import information.neutral.MineralPatch;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.Mineral;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.ClosestUnit;
@@ -431,7 +430,7 @@ public class WorkerManager {
 
     private int baseMineralResources(Base base) {
         int total = 0;
-        for (MineralPatch patch : mapInfo.getBasePatches(base)) {
+        for (Mineral patch : mapInfo.getBasePatches(base)) {
             total += patch.getResources();
         }
         return total;
@@ -439,7 +438,7 @@ public class WorkerManager {
 
     private int basePatchCount(Base base) {
         int count = 0;
-        for (MineralPatch patch : mapInfo.getBasePatches(base)) {
+        for (Mineral patch : mapInfo.getBasePatches(base)) {
             if (patch.getResources() > 0) {
                 count++;
             }

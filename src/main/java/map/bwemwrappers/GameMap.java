@@ -38,17 +38,18 @@ public class GameMap {
     private Base startingBase;
     private int nextSyntheticAreaId;
 
-    public GameMap(BWEM bwem, Game game) {
-        this.bwem = bwem;
+    public GameMap(Game game) {
         this.game = game;
 
-        pathFinding = new PathFinding(bwem, game);
+        bwem = new BWEM(game);
+        bwem.initialize();
 
         init();
     }
 
     private void init() {
         setGrids();
+        pathFinding = new PathFinding(walkableByTile, game);
         createNeutrals();
         createAreas();
         createChokePoints();
@@ -1158,6 +1159,10 @@ public class GameMap {
     }
 
     private Area resolveChokeSide(bwem.ChokePoint bwemChoke, bwem.Area bwemSide) {
+        if (!subAreasByParent.containsKey(bwemSide)) {
+            return areasByBwemArea.get(bwemSide);
+        }
+
         TilePosition sideTile = bwemChoke.getNodePositionInArea(Node.MIDDLE, bwemSide).toTilePosition();
         Area resolved = getArea(sideTile);
 
@@ -1456,6 +1461,12 @@ public class GameMap {
     public void onUnitDestroyed(Unit unit) {
         if (!unit.getType().isMineralField()) {
             return;
+        }
+
+        try {
+            bwem.getMap().onUnitDestroyed(unit);
+        }
+        catch (IllegalStateException e) {
         }
 
         Neutral neutral = neutralsByUnit.get(unit);

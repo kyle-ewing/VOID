@@ -4,7 +4,6 @@ import bwapi.Game;
 import bwapi.Player;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.BWEM;
 import debug.Painters;
 import information.GameState;
 import information.MapInfo;
@@ -18,7 +17,6 @@ import unitgroups.WorkerManager;
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
     private Game game;
-    private BWEM bwem;
     private GameMap gameMap;
     private Player player;
     private GameState gameState;
@@ -37,12 +35,9 @@ public class Bot extends DefaultBWListener {
         game = bwClient.getGame();
         player = game.self();
 
-        bwem = new BWEM(game);
-        bwem.initialize();
-
-        gameMap = new GameMap(bwem, game);
-        mapInfo = new MapInfo(bwem, game, gameMap);
-        gameState = new GameState(game, bwem, mapInfo);
+        gameMap = new GameMap(game);
+        mapInfo = new MapInfo(game, gameMap);
+        gameState = new GameState(game, mapInfo);
         enemyInformation = new EnemyInformation(mapInfo, game, gameState);
         workerManager = new WorkerManager(mapInfo, player, game, gameState, enemyInformation);
         productionManager = new ProductionManager(game, player, mapInfo, gameState);

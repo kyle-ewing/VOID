@@ -1,9 +1,9 @@
 package map;
 
 import bwapi.Position;
-import bwem.Base;
-import bwem.ChokePoint;
 import information.MapInfo;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +57,7 @@ public class AllBasePaths {
             }
 
             for (ChokePoint choke : mapInfo.getChokePoints()) {
-                Position chokePos = choke.getCenter().toPosition();
+                Position chokePos = choke.getCenter();
                 for (Position pathPos : path) {
                     if (chokePos.getDistance(pathPos) < 175) {
                         if (!chokePathLists.containsKey(base)) {

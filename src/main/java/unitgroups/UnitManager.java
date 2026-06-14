@@ -11,7 +11,7 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Base;
+import map.bwemwrappers.Base;
 import information.GameState;
 import information.MapInfo;
 import information.Scouting;

@@ -6,7 +6,7 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.UnitType;
-import bwem.Base;
+import map.bwemwrappers.Base;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
@@ -119,9 +119,9 @@ public class RallyPoint {
     }
 
     private void setInitialRallyPoints() {
-        mainRallyPoint = rallyPath(startingBase.getCenter(), mapInfo.getMainChoke().getCenter().toPosition(), 0.72);
-        naturalRallyPoint = rallyPath(naturalBase.getCenter(), mapInfo.getNaturalChoke().getCenter().toPosition(), 0.62);
-        lateGameRallyPoint = rallyPath(mapInfo.getOutsideNaturalChoke().getCenter().toPosition(), mapInfo.getNaturalChoke().getCenter().toPosition(), 0.6);
+        mainRallyPoint = rallyPath(startingBase.getCenter(), mapInfo.getMainChoke().getCenter(), 0.72);
+        naturalRallyPoint = rallyPath(naturalBase.getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.62);
+        lateGameRallyPoint = rallyPath(mapInfo.getOutsideNaturalChoke().getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.6);
     }
 
     public void onFrame() {
