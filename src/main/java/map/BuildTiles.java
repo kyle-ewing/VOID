@@ -15,11 +15,11 @@ import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Area;
-import bwem.Base;
-import bwem.ChokePoint;
-import bwem.Geyser;
-import bwem.Mineral;
+import map.bwemwrappers.Area;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
+import map.bwemwrappers.Geyser;
+import map.bwemwrappers.Mineral;
 import information.MapInfo;
 import util.PositionInterpolator;
 
@@ -752,7 +752,7 @@ public class BuildTiles {
             return;
         }
 
-        List<ChokePoint> enemyNaturalChokes = enemyNatural.getArea().getChokePoints();
+        List<ChokePoint> enemyNaturalChokes = enemyNatural.getArea().getChokes();
 
         if (enemyNaturalChokes == null || enemyNaturalChokes.isEmpty()) {
             return;
@@ -765,9 +765,9 @@ public class BuildTiles {
 
         ChokePoint facingChoke = null;
         for (ChokePoint candidateChoke : enemyNaturalChokes) {
-            Area otherArea = candidateChoke.getAreas().getFirst();
+            Area otherArea = candidateChoke.getFirstArea();
             if (otherArea == enemyNatural.getArea()) {
-                otherArea = candidateChoke.getAreas().getSecond();
+                otherArea = candidateChoke.getSecondArea();
             }
             if (otherArea != enemyMain.getArea()) {
                 facingChoke = candidateChoke;
@@ -780,11 +780,11 @@ public class BuildTiles {
         }
 
         Area outsideArea;
-        if (facingChoke.getAreas().getFirst() != enemyNatural.getArea()) {
-            outsideArea = facingChoke.getAreas().getFirst();
+        if (facingChoke.getFirstArea() != enemyNatural.getArea()) {
+            outsideArea = facingChoke.getFirstArea();
         }
         else {
-            outsideArea = facingChoke.getAreas().getSecond();
+            outsideArea = facingChoke.getSecondArea();
         }
 
         if (outsideArea == null) {
@@ -942,7 +942,7 @@ public class BuildTiles {
             if (mapInfo.getMinOnlyBase() != null) {
                 ChokePoint otherChoke = null;
 
-                for (ChokePoint cp : mapInfo.getMinOnlyBase().getArea().getChokePoints()) {
+                for (ChokePoint cp : mapInfo.getMinOnlyBase().getArea().getChokes()) {
                     if (cp.equals(mainChoke)) {
                         continue;
                     }
@@ -1013,7 +1013,7 @@ public class BuildTiles {
             else {
                 TilePosition primaryChokeTile = naturalChoke.getCenter().toTilePosition();
                 TilePosition secondaryChokeTile = secondaryNaturalChoke.getCenter().toTilePosition();
-                Position mainChokeCenter = mapInfo.getMainChoke().getCenter().toPosition();
+                Position mainChokeCenter = mapInfo.getMainChoke().getCenter();
 
                 double primaryWeight = 0.6;
                 double secondaryWeight = 0.4;
@@ -2237,7 +2237,7 @@ public class BuildTiles {
     private void chokeExclusionZone(Base base) {
         int exclusionRadius = 3;
 
-        for (ChokePoint choke : base.getArea().getChokePoints()) {
+        for (ChokePoint choke : base.getArea().getChokes()) {
             TilePosition chokeTile = choke.getCenter().toTilePosition();
 
             for (int x = chokeTile.getX() - exclusionRadius; x <= chokeTile.getX() + exclusionRadius; x++) {

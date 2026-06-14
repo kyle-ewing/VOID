@@ -6,8 +6,8 @@ import java.util.HashSet;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
-import bwem.Base;
-import bwem.ChokePoint;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
@@ -44,7 +44,7 @@ public class FFE extends EnemyStrategy{
                     HashSet<TilePosition> baseTiles = mapInfo.getBaseTilesAllBases().get(startingBase);
                     if (baseTiles != null && baseTiles.contains(enemyUnit.getEnemyPosition().toTilePosition())) {
                         ChokePoint mainChoke = mapInfo.getStartingBaseMainChoke(startingBase);
-                        if (mainChoke != null && enemyUnit.getEnemyPosition().getDistance(mainChoke.getCenter().toPosition()) < 500) {
+                        if (mainChoke != null && enemyUnit.getEnemyPosition().getDistance(mainChoke.getCenter()) < 500) {
                             continue;
                         }
 

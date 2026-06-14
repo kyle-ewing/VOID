@@ -7,7 +7,7 @@ import bwapi.Race;
 import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Base;
+import map.bwemwrappers.Base;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;

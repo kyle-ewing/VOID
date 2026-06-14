@@ -11,7 +11,6 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.BWEM;
 import config.Config;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyarmycomposition.EnemyArmyCompManager;
@@ -36,7 +35,6 @@ import util.Time;
 
 public class GameState {
     private Game game;
-    private BWEM bwem;
     private Config config;
     private MapInfo mapInfo;
     private Player player;
@@ -81,9 +79,8 @@ public class GameState {
     private PriorityQueue<PlannedItem> productionQueue = new PriorityQueue<>(new BuildComparator());
     private EnemyArmyCompManager armyCompositionManager = new EnemyArmyCompManager();
 
-    public GameState(Game game, BWEM bwem, MapInfo mapInfo) {
+    public GameState(Game game, MapInfo mapInfo) {
         this.game = game;
-        this.bwem = bwem;
         this.mapInfo = mapInfo;
         this.config = new Config();
 

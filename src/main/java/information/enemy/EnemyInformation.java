@@ -7,7 +7,7 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Base;
+import map.bwemwrappers.Base;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;

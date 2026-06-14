@@ -17,9 +17,9 @@ import bwapi.Text;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import bwem.Area;
-import bwem.Base;
-import bwem.ChokePoint;
+import map.bwemwrappers.Area;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import config.Config;
 import information.GameState;
 import information.Scouting;
@@ -154,6 +154,18 @@ public class Painters {
         if (config.debugSiegeDefTiles) {
             paintTileZone(gameState.getBaseInfo().getCombinedTankTiles(), Color.Yellow);
             paintTileZone(gameState.getBaseInfo().getOutsideNaturalSiegeTiles(), Color.Orange);
+        }
+
+        //Synthetic areas/chokes only
+        if (config.debugGameMap) {
+            paintGameMapAreas();
+            paintGameMapChokes();
+        }
+
+        //All areas/chokes with bwem wrapper
+        if (config.debugGameMapFull) {
+            paintAllGameMapAreas();
+            paintAllGameMapChokes();
         }
 
         if (config.debugCCExclusionZone) {
@@ -653,12 +665,12 @@ public class Painters {
     }
 
     private void paintNaturalChoke(ChokePoint chokePoint) {
-        game.drawCircleMap(chokePoint.getCenter().toPosition(), 40, Color.Yellow);
+        game.drawCircleMap(chokePoint.getCenter(), 40, Color.Yellow);
     }
 
     private void paintAllChokes(HashSet<ChokePoint> chokePoints, Color color) {
         for (ChokePoint chokePoint : chokePoints) {
-             game.drawCircleMap(chokePoint.getCenter().toPosition(), 40, color);
+             game.drawCircleMap(chokePoint.getCenter(), 40, color);
         }
     }
 
@@ -727,6 +739,70 @@ public class Painters {
             for (TilePosition tile : ownedInArea) {
                 game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
             }
+        }
+    }
+
+    private void paintGameMapAreas() {
+        Color[] colors = {
+            Color.Red, Color.Blue, Color.Teal, Color.Purple,
+            Color.Orange, Color.Yellow, Color.Green, Color.Cyan,
+            Color.White, Color.Grey
+        };
+        int colorIndex = 0;
+
+        for (map.bwemwrappers.Area area : gameState.getBaseInfo().getGameMap().getAreas()) {
+            if (!area.isSynthetic()) {
+                continue;
+            }
+
+            Color color = colors[colorIndex % colors.length];
+            colorIndex++;
+
+            for (TilePosition tile : area.getTiles()) {
+                game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
+            }
+
+            game.drawTextMap(area.getTop(), "Area " + area.getId() + " " + area.getGroundHeight());
+        }
+    }
+
+    private void paintGameMapChokes() {
+        for (map.bwemwrappers.ChokePoint choke : gameState.getBaseInfo().getGameMap().getChokes()) {
+            if (!choke.isSynthetic()) {
+                continue;
+            }
+
+            game.drawLineMap(choke.getEnd1(), choke.getEnd2(), Color.Cyan);
+            game.drawCircleMap(choke.getCenter(), 6, Color.Cyan, true);
+            game.drawTextMap(choke.getCenter(), "Width: " + choke.getWidth());
+        }
+    }
+
+    private void paintAllGameMapAreas() {
+        Color[] colors = {
+            Color.Red, Color.Blue, Color.Teal, Color.Purple,
+            Color.Orange, Color.Yellow, Color.Green, Color.Cyan,
+            Color.White, Color.Grey
+        };
+        int colorIndex = 0;
+
+        for (map.bwemwrappers.Area area : gameState.getBaseInfo().getGameMap().getAreas()) {
+            Color color = colors[colorIndex % colors.length];
+            colorIndex++;
+
+            for (TilePosition tile : area.getTiles()) {
+                game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
+            }
+
+            game.drawTextMap(area.getTop(), "Area " + area.getId() + " " + area.getGroundHeight());
+        }
+    }
+
+    private void paintAllGameMapChokes() {
+        for (map.bwemwrappers.ChokePoint choke : gameState.getBaseInfo().getGameMap().getChokes()) {
+            game.drawLineMap(choke.getEnd1(), choke.getEnd2(), Color.Cyan);
+            game.drawCircleMap(choke.getCenter(), 6, Color.Cyan, true);
+            game.drawTextMap(choke.getCenter(), "Width: " + choke.getWidth());
         }
     }
 

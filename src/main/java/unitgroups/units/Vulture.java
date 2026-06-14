@@ -16,12 +16,11 @@ import bwapi.UnitCommandType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwapi.WeaponType;
-import bwem.Base;
-import bwem.ChokePoint;
-import bwem.Mineral;
 import information.MapInfo;
-import information.neutral.MineralPatch;
 import information.enemy.EnemyInformation;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
+import map.bwemwrappers.Mineral;
 import information.enemy.EnemyUnits;
 import util.Time;
 
@@ -945,8 +944,8 @@ public class Vulture extends CombatUnits {
                 List<Position> allPositions = mapInfo.getAllBasePaths().getChokePathLists().get(base);
 
                 for (Position position : allPositions) {
-                    boolean nearMainChoke = position.getDistance(mainChoke.getCenter().toPosition()) < 175;
-                    boolean nearNaturalChoke = position.getDistance(naturalChoke.getCenter().toPosition()) < 175;
+                    boolean nearMainChoke = position.getDistance(mainChoke.getCenter()) < 175;
+                    boolean nearNaturalChoke = position.getDistance(naturalChoke.getCenter()) < 175;
 
                     if (!nearMainChoke && !nearNaturalChoke) {
                         minePositions.add(position);
@@ -1241,11 +1240,11 @@ public class Vulture extends CombatUnits {
             depotPos = base.getCenter();
         }
 
-        List<MineralPatch> patches = mapInfo.getBasePatches(base);
+        List<Mineral> patches = mapInfo.getBasePatches(base);
         int sumX = 0;
         int sumY = 0;
         int count = 0;
-        for (MineralPatch patch : patches) {
+        for (Mineral patch : patches) {
             Position p = patch.getPosition();
             if (p == null) {
                 continue;

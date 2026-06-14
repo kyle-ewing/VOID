@@ -3,17 +3,16 @@ package map;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
-import bwem.BWEM;
 
 import java.util.*;
 
 public class PathFinding {
-    private BWEM bwem;
+    private boolean[][] walkableByTile;
     private Game game;
     private TilePositionValidator tilePositionValidator;
 
-    public PathFinding(BWEM bwem, Game game) {
-        this.bwem = bwem;
+    public PathFinding(boolean[][] walkableByTile, Game game) {
+        this.walkableByTile = walkableByTile;
         this.game = game;
 
         tilePositionValidator = new TilePositionValidator(game);
@@ -79,7 +78,7 @@ public class PathFinding {
                 TilePosition neighborTile = new TilePosition(tilePosition.getX() + dx, tilePosition.getY() + dy);
 
                 if (tilePositionValidator.isValid(neighborTile)) {
-                    if (bwem.getMap().getTile(neighborTile).isWalkable()) {
+                    if (walkableByTile[neighborTile.getX()][neighborTile.getY()]) {
                         neighbors.add(neighborTile.toPosition());
                     }
                 }
