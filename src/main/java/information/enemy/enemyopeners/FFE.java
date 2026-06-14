@@ -36,6 +36,10 @@ public class FFE extends EnemyStrategy{
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Protoss_Forge || enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
+                if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) || mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
+                    return false;
+                }
+
                 for (Base startingBase : mapInfo.getStartingBases()) {
                     if (startingBase == mapInfo.getStartingBase()) {
                         continue;
