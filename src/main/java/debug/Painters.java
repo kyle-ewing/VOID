@@ -799,10 +799,24 @@ public class Painters {
     }
 
     private void paintAllGameMapChokes() {
+        int chokeId = 0;
+
         for (map.bwemwrappers.ChokePoint choke : gameState.getBaseInfo().getGameMap().getChokes()) {
             game.drawLineMap(choke.getEnd1(), choke.getEnd2(), Color.Cyan);
             game.drawCircleMap(choke.getCenter(), 6, Color.Cyan, true);
-            game.drawTextMap(choke.getCenter(), "Width: " + choke.getWidth());
+
+            String firstAreaId = "null";
+            if (choke.getFirstArea() != null) {
+                firstAreaId = String.valueOf(choke.getFirstArea().getId());
+            }
+
+            String secondAreaId = "null";
+            if (choke.getSecondArea() != null) {
+                secondAreaId = String.valueOf(choke.getSecondArea().getId());
+            }
+
+            game.drawTextMap(choke.getCenter(), "C" + chokeId + " " + firstAreaId + "<->" + secondAreaId + " W:" + choke.getWidth());
+            chokeId++;
         }
     }
 

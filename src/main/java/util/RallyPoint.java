@@ -121,6 +121,11 @@ public class RallyPoint {
     private void setInitialRallyPoints() {
         mainRallyPoint = rallyPath(startingBase.getCenter(), mapInfo.getMainChoke().getCenter(), 0.72);
         naturalRallyPoint = rallyPath(naturalBase.getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.62);
+
+        if (mapInfo.getOutsideNaturalChoke() == null) {
+            return;
+        }
+
         lateGameRallyPoint = rallyPath(mapInfo.getOutsideNaturalChoke().getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.6);
     }
 
