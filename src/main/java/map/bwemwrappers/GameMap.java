@@ -65,6 +65,7 @@ public class GameMap {
         rehomeChokes();
         rebuildAreaWiring();
         rehomeBasesAndResources();
+        mergeSmallAreasOutsideNatural();
         validateGraph();
     }
 
@@ -1163,14 +1164,30 @@ public class GameMap {
             return areasByBwemArea.get(bwemSide);
         }
 
+        ArrayList<Area> subAreas = subAreasByParent.get(bwemSide);
         TilePosition sideTile = bwemChoke.getNodePositionInArea(Node.MIDDLE, bwemSide).toTilePosition();
         Area resolved = getArea(sideTile);
 
-        if (resolved != null) {
+        if (resolved != null && subAreas.contains(resolved)) {
             return resolved;
         }
 
-        return getNearestArea(sideTile);
+        Position sidePosition = sideTile.toPosition();
+        Area nearest = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (Area subArea : subAreas) {
+            for (TilePosition tile : subArea.getTiles()) {
+                int distance = tile.toPosition().getApproxDistance(sidePosition);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    nearest = subArea;
+                }
+            }
+        }
+
+        return nearest;
     }
 
     private void rebuildAreaWiring() {
@@ -1252,6 +1269,175 @@ public class GameMap {
 
             area.getGeysers().add(geyser);
         }
+    }
+
+    private void mergeSmallAreasOutsideNatural() {
+        boolean merged = true;
+
+        while (merged) {
+            merged = false;
+
+            Area smallestCandidate = null;
+            Area mergeTarget = null;
+            Area candidateNatural = null;
+
+            for (Base startingLocationBase : naturalsByStartingBase.keySet()) {
+                Base natural = naturalsByStartingBase.get(startingLocationBase);
+                Area naturalArea = natural.getArea();
+
+                if (naturalArea == null) {
+                    continue;
+                }
+
+                for (Area candidate : naturalArea.getNeighbors()) {
+                    if (candidate == naturalArea) {
+                        continue;
+                    }
+
+                    if (candidate.isStartingArea() || candidate.isNaturalArea()) {
+                        continue;
+                    }
+
+                    if (!candidate.getBases().isEmpty()) {
+                        continue;
+                    }
+
+                    if (candidate.getTiles().size() >= 200) {
+                        continue;
+                    }
+
+                    if (candidateNeighborHasBase(candidate, naturalArea)) {
+                        continue;
+                    }
+
+                    if (smallestCandidate != null && candidate.getTiles().size() >= smallestCandidate.getTiles().size()) {
+                        continue;
+                    }
+
+                    Area target = largestNonNaturalNeighbor(candidate, naturalArea);
+
+                    if (target == null) {
+                        continue;
+                    }
+
+                    smallestCandidate = candidate;
+                    mergeTarget = target;
+                    candidateNatural = naturalArea;
+                }
+            }
+
+            if (smallestCandidate == null) {
+                continue;
+            }
+
+            absorbArea(smallestCandidate, mergeTarget);
+            rebuildAreaWiring();
+            merged = true;
+        }
+    }
+
+    private boolean candidateNeighborHasBase(Area candidate, Area naturalArea) {
+        for (Area neighbor : candidate.getNeighbors()) {
+            if (neighbor == naturalArea) {
+                continue;
+            }
+
+            if (!neighbor.getBases().isEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Area largestNonNaturalNeighbor(Area candidate, Area naturalArea) {
+        Area target = null;
+        int largestSize = -1;
+
+        for (Area neighbor : candidate.getNeighbors()) {
+            if (neighbor == candidate || neighbor == naturalArea) {
+                continue;
+            }
+
+            if (neighbor.isNaturalArea()) {
+                continue;
+            }
+
+            if (neighbor.getTiles().size() > largestSize) {
+                largestSize = neighbor.getTiles().size();
+                target = neighbor;
+            }
+        }
+
+        return target;
+    }
+
+    private void absorbArea(Area candidate, Area target) {
+        for (TilePosition tile : candidate.getTiles()) {
+            areaByTile[tile.getX()][tile.getY()] = target;
+        }
+
+        target.getTiles().addAll(candidate.getTiles());
+        target.getMinerals().addAll(candidate.getMinerals());
+        target.getGeysers().addAll(candidate.getGeysers());
+        target.getBases().addAll(candidate.getBases());
+
+        for (Base base : candidate.getBases()) {
+            base.setArea(target);
+        }
+
+        for (ChokePoint choke : new ArrayList<>(chokes)) {
+            if (choke.getFirstArea() != candidate && choke.getSecondArea() != candidate) {
+                continue;
+            }
+
+            Area other = choke.getOtherArea(candidate);
+
+            if (other == target) {
+                chokes.remove(choke);
+                continue;
+            }
+
+            if (choke.getFirstArea() == candidate) {
+                choke.setFirstArea(target);
+            }
+            else {
+                choke.setSecondArea(target);
+            }
+        }
+
+        areas.remove(candidate);
+
+        ArrayList<Area> siblings = subAreasByParent.get(candidate.getBwemArea());
+
+        if (siblings == null) {
+            if (areasByBwemArea.get(candidate.getBwemArea()) == candidate) {
+                areasByBwemArea.put(candidate.getBwemArea(), target);
+            }
+            return;
+        }
+
+        siblings.remove(candidate);
+
+        if (siblings.isEmpty()) {
+            subAreasByParent.remove(candidate.getBwemArea());
+            if (areasByBwemArea.get(candidate.getBwemArea()) == candidate) {
+                areasByBwemArea.put(candidate.getBwemArea(), target);
+            }
+            return;
+        }
+
+        if (areasByBwemArea.get(candidate.getBwemArea()) != candidate) {
+            return;
+        }
+
+        Area largestSubArea = siblings.get(0);
+        for (Area sibling : siblings) {
+            if (sibling.getTiles().size() > largestSubArea.getTiles().size()) {
+                largestSubArea = sibling;
+            }
+        }
+        areasByBwemArea.put(candidate.getBwemArea(), largestSubArea);
     }
 
     private void validateGraph() {
