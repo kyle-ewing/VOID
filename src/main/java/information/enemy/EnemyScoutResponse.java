@@ -128,7 +128,8 @@ public class EnemyScoutResponse {
        }
 
         if (gameState.getEnemyScout() != null) {
-            if (gameState.getEnemyScout().getEnemyPosition() == null
+            if (!gameState.getEnemyScout().getEnemyUnit().exists()
+                    || gameState.getEnemyScout().getEnemyPosition() == null
                     || (!gameState.getKnownEnemyUnits().contains(gameState.getEnemyScout()) && !gameState.isEnemyInBase())) {
                 counterScout.setWorkerStatus(WorkerStatus.IDLE);
                 counterScout = null;
@@ -141,7 +142,8 @@ public class EnemyScoutResponse {
     }
 
     private void clearEnemyScout() {
-        if (gameState.getEnemyScout().getEnemyPosition() == null
+        if (!gameState.getEnemyScout().getEnemyUnit().exists()
+                || gameState.getEnemyScout().getEnemyPosition() == null
                 || (!gameState.getKnownEnemyUnits().contains(gameState.getEnemyScout()) && !gameState.isEnemyInBase())) {
             gameState.setEnemyScout(null);
             return;

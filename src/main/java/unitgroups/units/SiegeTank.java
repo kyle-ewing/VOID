@@ -276,6 +276,10 @@ public class SiegeTank extends CombatUnits {
             siegeTile = null;
             foundSiegeTile = false;
             wasNaturalOwned = true;
+            if (isSieged()) {
+                super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
+                unit.unsiege();
+            }
         }
 
         boolean expandedPastNatural = mapInfo.hasExpansionPastNatural();
@@ -284,6 +288,10 @@ public class SiegeTank extends CombatUnits {
             siegeTile = null;
             foundSiegeTile = false;
             wasExpandedPastNatural = true;
+            if (isSieged()) {
+                super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
+                unit.unsiege();
+            }
         }
 
         if (siegeTile == null) {
