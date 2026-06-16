@@ -267,7 +267,7 @@ public class UnitProduction {
                         && building.getAddon() != null
                         && !hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && tankCount < 12
-                        && (firstTankPriority || tankCount < 5 || mechCount >= tankCount * 2 || ratioOverMaximum)) {
+                        && (firstTankPriority || tankCount < 5 || mechCount * 2 >= tankCount * 3 || ratioOverMaximum)) {
                     if (firstTankPriority) {
                         items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 1));
                     }

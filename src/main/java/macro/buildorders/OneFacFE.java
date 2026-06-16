@@ -91,8 +91,8 @@ public class OneFacFE extends MechBuildOrder {
 
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
-        moveOutCondition.put(UnitType.Terran_Vulture, 9);
-        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 7);
+        moveOutCondition.put(UnitType.Terran_Vulture, 10);
+        moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 8);
         return moveOutCondition;
     }
 
