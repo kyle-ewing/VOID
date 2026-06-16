@@ -1363,6 +1363,10 @@ public class GameMap {
                 continue;
             }
 
+            if (neighbor.getTiles().size() > 600) {
+                continue;
+            }
+
             if (neighbor.getTiles().size() > largestSize) {
                 largestSize = neighbor.getTiles().size();
                 target = neighbor;
