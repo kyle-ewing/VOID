@@ -44,7 +44,7 @@ public class Bot extends DefaultBWListener {
         scouting = new Scouting(game, mapInfo, gameState);
         unitManager = new UnitManager(enemyInformation, gameState, mapInfo, game, scouting);
 
-        painters = new Painters(game, gameState, gameState.getConfig(), scouting);
+        painters = new Painters(game, gameState, gameState.getConfig(), scouting, unitManager.getRallyPoint());
     }
 
     @Override

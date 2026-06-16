@@ -28,6 +28,7 @@ import planner.PlannedItem;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
 import unitgroups.units.Workers;
+import util.RallyPoint;
 import util.Time;
 
 public class Painters {
@@ -35,13 +36,15 @@ public class Painters {
     GameState gameState;
     Config config;
     Scouting scouting;
+    RallyPoint rallyPoint;
     boolean enemyOpenerPrinted = false;
 
-    public Painters(Game game, GameState gameState, Config config, Scouting scouting) {
+    public Painters(Game game, GameState gameState, Config config, Scouting scouting, RallyPoint rallyPoint) {
         this.game = game;
         this.gameState = gameState;
         this.config = config;
         this.scouting = scouting;
+        this.rallyPoint = rallyPoint;
 
         gameSpeed();
     }
@@ -154,6 +157,10 @@ public class Painters {
         if (config.debugSiegeDefTiles) {
             paintTileZone(gameState.getBaseInfo().getCombinedTankTiles(), Color.Yellow);
             paintTileZone(gameState.getBaseInfo().getOutsideNaturalSiegeTiles(), Color.Orange);
+        }
+
+        if (config.debugRallyPoints) {
+            paintRallyPoints();
         }
 
         //Synthetic areas/chokes only
@@ -823,6 +830,23 @@ public class Painters {
     private void paintTileZone(HashSet<TilePosition> buildTiles, Color color) {
         for (TilePosition tile : buildTiles) {
             game.drawBoxMap(tile.toPosition(), tile.toPosition().add(new Position(32, 32)), color);
+        }
+    }
+
+    private void paintRallyPoints() {
+        if (rallyPoint.getMainRallyPoint() != null) {
+            game.drawCircleMap(rallyPoint.getMainRallyPoint(), 12, Color.Red, true);
+            game.drawTextMap(rallyPoint.getMainRallyPoint(), String.valueOf(rallyPoint.getMainRallyPoint()));
+        }
+
+        if (rallyPoint.getNaturalRallyPoint() != null) {
+            game.drawCircleMap(rallyPoint.getNaturalRallyPoint(), 12, Color.Blue, true);
+            game.drawTextMap(rallyPoint.getNaturalRallyPoint(), String.valueOf(rallyPoint.getNaturalRallyPoint()));
+        }
+
+        if (rallyPoint.getLateGameRallyPoint() != null) {
+            game.drawCircleMap(rallyPoint.getLateGameRallyPoint(), 12, Color.Teal, true);
+            game.drawTextMap(rallyPoint.getLateGameRallyPoint(), String.valueOf(rallyPoint.getLateGameRallyPoint()));
         }
     }
 
