@@ -23,6 +23,7 @@ import map.bwemwrappers.ChokePoint;
 import map.bwemwrappers.GameMap;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
+import util.PositionInterpolator;
 
 public class MapInfo {
     private static final int FLYER_BASE_TILE_BUFFER = 2;
@@ -469,17 +470,7 @@ public class MapInfo {
     }
 
     private void setOutsideNaturalSiegeTiles() {
-        if (naturalChokePoint == null || naturalBase == null || naturalBase.getArea() == null) {
-            return;
-        }
-
-        Area outsideArea;
-        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
-            outsideArea = naturalChokePoint.getFirstArea();
-        }
-        else {
-            outsideArea = naturalChokePoint.getSecondArea();
-        }
+        Area outsideArea = getOutsideNaturalArea();
 
         if (outsideArea == null) {
             return;
@@ -494,12 +485,58 @@ public class MapInfo {
         int minDistance = 96;
         int maxDistance = 275;
 
+        if (outsideArea.getTiles().size() > 500) {
+            if (outsideArea.getBases().isEmpty()) {
+                return;
+            }
+
+            Base outsideBase = outsideArea.getBases().get(0);
+            TilePosition chokeTile = naturalChokePoint.getCenter().toTilePosition();
+            TilePosition baseTile = outsideBase.getLocation();
+
+            for (int i = 0; i <= 250; i++) {
+                double percent = i / 250.0;
+                TilePosition lineTile = PositionInterpolator.interpolate(chokeTile, baseTile, percent);
+
+                for (int xOffset = -2; xOffset <= 2; xOffset++) {
+                    for (int yOffset = -2; yOffset <= 2; yOffset++) {
+                        TilePosition candidateTile = new TilePosition(lineTile.getX() + xOffset, lineTile.getY() + yOffset);
+
+                        if (!outsideAreaTiles.contains(candidateTile)) {
+                            continue;
+                        }
+
+                        Position candidatePosition = candidateTile.toPosition();
+
+                        if (naturalChokePoint.getCenter().getApproxDistance(candidatePosition) < 250) {
+                            continue;
+                        }
+
+                        if (outsideBase.getCenter().getApproxDistance(candidatePosition) < 150) {
+                            continue;
+                        }
+
+                        if (pathFinding.getTilePositionValidator().isWalkable(candidateTile)) {
+                            outsideNaturalSiegeTiles.add(candidateTile);
+                        }
+                    }
+                }
+            }
+
+            return;
+        }
+
         for (ChokePoint choke : outsideArea.getChokes()) {
             if (choke == naturalChokePoint) {
                 continue;
             }
 
             if (choke.getFirstArea() == null || choke.getSecondArea() == null) {
+                continue;
+            }
+
+            Area farArea = choke.getOtherArea(outsideArea);
+            if (farArea != null && !farArea.getBases().isEmpty()) {
                 continue;
             }
 
@@ -518,13 +555,15 @@ public class MapInfo {
     }
 
     public HashSet<TilePosition> getSiegeDefTiles() {
-        HashSet<TilePosition> result = new HashSet<>(combinedTankTiles);
-
         if (hasExpansionPastNatural()) {
-            result.addAll(outsideNaturalSiegeTiles);
+            if (!outsideNaturalSiegeTiles.isEmpty()) {
+                return new HashSet<>(outsideNaturalSiegeTiles);
+            }
+
+            return new HashSet<>(combinedTankTiles);
         }
 
-        return result;
+        return new HashSet<>(combinedTankTiles);
     }
 
     public void addClaimedSiegeTile(TilePosition tile) {
@@ -558,7 +597,26 @@ public class MapInfo {
             if (ownedArea == null) {
                 continue;
             }
-            if (ownedArea != startingArea && ownedArea != naturalArea) {
+            if (ownedArea == startingArea || ownedArea == naturalArea) {
+                continue;
+            }
+
+            List<Area> path = areaBfsPath(naturalArea, ownedArea);
+            if (path == null || path.size() <= 1) {
+                continue;
+            }
+
+            boolean qualifies = true;
+            for (int i = 1; i <= path.size() - 2; i++) {
+                Area intermediate = path.get(i);
+                HashSet<TilePosition> tiles = areaTiles.get(intermediate);
+                if (tiles != null && tiles.size() > 600) {
+                    qualifies = false;
+                    break;
+                }
+            }
+
+            if (qualifies) {
                 return true;
             }
         }
@@ -767,6 +825,18 @@ public class MapInfo {
 
     public ChokePoint getSecondaryNaturalChoke() {
         return secondaryNaturalChokePoint;
+    }
+
+    public Area getOutsideNaturalArea() {
+        if (naturalChokePoint == null || naturalBase == null || naturalBase.getArea() == null) {
+            return null;
+        }
+
+        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
+            return naturalChokePoint.getFirstArea();
+        }
+
+        return naturalChokePoint.getSecondArea();
     }
 
     public void setNaturalChoke() {

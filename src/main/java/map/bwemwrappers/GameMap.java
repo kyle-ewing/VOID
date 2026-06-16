@@ -1306,10 +1306,6 @@ public class GameMap {
                         continue;
                     }
 
-                    if (candidateNeighborHasBase(candidate, naturalArea)) {
-                        continue;
-                    }
-
                     if (smallestCandidate != null && candidate.getTiles().size() >= smallestCandidate.getTiles().size()) {
                         continue;
                     }
@@ -1336,20 +1332,6 @@ public class GameMap {
         }
     }
 
-    private boolean candidateNeighborHasBase(Area candidate, Area naturalArea) {
-        for (Area neighbor : candidate.getNeighbors()) {
-            if (neighbor == naturalArea) {
-                continue;
-            }
-
-            if (!neighbor.getBases().isEmpty()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private Area largestNonNaturalNeighbor(Area candidate, Area naturalArea) {
         Area target = null;
         int largestSize = -1;
@@ -1363,7 +1345,7 @@ public class GameMap {
                 continue;
             }
 
-            if (neighbor.getTiles().size() > 600) {
+            if (neighbor.getBases().isEmpty() && neighbor.getTiles().size() > 600) {
                 continue;
             }
 

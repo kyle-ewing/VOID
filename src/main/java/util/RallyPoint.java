@@ -5,12 +5,12 @@ import java.util.List;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
-import bwapi.UnitType;
-import map.bwemwrappers.Base;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
 import map.PathFinding;
+import map.bwemwrappers.Area;
+import map.bwemwrappers.Base;
 import unitgroups.units.CombatUnits;
 
 public class RallyPoint {
@@ -38,7 +38,7 @@ public class RallyPoint {
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
-        if (gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center) > 2 && lateGameRallyPoint != null) {
+        if (mapInfo.hasExpansionPastNatural() && lateGameRallyPoint != null) {
             combatUnit.setRallyPoint(lateGameRallyPoint.toTilePosition());
             return;
         }
@@ -126,11 +126,30 @@ public class RallyPoint {
             return;
         }
 
+        Area outsideArea = mapInfo.getOutsideNaturalArea();
+
+        if (outsideArea != null && !outsideArea.getBases().isEmpty()) {
+            lateGameRallyPoint = rallyPath(mapInfo.getNaturalChoke().getCenter(), outsideArea.getBases().get(0).getCenter(), 0.7);
+            return;
+        }
+
         lateGameRallyPoint = rallyPath(mapInfo.getOutsideNaturalChoke().getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.6);
     }
 
     public void onFrame() {
         enemyStrategy = gameState.getEnemyOpener();
+    }
+
+    public Position getMainRallyPoint() {
+        return mainRallyPoint;
+    }
+
+    public Position getNaturalRallyPoint() {
+        return naturalRallyPoint;
+    }
+
+    public Position getLateGameRallyPoint() {
+        return lateGameRallyPoint;
     }
 
 

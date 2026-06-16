@@ -26,6 +26,7 @@ public class TvPMech extends BuildTransition {
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 94, PlannedItemType.BUILDING, 3, false));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 97, PlannedItemType.BUILDING, 6, false));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 97, PlannedItemType.BUILDING, 7, false));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 97, PlannedItemType.BUILDING, 7, false));
         transitionItems.add(new PlannedItem(UnitType.Terran_Machine_Shop, PlannedItemType.ADDON, 6));
         transitionItems.add(new PlannedItem(UnitType.Terran_Machine_Shop, PlannedItemType.ADDON, 6));
         return transitionItems;

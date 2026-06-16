@@ -117,7 +117,7 @@ public class SquadManager {
         compositionLimits.put(UnitType.Terran_Marine, 20);
         compositionLimits.put(UnitType.Terran_Firebat, 8);
         compositionLimits.put(UnitType.Terran_Medic, 6);
-        compositionLimits.put(UnitType.Terran_Siege_Tank_Tank_Mode, 6);
+        compositionLimits.put(UnitType.Terran_Siege_Tank_Tank_Mode, 8);
         compositionLimits.put(UnitType.Terran_Vulture, 12);
         compositionLimits.put(UnitType.Terran_Goliath, 12);
     }
@@ -136,8 +136,8 @@ public class SquadManager {
             squad.onFrame();
         }
 
-        if (new Time(game.getFrameCount()).greaterThan(new Time(9,30))
-                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 6
+        if (new Time(game.getFrameCount()).greaterThan(new Time(10,30))
+                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 8
                 && squads.stream().filter(s -> s.isRunbySquad()).count() == 0
                 && enemyInformation.getEnemyUnits().stream().filter(eu -> eu.getEnemyType().isResourceDepot()).count() >= 2
                 && !runbySquadActive) {

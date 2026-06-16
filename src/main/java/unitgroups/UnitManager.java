@@ -11,7 +11,6 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import map.bwemwrappers.Base;
 import information.GameState;
 import information.MapInfo;
 import information.Scouting;
@@ -22,6 +21,7 @@ import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildorders.buildpivots.BuildPivot;
 import macro.buildorders.buildpivots.BunkerRush;
 import map.PathFinding;
+import map.bwemwrappers.Base;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
@@ -80,6 +80,10 @@ public class UnitManager {
         unitCount = gameState.getUnitTypeCount();
     }
 
+    public RallyPoint getRallyPoint() {
+        return rallyPoint;
+    }
+
     public void onFrame() {
         int frameCount = game.getFrameCount();
         enemyOpenerResponse();
@@ -107,7 +111,6 @@ public class UnitManager {
         flyNaturalBaseCC();
         pivotRushRecall();
 
-        //TODO: this is all horrible
         for (CombatUnits combatUnit : combatUnits) {
             if (combatUnit.getUnitStatus() == UnitStatus.LIFTABLE  && !combatUnit.getUnit().isLifted()) {
                 liftBuilding(combatUnit);
