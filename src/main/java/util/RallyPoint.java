@@ -88,8 +88,16 @@ public class RallyPoint {
                 }
                 break;
             case TWOFACTANK:
-                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
-                 break;
+                combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                break;
+            case TWOGATE:
+                if (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
+                    combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                }
+                else {
+                    combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+                }
+                break;
             default:
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
                 break;    

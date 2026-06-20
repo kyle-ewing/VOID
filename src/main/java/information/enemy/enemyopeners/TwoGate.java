@@ -6,10 +6,10 @@ import java.util.HashSet;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
-import map.bwemwrappers.Base;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
+import map.bwemwrappers.Base;
 import util.Time;
 
 public class TwoGate extends EnemyStrategy {
@@ -93,7 +93,7 @@ public class TwoGate extends EnemyStrategy {
                 return true;
             }
 
-            if (mapInfo.getNaturalTiles().contains(zealotTile)) {
+            if (mapInfo.tileNearNatural(zealotTile) || enemyUnit.getEnemyPosition().getDistance(mapInfo.getNaturalChoke().getCenter()) < 1200) {
                 return true;
             }
         }

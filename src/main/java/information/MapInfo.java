@@ -51,6 +51,7 @@ public class MapInfo {
     private HashSet<Geyser> startingGeysers = new HashSet<>();
     private HashSet<TilePosition> baseTiles = new HashSet<>();
     private HashSet<TilePosition> naturalTiles = new HashSet<>();
+    private HashSet<Area> areasNearNatural = new HashSet<>();
     private HashSet<TilePosition> minBaseTiles = new HashSet<>();
     private LinkedHashSet<Base> ownedBases = new LinkedHashSet<>();
     private HashSet<Base> depletedBases = new HashSet<>();
@@ -135,9 +136,41 @@ public class MapInfo {
         //Handle edge cases where bases are split into multiple areas
         combineBaseAreas();
         setStartingBaseMinOnlys();
+        setAreasNearNatural();
 
         allBasePaths = new AllBasePaths(this);
         allPathsMap = new HashMap<>(allBasePaths.getBasePathLists());
+
+        printStartLocationDistances();
+    }
+
+    private void printStartLocationDistances() {
+        if (startingBase == null) {
+            return;
+        }
+
+        System.out.println("START_LOCATION_DISTANCES mapFile=" + game.mapFileName() + " mapName=" + game.mapName());
+
+        Position start = startingBase.getLocation().toPosition();
+
+        for (Base other : getStartingBases()) {
+            Position otherCenter = other.getLocation().toPosition();
+            int euclideanPx = start.getApproxDistance(otherCenter);
+
+            List<Position> path = pathFinding.findPath(start, otherCenter);
+
+            if (path.isEmpty()) {
+                System.out.println("  start=" + other.getLocation() + " astar=NO_PATH euclidean=" + euclideanPx + "px");
+                continue;
+            }
+
+            double astarPx = 0.0;
+            for (int i = 1; i < path.size(); i++) {
+                astarPx += path.get(i - 1).getDistance(path.get(i));
+            }
+
+            System.out.println("  start=" + other.getLocation() + " astar=" + (int) astarPx + "px euclidean=" + euclideanPx + "px");
+        }
     }
 
     private void addAllBases() {
@@ -1029,6 +1062,62 @@ public class MapInfo {
             minBaseTiles.addAll(secondAreaTiles);
             baseTiles.addAll(secondAreaTiles);
         }
+    }
+
+    private void setAreasNearNatural() {
+        if (naturalBase == null || naturalBase.getArea() == null) {
+            return;
+        }
+
+        Area naturalArea = naturalBase.getArea();
+
+        HashSet<Area> visited = new HashSet<>();
+        HashMap<Area, Integer> depths = new HashMap<>();
+        Deque<Area> queue = new ArrayDeque<>();
+
+        visited.add(naturalArea);
+        depths.put(naturalArea, 0);
+        queue.add(naturalArea);
+        areasNearNatural.add(naturalArea);
+
+        while (!queue.isEmpty()) {
+            Area current = queue.poll();
+            int currentDepth = depths.get(current);
+
+            if (currentDepth >= 2) {
+                continue;
+            }
+
+            for (ChokePoint choke : current.getChokes()) {
+                Area neighbor = choke.getFirstArea();
+                if (neighbor == current) {
+                    neighbor = choke.getSecondArea();
+                }
+
+                if (neighbor == null || visited.contains(neighbor)) {
+                    continue;
+                }
+
+                visited.add(neighbor);
+                depths.put(neighbor, currentDepth + 1);
+                areasNearNatural.add(neighbor);
+                queue.add(neighbor);
+            }
+        }
+    }
+
+    public boolean tileNearNatural(TilePosition tile) {
+        if (tile == null) {
+            return false;
+        }
+
+        Area area = gameMap.getArea(tile);
+
+        if (area == null) {
+            return false;
+        }
+
+        return areasNearNatural.contains(area);
     }
 
     public boolean baseCloseToNatural(Base base) {

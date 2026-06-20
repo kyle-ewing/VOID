@@ -8,6 +8,8 @@ import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
 import map.bwemwrappers.Base;
+import map.bwemwrappers.Geyser;
+import map.bwemwrappers.Mineral;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;
@@ -97,6 +99,62 @@ public class Scouting {
         }
     }
 
+    private boolean isOpenSideIndex(int index) {
+        Base enemyMain = mapInfo.getEnemyMain();
+        if (enemyMain == null) {
+            return true;
+        }
+
+        if (enemyMain.getMinerals().isEmpty() && enemyMain.getGeysers().isEmpty()) {
+            return true;
+        }
+
+        double resourceSumX = 0;
+        double resourceSumY = 0;
+        int resourceCount = 0;
+
+        for (Mineral mineral : enemyMain.getMinerals()) {
+            resourceSumX += mineral.getCenter().getX();
+            resourceSumY += mineral.getCenter().getY();
+            resourceCount++;
+        }
+
+        for (Geyser geyser : enemyMain.getGeysers()) {
+            resourceSumX += geyser.getCenter().getX();
+            resourceSumY += geyser.getCenter().getY();
+            resourceCount++;
+        }
+
+        double mineralDirectionX = (resourceSumX / resourceCount) - enemyMain.getCenter().getX();
+        double mineralDirectionY = (resourceSumY / resourceCount) - enemyMain.getCenter().getY();
+
+        double angle = (Math.PI * 2 * index) / positionCount;
+        double offsetX = Math.cos(angle);
+        double offsetY = Math.sin(angle);
+        double dot = (offsetX * mineralDirectionX) + (offsetY * mineralDirectionY);
+
+        return dot <= 0;
+    }
+
+    private int nextPerimeterIndex(int currentIndex, boolean directionReversed) {
+        int step = 1;
+        if (directionReversed) {
+            step = -1;
+        }
+
+        int nextIndex = (currentIndex + step + positionCount) % positionCount;
+
+        for (int attempt = 0; attempt < positionCount; attempt++) {
+            if (isOpenSideIndex(nextIndex)) {
+                return nextIndex;
+            }
+
+            nextIndex = (nextIndex + step + positionCount) % positionCount;
+        }
+
+        return nextIndex;
+    }
+
     private void scoutEnemyPerimeter() {
         if (scout == null) {
             return;
@@ -116,6 +174,11 @@ public class Scouting {
         }
 
         Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
+
+        if (!isOpenSideIndex(currentPositionIndex)) {
+            currentPositionIndex = nextPerimeterIndex(currentPositionIndex, reversed);
+        }
+
         double angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
 
         int x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
@@ -124,12 +187,7 @@ public class Scouting {
         Position targetPosition = new Position(x, y);
 
         if (scout.getUnit().getDistance(targetPosition) < 90) {
-            if (reversed) {
-                currentPositionIndex = (currentPositionIndex - 1 + positionCount) % positionCount;
-            }
-            else {
-                currentPositionIndex = (currentPositionIndex + 1) % positionCount;
-            }
+            currentPositionIndex = nextPerimeterIndex(currentPositionIndex, reversed);
             angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
             x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
             y = (int) (enemyBasePos.getY() + scoutRadius * Math.sin(angle));
@@ -158,6 +216,11 @@ public class Scouting {
         }
 
         Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
+
+        if (!isOpenSideIndex(secondScoutPositionIndex)) {
+            secondScoutPositionIndex = nextPerimeterIndex(secondScoutPositionIndex, secondScoutReversed);
+        }
+
         double angle = (Math.PI * 2 * secondScoutPositionIndex) / positionCount;
 
         int x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
@@ -166,12 +229,7 @@ public class Scouting {
         Position targetPosition = new Position(x, y);
 
         if (secondScout.getUnit().getDistance(targetPosition) < 90) {
-            if (secondScoutReversed) {
-                secondScoutPositionIndex = (secondScoutPositionIndex - 1 + positionCount) % positionCount;
-            }
-            else {
-                secondScoutPositionIndex = (secondScoutPositionIndex + 1) % positionCount;
-            }
+            secondScoutPositionIndex = nextPerimeterIndex(secondScoutPositionIndex, secondScoutReversed);
             angle = (Math.PI * 2 * secondScoutPositionIndex) / positionCount;
             x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
             y = (int) (enemyBasePos.getY() + scoutRadius * Math.sin(angle));
@@ -319,6 +377,13 @@ public class Scouting {
                 && gameState.getEnemyOpener() == null
                 && scout == null) {
             sendScout();
+        }
+
+        if (!secondScoutSent
+                && mapInfo.getStartingBases().size() == 2
+                && scout != null
+                && gameState.getStartingEnemyBase() == null) {
+            secondScoutSent = true;
         }
 
         if (!secondScoutSent
