@@ -138,8 +138,12 @@ public class UnitManager {
 
             switch (combatUnit.getUnitType()) {
                 case Terran_Marine:
-                    if (bunker != null && combatUnit.isInBunker() && gameState.isEnemyInBase() && !enemyWithinBunkerDefenseRange()) {
+                    if (bunker != null && combatUnit.isInBunker() && gameState.isEnemyInBase() && !enemyWithinBunkerDefenseRange() && !onlyScoutInBase()) {
                         unLoadBunker(combatUnit);
+                    }
+
+                    if (bunker != null && bunker.exists() && !combatUnit.isInBunker() && gameState.isEnemyInBase() && onlyScoutInBase() && combatUnit.getUnitStatus() != UnitStatus.LOAD) {
+                        combatUnit.setUnitStatus(UnitStatus.LOAD);
                     }
 
                     if (rushUnloadActive && enemyNearBunker()) {
@@ -321,6 +325,10 @@ public class UnitManager {
                     if (gameState.moveOutConditionsMet()) {
                         defendCandidates = new HashSet<>(defendCandidates);
                         defendCandidates.removeIf(eu -> eu.getEnemyType().isWorker());
+                    }
+                    else if (gameState.getEnemyScout() != null) {
+                        defendCandidates = new HashSet<>(defendCandidates);
+                        defendCandidates.remove(gameState.getEnemyScout());
                     }
 
                     if (gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
@@ -773,6 +781,32 @@ public class UnitManager {
             }
         }
         return false;
+    }
+
+    private boolean onlyScoutInBase() {
+        if (gameState.getEnemyScout() == null) {
+            return false;
+        }
+
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit == gameState.getEnemyScout()) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            TilePosition enemyTile = enemyUnit.getEnemyUnit().getTilePosition();
+            boolean inBase = mapInfo.getBaseTiles().contains(enemyTile)
+                    || mapInfo.getMinBaseTiles().contains(enemyTile)
+                    || ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && mapInfo.getNaturalTiles().contains(enemyTile));
+            if (inBase) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void assignScouts(CombatUnits combatUnit) {

@@ -235,6 +235,17 @@ public class ProductionManager {
                             }
                         }
 
+                        if (pi.getUnitType() == UnitType.Terran_Bunker && pi.getBuildPosition() != null) {
+                            TilePosition correctBunkerPosition = setBunkerPosition();
+                            if (correctBunkerPosition != null && !correctBunkerPosition.equals(pi.getBuildPosition())) {
+                                if (pi.getAssignedBuilder() != null) {
+                                    pi.getAssignedBuilder().buildReset(pi, gameState.getResourceTracking());
+                                    pi.setAssignedBuilder(null);
+                                }
+                                pi.setBuildPosition(correctBunkerPosition);
+                            }
+                        }
+
                         if (pi.getBuildPosition() != null && pi.getAssignedBuilder() == null) {
                             boolean preferAttacking = !mapInfo.getBaseTiles().contains(pi.getBuildPosition()) && !mapInfo.getNaturalTiles().contains(pi.getBuildPosition());
                             worker = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), mapInfo.getPathFinding(), preferAttacking);
@@ -845,46 +856,26 @@ public class ProductionManager {
             }
 
             if (!mapInfo.hasBunkerInNatural()) {
-                for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-                    if (enemyUnit.getEnemyPosition() == null) {
-                        continue;
-                    }
-
-                    UnitType enemyType = enemyUnit.getEnemyType();
-                    if (!enemyType.isFlyer() && !enemyType.isWorker()
-                            && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {
-                        pi.setBuildPosition(buildTiles.getMainBaseCCTile());
-                        mapInfo.getOrderedExpansions().remove(natural);
-                        return;
-                    }
-                }
-            }
-
-            if (gameState.getEnemyOpener() != null && !mapInfo.hasBunkerInNatural()) {
-                boolean naturalBunkerInQueue = productionQueue.stream()
-                        .anyMatch(queued -> queued.getUnitType() == UnitType.Terran_Bunker
-                                && queued.getBuildPosition() != null
-                                && buildTiles.getNaturalChokeBunker() != null
-                                && buildTiles.getNaturalChokeBunker().equals(queued.getBuildPosition()));
-
-                boolean enemyGroundNearNatural = false;
-                for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
-                    if (enemyUnit.getEnemyPosition() == null) {
-                        continue;
-                    }
-
-                    UnitType enemyType = enemyUnit.getEnemyType();
-                    if (!enemyType.isFlyer() && !enemyType.isWorker()
-                            && enemyUnit.getEnemyPosition().getDistance(natural.getCenter()) <= 750) {
-                        enemyGroundNearNatural = true;
-                        break;
-                    }
-                }
-
-                if (!naturalBunkerInQueue && !gameState.getEnemyOpener().removeBuildings().contains(UnitType.Terran_Bunker) && enemyGroundNearNatural) {
+                if (gameState.getEnemyOpener() != null) {
                     pi.setBuildPosition(buildTiles.getMainBaseCCTile());
                     mapInfo.getOrderedExpansions().remove(natural);
                     return;
+                }
+
+                if (mapInfo.getNaturalChoke() != null) {
+                    for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                        if (enemyUnit.getEnemyPosition() == null) {
+                            continue;
+                        }
+
+                        UnitType enemyType = enemyUnit.getEnemyType();
+                        if (!enemyType.isFlyer() && !enemyType.isWorker()
+                                && enemyUnit.getEnemyPosition().getDistance(mapInfo.getNaturalChoke().getCenter()) <= 750) {
+                            pi.setBuildPosition(buildTiles.getMainBaseCCTile());
+                            mapInfo.getOrderedExpansions().remove(natural);
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -919,7 +910,8 @@ public class ProductionManager {
                 case DOUBLEEIGHTRAX:
                     return buildTiles.getMainChokeBunker();
                 case TWOGATE:
-                    if (gameState.getKnownEnemyUnits().stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Zealot && eu.getEnemyPosition() != null && eu.getEnemyPosition().getDistance(mapInfo.getNaturalBase().getCenter()) < 2000)) {
+                    if (gameState.getKnownEnemyUnits().stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Zealot 
+                            && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 0)))) {
                         return buildTiles.getMainChokeBunker();
                     }
                     return buildTiles.getNaturalChokeBunker();
@@ -1116,28 +1108,6 @@ public class ProductionManager {
             }
         }
 
-        TilePosition correctBunkerPosition = setBunkerPosition();
-        if (correctBunkerPosition != null) {
-            for (PlannedItem pi : productionQueue) {
-                if (pi.getUnitType() != UnitType.Terran_Bunker) {
-                    continue;
-                }
-                if (pi.getBuildPosition() == null || pi.getBuildPosition().equals(correctBunkerPosition)) {
-                    continue;
-                }
-                if (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED) {
-                    Workers worker = pi.getAssignedBuilder();
-                    if (worker != null) {
-                        worker.buildReset(pi, gameState.getResourceTracking());
-                    }
-                    pi.setAssignedBuilder(null);
-                    pi.setBuildPosition(null);
-                }
-                else if (pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
-                    pi.setBuildPosition(null);
-                }
-            }
-        }
     }
 
     private void enemyTechUnitResponse() {

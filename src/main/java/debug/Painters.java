@@ -125,6 +125,7 @@ public class Painters {
             paintNatural(gameState.getBaseInfo().getNaturalBase());
             paintExpansionOrdering(gameState.getBaseInfo().getOrderedExpansions());
             paintExpansionDistances(gameState.getBaseInfo().getOrderedExpansions(), gameState.getBaseInfo().getStartingBase());
+            paintdistanceFromCC(gameState.getBaseInfo().getNaturalBase(), 1000, Color.Red);
 //            paintdistanceFromCC(gameState.getBaseInfo().getStartingBase(), 700, Color.Red);
 //            paintdistanceFromCC(gameState.getBaseInfo().getNaturalBase(), 400, Color.Red);
         }
