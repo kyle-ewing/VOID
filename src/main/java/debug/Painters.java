@@ -117,7 +117,6 @@ public class Painters {
         if (config.debugTurretTiles) {
             paintMissileTile(gameState.getBuildTiles().getMainChokeTurret());
             paintMissileTile(gameState.getBuildTiles().getNaturalChokeTurret());
-            paintMissileTile(gameState.getBuildTiles().getForwardNaturalChokeTurret());
             paintMineralLineTurrets(gameState.getBuildTiles().getMineralLineTurrets());
             paintMainTurrets(gameState.getBuildTiles().getMainTurrets());
         }

@@ -20,7 +20,6 @@ import bwapi.UpgradeType;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
-import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
@@ -561,19 +560,6 @@ public class ProductionManager {
         gameState.setCanExpand(false);
     }
 
-    private TilePosition activeNaturalChokeTurret() {
-        EnemyStrategy enemyOpener = gameState.getEnemyOpener();
-        TilePosition forwardTurret = buildTiles.getForwardNaturalChokeTurret();
-
-        if (enemyOpener != null
-                && (enemyOpener.getStrategyName() == EnemyStrategyName.ONEBASELURKER || enemyOpener.getStrategyName() == EnemyStrategyName.TWOBASELURKER)
-                && forwardTurret != null) {
-            return forwardTurret;
-        }
-
-        return buildTiles.getNaturalChokeTurret();
-    }
-
     private void addCCTurret(Unit unit) {
         TilePosition turretPosition = null;
         Base newBase = null;
@@ -593,8 +579,8 @@ public class ProductionManager {
             if (newBase == mapInfo.getStartingBase()) {
                 return;
             }
-            else if (newBase == mapInfo.getNaturalBase() && !tileTaken(activeNaturalChokeTurret())) {
-                turretPosition = activeNaturalChokeTurret();
+            else if (newBase == mapInfo.getNaturalBase() && !tileTaken(buildTiles.getNaturalChokeTurret())) {
+                turretPosition = buildTiles.getNaturalChokeTurret();
             }
             else {
                 turretPosition = buildTiles.getMineralLineTurrets().get(newBase);
@@ -642,11 +628,6 @@ public class ProductionManager {
                         || unitTypeCount.get(UnitType.Terran_SCV) < 24 && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
                 }
-                // else if (unitTypeCount.get(UnitType.Terran_SCV) < 24 
-                //         && (gameState.getEnemyOpener() != null 
-                //         && (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST || gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.CCFIRST))) {
-                //     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
-                // }
                 else {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 2);
                 }
@@ -845,9 +826,9 @@ public class ProductionManager {
             pi.setBuildPosition(cloestBuildTile);
         }
         else {
-            if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || (gameState.getBunkerPosition() != null && mapInfo.getNaturalTiles().contains(gameState.getBunkerPosition()))) && activeNaturalChokeTurret() != null && !reservedTurretPositions.contains(activeNaturalChokeTurret())) {
-                reservedTurretPositions.add(activeNaturalChokeTurret());
-                pi.setBuildPosition(activeNaturalChokeTurret());
+            if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || (gameState.getBunkerPosition() != null && mapInfo.getNaturalTiles().contains(gameState.getBunkerPosition()))) && buildTiles.getNaturalChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+                reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
+                pi.setBuildPosition(buildTiles.getNaturalChokeTurret());
             }
             else if (buildTiles.getMainChokeTurret() != null && !reservedTurretPositions.contains(buildTiles.getMainChokeTurret())) {
                 reservedTurretPositions.add(buildTiles.getMainChokeTurret());
@@ -1014,10 +995,10 @@ public class ProductionManager {
                                 }
                             }
                         }
-                        else if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || (gameState.getBunkerPosition() != null && mapInfo.getNaturalTiles().contains(gameState.getBunkerPosition()))) && activeNaturalChokeTurret() != null
-                                && !reservedTurretPositions.contains(activeNaturalChokeTurret())) {
-                            reservedTurretPositions.add(activeNaturalChokeTurret());
-                            addToQueue(building, PlannedItemType.BUILDING, activeNaturalChokeTurret(),1);
+                        else if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || (gameState.getBunkerPosition() != null && mapInfo.getNaturalTiles().contains(gameState.getBunkerPosition()))) && buildTiles.getNaturalChokeTurret() != null
+                                && !reservedTurretPositions.contains(buildTiles.getNaturalChokeTurret())) {
+                            reservedTurretPositions.add(buildTiles.getNaturalChokeTurret());
+                            addToQueue(building, PlannedItemType.BUILDING, buildTiles.getNaturalChokeTurret(),1);
                         }
                         else if (buildTiles.getMainChokeTurret() != null && !hasTurretAtBase(buildTiles.getMainChokeTurret()) && !hasPositionInQueue(buildTiles.getMainChokeTurret())) {
                             reservedTurretPositions.add(buildTiles.getMainChokeTurret());
@@ -1189,7 +1170,7 @@ public class ProductionManager {
                     }
 
                     TilePosition mainChokeTurret = buildTiles.getMainChokeTurret();
-                    TilePosition naturalChokeTurret = activeNaturalChokeTurret();
+                    TilePosition naturalChokeTurret = buildTiles.getNaturalChokeTurret();
 
                     if (mainChokeTurret != null && !hasTurretAtBase(mainChokeTurret) && !hasPositionInQueue(mainChokeTurret) && !tileTaken(mainChokeTurret)) {
                         addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, mainChokeTurret, 2);

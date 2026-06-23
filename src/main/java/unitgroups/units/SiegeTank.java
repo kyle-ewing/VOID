@@ -210,6 +210,15 @@ public class SiegeTank extends CombatUnits {
     }
 
     @Override
+    public boolean enemyInWeaponRange(int buffer) {
+        if (enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
+            return false;
+        }
+
+        return unit.getDistance(enemyUnit.getEnemyPosition()) <= SIEGE_RANGE + buffer;
+    }
+
+    @Override
     public void regroup() {
         if (regroupPosition == null) {
             return;
@@ -222,14 +231,14 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
-        if (enemyUnit != null && enemyUnit.getEnemyUnit().getDistance(unit) < 200) {
+        if (enemyInWeaponRange(64)) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(UnitStatus.ATTACK);
             return;
         }
 
-        if (unit.getPosition().getDistance(regroupPosition) < 225) {
+        if (unit.getPosition().getDistance(regroupPosition) < 150) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(UnitStatus.ATTACK);

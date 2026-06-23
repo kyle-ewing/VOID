@@ -49,7 +49,6 @@ public class BuildTiles {
     private TilePosition proxyBunkerTile;
     private TilePosition mainChokeTurret;
     private TilePosition naturalChokeTurret;
-    private TilePosition forwardNaturalChokeTurret;
     private TilePosition mainBaseCCTile;
     private Base startingBase;
     private boolean naturalTilesGenerated = false;
@@ -98,7 +97,6 @@ public class BuildTiles {
         generateCloseBunkerTile();
         mainChokeTurret = generateChokeTurretTile(mainChokeBunker, startingBase);
         naturalChokeTurret = generateChokeTurretTile(naturalChokeBunker, mapInfo.getNaturalBase());
-        forwardNaturalChokeTurret = generateForwardChokeTurretTile(naturalChokeBunker, mapInfo.getNaturalChoke());
         generateMainBaseCCTile();
         generateLargeTiles(frontBaseTiles);
         generateMediumTiles(backBaseTiles);
@@ -1745,54 +1743,6 @@ public class BuildTiles {
         return null;
     }
 
-    //Place the natural choke turret on the bunker side facing the choke for lurker detection
-    private TilePosition generateForwardChokeTurretTile(TilePosition bunkerTile, ChokePoint choke) {
-        if (bunkerTile == null || choke == null) {
-            return null;
-        }
-
-        TilePosition chokeTile = choke.getCenter().toTilePosition();
-
-        int dx = chokeTile.getX() - bunkerTile.getX();
-        int dy = chokeTile.getY() - bunkerTile.getY();
-
-        int bx = bunkerTile.getX();
-        int by = bunkerTile.getY();
-
-        List<TilePosition> adjacentPositions = new ArrayList<>();
-
-        if (Math.abs(dx) >= Math.abs(dy)) {
-            int flushX = bx;
-            if (dx >= 0) {
-                flushX = bx + BUNKER_WIDTH - TURRET_WIDTH;
-            }
-
-            adjacentPositions.add(new TilePosition(flushX, by - TURRET_HEIGHT));
-            adjacentPositions.add(new TilePosition(flushX, by + BUNKER_HEIGHT));
-        }
-        else {
-            int flushY = by;
-            if (dy >= 0) {
-                flushY = by + BUNKER_HEIGHT - TURRET_HEIGHT;
-            }
-
-            adjacentPositions.add(new TilePosition(bx - TURRET_WIDTH, flushY));
-            adjacentPositions.add(new TilePosition(bx + BUNKER_WIDTH, flushY));
-        }
-
-        adjacentPositions.sort(Comparator.comparingInt(pos -> pos.getApproxDistance(chokeTile)));
-
-        for (TilePosition candidate : adjacentPositions) {
-            if (tilePositionValidator.isBuildable(candidate, UnitType.Terran_Missile_Turret) &&
-                    !intersectsExclusionZones(candidate) &&
-                    !intersectsExistingBuildTiles(candidate, UnitType.Terran_Missile_Turret, 0)) {
-                return candidate;
-            }
-        }
-
-        return null;
-    }
-
     private void generateMainBaseCCTile() {
         HashSet<TilePosition> baseTiles = mapInfo.getBaseTiles();
         TilePosition naturalLocation = mapInfo.getNaturalBase().getLocation();
@@ -2436,10 +2386,6 @@ public class BuildTiles {
 
     public TilePosition getNaturalChokeTurret() {
         return naturalChokeTurret;
-    }
-
-    public TilePosition getForwardNaturalChokeTurret() {
-        return forwardNaturalChokeTurret;
     }
 
     public HashSet<TilePosition> getBackBaseTiles() {

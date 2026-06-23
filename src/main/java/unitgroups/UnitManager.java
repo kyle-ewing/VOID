@@ -246,8 +246,8 @@ public class UnitManager {
                     }
                     ClosestUnit.findClosestUnit(combatUnit, attackCandidates, Integer.MAX_VALUE);
 
-                    if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
-                        if (fleeToProxyBunker(combatUnit)) {
+                    if (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Firebat) {
+                        if (combatUnit.getUnitType() == UnitType.Terran_Marine && fleeToProxyBunker(combatUnit)) {
                             combatUnit.setUnitStatus(UnitStatus.LOAD);
                             break;
                         }
