@@ -42,7 +42,7 @@ public class GasSteal extends EnemyStrategy{
     public void buildingResponse() {
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if (time.lessThanOrEqual(new Time(3,30))) {

@@ -1,14 +1,14 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class OneBaseLurker extends EnemyStrategy {
     private MapInfo mapInfo;
@@ -22,11 +22,40 @@ public class OneBaseLurker extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        if (time.greaterThan(new Time(6,0))) {
+            return false;
+        }
+
         boolean hasNaturalHatch = false;
         if (mapInfo.getEnemyNatural() != null) {
             hasNaturalHatch = enemyUnits.stream()
-                    .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
-                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getCenter()) < 50);
+                    .filter(eu -> eu.getEnemyType().isResourceDepot())
+                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
+        }
+
+        if (hasNaturalHatch) {
+            return false;
+        }
+
+        boolean denResearching = enemyUnits.stream()
+                .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hydralisk_Den)
+                .anyMatch(eu -> eu.getEnemyUnit().isResearching());
+
+        if (denResearching) {
+            return true;
+        }
+
+        boolean hasLurker = enemyUnits.stream()
+                .anyMatch(eu -> eu.getEnemyType() == UnitType.Zerg_Lurker || eu.getEnemyType() == UnitType.Zerg_Lurker_Egg);
+
+        if (hasLurker) {
+            return true;
+        }
+
+        boolean hasLair = enemyUnits.stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Zerg_Lair);
+
+        if (!hasLair) {
+            return false;
         }
 
         for (EnemyUnits enemyUnit : enemyUnits) {
@@ -38,18 +67,14 @@ public class OneBaseLurker extends EnemyStrategy {
                 return true;
             }
 
-            if (enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk
-                    || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker
-                    || enemyUnit.getEnemyType() == UnitType.Zerg_Lurker_Egg
-                    && time.lessThanOrEqual(new Time(6,0))) {
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk) {
                 return true;
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Zerg_Hydralisk_Den) {
                 if (time.lessThanOrEqual(new Time(5,30))
                         && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair ).count() == 1
-                        && (enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Hatchery || et == UnitType.Zerg_Lair).count() == 1
-                        || !hasNaturalHatch)) {
+                        && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Hatchery || et == UnitType.Zerg_Lair).count() == 1) {
                     return true;
                 }
             }
@@ -71,13 +96,26 @@ public class OneBaseLurker extends EnemyStrategy {
         getUpgradeResponse().add(UpgradeType.U_238_Shells);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+        long knownLurkers = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Lurker || eu.getEnemyType() == UnitType.Zerg_Lurker_Egg).count();
 
         if (buildType == BuildType.BIO) {
-            moveOutCondition.put(UnitType.Terran_Marine, 12);
-            moveOutCondition.put(UnitType.Terran_Medic, 4);
-            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 1);
+            if (time.lessThanOrEqual(new Time(10,0))) {
+                moveOutCondition.put(UnitType.Terran_Marine, 15);
+                moveOutCondition.put(UnitType.Terran_Medic, 4);
+                moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
+                moveOutCondition.put(UnitType.Terran_Science_Vessel, 1);
+            }
+            else if (knownLurkers > 0) {
+                moveOutCondition.put(UnitType.Terran_Marine, 20);
+                moveOutCondition.put(UnitType.Terran_Medic, 5);
+                moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 3);
+            }
+            else {
+                moveOutCondition.put(UnitType.Terran_Marine, 20);
+                moveOutCondition.put(UnitType.Terran_Medic, 5);
+            }
         }
 
         return moveOutCondition;

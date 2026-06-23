@@ -1503,16 +1503,6 @@ public class GameMap {
                 }
             }
         }
-
-        if (tilesWithoutArea > 0) {
-            System.out.println("GameMap: " + tilesWithoutArea + " walkable tiles without an area");
-        }
-        if (chokesWithDeadAreas > 0) {
-            System.out.println("GameMap: " + chokesWithDeadAreas + " chokes referencing dead or missing areas");
-        }
-        if (accessibilityMismatches > 0) {
-            System.out.println("GameMap: " + accessibilityMismatches + " area pairs disagree with BWEM accessibility");
-        }
     }
 
     public List<Area> areaPath(Area from, Area to) {

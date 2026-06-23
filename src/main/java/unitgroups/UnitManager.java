@@ -654,8 +654,6 @@ public class UnitManager {
     }
 
     private void unLoadBunker(CombatUnits combatUnit) {
-        System.out.println("unLoadBunker at " + new Time(game.getFrameCount()) + " enemyInBase=" + gameState.isEnemyInBase() + " naturalOwned=" + mapInfo.isNaturalOwned() + " bunkerInNatural=" + mapInfo.hasBunkerInNatural());
-
         if (bunker != null) {
             bunker.unloadAll();
         }

@@ -27,7 +27,7 @@ public abstract class EnemyStrategy {
     public abstract void buildingResponse();
     public abstract void upgradeResponse();
     public abstract HashSet<UnitType> removeBuildings();
-    public abstract HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time);
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits);
 
     public EnemyStrategyName getStrategyName() {
         return strategyName;

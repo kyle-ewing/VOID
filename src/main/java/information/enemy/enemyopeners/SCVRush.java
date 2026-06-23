@@ -62,7 +62,7 @@ public class SCVRush extends EnemyStrategy {
         return response;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         moveOutCondition.put(UnitType.Terran_Goliath, 2);
         return moveOutCondition;

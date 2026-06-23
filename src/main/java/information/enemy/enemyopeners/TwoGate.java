@@ -115,7 +115,7 @@ public class TwoGate extends EnemyStrategy {
         getTechUpgradeResponse().add(TechType.Spider_Mines);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
         return new HashMap<>();
     }
 

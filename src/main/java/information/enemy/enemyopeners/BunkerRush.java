@@ -45,7 +45,7 @@ public class BunkerRush extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
         return new HashMap<>();
     }
 
