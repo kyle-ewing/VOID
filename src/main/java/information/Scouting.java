@@ -388,7 +388,7 @@ public class Scouting {
 
         if (!secondScoutSent
                 && mapInfo.getStartingBases().size() == 3
-                && ((game.enemy().getRace() == Race.Protoss && gameState.getEnemyOpener() == null)
+                && (((game.enemy().getRace() == Race.Protoss || game.enemy().getRace() == Race.Zerg) && gameState.getEnemyOpener() == null)
                     || (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL))
                 && gameState.getStartingEnemyBase() == null
                 && mapInfo.getStartingBases().stream().anyMatch(b -> mapInfo.isExplored(b))) {

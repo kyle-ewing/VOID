@@ -9,35 +9,40 @@ import util.Time;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class OneBaseMuta extends EnemyStrategy {
+public class TwoBaseMuta extends EnemyStrategy {
     private MapInfo mapInfo;
 
-    public OneBaseMuta(MapInfo mapInfo) {
-        super(EnemyStrategyName.ONEBASEMUTA);
+    public TwoBaseMuta(MapInfo mapInfo) {
+        super(EnemyStrategyName.TWOBASEMUTA);
         this.mapInfo = mapInfo;
 
         buildingResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        boolean hasNaturalHatch = false;
+        boolean hasNaturalDepot = false;
         if (mapInfo.getEnemyNatural() != null) {
-            hasNaturalHatch = enemyUnits.stream()
+            hasNaturalDepot = enemyUnits.stream()
                     .filter(eu -> eu.getEnemyType().isResourceDepot())
                     .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
         }
-       
+
+        if (!hasNaturalDepot) {
+            return false;
+        }
+
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
-            if (enemyUnit.getEnemyType() == UnitType.Zerg_Spire) {
-                if (time.lessThanOrEqual(new Time(5,10))
-                    && !hasNaturalHatch
-                    && enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Lair ).count() == 1) {
-                    return true;
-                }
+            if (enemyUnit.getEnemyType() != UnitType.Zerg_Spire) {
+                continue;
+            }
+
+            Time spireCompletion = new Time(time.getFrames() + enemyUnit.getEnemyUnit().getRemainingBuildTime());
+            if (spireCompletion.lessThanOrEqual(new Time(6, 15))) {
+                return true;
             }
         }
         return false;

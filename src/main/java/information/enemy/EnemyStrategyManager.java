@@ -14,11 +14,13 @@ import information.enemy.enemyopeners.FourPool;
 import information.enemy.enemyopeners.FourRax;
 import information.enemy.enemyopeners.GasSteal;
 import information.enemy.enemyopeners.NexusFirst;
+import information.enemy.enemyopeners.NinePool;
 import information.enemy.enemyopeners.OneBaseLurker;
 import information.enemy.enemyopeners.OneBaseMuta;
 import information.enemy.enemyopeners.SCVRush;
 import information.enemy.enemyopeners.ShuttleRush;
 import information.enemy.enemyopeners.TwoBaseLurker;
+import information.enemy.enemyopeners.TwoBaseMuta;
 import information.enemy.enemyopeners.TwoFacTank;
 import information.enemy.enemyopeners.TwoGate;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
@@ -68,7 +70,7 @@ public class EnemyStrategyManager {
 
     private void addEnemyStrategies() {
         enemyStrategies.add(new FourPool(mapInfo));
-//        enemyStrategies.add(new NinePool(baseInfo));
+        enemyStrategies.add(new NinePool(mapInfo));
         enemyStrategies.add(new CannonRush(mapInfo));
         enemyStrategies.add(new GasSteal(mapInfo));
 //        enemyStrategies.add(new CCFirst(baseInfo));
@@ -78,6 +80,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new SCVRush(mapInfo));
         enemyStrategies.add(new DoubleEightRax(mapInfo));
         enemyStrategies.add(new OneBaseMuta(mapInfo));
+        enemyStrategies.add(new TwoBaseMuta(mapInfo));
         enemyStrategies.add(new OneBaseLurker(mapInfo));
         // enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
         enemyStrategies.add(new TwoBaseLurker(mapInfo));

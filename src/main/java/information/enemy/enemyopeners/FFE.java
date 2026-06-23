@@ -67,7 +67,7 @@ public class FFE extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Siege_Tank_Tank_Mode);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if (time.lessThanOrEqual(new Time(9,0))) {

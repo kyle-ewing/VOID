@@ -23,8 +23,8 @@ public class ThreeHatchBeforePool extends EnemyStrategy {
         boolean hasNaturalHatch = false;
         if (mapInfo.getEnemyNatural() != null) {
             hasNaturalHatch = enemyUnits.stream()
-                    .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
-                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getCenter()) < 50);
+                    .filter(eu -> eu.getEnemyType().isResourceDepot())
+                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
         }
 
         EnemyUnits mainHatch = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
@@ -49,7 +49,7 @@ public void buildingResponse() {
 public void upgradeResponse() {
 }
 
-public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
     HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
     if (time.lessThanOrEqual(new Time(5,0))) {

@@ -246,8 +246,8 @@ public class UnitManager {
                     }
                     ClosestUnit.findClosestUnit(combatUnit, attackCandidates, Integer.MAX_VALUE);
 
-                    if (combatUnit.getUnitType() == UnitType.Terran_Marine) {
-                        if (fleeToProxyBunker(combatUnit)) {
+                    if (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Firebat) {
+                        if (combatUnit.getUnitType() == UnitType.Terran_Marine && fleeToProxyBunker(combatUnit)) {
                             combatUnit.setUnitStatus(UnitStatus.LOAD);
                             break;
                         }
@@ -654,8 +654,6 @@ public class UnitManager {
     }
 
     private void unLoadBunker(CombatUnits combatUnit) {
-        System.out.println("unLoadBunker at " + new Time(game.getFrameCount()) + " enemyInBase=" + gameState.isEnemyInBase() + " naturalOwned=" + mapInfo.isNaturalOwned() + " bunkerInNatural=" + mapInfo.hasBunkerInNatural());
-
         if (bunker != null) {
             bunker.unloadAll();
         }

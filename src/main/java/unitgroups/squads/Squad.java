@@ -23,6 +23,7 @@ public class Squad {
     private static final int CLUSTER_RADIUS = 300;
     private static final int TANK_WEIGHT = 4;
     private static final int TANK_THRESHOLD = 2;
+    private static final int LEAD_DISTANCE = 200;
 
     public Squad(Game game) {
         this.game = game;
@@ -41,6 +42,7 @@ public class Squad {
 
         List<CombatUnits> units = new ArrayList<>(squadUnits);
         boolean tankBias = siegeTankCount() >= TANK_THRESHOLD;
+        boolean medicBias = siegeTankCount() == 0 && medicCount() >= 1;
 
         CombatUnits anchor = units.get(0);
         int maxNeighbors = -1;
@@ -51,6 +53,10 @@ public class Squad {
             }
 
             if (tankBias && !isSiegeTank(candidate)) {
+                continue;
+            }
+
+            if (medicBias && !isMedic(candidate)) {
                 continue;
             }
 
@@ -80,6 +86,10 @@ public class Squad {
                 if (tankBias && isSiegeTank(unit)) {
                     weight = TANK_WEIGHT;
                 }
+
+                if (medicBias && isMedic(unit)) {
+                    weight = TANK_WEIGHT;
+                }
                 cx += pos.getX() * weight;
                 cy += pos.getY() * weight;
                 count += weight;
@@ -103,6 +113,10 @@ public class Squad {
                 || unit.getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode;
     }
 
+    private boolean isMedic(CombatUnits unit) {
+        return unit.getUnitType() == UnitType.Terran_Medic;
+    }
+
     public int siegeTankCount() {
         int count = 0;
         for (CombatUnits unit : squadUnits) {
@@ -113,32 +127,52 @@ public class Squad {
         return count;
     }
 
+    public int medicCount() {
+        int count = 0;
+        for (CombatUnits unit : squadUnits) {
+            if (isMedic(unit)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private void checkRegroup() {
+        if (isRunbySquad) {
+            return;
+        }
+
         if (squadUnits.size() < 4 || !enemyArmyExists) {
             return;
         }
 
+        if (!game.isWalkable(regroupPosition.toWalkPosition())) {
+            return;
+        }
+
         for (CombatUnits unit : squadUnits) {
-            if (unit.getUnitStatus() != UnitStatus.ATTACK && unit.getUnitStatus() != UnitStatus.RUNBY) {
-                continue; 
+            if (unit.getUnitStatus() != UnitStatus.ATTACK) {
+                continue;
             }
 
-            int regroupRange = 250;
-
-            if (siegeTankCount() >= 4) {
-                regroupRange += siegeTankCount() * 20;
+            if (unit.enemyInWeaponRange(64)) {
+                continue;
             }
 
-            if (unit.getEnemyUnit() != null 
-                    && unit.getEnemyUnit().getEnemyPosition() != null 
-                    && unit.getUnit().getPosition().getDistance(unit.getEnemyUnit().getEnemyPosition()) < 150
-                    && unit.getUnit().getDistance(regroupPosition) > regroupRange + 200) {
-                continue; 
+            if (unit.getEnemyUnit() == null || unit.getEnemyUnit().getEnemyPosition() == null) {
+                continue;
             }
 
-            if (unit.getUnit().getPosition().getDistance(regroupPosition) > regroupRange && game.isWalkable(regroupPosition.toWalkPosition())) {
-                unit.setUnitStatus(UnitStatus.REGROUP);
+            if (unit.getUnit().getDistance(regroupPosition) <= LEAD_DISTANCE) {
+                continue;
             }
+
+            Position enemyPosition = unit.getEnemyUnit().getEnemyPosition();
+            if (unit.getUnit().getDistance(enemyPosition) >= regroupPosition.getDistance(enemyPosition)) {
+                continue;
+            }
+
+            unit.setUnitStatus(UnitStatus.REGROUP);
         }
     }
 

@@ -49,7 +49,7 @@ public class DragoonRangeRush extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Machine_Shop);
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
         return new HashMap<>();
     }
 

@@ -149,8 +149,6 @@ public class MapInfo {
             return;
         }
 
-        System.out.println("START_LOCATION_DISTANCES mapFile=" + game.mapFileName() + " mapName=" + game.mapName());
-
         Position start = startingBase.getLocation().toPosition();
 
         for (Base other : getStartingBases()) {
@@ -160,7 +158,6 @@ public class MapInfo {
             List<Position> path = pathFinding.findPath(start, otherCenter);
 
             if (path.isEmpty()) {
-                System.out.println("  start=" + other.getLocation() + " astar=NO_PATH euclidean=" + euclideanPx + "px");
                 continue;
             }
 
@@ -168,8 +165,6 @@ public class MapInfo {
             for (int i = 1; i < path.size(); i++) {
                 astarPx += path.get(i - 1).getDistance(path.get(i));
             }
-
-            System.out.println("  start=" + other.getLocation() + " astar=" + (int) astarPx + "px euclidean=" + euclideanPx + "px");
         }
     }
 

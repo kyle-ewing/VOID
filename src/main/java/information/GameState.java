@@ -275,7 +275,7 @@ public class GameState {
 
     private void amendMoveOutCondition() {
         if (enemyOpener != null) {
-            HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(startingOpener.buildType(), time);
+            HashMap<UnitType, Integer> enemyMoveOutCondition = enemyOpener.getMoveOutCondition(startingOpener.buildType(), time, knownEnemyUnits);
 
             if (enemyMoveOutCondition.isEmpty()) {
                 if (selectedPivot != null) {
