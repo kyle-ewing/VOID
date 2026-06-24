@@ -1,4 +1,4 @@
-package macro.buildorders.buildtransitions;
+package macro.buildtransitions;
 
 import java.util.ArrayList;
 
@@ -8,9 +8,9 @@ import macro.buildorders.BuildType;
 import planner.PlannedItem;
 import planner.PlannedItemType;
 
-public class TvZBio extends BuildTransition {
+public class TvPBio extends BuildTransition {
     public BuildTransitionName getBuildTransitionName() {
-        return BuildTransitionName.TVZBIO;
+        return BuildTransitionName.TVPBIO;
     }
 
     public ArrayList<PlannedItem> getTransitionBuild() {
@@ -31,7 +31,7 @@ public class TvZBio extends BuildTransition {
 
     public ArrayList<PlannedItem> getOptionalBuildings() {
         ArrayList<PlannedItem> optionalItems = new ArrayList<>();
-        optionalItems.add(new PlannedItem(UnitType.Terran_Starport, 75,PlannedItemType.BUILDING, 4, true));
+        optionalItems.add(new PlannedItem(UnitType.Terran_Starport, 64, PlannedItemType.BUILDING, 3, true));
         optionalItems.add(new PlannedItem(UnitType.Terran_Science_Facility, PlannedItemType.BUILDING, 4));
         optionalItems.add(new PlannedItem(UnitType.Terran_Control_Tower, PlannedItemType.ADDON, 5));
         return optionalItems;

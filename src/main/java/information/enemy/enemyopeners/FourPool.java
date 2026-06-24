@@ -1,13 +1,13 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class FourPool extends EnemyStrategy {
     private MapInfo mapInfo;
@@ -41,8 +41,8 @@ public class FourPool extends EnemyStrategy {
                     return true;
                 }
 
-                else if (time.lessThanOrEqual(new Time(2,40))) {
-                    if (enemyUnit.getEnemyPosition().getDistance(mapInfo.getStartingBase().getCenter()) < 2000) {
+                else if (time.lessThanOrEqual(new Time(2,30))) {
+                    if (enemyUnit.getEnemyPosition().getDistance(mapInfo.getNaturalChoke().getCenter()) < 1500) {
                         return true;
                     }
                 }

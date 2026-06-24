@@ -18,10 +18,10 @@ import bwapi.UpgradeType;
 import bwapi.WeaponType;
 import information.MapInfo;
 import information.enemy.EnemyInformation;
+import information.enemy.EnemyUnits;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.ChokePoint;
 import map.bwemwrappers.Mineral;
-import information.enemy.EnemyUnits;
 import util.Time;
 
 public class Vulture extends CombatUnits {
@@ -244,6 +244,10 @@ public class Vulture extends CombatUnits {
     @Override
     public void poke() {
         if (enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
+            if (mapInfo.getEnemyMain() != null) {
+                unit.attack(mapInfo.getEnemyMain().getCenter());
+            }
+
             return;
         }
 

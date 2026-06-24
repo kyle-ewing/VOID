@@ -1,4 +1,4 @@
-package macro.buildorders;
+package macro.buildorders.zerg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +8,10 @@ import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
+import macro.buildorders.BuildOrder;
+import macro.buildorders.BuildOrderName;
+import macro.buildorders.BuildType;
+import macro.buildorders.BunkerLocation;
 import planner.PlannedItem;
 import planner.PlannedItemType;
 import util.Time;

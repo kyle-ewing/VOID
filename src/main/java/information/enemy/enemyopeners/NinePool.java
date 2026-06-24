@@ -20,19 +20,24 @@ public class NinePool extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        long knownLings = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Zergling).count();
+
+        if (knownLings >= 8 && time.greaterThan(new Time(2,30)) && time.lessThanOrEqual(new Time(3,15))) {
+            return true;
+        }
+
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
             //Refine later to prevent false positives
-//            if (enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
-//                if (time.lessThanOrEqual(new Time(2,30))) {
-//                    if (enemyUnit.getEnemyUnit().isCompleted()) {
-//                        return true;
-//                    }
-//                }
-//            }
+           if (enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
+               Time poolCompletion = new Time(time.getFrames() + enemyUnit.getEnemyUnit().getRemainingBuildTime());
+               if (poolCompletion.lessThanOrEqual(new Time(2, 25))) {
+                    return true;
+               }
+           }
             if (enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
                 if (mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1200
                 && time.lessThanOrEqual(new Time(3,0))) {

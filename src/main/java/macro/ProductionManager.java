@@ -149,7 +149,12 @@ public class ProductionManager {
                             continue;
                         }
 
+                        if (pi.getTechBuilding() == null) {
+                            System.out.println("PlannedItem " + pi.getTechUpgrade() + " has no tech building assigned.");
+                        }
+
                         if (!canBeResearched(pi.getTechBuilding()) || !researchBuildingAvailable(pi.getTechBuilding())) {
+                            
                             continue;
                         }
 
@@ -1047,6 +1052,12 @@ public class ProductionManager {
         }
 
         for (UpgradeType upgrade : gameState.getEnemyOpener().getUpgradeResponse()) {
+            UnitType upgradeBuilding = upgrade.whatUpgrades();
+            if (gameState.getStartingOpener().buildType() == BuildType.MECH
+                    && (upgradeBuilding == UnitType.Terran_Engineering_Bay || upgradeBuilding == UnitType.Terran_Academy)) {
+                continue;
+            }
+
             boolean existingUpgrade = false;
             PlannedItem existingItem = null;
             UnitType researchBuilding = null;
@@ -1512,6 +1523,10 @@ public class ProductionManager {
     }
 
     private boolean canBeResearched(UnitType unitType) {
+        if (unitType == null) {
+            return false;
+        }
+
         return unitTypeCount.get(unitType) > 0;
     }
 

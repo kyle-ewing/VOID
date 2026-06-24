@@ -998,7 +998,15 @@ public class WorkerManager {
                 }
                 return 0;
             case NINEPOOL:
-                if (new Time(game.getFrameCount()).greaterThan(new Time(3, 30)) && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
+                if (new Time(game.getFrameCount()).greaterThan(new Time(3, 30)) 
+                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
+                    return 3;
+                }
+                else if (new Time(game.getFrameCount()).greaterThan(new Time(2, 50))
+                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
+                    return 2;
+                }
+                else if (enemyInRange(800)) {
                     return 3;
                 }
                 return 0;
