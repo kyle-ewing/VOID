@@ -22,7 +22,10 @@ public class NinePool extends EnemyStrategy {
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         long knownLings = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Zergling).count();
 
-        if (knownLings >= 8 && time.greaterThan(new Time(2,30)) && time.lessThanOrEqual(new Time(3,15))) {
+        if (knownLings >= 8 && time.greaterThan(new Time(2,40)) && time.lessThanOrEqual(new Time(3,15))) {
+            return true;
+        }
+        else if (knownLings >= 6 && time.greaterThan(new Time(2,30)) && time.lessThanOrEqual(new Time(3,15))) {
             return true;
         }
 
@@ -50,6 +53,8 @@ public class NinePool extends EnemyStrategy {
 
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Bunker);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
     public void upgradeResponse() {

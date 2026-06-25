@@ -310,6 +310,15 @@ public class ProductionManager {
                         break;
                     }
 
+                    if (pi.getUnitType() == UnitType.Terran_Bunker && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                        TilePosition correctBunkerPosition = setBunkerPosition();
+                        if (correctBunkerPosition != null && !correctBunkerPosition.equals(pi.getBuildPosition())) {
+                            pi.setBuildPosition(correctBunkerPosition);
+                            worker.setBuildingPosition(pi.getBuildPosition().toPosition());
+                            worker.getUnit().move(pi.getBuildPosition().toPosition());
+                        }
+                    }
+
                     if (worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                         if (worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
                             if (pi.getUnitType() == UnitType.Terran_Command_Center
@@ -609,6 +618,16 @@ public class ProductionManager {
             else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
                 workerCap = 14;
+            }
+            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.FOURPOOL
+                    && new Time(game.getFrameCount()).greaterThan(new Time(3, 30)) 
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
+                workerCap = 11;
+            }
+            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.LINGFLOOD
+                    && new Time(game.getFrameCount()).greaterThan(new Time(4, 10)) 
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
+                workerCap = 16;
             }
         }
 

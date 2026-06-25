@@ -329,7 +329,12 @@ public class Vulture extends CombatUnits {
         }
 
         if (enemyUnit.getEnemyType().isWorker()) {
-            unit.attack(enemyUnit.getEnemyUnit());
+            if (enemyUnit.getEnemyUnit().isVisible()) {
+                unit.attack(enemyUnit.getEnemyUnit());
+            } 
+            else {
+                unit.attack(enemyUnit.getEnemyPosition());
+            }
             return;
         }
 
