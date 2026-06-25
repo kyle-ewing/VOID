@@ -4,13 +4,18 @@ import java.util.HashSet;
 
 import bwapi.Race;
 import information.enemy.EnemyInformation;
-import macro.buildorders.buildpivots.BuildPivot;
-import macro.buildorders.buildpivots.BunkerRush;
-import macro.buildorders.buildtransitions.BuildTransition;
-import macro.buildorders.buildtransitions.TvPBio;
-import macro.buildorders.buildtransitions.TvPMech;
-import macro.buildorders.buildtransitions.TvTMech;
-import macro.buildorders.buildtransitions.TvZBio;
+import macro.buildorders.protoss.OneFacFE;
+import macro.buildorders.terran.GoliathFE;
+import macro.buildorders.zerg.FactoryExpand;
+import macro.buildorders.zerg.TwoRaxAcademy;
+import macro.buildpivots.BuildPivot;
+import macro.buildpivots.BunkerRush;
+import macro.buildtransitions.BuildTransition;
+import macro.buildtransitions.TvPBio;
+import macro.buildtransitions.TvPMech;
+import macro.buildtransitions.TvTMech;
+import macro.buildtransitions.TvZBio;
+import macro.buildtransitions.TvZMech;
 
 public class BuildOrderManager {
     private EnemyInformation enemyInformation;
@@ -45,7 +50,8 @@ public class BuildOrderManager {
         terranOpeners.add(new GoliathFE());
 
         //TvZ
-        zergOpeners.add(new TwoRaxAcademy());
+        // zergOpeners.add(new TwoRaxAcademy());
+        zergOpeners.add(new FactoryExpand());
 
         //Random
         randomOpeners.add(new TwoRaxAcademy());
@@ -54,6 +60,7 @@ public class BuildOrderManager {
 
     private void initBuildTransitions() {
         zergTransitions.add(new TvZBio());
+        zergTransitions.add(new TvZMech());
         terranTransitions.add(new TvTMech());
         protossTransitions.add(new TvPMech());
         protossTransitions.add(new TvPBio());

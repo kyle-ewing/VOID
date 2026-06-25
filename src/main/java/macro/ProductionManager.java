@@ -149,7 +149,12 @@ public class ProductionManager {
                             continue;
                         }
 
+                        if (pi.getTechBuilding() == null) {
+                            System.out.println("PlannedItem " + pi.getTechUpgrade() + " has no tech building assigned.");
+                        }
+
                         if (!canBeResearched(pi.getTechBuilding()) || !researchBuildingAvailable(pi.getTechBuilding())) {
+                            
                             continue;
                         }
 
@@ -303,6 +308,15 @@ public class ProductionManager {
                         pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
                         pi.setAssignedBuilder(null);
                         break;
+                    }
+
+                    if (pi.getUnitType() == UnitType.Terran_Bunker && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                        TilePosition correctBunkerPosition = setBunkerPosition();
+                        if (correctBunkerPosition != null && !correctBunkerPosition.equals(pi.getBuildPosition())) {
+                            pi.setBuildPosition(correctBunkerPosition);
+                            worker.setBuildingPosition(pi.getBuildPosition().toPosition());
+                            worker.getUnit().move(pi.getBuildPosition().toPosition());
+                        }
                     }
 
                     if (worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
@@ -604,6 +618,16 @@ public class ProductionManager {
             else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
                 workerCap = 14;
+            }
+            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.FOURPOOL
+                    && new Time(game.getFrameCount()).greaterThan(new Time(2, 0)) 
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
+                workerCap = 11;
+            }
+            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.LINGFLOOD
+                    && new Time(game.getFrameCount()).greaterThan(new Time(4, 10)) 
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
+                workerCap = 16;
             }
         }
 
@@ -1047,6 +1071,12 @@ public class ProductionManager {
         }
 
         for (UpgradeType upgrade : gameState.getEnemyOpener().getUpgradeResponse()) {
+            UnitType upgradeBuilding = upgrade.whatUpgrades();
+            if (gameState.getStartingOpener().buildType() == BuildType.MECH
+                    && (upgradeBuilding == UnitType.Terran_Engineering_Bay || upgradeBuilding == UnitType.Terran_Academy)) {
+                continue;
+            }
+
             boolean existingUpgrade = false;
             PlannedItem existingItem = null;
             UnitType researchBuilding = null;
@@ -1512,6 +1542,10 @@ public class ProductionManager {
     }
 
     private boolean canBeResearched(UnitType unitType) {
+        if (unitType == null) {
+            return false;
+        }
+
         return unitTypeCount.get(unitType) > 0;
     }
 

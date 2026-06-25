@@ -1,17 +1,19 @@
 package information.enemy.enemytechunits;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
 import planner.PlannedItem;
-import planner.PlannedItemStatus;
 import planner.PlannedItemType;
-
-import java.util.HashSet;
 
 public class Mutalisk extends EnemyTechUnits {
     public Mutalisk() {
-        super("Mutalisk", UnitType.Terran_Marine, true);
+        super("Mutalisk", true,
+                Arrays.asList(UnitType.Terran_Marine, UnitType.Terran_Valkyrie),
+                Arrays.asList(UnitType.Terran_Goliath, UnitType.Terran_Valkyrie));
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
@@ -32,5 +34,6 @@ public class Mutalisk extends EnemyTechUnits {
     }
 
     public void techUpgradeResponse() {
+        getFriendlyUpgradeResponse().add(new PlannedItem(UpgradeType.Charon_Boosters, 1, PlannedItemType.UPGRADE, UnitType.Terran_Factory, 1, 1));
     }
 }

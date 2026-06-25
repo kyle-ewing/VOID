@@ -7,14 +7,15 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
-import map.bwemwrappers.Base;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
-import macro.buildorders.buildpivots.BuildPivot;
-import macro.buildorders.buildpivots.BuildPivotName;
+import macro.buildorders.BuildType;
+import macro.buildpivots.BuildPivot;
+import macro.buildpivots.BuildPivotName;
+import map.bwemwrappers.Base;
 import util.Time;
 
 public class EnemyInformation {
@@ -213,8 +214,15 @@ public class EnemyInformation {
     }
 
     private void checkTechUnits() {
+        BuildType buildType = gameState.getStartingOpener().buildType();
+        if (gameState.hasPivoted()) {
+            buildType = gameState.getSelectedPivot().buildType();
+        }
+
+        techunitResponse.clear();
         for (EnemyTechUnits enemyTechUnit : enemyStrategyManager.getEnemyTechUnits()) {
-            if (enemyTechUnit.isEnemyTechUnit(enemyUnits) && !enemyTechUnits.contains(enemyTechUnit)) {
+            boolean detected = enemyTechUnit.isEnemyTechUnit(enemyUnits);
+            if (detected && !enemyTechUnits.contains(enemyTechUnit)) {
                 if (!enemyTechUnit.hasTriggeredResponse()) {
                     enemyTechUnit.techBuildingResponse();
                     enemyTechUnit.techUpgradeResponse();
@@ -222,11 +230,13 @@ public class EnemyInformation {
                 }
 
                 enemyTechUnits.add(enemyTechUnit);
-                techunitResponse.add(enemyTechUnit.getResponseUnitType());
             }
-            else if (!enemyTechUnit.isEnemyTechUnit(enemyUnits) && enemyTechUnits.contains(enemyTechUnit)) {
+            else if (!detected && enemyTechUnits.contains(enemyTechUnit)) {
                 enemyTechUnits.remove(enemyTechUnit);
-                techunitResponse.remove(enemyTechUnit.getResponseUnitType());
+            }
+
+            if (detected) {
+                techunitResponse.addAll(enemyTechUnit.getResponseUnitTypes(buildType));
             }
         }
     }

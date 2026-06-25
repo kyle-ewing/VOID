@@ -1,4 +1,4 @@
-package macro.buildorders.buildtransitions;
+package macro.buildtransitions;
 
 import java.util.ArrayList;
 
@@ -8,9 +8,9 @@ import macro.buildorders.BuildType;
 import planner.PlannedItem;
 import planner.PlannedItemType;
 
-public class TvPMech extends BuildTransition {
+public class TvZMech extends BuildTransition {
     public BuildTransitionName getBuildTransitionName() {
-        return BuildTransitionName.TVPMECH;
+        return BuildTransitionName.TVZMECH;
     }
 
     public ArrayList<PlannedItem> getTransitionBuild() {

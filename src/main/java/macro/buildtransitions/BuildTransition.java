@@ -1,4 +1,4 @@
-package macro.buildorders.buildtransitions;
+package macro.buildtransitions;
 
 import java.util.ArrayList;
 

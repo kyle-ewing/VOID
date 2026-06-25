@@ -13,6 +13,7 @@ import information.enemy.enemyopeners.FFE;
 import information.enemy.enemyopeners.FourPool;
 import information.enemy.enemyopeners.FourRax;
 import information.enemy.enemyopeners.GasSteal;
+import information.enemy.enemyopeners.LingFlood;
 import information.enemy.enemyopeners.NexusFirst;
 import information.enemy.enemyopeners.NinePool;
 import information.enemy.enemyopeners.OneBaseLurker;
@@ -73,6 +74,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new NinePool(mapInfo));
         enemyStrategies.add(new CannonRush(mapInfo));
         enemyStrategies.add(new GasSteal(mapInfo));
+        enemyStrategies.add(new LingFlood(mapInfo));
 //        enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new FourRax(mapInfo));
         enemyStrategies.add(new TwoFacTank());

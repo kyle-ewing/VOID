@@ -1,4 +1,4 @@
-package macro.buildorders.buildpivots;
+package macro.buildpivots;
 
 public enum BuildPivotName {
     BUNKERRUSH

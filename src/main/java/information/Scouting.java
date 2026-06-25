@@ -66,6 +66,55 @@ public class Scouting {
             return;
         }
 
+        if (mapInfo.getStartingBases().size() == 3) {
+            Base diagonalBase = getDiagonalBase();
+
+            Base furthestAdjacent = null;
+            int furthestGroundDistance = Integer.MIN_VALUE;
+
+            for (Base base : mapInfo.getStartingBases()) {
+                if (base == diagonalBase) {
+                    continue;
+                }
+
+                int groundDistance = base.getGroundDistanceFromMain();
+                if (groundDistance > furthestGroundDistance) {
+                    furthestGroundDistance = groundDistance;
+                    furthestAdjacent = base;
+                }
+            }
+
+            Base target = null;
+
+            if (furthestAdjacent != null && !mapInfo.isExplored(furthestAdjacent)) {
+                target = furthestAdjacent;
+            }
+            else if (diagonalBase != null && !mapInfo.isExplored(diagonalBase)) {
+                target = diagonalBase;
+            }
+            else {
+                int nearestGroundDistance = Integer.MAX_VALUE;
+                for (Base base : mapInfo.getStartingBases()) {
+                    if (mapInfo.isExplored(base)) {
+                        continue;
+                    }
+
+                    int groundDistance = base.getGroundDistanceFromMain();
+                    if (groundDistance < nearestGroundDistance) {
+                        nearestGroundDistance = groundDistance;
+                        target = base;
+                    }
+                }
+            }
+
+            if (target != null) {
+                scoutTargetBase = target;
+                scout.getUnit().move(target.getCenter());
+            }
+
+            return;
+        }
+
         Base closest = null;
         int closestDistance = Integer.MAX_VALUE;
 
@@ -239,6 +288,23 @@ public class Scouting {
         secondScout.getUnit().rightClick(targetPosition);
     }
 
+    private Base getDiagonalBase() {
+        Position oppositePosition = new Position((game.mapWidth() * 32) - mapInfo.getStartingBase().getCenter().getX(), (game.mapHeight() * 32) - mapInfo.getStartingBase().getCenter().getY());
+
+        Base diagonalBase = null;
+        int diagonalDistance = Integer.MAX_VALUE;
+
+        for (Base base : mapInfo.getStartingBases()) {
+            int distance = base.getCenter().getApproxDistance(oppositePosition);
+            if (distance < diagonalDistance) {
+                diagonalDistance = distance;
+                diagonalBase = base;
+            }
+        }
+
+        return diagonalBase;
+    }
+
     private void sendSecondScout() {
         if (secondScout == null) {
             for (Workers scv : gameState.getWorkers()) {
@@ -254,6 +320,14 @@ public class Scouting {
             return;
         }
 
+        Base diagonalBase = null;
+        if (mapInfo.getStartingBases().size() == 3) {
+            diagonalBase = getDiagonalBase();
+        }
+
+        Base nearestRemaining = null;
+        int nearestGroundDistance = Integer.MAX_VALUE;
+
         for (Base base : mapInfo.getStartingBases()) {
             if (mapInfo.isExplored(base)) {
                 continue;
@@ -261,7 +335,24 @@ public class Scouting {
             if (base == scoutTargetBase) {
                 continue;
             }
-            secondScout.getUnit().move(base.getCenter());
+            if (base == diagonalBase) {
+                continue;
+            }
+
+            int groundDistance = base.getGroundDistanceFromMain();
+            if (groundDistance < nearestGroundDistance) {
+                nearestGroundDistance = groundDistance;
+                nearestRemaining = base;
+            }
+        }
+
+        if (nearestRemaining != null) {
+            secondScout.getUnit().move(nearestRemaining.getCenter());
+            return;
+        }
+
+        if (diagonalBase != null) {
+            returnSecondScoutHome();
             return;
         }
 
