@@ -278,7 +278,7 @@ public class SiegeTank extends CombatUnits {
     }
 
     public void siegeDef() {
-        boolean naturalOwned = mapInfo.isNaturalOwned();
+        boolean naturalOwned = mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural();
         if (naturalOwned && !wasNaturalOwned) {
             mapInfo.removeClaimedSiegeTile(siegeTile);
             siegeTile = null;
@@ -347,7 +347,7 @@ public class SiegeTank extends CombatUnits {
 
     private void setSiegeTile() {
         HashSet<TilePosition> siegeDefTiles = mapInfo.getSiegeDefTiles();
-        if (!siegeDefTiles.isEmpty() && (mapInfo.isNaturalOwned() || mapInfo.hasExpansionPastNatural())) {
+        if (!siegeDefTiles.isEmpty() && (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || mapInfo.hasExpansionPastNatural())) {
             pickSiegeDefTile(siegeDefTiles);
         }
         else if (!mainEdgeTiles.isEmpty()) {
@@ -462,10 +462,26 @@ public class SiegeTank extends CombatUnits {
                 }
 
                 if (super.enemyInBase && distToEnemy > SIEGE_RANGE) {
-                    super.setUnitStatus(UnitStatus.DEFEND);
-                    if (isSieged()) {
-                        super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
-                        unit.unsiege();
+                    boolean firableInRange = false;
+                    for (EnemyUnits enemy : enemyUnits) {
+                        if (enemy.getEnemyPosition() == null) {
+                            continue;
+                        }
+                        if (enemy.getEnemyType().isWorker()) {
+                            continue;
+                        }
+                        if (unit.getDistance(enemy.getEnemyPosition()) <= SIEGE_RANGE) {
+                            firableInRange = true;
+                            break;
+                        }
+                    }
+
+                    if (!firableInRange) {
+                        super.setUnitStatus(UnitStatus.DEFEND);
+                        if (isSieged()) {
+                            super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
+                            unit.unsiege();
+                        }
                     }
                 }
                 break;

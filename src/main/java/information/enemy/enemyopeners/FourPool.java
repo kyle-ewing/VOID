@@ -53,6 +53,10 @@ public class FourPool extends EnemyStrategy {
 
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Bunker);
+        getBuildingResponse().add(UnitType.Terran_Marine); 
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
     public void upgradeResponse() {
