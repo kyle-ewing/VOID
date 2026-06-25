@@ -84,32 +84,16 @@ public class Scouting {
                 }
             }
 
-            Base target = null;
-
             if (furthestAdjacent != null && !mapInfo.isExplored(furthestAdjacent)) {
-                target = furthestAdjacent;
-            }
-            else if (diagonalBase != null && !mapInfo.isExplored(diagonalBase)) {
-                target = diagonalBase;
-            }
-            else {
-                int nearestGroundDistance = Integer.MAX_VALUE;
-                for (Base base : mapInfo.getStartingBases()) {
-                    if (mapInfo.isExplored(base)) {
-                        continue;
-                    }
-
-                    int groundDistance = base.getGroundDistanceFromMain();
-                    if (groundDistance < nearestGroundDistance) {
-                        nearestGroundDistance = groundDistance;
-                        target = base;
-                    }
-                }
+                scoutTargetBase = furthestAdjacent;
+                scout.getUnit().move(furthestAdjacent.getCenter());
+                return;
             }
 
-            if (target != null) {
-                scoutTargetBase = target;
-                scout.getUnit().move(target.getCenter());
+            if (diagonalBase != null && !mapInfo.isExplored(diagonalBase)) {
+                scoutTargetBase = diagonalBase;
+                scout.getUnit().move(diagonalBase.getCenter());
+                return;
             }
 
             return;

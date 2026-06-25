@@ -371,9 +371,13 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        int cooldown = unit.isStartingAttack() ? unit.getType().groundWeapon().damageCooldown() : unit.getGroundWeaponCooldown();
-        if (cooldown > framesToEnterWeaponRange(currDist)) {
-            unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange));
+        if (unit.isStartingAttack() || unit.isAttackFrame()) {
+            return;
+        }
+
+        int cooldown = unit.getGroundWeaponCooldown();
+        if (cooldown > framesToEnterWeaponRange(currDist) && currDist < myWeaponRange) {
+            unit.move(kiteAwayFrom(currEnemyPos, 64));
             return;
         }
 
@@ -383,32 +387,29 @@ public class Vulture extends CombatUnits {
                 return;
             }
 
-            unit.patrol(currEnemyPos);
+            if (enemyUnit.getEnemyUnit().isVisible()) {
+                unit.attack(enemyUnit.getEnemyUnit());
+            }
+            else {
+                unit.patrol(currEnemyPos);
+            }
         }
         else if (enemyFleeing && !hasTankSupport) {
             unit.patrol(currEnemyPos);
         }
-        else {
-            boolean firingThisFrame = unit.isStartingAttack() || unit.isAttackFrame();
-            boolean onCooldown = unit.getGroundWeaponCooldown() > 0;
-
-            if (firingThisFrame || onCooldown) {
-                unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange));
+        else if (enemyUnit.getEnemyUnit().isVisible()) {
+            if (enemyWeaponRange <= 32) {
+                unit.attack(enemyUnit.getEnemyUnit());
             }
-            else if (enemyUnit.getEnemyUnit().isVisible()) {
-                if (enemyWeaponRange <= 32) {
-                    unit.patrol(patrolAngleFrom(currEnemyPos));
-                }
-                else if (currDist < enemyWeaponRange + 32) {
-                    unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange + 64));
-                }
-                else {
-                    unit.patrol(patrolAngleFrom(currEnemyPos));
-                }
+            else if (currDist < enemyWeaponRange + 32) {
+                unit.move(kiteAwayFrom(currEnemyPos, myWeaponRange + 64));
             }
             else {
-                unit.attack(currEnemyPos);
+                unit.patrol(patrolAngleFrom(currEnemyPos));
             }
+        }
+        else {
+            unit.attack(currEnemyPos);
         }
 
         if (!game.self().hasResearched(TechType.Spider_Mines) || unit.getSpiderMineCount() == 0) {
@@ -568,13 +569,17 @@ public class Vulture extends CombatUnits {
         double dy = enemyPos.getY() - unitPos.getY();
         double dist = Math.max(1, Math.sqrt(dx * dx + dy * dy));
 
+        double awayX = -dx / dist;
+        double awayY = -dy / dist;
         double perpX = -dy / dist;
         double perpY = dx / dist;
 
         double sign = (unit.getID() % 2 == 0) ? 1 : -1;
 
-        double targetX = enemyPos.getX() + perpX * sign * 64;
-        double targetY = enemyPos.getY() + perpY * sign * 64;
+        double standoff = weaponRange();
+
+        double targetX = enemyPos.getX() + awayX * standoff + perpX * sign * 64;
+        double targetY = enemyPos.getY() + awayY * standoff + perpY * sign * 64;
 
         targetX = Math.min(Math.max(targetX, 0), game.mapWidth() * 32);
         targetY = Math.min(Math.max(targetY, 0), game.mapHeight() * 32);
