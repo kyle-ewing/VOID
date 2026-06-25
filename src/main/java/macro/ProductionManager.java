@@ -620,7 +620,7 @@ public class ProductionManager {
                 workerCap = 14;
             }
             else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.FOURPOOL
-                    && new Time(game.getFrameCount()).greaterThan(new Time(3, 30)) 
+                    && new Time(game.getFrameCount()).greaterThan(new Time(2, 0)) 
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
                 workerCap = 11;
             }

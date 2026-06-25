@@ -192,6 +192,20 @@ public class UnitProduction {
         boolean addonFreeFactoryAvailable = productionBuildings.stream()
                 .anyMatch(b -> b.getType() == UnitType.Terran_Factory && b.getAddon() == null && !b.isTraining());
 
+        boolean enemyIsZerg = game.enemy().getRace() == Race.Zerg;
+        boolean hydraOrLurkerSeen = false;
+        int sunkenCount = 0;
+        for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {
+            UnitType enemyType = enemy.getEnemyType();
+            if (enemyType == UnitType.Zerg_Hydralisk || enemyType == UnitType.Zerg_Lurker || enemyType == UnitType.Zerg_Lurker_Egg) {
+                hydraOrLurkerSeen = true;
+            }
+            else if (enemyType == UnitType.Zerg_Sunken_Colony) {
+                sunkenCount++;
+            }
+        }
+        boolean zergTanksAllowed = !enemyIsZerg || hydraOrLurkerSeen || sunkenCount > 2;
+
         for (Unit building : productionBuildings) {
             for (UnitType unitType : techUnitResponses) {
                 if (canBuild(building, unitType.whatBuilds().getKey())
@@ -267,6 +281,7 @@ public class UnitProduction {
                         && building.getAddon() != null
                         && !hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && tankCount < 12
+                        && zergTanksAllowed
                         && (firstTankPriority || tankCount < 5 || mechCount * 2 >= tankCount * 3 || ratioOverMaximum)) {
                     if (firstTankPriority) {
                         items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 1));
@@ -276,7 +291,25 @@ public class UnitProduction {
                     }
                 }
                 else if (!firstTankPriority && (!ratioOverMaximum && !addonFreeFactoryAvailable || building.getAddon() == null)) {
-                    if (!ratioOverMaximum && buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
+                    if (enemyIsZerg) {
+                        boolean armoryComplete = unitTypeCount.getOrDefault(UnitType.Terran_Armory, 0) > 0;
+                        if (armoryComplete && unitTypeCount.get(UnitType.Terran_Vulture) * 2 < unitTypeCount.get(UnitType.Terran_Goliath) * 3) {
+                            if (isRecruitable(UnitType.Terran_Vulture) && !hasInQueue(UnitType.Terran_Vulture)) {
+                                items.add(plannedUnit(UnitType.Terran_Vulture, 3));
+                            }
+                        }
+                        else if (armoryComplete) {
+                            if (isRecruitable(UnitType.Terran_Goliath) && !hasInQueue(UnitType.Terran_Goliath)) {
+                                items.add(plannedUnit(UnitType.Terran_Goliath, 3));
+                            }
+                        }
+                        else {
+                            if (isRecruitable(UnitType.Terran_Vulture) && !hasInQueue(UnitType.Terran_Vulture)) {
+                                items.add(plannedUnit(UnitType.Terran_Vulture, 3));
+                            }
+                        }
+                    }
+                    else if (!ratioOverMaximum && buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
                         if (isRecruitable(UnitType.Terran_Goliath) && !hasInQueue(UnitType.Terran_Goliath)) {
                             items.add(plannedUnit(UnitType.Terran_Goliath, 3));
                         }
