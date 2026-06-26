@@ -293,7 +293,11 @@ public class UnitProduction {
                 else if (!firstTankPriority && (!ratioOverMaximum && !addonFreeFactoryAvailable || building.getAddon() == null)) {
                     if (enemyIsZerg) {
                         boolean armoryComplete = unitTypeCount.getOrDefault(UnitType.Terran_Armory, 0) > 0;
-                        if (armoryComplete && unitTypeCount.get(UnitType.Terran_Vulture) * 2 < unitTypeCount.get(UnitType.Terran_Goliath) * 3) {
+                        boolean vultureRatioMet = unitTypeCount.get(UnitType.Terran_Vulture) * 2 < unitTypeCount.get(UnitType.Terran_Goliath) * 3;
+                        if (techUnitResponses.contains(UnitType.Terran_Goliath)) {
+                            vultureRatioMet = unitTypeCount.get(UnitType.Terran_Vulture) * 4 < unitTypeCount.get(UnitType.Terran_Goliath);
+                        }
+                        if (armoryComplete && vultureRatioMet) {
                             if (isRecruitable(UnitType.Terran_Vulture) && !hasInQueue(UnitType.Terran_Vulture)) {
                                 items.add(plannedUnit(UnitType.Terran_Vulture, 3));
                             }

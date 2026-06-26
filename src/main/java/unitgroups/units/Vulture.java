@@ -328,14 +328,36 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if (enemyUnit.getEnemyType().isWorker()) {
-            if (enemyUnit.getEnemyUnit().isVisible()) {
-                unit.attack(enemyUnit.getEnemyUnit());
-            } 
-            else {
-                unit.attack(enemyUnit.getEnemyPosition());
+        if (enemyUnit.getEnemyType().isWorker() && unit.getDistance(enemyUnit.getEnemyPosition()) <= 500) {
+            boolean combatUnitNearby = false;
+            for (EnemyUnits eu : enemyUnits) {
+                if (eu == enemyUnit) {
+                    continue;
+                }
+                if (eu.getEnemyPosition() == null) {
+                    continue;
+                }
+                if (eu.getEnemyType().isBuilding() || eu.getEnemyType().isWorker()) {
+                    continue;
+                }
+                if (!eu.getEnemyUnit().isVisible()) {
+                    continue;
+                }
+                if (unit.getDistance(eu.getEnemyPosition()) <= 300) {
+                    combatUnitNearby = true;
+                    break;
+                }
             }
-            return;
+
+            if (!combatUnitNearby) {
+                if (enemyUnit.getEnemyUnit().isVisible()) {
+                    unit.attack(enemyUnit.getEnemyUnit());
+                }
+                else {
+                    unit.attack(enemyUnit.getEnemyPosition());
+                }
+                return;
+            }
         }
 
         Position kitePos = getKitePosition();
@@ -794,12 +816,21 @@ public class Vulture extends CombatUnits {
         int maxX = game.mapWidth() * 32 - 1;
         int maxY = game.mapHeight() * 32 - 1;
 
-        for (int d = distance; d >= 32; d -= 32) {
-            int tx = (int) Math.min(Math.max(unitPos.getX() + dirX * d, 0), maxX);
-            int ty = (int) Math.min(Math.max(unitPos.getY() + dirY * d, 0), maxY);
-            Position candidate = new Position(tx, ty);
-            if (game.isWalkable(candidate.toWalkPosition())) {
-                return candidate;
+        double baseAngle = Math.atan2(dirY, dirX);
+        double[] offsets = {0, 0.5236, -0.5236, 1.0472, -1.0472, 1.5708, -1.5708};
+
+        for (double offset : offsets) {
+            double angle = baseAngle + offset;
+            double rx = Math.cos(angle);
+            double ry = Math.sin(angle);
+
+            for (int d = distance; d >= 32; d -= 32) {
+                int tx = (int) Math.min(Math.max(unitPos.getX() + rx * d, 0), maxX);
+                int ty = (int) Math.min(Math.max(unitPos.getY() + ry * d, 0), maxY);
+                Position candidate = new Position(tx, ty);
+                if (game.isWalkable(candidate.toWalkPosition())) {
+                    return candidate;
+                }
             }
         }
 
@@ -810,6 +841,9 @@ public class Vulture extends CombatUnits {
         Position unitPos = unit.getPosition();
         double sumDx = 0;
         double sumDy = 0;
+        double staticSumDx = 0;
+        double staticSumDy = 0;
+        int staticThreatCount = 0;
         boolean anyThreat = false;
 
         for (EnemyUnits enemy : enemyUnits) {
@@ -850,14 +884,32 @@ public class Vulture extends CombatUnits {
                 safeDistance = Math.max(weaponRange() + 32, range + 192);
             }
 
-            if (threatDist < safeDistance) {
-                anyThreat = true;
-                double dx = unitPos.getX() - enemy.getEnemyPosition().getX();
-                double dy = unitPos.getY() - enemy.getEnemyPosition().getY();
-                double weight = (safeDistance - threatDist) / safeDistance;
-                sumDx += (dx / Math.max(1, threatDist)) * weight;
-                sumDy += (dy / Math.max(1, threatDist)) * weight;
+            if (threatDist >= safeDistance) {
+                continue;
             }
+
+            double dx = unitPos.getX() - enemy.getEnemyPosition().getX();
+            double dy = unitPos.getY() - enemy.getEnemyPosition().getY();
+            double weight = (safeDistance - threatDist) / safeDistance;
+            double contribX = (dx / Math.max(1, threatDist)) * weight;
+            double contribY = (dy / Math.max(1, threatDist)) * weight;
+
+            if (staticThreat) {
+                staticThreatCount++;
+                staticSumDx += contribX;
+                staticSumDy += contribY;
+                continue;
+            }
+
+            anyThreat = true;
+            sumDx += contribX;
+            sumDy += contribY;
+        }
+
+        if (staticThreatCount > 1) {
+            anyThreat = true;
+            sumDx += staticSumDx;
+            sumDy += staticSumDy;
         }
 
         if (!anyThreat) {

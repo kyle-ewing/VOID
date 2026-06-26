@@ -1,13 +1,13 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class TwoBaseMuta extends EnemyStrategy {
     private MapInfo mapInfo;
@@ -21,10 +21,14 @@ public class TwoBaseMuta extends EnemyStrategy {
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
         boolean hasNaturalDepot = false;
+        EnemyUnits natural = null;
         if (mapInfo.getEnemyNatural() != null) {
-            hasNaturalDepot = enemyUnits.stream()
+            natural = enemyUnits.stream()
                     .filter(eu -> eu.getEnemyType().isResourceDepot())
-                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
+                    .filter(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200)
+                    .findFirst()
+                    .orElse(null);
+            hasNaturalDepot = natural != null;
         }
 
         if (!hasNaturalDepot) {
@@ -34,6 +38,15 @@ public class TwoBaseMuta extends EnemyStrategy {
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyPosition() == null) {
                 continue;
+            }
+
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Extractor) {
+                if (natural != null && enemyUnit.getEnemyPosition().getDistance(natural.getEnemyPosition()) < 200) {
+                    Time extractorCompletion = new Time(time.getFrames() + enemyUnit.getEnemyUnit().getRemainingBuildTime());
+                    if (extractorCompletion.lessThanOrEqual(new Time(6, 0))) {
+                        return true;
+                    }
+                }
             }
 
             if (enemyUnit.getEnemyType() != UnitType.Zerg_Spire) {
@@ -50,6 +63,7 @@ public class TwoBaseMuta extends EnemyStrategy {
 
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Engineering_Bay);
+        getBuildingResponse().add(UnitType.Terran_Armory);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);

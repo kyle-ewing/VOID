@@ -39,6 +39,10 @@ public abstract class EnemyTechUnits {
     public abstract void techBuildingResponse();
     public abstract void techUpgradeResponse();
 
+    public boolean isResearchTriggered(HashSet<EnemyUnits> enemyUnits) {
+        return false;
+    }
+
     public String getTechName() {
         return techName;
     }

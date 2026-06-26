@@ -996,7 +996,7 @@ public class WorkerManager {
                 if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
                 }
-                return 0;
+                return null;
             case NINEPOOL:
                 if (new Time(game.getFrameCount()).greaterThan(new Time(3, 30)) 
                         && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
@@ -1009,18 +1009,18 @@ public class WorkerManager {
                 else if (enemyInRange(800)) {
                     return 3;
                 }
-                return 0;
+                return null;
             case FOURPOOL:
                 if (enemyInBase()) {
                     return 4;
                 }
 
-                return 0;
+                return null;
             case SHUTTLERUSH:
-                return 0;
+                return null;
             case ONEBASELURKER:
                 if (!enemyInRange(400) && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
-                    return 0;
+                    return null;
                 }
                 else if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
@@ -1035,7 +1035,7 @@ public class WorkerManager {
                 else if (enemyInRange(800)) {
                     return 3;
                 }
-                return 0;
+                return null;
             default:
                 return null;
         }
