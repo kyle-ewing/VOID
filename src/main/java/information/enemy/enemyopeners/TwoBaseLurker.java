@@ -3,6 +3,7 @@ package information.enemy.enemyopeners;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.MapInfo;
@@ -19,6 +20,7 @@ public class TwoBaseLurker extends EnemyStrategy {
 
         buildingResponse();
         upgradeResponse();
+        techUpgradeResponse();
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
@@ -83,6 +85,10 @@ public class TwoBaseLurker extends EnemyStrategy {
 
     public void upgradeResponse() {
         getUpgradeResponse().add(UpgradeType.U_238_Shells);
+    }
+
+    public void techUpgradeResponse() {
+        getTechUpgradeResponse().add(TechType.Tank_Siege_Mode);
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {

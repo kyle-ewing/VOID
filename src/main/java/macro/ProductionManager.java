@@ -1220,20 +1220,31 @@ public class ProductionManager {
 
             for (PlannedItem upgradeResponse : techUnit.getFriendlyUpgradeResponse()) {
                 boolean existingUpgrade = false;
+                PlannedItem overlappingUpgrade = null;
 
                 for (PlannedItem pi : productionQueue) {
                     if (pi.getTechUpgrade() != null && upgradeResponse.getTechUpgrade() != null) {
                         if (pi.getTechUpgrade() == upgradeResponse.getTechUpgrade()) {
-                            existingUpgrade = true;
+                            overlappingUpgrade = pi;
                             break;
                         }
                     }
 
                     if (pi.getUpgradeType() != null && upgradeResponse.getUpgradeType() != null) {
                         if (pi.getUpgradeType() == upgradeResponse.getUpgradeType()) {
-                            existingUpgrade = true;
+                            overlappingUpgrade = pi;
                             break;
                         }
+                    }
+                }
+
+                if (overlappingUpgrade != null) {
+                    if (upgradeResponse.getSupply() < overlappingUpgrade.getSupply()
+                            && overlappingUpgrade.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                        productionQueue.remove(overlappingUpgrade);
+                    }
+                    else {
+                        existingUpgrade = true;
                     }
                 }
 

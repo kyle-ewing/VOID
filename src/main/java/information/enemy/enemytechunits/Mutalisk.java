@@ -31,6 +31,7 @@ public class Mutalisk extends EnemyTechUnits {
 
     public void techBuildingResponse() {
         getFriendlyBuildingResponse().add(UnitType.Terran_Engineering_Bay);
+        getFriendlyBuildingResponse().add(UnitType.Terran_Armory);
     }
 
     public void techUpgradeResponse() {

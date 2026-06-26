@@ -1,13 +1,12 @@
 package information.enemy.enemytechunits;
 
+import java.util.HashSet;
+
 import bwapi.TechType;
 import bwapi.UnitType;
-import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
 import planner.PlannedItem;
 import planner.PlannedItemType;
-
-import java.util.HashSet;
 
 public class Lurker extends EnemyTechUnits {
     public Lurker() {
@@ -27,6 +26,19 @@ public class Lurker extends EnemyTechUnits {
         return false;
     }
 
+    public boolean isResearchTriggered(HashSet<EnemyUnits> enemyUnits) {
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() != UnitType.Zerg_Hydralisk_Den) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyUnit().isResearching()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void techBuildingResponse() {
         getFriendlyBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getFriendlyBuildingResponse().add(UnitType.Terran_Factory);
@@ -36,6 +48,7 @@ public class Lurker extends EnemyTechUnits {
     }
 
     public void techUpgradeResponse() {
+        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Tank_Siege_Mode, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Irradiate, 0, PlannedItemType.UPGRADE, UnitType.Terran_Science_Facility, 4));
     }
 }

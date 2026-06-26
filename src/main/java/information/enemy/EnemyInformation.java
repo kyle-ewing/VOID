@@ -222,7 +222,8 @@ public class EnemyInformation {
         techunitResponse.clear();
         for (EnemyTechUnits enemyTechUnit : enemyStrategyManager.getEnemyTechUnits()) {
             boolean detected = enemyTechUnit.isEnemyTechUnit(enemyUnits);
-            if (detected && !enemyTechUnits.contains(enemyTechUnit)) {
+            boolean researchTriggered = enemyTechUnit.isResearchTriggered(enemyUnits);
+            if ((detected || researchTriggered) && !enemyTechUnits.contains(enemyTechUnit)) {
                 if (!enemyTechUnit.hasTriggeredResponse()) {
                     enemyTechUnit.techBuildingResponse();
                     enemyTechUnit.techUpgradeResponse();
@@ -231,7 +232,7 @@ public class EnemyInformation {
 
                 enemyTechUnits.add(enemyTechUnit);
             }
-            else if (!detected && enemyTechUnits.contains(enemyTechUnit)) {
+            else if (!detected && !researchTriggered && enemyTechUnits.contains(enemyTechUnit)) {
                 enemyTechUnits.remove(enemyTechUnit);
             }
 
