@@ -166,7 +166,13 @@ public class UnitManager {
                     ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
                     break;
                 case Terran_Science_Vessel:
-                    ClosestUnit.findClosestFriendlyUnit(combatUnit, combatUnits, UnitType.Terran_Marine);
+                    Squad vesselSquad = squadManager.getSquadOfUnit(combatUnit);
+                    if (vesselSquad != null) {
+                        ClosestUnit.findFrontUnit(combatUnit, vesselSquad.getSquadUnits(), gameState.getKnownEnemyUnits());
+                    }
+                    else {
+                        ClosestUnit.findFrontUnit(combatUnit, combatUnits, gameState.getKnownEnemyUnits());
+                    }
                     ClosestUnit.priorityTargets(combatUnit, combatUnit.getPriorityTargets(), gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     break;
                 default:

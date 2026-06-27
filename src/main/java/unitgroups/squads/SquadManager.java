@@ -39,7 +39,16 @@ public class SquadManager {
     }
 
     public void addUnitToSquad(CombatUnits unit) {
-        if (unit.getUnitType().isFlyer() || unit.getUnitStatus() == UnitStatus.MINE) {
+        if (unit.getUnitStatus() == UnitStatus.MINE) {
+            return;
+        }
+
+        if (unit.getUnitType() == UnitType.Terran_Science_Vessel) {
+            assignVesselSquad(unit);
+            return;
+        }
+
+        if (unit.getUnitType().isFlyer()) {
             //implement air squad later
             return;
         }
@@ -86,6 +95,100 @@ public class SquadManager {
         }
     }
 
+    private void manageVesselSquads() {
+        for (CombatUnits unit : gamestate.getCombatUnits()) {
+            if (unit.getUnitType() != UnitType.Terran_Science_Vessel) {
+                continue;
+            }
+
+            assignVesselSquad(unit);
+        }
+    }
+
+    private void assignVesselSquad(CombatUnits vessel) {
+        Squad currentSquad = getSquadOfUnit(vessel);
+
+        if (currentSquad != null && isValidVesselSquad(currentSquad)) {
+            return;
+        }
+
+        Squad target = findValidVesselSquad();
+
+        if (target != null) {
+            if (currentSquad != null) {
+                transferUnit(vessel, currentSquad, target);
+                return;
+            }
+            target.addToSquad(vessel);
+            return;
+        }
+
+        if (currentSquad != null && currentSquad.groundUnitCount() > 0) {
+            return;
+        }
+
+        Squad fallback = findGroundSquad();
+
+        if (fallback != null) {
+            if (currentSquad != null) {
+                transferUnit(vessel, currentSquad, fallback);
+                return;
+            }
+            fallback.addToSquad(vessel);
+            return;
+        }
+
+        if (currentSquad != null) {
+            currentSquad.removeFromSquad(vessel);
+        }
+    }
+
+    private boolean isValidVesselSquad(Squad squad) {
+        if (squad.isRunbySquad()) {
+            return false;
+        }
+
+        if (squad.groundUnitCount() == 0) {
+            return false;
+        }
+
+        return squad.scienceVesselCount() <= 2;
+    }
+
+    private Squad findValidVesselSquad() {
+        for (Squad squad : squads) {
+            if (squad.isRunbySquad()) {
+                continue;
+            }
+
+            if (squad.groundUnitCount() == 0) {
+                continue;
+            }
+
+            if (squad.scienceVesselCount() >= 2) {
+                continue;
+            }
+
+            return squad;
+        }
+        return null;
+    }
+
+    private Squad findGroundSquad() {
+        for (Squad squad : squads) {
+            if (squad.isRunbySquad()) {
+                continue;
+            }
+
+            if (squad.groundUnitCount() == 0) {
+                continue;
+            }
+
+            return squad;
+        }
+        return null;
+    }
+
     private void createRunbySquad() {
         Squad runbySquad = new Squad(game, true);
         int addedUnits = 0;
@@ -124,6 +227,8 @@ public class SquadManager {
 
     public void onFrame() {
         enemyArmySupply = enemyInformation.getEnemyArmySupply();
+
+        manageVesselSquads();
 
         for (Squad squad : squads) {
             if (enemyArmySupply > 8) {

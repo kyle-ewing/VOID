@@ -68,7 +68,8 @@ public class ClosestUnit {
             if (friendlyUnit.getUnitStatus() == UnitStatus.LIFTABLE
                     || friendlyUnit.getUnitStatus() == UnitStatus.BUILDING
                     || friendlyUnit.getUnitStatus() == UnitStatus.MINE
-                    || friendlyUnit.getUnitStatus() == UnitStatus.WORKER) {
+                    || friendlyUnit.getUnitStatus() == UnitStatus.WORKER
+                    || friendlyUnit.getUnitStatus() == UnitStatus.RUNBY) {
                 continue;
             }
 
@@ -125,6 +126,66 @@ public class ClosestUnit {
         else {
             combatUnit.setFriendlyUnit(null);
         }
+    }
+
+    //Reassigns friendlyUnit every frame to the ground unit nearest the enemy (front of army)
+    //Falls back to the closest friendly ground unit when no enemies are known
+    public static void findFrontUnit(CombatUnits combatUnit, HashSet<CombatUnits> friendlyUnits, HashSet<EnemyUnits> enemyUnits) {
+        Position referencePosition = combatUnit.getUnit().getPosition();
+        int closestEnemyDistance = Integer.MAX_VALUE;
+
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            int distance = combatUnit.getUnit().getDistance(enemyUnit.getEnemyPosition());
+            if (distance < closestEnemyDistance) {
+                closestEnemyDistance = distance;
+                referencePosition = enemyUnit.getEnemyPosition();
+            }
+        }
+
+        CombatUnits frontUnit = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (CombatUnits friendlyUnit : friendlyUnits) {
+            if (friendlyUnit.getUnitID() == combatUnit.getUnitID()) {
+                continue;
+            }
+
+            if (friendlyUnit.getUnitType().isFlyer() || friendlyUnit.getUnit().getType().isBuilding()) {
+                continue;
+            }
+
+            if (friendlyUnit.getUnitType() == UnitType.Terran_Medic) {
+                continue;
+            }
+
+            if (friendlyUnit.getUnitStatus() == UnitStatus.LIFTABLE
+                    || friendlyUnit.getUnitStatus() == UnitStatus.BUILDING
+                    || friendlyUnit.getUnitStatus() == UnitStatus.MINE
+                    || friendlyUnit.getUnitStatus() == UnitStatus.WORKER) {
+                continue;
+            }
+
+            if (friendlyUnit.isInBunker() || friendlyUnit.getUnit().isLoaded()) {
+                continue;
+            }
+
+            int distance = friendlyUnit.getUnit().getDistance(referencePosition);
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                frontUnit = friendlyUnit;
+            }
+        }
+
+        if (frontUnit != null) {
+            combatUnit.setFriendlyUnit(frontUnit);
+            return;
+        }
+
+        combatUnit.setFriendlyUnit(null);
     }
 
     public static void priorityTargets(CombatUnits combatUnit, HashSet<UnitType> priorityUnit, HashSet<EnemyUnits> enemyUnits, int range) {
@@ -269,12 +330,14 @@ public class ClosestUnit {
                 continue;
             }
 
-            if (!combatUnit.getUnit().getType().airWeapon().targetsAir() && enemyUnit.getEnemyType().isFlyer()) {
-                continue;
-            }
+            if (combatUnit.getUnit().getType() != UnitType.Terran_Science_Vessel) {
+                if (!combatUnit.getUnit().getType().airWeapon().targetsAir() && enemyUnit.getEnemyType().isFlyer()) {
+                    continue;
+                }
 
-            if (!combatUnit.getUnit().getType().groundWeapon().targetsGround() && !enemyUnit.getEnemyType().isFlyer()) {
-                continue;
+                if (!combatUnit.getUnit().getType().groundWeapon().targetsGround() && !enemyUnit.getEnemyType().isFlyer()) {
+                    continue;
+                }
             }
 
             if (enemyUnit.getEnemyUnit().isLifted() && !combatUnit.getUnit().getType().airWeapon().targetsAir()) {

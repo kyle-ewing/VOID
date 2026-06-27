@@ -1515,6 +1515,7 @@ public class MapInfo {
         if (enemyNatural != null) {
             for (EnemyUnits enemyUnit : knownEnemyUnits) {
                 if (enemyUnit.getEnemyType().isResourceDepot()
+                        && enemyUnit.getEnemyPosition() != null
                         && enemyUnit.getEnemyPosition().getDistance(enemyNatural.getLocation().toPosition()) < 200) {
                     enemyNaturalHasDepot = true;
                     break;
@@ -1550,6 +1551,7 @@ public class MapInfo {
             boolean enemyOwned = false;
             for (EnemyUnits enemyUnit : knownEnemyUnits) {
                 if (enemyUnit.getEnemyType().isResourceDepot()
+                        && enemyUnit.getEnemyPosition() != null
                         && enemyUnit.getEnemyPosition().getDistance(base.getLocation().toPosition()) < 100) {
                     enemyOwned = true;
                     break;

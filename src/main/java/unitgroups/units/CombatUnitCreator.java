@@ -37,7 +37,7 @@ public class CombatUnitCreator {
             case Terran_Valkyrie:
                 return new Valkyrie(game, unit);
             case Terran_Science_Vessel:
-                return new ScienceVessel(game, unit);
+                return new ScienceVessel(game, enemyInformation, unit);
             case Terran_Comsat_Station:
                 return new Comsat(game, unit);
             case Spell_Scanner_Sweep:

@@ -746,6 +746,10 @@ public class WorkerManager {
                 continue;
             }
 
+            if (enemyUnit.getEnemyType() != UnitType.Zerg_Overlord) {
+                continue;
+            }
+
             TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
             if (mapInfo.getBaseTiles().contains(enemyTile) || mapInfo.getNaturalTiles().contains(enemyTile)) {
                 return true;
@@ -896,7 +900,7 @@ public class WorkerManager {
                 createRepairForce(bunker, openerSize);
             }
             else if (enemyInRange(200) && enemyInformation.getEnemySupplyInRange(bunker) >= 10) {
-                createRepairForce(bunker, 6);
+                createRepairForce(bunker, 5);
             }
             else if (enemyInRange(400) && enemyInformation.getEnemySupplyInRange(bunker) >= 6) {
                 createRepairForce(bunker, 4);
@@ -1011,7 +1015,7 @@ public class WorkerManager {
                 }
                 return null;
             case FOURPOOL:
-                if (enemyInBase()) {
+                if (enemyInBase() && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
                     return 4;
                 }
 
