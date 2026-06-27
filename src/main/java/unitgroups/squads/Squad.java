@@ -52,6 +52,10 @@ public class Squad {
                 continue;
             }
 
+            if (isScienceVessel(candidate)) {
+                continue;
+            }
+
             if (tankBias && !isSiegeTank(candidate)) {
                 continue;
             }
@@ -79,6 +83,10 @@ public class Squad {
         int count = 0;
 
         for (CombatUnits unit : units) {
+            if (isScienceVessel(unit)) {
+                continue;
+            }
+
             Position pos = unit.getUnit().getPosition();
             if (pos.getApproxDistance(anchorPos) <= CLUSTER_RADIUS) {
                 int weight = 1;
@@ -94,6 +102,11 @@ public class Squad {
                 cy += pos.getY() * weight;
                 count += weight;
             }
+        }
+
+        if (count == 0) {
+            regroupPosition = new Position(0, 0);
+            return;
         }
 
         Position clusterCenter = new Position(cx / count, cy / count);
@@ -115,6 +128,30 @@ public class Squad {
 
     private boolean isMedic(CombatUnits unit) {
         return unit.getUnitType() == UnitType.Terran_Medic;
+    }
+
+    private boolean isScienceVessel(CombatUnits unit) {
+        return unit.getUnitType() == UnitType.Terran_Science_Vessel;
+    }
+
+    public int scienceVesselCount() {
+        int count = 0;
+        for (CombatUnits unit : squadUnits) {
+            if (isScienceVessel(unit)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int groundUnitCount() {
+        int count = 0;
+        for (CombatUnits unit : squadUnits) {
+            if (!unit.getUnitType().isFlyer()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public int siegeTankCount() {
@@ -151,6 +188,10 @@ public class Squad {
         }
 
         for (CombatUnits unit : squadUnits) {
+            if (isScienceVessel(unit)) {
+                continue;
+            }
+
             if (unit.getUnitStatus() != UnitStatus.ATTACK) {
                 continue;
             }

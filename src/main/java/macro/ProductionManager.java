@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import bwapi.Game;
 import bwapi.Player;
@@ -86,6 +87,8 @@ public class ProductionManager {
     private void production() {
         boolean hasHighPriorityBuilding = hasHigherPriorityBuilding();
         boolean blockedByHigherPriority = false;
+        boolean pendingSupplyZeroUnit = hasPendingSupplyZeroUnit();
+        Set<UnitType> resourceBlockedResearchBuildings = new HashSet<>();
         Workers worker = null;
 
         List<PlannedItem> sortedQueue = new ArrayList<>(productionQueue);
@@ -139,6 +142,14 @@ public class ProductionManager {
                     }
 
                     if (pi.getPlannedItemType() == PlannedItemType.UPGRADE) {
+                        if (pendingSupplyZeroUnit && pi.getSupply() != 0) {
+                            continue;
+                        }
+
+                        if (resourceBlockedResearchBuildings.contains(pi.getTechBuilding())) {
+                            continue;
+                        }
+
                         if (pi.getUpgradeType() != null && game.self().getUpgradeLevel(pi.getUpgradeType()) >= pi.getUpgradeLevel()) {
                             pi.setPlannedItemStatus(PlannedItemStatus.COMPLETE);
                             continue;
@@ -161,6 +172,7 @@ public class ProductionManager {
                         if (pi.getTechUpgrade() != null) {
                             if (gameState.getResourceTracking().getAvailableMinerals() < pi.getTechUpgrade().mineralPrice() || gameState.getResourceTracking().getAvailableGas() < pi.getTechUpgrade().gasPrice()) {
                                 blockedByHigherPriority = true;
+                                resourceBlockedResearchBuildings.add(pi.getTechBuilding());
                                 continue;
                             }
 
@@ -180,6 +192,7 @@ public class ProductionManager {
                             if (gameState.getResourceTracking().getAvailableMinerals() < pi.getUpgradeType().mineralPrice()
                                     || gameState.getResourceTracking().getAvailableGas() < pi.getUpgradeType().gasPrice()) {
                                 blockedByHigherPriority = true;
+                                resourceBlockedResearchBuildings.add(pi.getTechBuilding());
                                 continue;
                             }
 
@@ -1575,6 +1588,19 @@ public class ProductionManager {
         return false;
     }
 
+    private boolean hasPendingSupplyZeroUnit() {
+        for (PlannedItem pi : productionQueue) {
+            if (pi.getPlannedItemType() == PlannedItemType.UNIT
+                    && pi.getPriority() == 1
+                    && pi.getSupply() == 0
+                    && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
+                    && meetsRequirements(pi.getUnitType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void onFrame() {
         scvProduction();
         unitProduction.onFrame();
@@ -1636,6 +1662,9 @@ public class ProductionManager {
             }
 
             if (unit.getType() == UnitType.Terran_Bunker && gameState.getStartingOpener().buildType() != BuildType.BIO) {
+                if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getBuildingResponse().contains(UnitType.Terran_Bunker)) {
+                    addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
+                }
                 return;
             }
 
