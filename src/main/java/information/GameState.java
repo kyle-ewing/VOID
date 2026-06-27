@@ -42,6 +42,7 @@ public class GameState {
     private ResourceTracking resourceTracking;
     private BuildOrderManager buildOrderManager;
     private EnemyStrategy enemyOpener = null;
+    private boolean openerLocked = false;
     private BuildPivot selectedPivot = null;
 
     private BuildOrder startingOpener = null;
@@ -443,6 +444,14 @@ public class GameState {
 
     public EnemyStrategy getEnemyOpener() {
         return enemyOpener;
+    }
+
+    public void setOpenerLocked(boolean openerLocked) {
+        this.openerLocked = openerLocked;
+    }
+
+    public boolean isOpenerLocked() {
+        return openerLocked;
     }
 
     public HashMap<UnitType, Integer> getOpenerMoveOutCondition() {

@@ -18,6 +18,8 @@ public abstract class EnemyStrategy {
     protected ArrayList<TechType> techUpgradeResponse = new ArrayList<>();
     protected EnemyUnits priorityEnemyUnit = null;
     protected boolean defendedStrategy = false;
+    protected boolean hardLockedWhenSeen = false;
+    protected int openerSwitchWindow = 1440;
 
     public EnemyStrategy(EnemyStrategyName strategyName) {
         this.strategyName = strategyName;
@@ -63,6 +65,14 @@ public abstract class EnemyStrategy {
 
     public boolean isStrategyDefended() {
         return defendedStrategy;
+    }
+
+    public boolean isHardLockedWhenSeen() {
+        return hardLockedWhenSeen;
+    }
+
+    public int getOpenerSwitchWindow() {
+        return openerSwitchWindow;
     }
 
     public void setDefendedStrategy(boolean defendedStrategy) {

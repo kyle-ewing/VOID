@@ -249,7 +249,7 @@ public class WorkerManager {
                     }
                     break;
                 case SCOUTING:
-                    if (gameState.getEnemyOpener() == null) {
+                    if (!gameState.isOpenerLocked()) {
                         break;
                     }
 

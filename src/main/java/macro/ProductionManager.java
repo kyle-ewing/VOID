@@ -21,6 +21,7 @@ import bwapi.UpgradeType;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
@@ -54,7 +55,7 @@ public class ProductionManager {
     private UnitProduction unitProduction;
     private ExpansionCriteria expansionCriteria;
     private TilePosition bunkerPosition = null;
-    private boolean openerResponse = false;
+    private EnemyStrategy appliedOpener = null;
     private boolean priorityStop = false;
 
 
@@ -973,7 +974,7 @@ public class ProductionManager {
     }
 
     private void openerResponse() {
-        openerResponse = true;
+        appliedOpener = gameState.getEnemyOpener();
 
         Map<UnitType, Integer> buildingCounts = new HashMap<>();
         for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
@@ -1608,7 +1609,7 @@ public class ProductionManager {
         addSupplyDepot();
         addExpansion();
 
-        if (gameState.getEnemyOpener() != null && !openerResponse) {
+        if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener() != appliedOpener) {
             openerResponse();
         }
 
