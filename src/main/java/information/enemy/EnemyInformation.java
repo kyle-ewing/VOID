@@ -31,6 +31,7 @@ public class EnemyInformation {
     private EnemyStrategyManager enemyStrategyManager;
     private EnemyStrategy enemyOpener;
     private int openerDefenseTimer = 0;
+    private int openerDetectedFrame = 0;
     private float enemyArmySupply = 0;
     private static final int OPENER_DEFENSE_TIME = 4320;
 
@@ -395,17 +396,41 @@ public class EnemyInformation {
         enemyUnits.removeIf(eu -> eu.getIrradiateTimer() > 240 || eu.getSweepTimer() > 224);
         validThreats.removeIf(eu -> eu.getIrradiateTimer() > 240);
 
-        if (enemyOpener != null) {
+        if (gameState.isOpenerLocked()) {
+            return;
+        }
+
+        if (enemyOpener != null && game.getFrameCount() - openerDetectedFrame > enemyOpener.getOpenerSwitchWindow()) {
+            gameState.setOpenerLocked(true);
             return;
         }
 
         for (EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
-            if (enemyStrategy.isEnemyStrategy(enemyUnits, currentTime) && enemyOpener == null) {
-                enemyOpener = enemyStrategy;
-                gameState.setEnemyOpener(enemyOpener);
-                game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
-                break;
+            if (enemyStrategy == enemyOpener) {
+                continue;
             }
+
+            if (!enemyStrategy.isEnemyStrategy(enemyUnits, currentTime)) {
+                continue;
+            }
+
+            boolean firstDetection = enemyOpener == null;
+            enemyOpener = enemyStrategy;
+            gameState.setEnemyOpener(enemyOpener);
+
+            if (firstDetection) {
+                openerDetectedFrame = game.getFrameCount();
+                game.sendText("Potential enemy opener detected: " + enemyStrategy.getStrategyName());
+            }
+            else {
+                openerDefenseTimer = 0;
+                game.sendText("Switched enemy opener to: " + enemyStrategy.getStrategyName());
+            }
+
+            if (enemyStrategy.isHardLockedWhenSeen()) {
+                gameState.setOpenerLocked(true);
+            }
+            return;
         }
     }
 

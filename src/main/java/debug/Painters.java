@@ -17,13 +17,14 @@ import bwapi.Text;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
-import map.bwemwrappers.Area;
-import map.bwemwrappers.Base;
-import map.bwemwrappers.ChokePoint;
 import config.Config;
 import information.GameState;
 import information.Scouting;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategy;
+import map.bwemwrappers.Area;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import planner.PlannedItem;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
@@ -37,7 +38,7 @@ public class Painters {
     Config config;
     Scouting scouting;
     RallyPoint rallyPoint;
-    boolean enemyOpenerPrinted = false;
+    EnemyStrategy enemyOpener = null;
 
     public Painters(Game game, GameState gameState, Config config, Scouting scouting, RallyPoint rallyPoint) {
         this.game = game;
@@ -214,9 +215,9 @@ public class Painters {
     }
 
     private void printEnemyOpener() {
-        if (gameState.getEnemyOpener() != null && !enemyOpenerPrinted) {
+        if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener() != enemyOpener) {
             System.out.println("Enemy Opener: " + gameState.getEnemyOpener().getStrategyName() + " at " + new Time(game.getFrameCount()));
-            enemyOpenerPrinted = true;
+            enemyOpener = gameState.getEnemyOpener();
         }
     }
 
