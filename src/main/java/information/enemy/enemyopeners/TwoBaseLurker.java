@@ -35,6 +35,10 @@ public class TwoBaseLurker extends EnemyStrategy {
                     .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
         }
 
+        if (!hasNaturalHatch) {
+            return false;
+        }
+
         boolean denResearching = enemyUnits.stream()
                 .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hydralisk_Den)
                 .anyMatch(eu -> eu.getEnemyUnit().isResearching());

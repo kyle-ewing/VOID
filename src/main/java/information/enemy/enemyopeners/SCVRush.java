@@ -16,6 +16,7 @@ public class SCVRush extends EnemyStrategy {
     public SCVRush(MapInfo mapInfo) {
         super(EnemyStrategyName.SCVRUSH);
         this.mapInfo = mapInfo;
+        hardLockedWhenSeen = true;
 
         buildingResponse();
     }

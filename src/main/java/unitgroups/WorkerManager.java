@@ -746,7 +746,7 @@ public class WorkerManager {
                 continue;
             }
 
-            if (enemyUnit.getEnemyType() != UnitType.Zerg_Overlord) {
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Overlord) {
                 continue;
             }
 
@@ -766,7 +766,7 @@ public class WorkerManager {
             if (!enemyUnit.getEnemyUnit().isCompleted() || !enemyUnit.getEnemyUnit().isPowered()) {
                 continue;
             }
-            TilePosition cannonTile = enemyUnit.getEnemyUnit().getTilePosition();
+            TilePosition cannonTile = enemyUnit.getEnemyTilePosition();
             if (mapInfo.getBaseTiles().contains(cannonTile) || mapInfo.getNaturalTiles().contains(cannonTile)) {
                 return true;
             }

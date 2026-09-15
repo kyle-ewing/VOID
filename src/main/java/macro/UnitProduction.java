@@ -64,7 +64,7 @@ public class UnitProduction {
     }
 
     public void onFrame() {
-        if (enemyOpener == null && gameState.getEnemyOpener() != null) {
+        if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener() != enemyOpener) {
             enemyOpener = gameState.getEnemyOpener();
         }
 
