@@ -3,14 +3,12 @@ package information;
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
-import bwapi.Race;
 import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
-import information.enemy.enemyopeners.EnemyStrategyName;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
@@ -95,8 +93,6 @@ public class Scouting {
                 scout.getUnit().move(diagonalBase.getCenter());
                 return;
             }
-
-            return;
         }
 
         Base closest = null;
@@ -463,8 +459,6 @@ public class Scouting {
 
         if (!secondScoutSent
                 && mapInfo.getStartingBases().size() == 3
-                && (((game.enemy().getRace() == Race.Protoss || game.enemy().getRace() == Race.Zerg) && gameState.getEnemyOpener() == null)
-                    || (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL))
                 && gameState.getStartingEnemyBase() == null
                 && mapInfo.getStartingBases().stream().anyMatch(b -> mapInfo.isExplored(b))) {
             secondScoutSent = true;

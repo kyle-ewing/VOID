@@ -28,11 +28,8 @@ public class BunkerRush extends EnemyStrategy {
 
             if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) || mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
                 if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker ) {
-                    if (new Time(3, 30).greaterThan(time)) {
-                        return true;
-                    }
+                    return true;
                 }
-
             }
         }
         return false;
@@ -43,10 +40,17 @@ public class BunkerRush extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Marine);
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
-        return new HashMap<>();
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+
+        if (time.lessThanOrEqual(new Time(6, 0))) {
+            moveOutCondition.put(UnitType.Terran_Marine, 5);
+        }
+
+        return moveOutCondition;
     }
 
     public void upgradeResponse() {
@@ -58,6 +62,8 @@ public class BunkerRush extends EnemyStrategy {
 
 
     public HashSet<UnitType> removeBuildings() {
-        return new HashSet<>();
+        HashSet<UnitType> removeBuildings = new HashSet<>();
+        removeBuildings.add(UnitType.Terran_Engineering_Bay);
+        return removeBuildings;
     }
 }
