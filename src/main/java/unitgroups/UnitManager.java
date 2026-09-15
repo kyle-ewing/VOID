@@ -11,6 +11,7 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 import information.GameState;
 import information.MapInfo;
 import information.Scouting;
@@ -783,12 +784,28 @@ public class UnitManager {
             return false;
         }
 
+        int bunkerRange = UnitType.Terran_Marine.groundWeapon().maxRange() + 32;
+
+        if (game.self().getUpgradeLevel(UpgradeType.U_238_Shells) > 0) {
+            bunkerRange += 32;
+        }
+
         for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             if (enemyUnit.getEnemyPosition() == null) {
                 continue;
             }
 
-            if (enemyUnit.getEnemyPosition().getDistance(bunker.getPosition()) < 300) {
+            double bunkerDistance = enemyUnit.getEnemyPosition().getDistance(bunker.getPosition());
+
+            if (enemyUnit.getEnemyType().isBuilding() || enemyUnit.getEnemyType().isWorker()) {
+                if (bunkerDistance > bunkerRange) {
+                    continue;
+                }
+
+                return true;
+            }
+
+            if (bunkerDistance < 225) {
                 return true;
             }
         }
