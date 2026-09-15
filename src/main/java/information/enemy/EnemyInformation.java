@@ -104,7 +104,7 @@ public class EnemyInformation {
     private void enemyInBase() {
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (!enemyUnit.getEnemyType().canAttack()
-                    && enemyUnit.getEnemyType() != UnitType.Zerg_Extractor
+                    && !enemyUnit.getEnemyType().isBuilding()
                     && enemyUnit.getEnemyType() != UnitType.Protoss_Shuttle
                     && enemyUnit.getEnemyType() != UnitType.Terran_Dropship) {
                 continue;
@@ -117,6 +117,10 @@ public class EnemyInformation {
                 return;
             }
             else if (mapInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
+                gameState.setEnemyInBase(true);
+                return;
+            }
+            else if (mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && enemyUnit.getEnemyType().isBuilding()) {
                 gameState.setEnemyInBase(true);
                 return;
             }

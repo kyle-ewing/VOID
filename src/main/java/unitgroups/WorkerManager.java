@@ -82,7 +82,7 @@ public class WorkerManager {
 
         for (Workers worker : workers) {
             if (new Time(frameCount).lessThanOrEqual(new Time(6,0))) {
-                if (worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING || worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
+                if (worker.getUnit().isUnderAttack() && (worker.getWorkerStatus() != WorkerStatus.SCOUTING && worker.getWorkerStatus() != WorkerStatus.COUNTERSCOUT)) {
                     //Stop worker defense after the early game
                     if (mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition()) && actuallyThreatened() && !hasCompletedCannonInBase() && !hasBunkerInMain()) {
                         if (workers.size() > 12) {
@@ -249,6 +249,10 @@ public class WorkerManager {
                     }
                     break;
                 case SCOUTING:
+                    if (gameState.getStartingEnemyBase() == null) {
+                        break;
+                    }
+
                     if (!gameState.isOpenerLocked()) {
                         break;
                     }

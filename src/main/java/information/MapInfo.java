@@ -874,26 +874,65 @@ public class MapInfo {
 
         naturalChokePoint = null;
         secondaryNaturalChokePoint = null;
-        int closestDistance = Integer.MAX_VALUE;
 
-        List<ChokePoint> naturalChokes = naturalBase.getArea().getChokes();
-        HashMap<ChokePoint, Double> chokeDistances = new HashMap<>();
+        List<ChokePoint> candidateChokes = new ArrayList<>();
 
-        Base potentialEnemyBase = startingBases.iterator().next();
-
-        //Handles maps where there are multiple chokes leading out of the natural and tries to idenifty the correct choke for the bunker/rally
-        for (ChokePoint choke : naturalChokes) {
+        for (ChokePoint choke : naturalBase.getArea().getChokes()) {
             if (choke == getMainChoke()) {
                 continue;
             }
 
-            chokeDistances.put(choke, choke.getCenter().getDistance(potentialEnemyBase.getCenter()));
+            candidateChokes.add(choke);
         }
 
-        for (ChokePoint choke : chokeDistances.keySet()) {
-            if (chokeDistances.get(choke) < closestDistance) {
+        if (candidateChokes.isEmpty()) {
+            return;
+        }
+
+        if (candidateChokes.size() == 1) {
+            naturalChokePoint = candidateChokes.get(0);
+            setSecondaryNaturalChoke();
+            return;
+        }
+
+        //Handles maps where there are multiple chokes leading out of the natural and tries to idenifty the correct choke for the bunker/rally
+        int shortestPath = Integer.MAX_VALUE;
+
+        for (ChokePoint choke : candidateChokes) {
+            Position chokeStart = pathFinding.findNearestWalkable(choke.getCenter());
+
+            if (chokeStart == null) {
+                continue;
+            }
+
+            int totalPath = 0;
+            boolean reachedAllStarts = true;
+
+            for (Base enemyStart : startingBases) {
+                Position enemyPosition = pathFinding.findNearestWalkable(enemyStart.getLocation().toPosition());
+
+                if (enemyPosition == null) {
+                    reachedAllStarts = false;
+                    break;
+                }
+
+                List<Position> path = pathFinding.findPath(chokeStart, enemyPosition);
+
+                if (path.isEmpty()) {
+                    reachedAllStarts = false;
+                    break;
+                }
+
+                totalPath += path.size();
+            }
+
+            if (!reachedAllStarts) {
+                continue;
+            }
+
+            if (totalPath < shortestPath) {
+                shortestPath = totalPath;
                 naturalChokePoint = choke;
-                closestDistance = chokeDistances.get(choke).intValue();
             }
         }
 

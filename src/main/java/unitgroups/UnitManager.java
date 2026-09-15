@@ -179,8 +179,10 @@ public class UnitManager {
                     //nothing
             }
 
+            boolean naturalRally = rallyPoint.getNaturalRallyPoint().toTilePosition().equals(combatUnit.getRallyPoint());
+
             combatUnit.setInBase(mapInfo.getBaseTiles().contains(combatUnit.getUnit().getTilePosition())
-                    || (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) && mapInfo.getNaturalTiles().contains(combatUnit.getUnit().getTilePosition())
+                    || (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural() || naturalRally) && mapInfo.getNaturalTiles().contains(combatUnit.getUnit().getTilePosition())
                     || combatUnit.getUnit().getDistance(mapInfo.getNaturalBase().getCenter()) < naturalBunkerLeashRange());
 
             UnitStatus unitStatus = combatUnit.getUnitStatus();
