@@ -8,6 +8,7 @@ import bwapi.TilePosition;
 import information.GameState;
 import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
+import macro.buildorders.RallyLocation;
 import map.PathFinding;
 import map.bwemwrappers.Area;
 import map.bwemwrappers.Base;
@@ -42,13 +43,15 @@ public class RallyPoint {
             combatUnit.setRallyPoint(lateGameRallyPoint.toTilePosition());
             return;
         }
-        else if (enemyStrategy == null || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
-            if (mapInfo.hasBunkerInNatural() || mapInfo.isNaturalOwned()) {
-                combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
-            }
-            else {
-                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
-            }
+
+        if (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
+            combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+        }
+        else if (enemyStrategy != null) {
+            combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
+        }
+        else if (gameState.getStartingOpener().getRallyLocation() == RallyLocation.NATURAL) {
+            combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
         }
         else {
             combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
@@ -77,14 +80,12 @@ public class RallyPoint {
                 }
                 break;
             case BUNKERRUSH:
-                if (gameState.isEnemyInNatural()) {
+                if (gameState.isEnemyInNatural() || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()
+                        || gameState.getStartingOpener().getRallyLocation() == RallyLocation.NATURAL) {
                     combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
-                }
-                else if (!mapInfo.isNaturalOwned() || !mapInfo.hasBunkerInNatural()){
-                    combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
                 }
                 else {
-                    combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                    combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
                 }
                 break;
             case TWOFACTANK:

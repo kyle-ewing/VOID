@@ -15,6 +15,7 @@ public class FourPool extends EnemyStrategy {
     public FourPool(MapInfo mapInfo) {
         super(EnemyStrategyName.FOURPOOL);
         this.mapInfo = mapInfo;
+        hardLockedWhenSeen = true;
 
         buildingResponse();
     }

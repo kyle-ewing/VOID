@@ -12,6 +12,7 @@ import macro.buildorders.BuildOrderName;
 import macro.buildorders.BuildType;
 import macro.buildorders.BunkerLocation;
 import macro.buildorders.MechBuildOrder;
+import macro.buildorders.RallyLocation;
 import planner.PlannedItem;
 import planner.PlannedItemType;
 import util.Time;
@@ -66,6 +67,11 @@ public class GoliathFE extends MechBuildOrder {
 
     public BuildType buildType() {
         return BuildType.MECH;
+    }
+
+    @Override
+    public RallyLocation getRallyLocation() {
+        return RallyLocation.NATURAL;
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {

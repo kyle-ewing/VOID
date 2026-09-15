@@ -932,6 +932,14 @@ public class ProductionManager {
 
     private TilePosition setBunkerPosition() {
         if (gameState.getEnemyOpener() != null) {
+
+            //TODO: update this to check elevation instead of hardcoding jade
+            if (game.mapFileName().contains("Jade")
+                    && (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.CANNONRUSH
+                    || gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.BUNKERRUSH)) {
+                return buildTiles.getNaturalChokeBunker();
+            }
+
             switch (gameState.getEnemyOpener().getStrategyName()) {
                 case CANNONRUSH:
                 case FOURRAX:

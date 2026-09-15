@@ -461,7 +461,13 @@ public class UnitManager {
                         if (game.enemy().getRace() == Race.Protoss) {
                             TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
 
-                            if (landPosition != null && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) && !gameState.moveOutConditionsMet()) {
+                            boolean enemyBuildingInNatural = gameState.getKnownEnemyUnits().stream()
+                                    .anyMatch(eu -> eu.getEnemyType().isBuilding()
+                                            && mapInfo.getNaturalTiles().contains(eu.getEnemyTilePosition()));
+
+                            if (landPosition != null && !enemyBuildingInNatural
+                                    && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural())
+                                    && !gameState.moveOutConditionsMet()) {
                                 if (combatUnit.getUnit().isLifted() && !enemyWithinRangeOfWall(combatUnit, 224)) {
                                     Position hoverPos = new Position(
                                             landPosition.getX() * 32 + combatUnit.getUnitType().tileWidth() * 16,

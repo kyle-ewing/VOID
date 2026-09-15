@@ -32,6 +32,10 @@ public abstract class BuildOrder {
         return 10;
     }
 
+    public RallyLocation getRallyLocation() {
+        return RallyLocation.MAIN;
+    }
+
     public TilePosition getBunkerPostion() {
         return bunkerPostion;
     }

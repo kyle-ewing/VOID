@@ -406,6 +406,26 @@ public class EnemyInformation {
         }
 
         for (EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
+            if (!enemyStrategy.isHardLockedWhenSeen()) {
+                continue;
+            }
+
+            if (!enemyStrategy.isEnemyStrategy(enemyUnits, currentTime)) {
+                continue;
+            }
+
+            enemyOpener = enemyStrategy;
+            gameState.setEnemyOpener(enemyOpener);
+            gameState.setOpenerLocked(true);
+            game.sendText("Enemy opener locked: " + enemyStrategy.getStrategyName());
+            return;
+        }
+
+        if (enemyOpener != null && enemyOpener.isEnemyStrategy(enemyUnits, currentTime)) {
+            return;
+        }
+
+        for (EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
             if (enemyStrategy == enemyOpener) {
                 continue;
             }

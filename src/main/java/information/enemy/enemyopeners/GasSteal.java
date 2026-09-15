@@ -16,6 +16,7 @@ public class GasSteal extends EnemyStrategy{
         super(EnemyStrategyName.GASSTEAL);
 
         this.mapInfo = mapInfo;
+        hardLockedWhenSeen = true;
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {

@@ -51,7 +51,13 @@ public class CannonRush extends EnemyStrategy {
     }
 
     public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
-        return new HashMap<>();
+        HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
+
+        if (time.lessThanOrEqual(new Time(8, 0))) {
+            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
+        }
+
+        return moveOutCondition;
     }
 
     public void upgradeResponse() {
