@@ -286,20 +286,6 @@ public class Scouting {
     }
 
     private void sendSecondScout() {
-        if (secondScout == null) {
-            for (Workers scv : gameState.getWorkers()) {
-                if (scv.getWorkerStatus() == WorkerStatus.MINERALS) {
-                    secondScout = scv;
-                    scv.setWorkerStatus(WorkerStatus.SCOUTING);
-                    break;
-                }
-            }
-        }
-
-        if (secondScout == null) {
-            return;
-        }
-
         Base diagonalBase = null;
         if (mapInfo.getStartingBases().size() == 3) {
             diagonalBase = getDiagonalBase();
@@ -326,13 +312,26 @@ public class Scouting {
             }
         }
 
-        if (nearestRemaining != null) {
-            secondScout.getUnit().move(nearestRemaining.getCenter());
+        if (nearestRemaining == null && secondScout == null) {
             return;
         }
 
-        if (diagonalBase != null) {
-            returnSecondScoutHome();
+        if (secondScout == null) {
+            for (Workers scv : gameState.getWorkers()) {
+                if (scv.getWorkerStatus() == WorkerStatus.MINERALS) {
+                    secondScout = scv;
+                    scv.setWorkerStatus(WorkerStatus.SCOUTING);
+                    break;
+                }
+            }
+        }
+
+        if (secondScout == null) {
+            return;
+        }
+
+        if (nearestRemaining != null) {
+            secondScout.getUnit().move(nearestRemaining.getCenter());
             return;
         }
 
@@ -513,6 +512,7 @@ public class Scouting {
     public void onEnemyDestroy(Unit unit) {
         if (scout != null && unit.getID() == scout.getUnit().getID()) {
             scout = null;
+            scoutTargetBase = null;
         }
 
         if (secondScout != null && unit.getID() == secondScout.getUnit().getID()) {
