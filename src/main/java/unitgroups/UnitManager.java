@@ -59,6 +59,7 @@ public class UnitManager {
     private int bunkerLoad = 0;
     private int scouts = 0;
     private int rallyClock = 0;
+    private int lastScanFrame = -1;
     private Unit bunker = null;
     private boolean beingAllInned = false;
     private boolean defendedEnemyOpener = false;
@@ -927,6 +928,10 @@ public class UnitManager {
             return;
         }
 
+        if (lastScanFrame == game.getFrameCount()) {
+            return;
+        }
+
         if (activeScanNearUnit()) {
             return;
         }
@@ -937,7 +942,10 @@ public class UnitManager {
             }
 
             if ((enemyUnit.getEnemyUnit().isCloaked() || enemyUnit.getEnemyUnit().isBurrowed()) && enemyUnit.getEnemyUnit().isVisible() && friendlyUnitInRange()) {
-                combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition());
+                if (combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyUnit.getEnemyPosition())) {
+                    lastScanFrame = game.getFrameCount();
+                }
+                return;
             }
         }
     }

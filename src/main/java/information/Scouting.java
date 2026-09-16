@@ -416,23 +416,27 @@ public class Scouting {
     }
 
     private void scanBase(Position basePosition) {
-        CombatUnits scanner = gameState.getCombatUnits().stream().filter(cu -> cu.getUnitType() == UnitType.Terran_Comsat_Station).findFirst().orElse(null);
+        CombatUnits scanner = gameState.getCombatUnits().stream()
+                .filter(cu -> cu.getUnitType() == UnitType.Terran_Comsat_Station
+                        && cu.getUnit().isCompleted()
+                        && cu.getUnit().getEnergy() >= 50)
+                .findFirst()
+                .orElse(null);
 
-        if (scanner == null || !scanner.getUnit().isCompleted()) {
+        if (scanner == null) {
             return;
         }
 
-        if (scanner.getUnit().getEnergy() < 50) {
+        if (!scanner.getUnit().useTech(TechType.Scanner_Sweep, basePosition)) {
             return;
         }
 
-        if (mapInfo.getEnemyMain() != null && mapInfo.getEnemyMain().getCenter().getDistance(scanner.getUnit().getPosition()) < 100) {
+        if (mapInfo.getEnemyMain() != null && mapInfo.getEnemyMain().getCenter().getDistance(basePosition) < 100) {
             mainScanned = true;
         }
-        else if (mapInfo.getEnemyNatural() != null && mapInfo.getEnemyNatural().getCenter().getDistance(scanner.getUnit().getPosition()) < 100) {
+        else if (mapInfo.getEnemyNatural() != null && mapInfo.getEnemyNatural().getCenter().getDistance(basePosition) < 100) {
             naturalScanned = true;
         }
-        scanner.getUnit().useTech(TechType.Scanner_Sweep, basePosition);
     }
 
     public void onFrame() {
