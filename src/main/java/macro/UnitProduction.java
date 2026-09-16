@@ -173,7 +173,7 @@ public class UnitProduction {
             if (TANK_TRIGGERS.contains(enemy.getEnemyType())) return true;
         }
 
-        if (game.enemy().getRace() == Race.Protoss) {
+        if (gameState.getEnemyRace() == Race.Protoss) {
             return true;
         }
 
@@ -192,7 +192,7 @@ public class UnitProduction {
         boolean addonFreeFactoryAvailable = productionBuildings.stream()
                 .anyMatch(b -> b.getType() == UnitType.Terran_Factory && b.getAddon() == null && !b.isTraining());
 
-        boolean enemyIsZerg = game.enemy().getRace() == Race.Zerg;
+        boolean enemyIsZerg = gameState.getEnemyRace() == Race.Zerg;
         boolean hydraOrLurkerSeen = false;
         int sunkenCount = 0;
         for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {

@@ -1,5 +1,6 @@
 package information;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -7,6 +8,7 @@ import java.util.PriorityQueue;
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
@@ -44,6 +46,7 @@ public class GameState {
     private EnemyStrategy enemyOpener = null;
     private boolean openerLocked = false;
     private BuildPivot selectedPivot = null;
+    private Race enemyRace = null;
 
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
@@ -86,6 +89,10 @@ public class GameState {
         this.config = new Config();
 
         player = game.self();
+
+        if (game.enemy().getRace() != Race.Unknown) {
+            enemyRace = game.enemy().getRace();
+        }
 
         buildTiles = new BuildTiles(game, mapInfo);
         buildOrderManager = new BuildOrderManager(game.enemy().getRace());
@@ -157,11 +164,12 @@ public class GameState {
 
     private void pivotBuild() {
         for (BuildPivot bp : buildOrderManager.getBuildPivots()) {
-            if (!bp.pivotsFrom(enemyOpener.getStrategyName())) {
+            if (!bp.pivotsFrom(enemyOpener.getStrategyName(), enemyRace)) {
                 continue;
             }
 
             selectedPivot = bp;
+            System.out.println("Pivoting to " + selectedPivot.getBuildPivotName() + " against " + enemyOpener.getStrategyName() + " from " + startingOpener.getBuildOrderName() + " at " + time.toString());
             break;
         }
 
@@ -205,8 +213,27 @@ public class GameState {
 
         int currentSupply = game.self().supplyUsed() / 2;
 
+        ArrayList<PlannedItem> underwayItems = new ArrayList<>(productionQueue);
+
         for (PlannedItem pi : selectedPivot.getPivotBuild()) {
             if (pi.getSupply() > 0 && pi.getSupply() < currentSupply) {
+                continue;
+            }
+
+            PlannedItem duplicate = null;
+            if (pi.getUnitType() != null) {
+                for (PlannedItem underway : underwayItems) {
+                    if (underway.getUnitType() == pi.getUnitType()
+                            && underway.getSupply().equals(pi.getSupply())
+                            && underway.getPlannedItemType() == pi.getPlannedItemType()) {
+                        duplicate = underway;
+                        break;
+                    }
+                }
+            }
+
+            if (duplicate != null) {
+                underwayItems.remove(duplicate);
                 continue;
             }
 
@@ -338,11 +365,15 @@ public class GameState {
     }
 
     private boolean shouldPivot() {
-        if (enemyOpener == null) {
+        if (enemyOpener == null && game.enemy().getRace() != Race.Unknown) {
             return false;
         }
 
-        return buildOrderManager.getBuildPivots().stream().anyMatch(bp -> bp.pivotsFrom(enemyOpener.getStrategyName()));
+        if (enemyRace == Race.Unknown) {
+            return false;
+        }
+
+        return buildOrderManager.getBuildPivots().stream().anyMatch(bp -> bp.pivotsFrom(enemyOpener.getStrategyName(), enemyRace));
     }
 
 
@@ -529,4 +560,14 @@ public class GameState {
     public boolean hasPivoted() {
         return hasPivoted;
     }
+
+    public Race getEnemyRace() {
+        return enemyRace;
+    }
+
+    public void setEnemyRace(Race enemyRace) {
+        this.enemyRace = enemyRace;
+    }
+
+    
 }

@@ -435,7 +435,7 @@ public class UnitManager {
                 case LIFTABLE:
                     if (combatUnit.getUnitType() == UnitType.Terran_Engineering_Bay) {
                         if (gameState.getBunkerPosition() != null && mapInfo.getNaturalBase() != null) {
-                            switch (game.enemy().getRace()) {
+                            switch (gameState.getEnemyRace()) {
                                 case Terran:
                                     if (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural()) {
                                         ((Building) combatUnit).liftedBuildings(gameState.getBunkerPosition().toPosition(), mapInfo.getNaturalBase().getCenter());
@@ -461,7 +461,7 @@ public class UnitManager {
                         }
                     }
                     else if (combatUnit.getUnitType() == UnitType.Terran_Barracks) {
-                        if (game.enemy().getRace() == Race.Protoss) {
+                        if (gameState.getEnemyRace() == Race.Protoss) {
                             TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
 
                             boolean enemyBuildingInNatural = gameState.getKnownEnemyUnits().stream()
@@ -595,7 +595,7 @@ public class UnitManager {
                 + unitCount.getOrDefault(UnitType.Terran_Siege_Tank_Siege_Mode, 0);
 
         if (!naturalBaseCC.isLifted()) {
-            if (!gameState.isEnemyInNatural() && (tankCount >= 2 || game.enemy().getRace() == Race.Zerg)) {
+            if (!gameState.isEnemyInNatural() && (tankCount >= 2 || gameState.getEnemyRace() == Race.Zerg)) {
                 naturalBaseCC.lift();
                 queueNaturalBunker();
             }

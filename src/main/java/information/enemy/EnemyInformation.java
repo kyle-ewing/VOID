@@ -5,6 +5,7 @@ import java.util.List;
 
 import bwapi.Game;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.Unit;
 import bwapi.UnitType;
 import information.GameState;
@@ -461,6 +462,10 @@ public class EnemyInformation {
     public void onUnitDiscover(Unit unit) {
         if (unit.getPlayer() == game.neutral() && unit.getType() != UnitType.Spell_Scanner_Sweep) {
             return;
+        }
+
+        if (gameState.getEnemyRace() == Race.Unknown) {
+            gameState.setEnemyRace(unit.getType().getRace());
         }
 
         if (!previouslyDiscovered(unit)) {

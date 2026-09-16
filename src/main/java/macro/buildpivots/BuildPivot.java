@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import bwapi.Race;
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategyName;
@@ -21,7 +22,7 @@ public abstract class BuildPivot {
     public abstract BuildType buildType();
     public abstract BunkerLocation getBunkerLocation();
 
-    public boolean pivotsFrom(EnemyStrategyName enemyStrategies) {
+    public boolean pivotsFrom(EnemyStrategyName enemyStrategies, Race enemyRace) {
         return false;
     }
 
