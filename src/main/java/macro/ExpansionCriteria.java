@@ -44,7 +44,7 @@ public class ExpansionCriteria {
 
         // Repeatedly checked criteria
         if (!enemyBaseCriteria) {
-            Race enemyRace = game.enemy().getRace();
+            Race enemyRace = gameState.getEnemyRace();
 
             switch (enemyRace) {
                 case Zerg:
@@ -61,6 +61,7 @@ public class ExpansionCriteria {
                         expansionScore += 2;
                     }
                     break;
+                case Unknown:
                 case Terran:
                     if (gameState.getKnownEnemyUnits().stream().filter(b -> b.getEnemyType() == UnitType.Terran_Command_Center).count()
                             >= gameState.getUnitTypeCount().get(UnitType.Terran_Command_Center)) {

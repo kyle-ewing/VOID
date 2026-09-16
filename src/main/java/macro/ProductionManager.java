@@ -626,7 +626,7 @@ public class ProductionManager {
 
         //temp fix
         if (gameState.getEnemyOpener() != null) {
-            if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL && !gameState.moveOutConditionsMet() && game.enemy().getRace() == Race.Zerg) {
+            if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.GASSTEAL && !gameState.moveOutConditionsMet() && gameState.getEnemyRace() == Race.Zerg) {
                 workerCap = 12;
             }
             else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NEXUSFIRST
@@ -816,7 +816,7 @@ public class ProductionManager {
                 TilePosition naturalBunkerDepot = buildTiles.getNaturalBunkerDepotPosition();
                 if (naturalBunkerDepot != null && !tileTaken(naturalBunkerDepot)
                         && unitTypeCount.get(UnitType.Terran_Supply_Depot) >= 2
-                        && game.enemy().getRace() == Race.Protoss
+                        && gameState.getEnemyRace() == Race.Protoss
                         && mapInfo.hasBunkerInNatural()) {
                     boolean depotAlreadyBuilt = allBuildings.stream()
                             .anyMatch(b -> b.getType() == UnitType.Terran_Supply_Depot

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -91,7 +92,7 @@ public class BunkerRush extends BuildPivot {
     }
 
     @Override
-    public boolean pivotsFrom(EnemyStrategyName enemyStrategy) {
+    public boolean pivotsFrom(EnemyStrategyName enemyStrategy, Race enemyRace) {
         if (enemyStrategy == EnemyStrategyName.NEXUSFIRST) {
             return true;
         }

@@ -10,6 +10,7 @@ import macro.buildorders.zerg.FactoryExpand;
 import macro.buildorders.zerg.TwoRaxAcademy;
 import macro.buildpivots.BuildPivot;
 import macro.buildpivots.BunkerRush;
+import macro.buildpivots.GasStealCounter;
 import macro.buildtransitions.BuildTransition;
 import macro.buildtransitions.TvPBio;
 import macro.buildtransitions.TvPMech;
@@ -68,6 +69,7 @@ public class BuildOrderManager {
 
     private void initBuildPivots() {
         buildPivots.add(new BunkerRush());
+        buildPivots.add(new GasStealCounter());
     }
 
     public HashSet<BuildOrder> getOpenersForRace() {
