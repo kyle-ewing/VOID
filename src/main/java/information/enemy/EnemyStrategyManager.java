@@ -2,6 +2,7 @@ package information.enemy;
 
 import java.util.HashSet;
 
+import bwapi.Game;
 import information.MapInfo;
 import information.enemy.enemyopeners.BunkerRush;
 import information.enemy.enemyopeners.CannonRush;
@@ -13,9 +14,9 @@ import information.enemy.enemyopeners.FFE;
 import information.enemy.enemyopeners.FourPool;
 import information.enemy.enemyopeners.FourRax;
 import information.enemy.enemyopeners.GasSteal;
-import information.enemy.enemyopeners.LingFlood;
 import information.enemy.enemyopeners.NexusFirst;
 import information.enemy.enemyopeners.NinePool;
+import information.enemy.enemyopeners.NinePoolSpeedling;
 import information.enemy.enemyopeners.OneBaseLurker;
 import information.enemy.enemyopeners.OneBaseMuta;
 import information.enemy.enemyopeners.SCVRush;
@@ -53,12 +54,14 @@ import information.enemy.enemytechunits.Wraith;
 
 public class EnemyStrategyManager {
     private MapInfo mapInfo;
+    private Game game;
     private HashSet<EnemyStrategy> enemyStrategies = new HashSet<>();
     private HashSet<EnemyTechUnits> enemyTechUnits = new HashSet<>();
     private HashSet<EnemyTechBuilding> enemyTechBuildings = new HashSet<>();
 
-    public EnemyStrategyManager(MapInfo mapInfo) {
+    public EnemyStrategyManager(MapInfo mapInfo, Game game) {
         this.mapInfo = mapInfo;
+        this.game = game;
 
         init();
     }
@@ -70,11 +73,13 @@ public class EnemyStrategyManager {
     }
 
     private void addEnemyStrategies() {
+        NinePool ninePool = new NinePool(mapInfo);
+
         enemyStrategies.add(new FourPool(mapInfo));
-        enemyStrategies.add(new NinePool(mapInfo));
+        enemyStrategies.add(ninePool);
+        enemyStrategies.add(new NinePoolSpeedling(game, ninePool));
         enemyStrategies.add(new CannonRush(mapInfo));
         enemyStrategies.add(new GasSteal(mapInfo));
-        enemyStrategies.add(new LingFlood(mapInfo));
 //        enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new FourRax(mapInfo));
         enemyStrategies.add(new TwoFacTank());

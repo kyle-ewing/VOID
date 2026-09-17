@@ -21,7 +21,7 @@ public class FourPool extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
-        if (enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Drone).count() > 4) {
+        if (enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Drone).count() > 5) {
             return false;
         }
 
@@ -31,21 +31,28 @@ public class FourPool extends EnemyStrategy {
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
-                if (time.lessThanOrEqual(new Time(2,0))) {
-                    if (enemyUnit.getEnemyUnit().isCompleted()) {
-                        return true;
-                    }
+                if (enemyUnit.getEnemyUnit().isCompleted() && time.lessThanOrEqual(new Time(1,45))) {
+                    return true;
                 }
             }
             else if (enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if (time.lessThanOrEqual(new Time(2,20))) {
+                if (time.lessThanOrEqual(new Time(2,0))) {
                     return true;
                 }
 
-                else if (time.lessThanOrEqual(new Time(2,30))) {
-                    if (enemyUnit.getEnemyPosition().getDistance(mapInfo.getNaturalChoke().getCenter()) < 1500) {
-                        return true;
-                    }
+                if (mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1200
+                && time.lessThanOrEqual(new Time(2,25))) {
+                    return true;
+                }
+
+                if (mapInfo.getEnemyMain() == null) {
+                    continue;
+                }
+
+                int travelFrames = (int) (mapInfo.getEnemyMain().getCenter().getDistance(enemyUnit.getEnemyPosition()) / 5.49);
+
+                if (new Time(time.getFrames() - travelFrames).lessThanOrEqual(new Time(2,5))) {
+                    return true;
                 }
             }
         }

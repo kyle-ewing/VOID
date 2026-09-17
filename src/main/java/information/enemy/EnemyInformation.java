@@ -48,7 +48,7 @@ public class EnemyInformation {
         techunitResponse = gameState.getTechUnitResponse();
         startingEnemyBase = gameState.getStartingEnemyBase();
 
-        enemyStrategyManager = new EnemyStrategyManager(mapInfo);
+        enemyStrategyManager = new EnemyStrategyManager(mapInfo, game);
     }
 
     private boolean previouslyDiscovered(Unit unit) {
@@ -194,6 +194,17 @@ public class EnemyInformation {
             }
         }
         return false;
+    }
+
+    public int staticDefenseCount() {
+        int count = 0;
+        for (EnemyUnits enemyUnit : enemyUnits) {
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony
+                    || enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public boolean outRangingUnitNearby(EnemyUnits enemyUnit, UnitType friendlyUnitType, int range) {

@@ -1119,10 +1119,19 @@ public class UnitManager {
             return;
         }
 
+        boolean ignoreStaticDefense = (combatUnit.getUnitStatus() == UnitStatus.ATTACK || combatUnit.getUnitStatus() == UnitStatus.AVOID)
+                && enemyInformation.staticDefenseCount() <= 2;
+
         boolean inRange = false;
 
         for (EnemyUnits enemyUnit : gameState.getKnownValidThreats()) {
             if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (ignoreStaticDefense
+                    && (enemyUnit.getEnemyType() == UnitType.Zerg_Sunken_Colony
+                        || enemyUnit.getEnemyType() == UnitType.Protoss_Photon_Cannon)) {
                 continue;
             }
 
