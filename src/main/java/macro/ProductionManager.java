@@ -638,7 +638,7 @@ public class ProductionManager {
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
                 workerCap = 11;
             }
-            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.LINGFLOOD
+            else if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.NINEPOOLSPEEDLING
                     && new Time(game.getFrameCount()).greaterThan(new Time(4, 10)) 
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
                 workerCap = 16;
@@ -946,6 +946,7 @@ public class ProductionManager {
                 case SCVRUSH:
                 case DOUBLEEIGHTRAX:
                 case NINEPOOL:
+                case NINEPOOLSPEEDLING:
                     return buildTiles.getMainChokeBunker();
                 case TWOGATE:
                     if (gameState.getKnownEnemyUnits().stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Zealot 

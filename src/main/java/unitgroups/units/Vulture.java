@@ -845,6 +845,7 @@ public class Vulture extends CombatUnits {
         double staticSumDy = 0;
         int staticThreatCount = 0;
         boolean anyThreat = false;
+        boolean ignoreStaticDefense = unitStatus == UnitStatus.ATTACK && enemyInformation.staticDefenseCount() <= 2;
 
         for (EnemyUnits enemy : enemyUnits) {
             int range = getGroundThreatRange(enemy);
@@ -895,6 +896,11 @@ public class Vulture extends CombatUnits {
             double contribY = (dy / Math.max(1, threatDist)) * weight;
 
             if (staticThreat) {
+                if (ignoreStaticDefense
+                        && (type == UnitType.Zerg_Sunken_Colony || type == UnitType.Protoss_Photon_Cannon)) {
+                    continue;
+                }
+
                 staticThreatCount++;
                 staticSumDx += contribX;
                 staticSumDy += contribY;

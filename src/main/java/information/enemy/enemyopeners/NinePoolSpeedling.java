@@ -3,20 +3,22 @@ package information.enemy.enemyopeners;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import bwapi.Game;
 import bwapi.UnitType;
-import information.MapInfo;
+import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
 
-public class NinePool extends EnemyStrategy {
-    private MapInfo mapInfo;
-    private boolean hasMatched = false;
-    private boolean handedOff = false;
+public class NinePoolSpeedling extends EnemyStrategy {
+    private Game game;
+    private NinePool ninePool;
+    private boolean triggered = false;
 
-    public NinePool(MapInfo mapInfo) {
-        super(EnemyStrategyName.NINEPOOL);
-        this.mapInfo = mapInfo;
+    public NinePoolSpeedling(Game game, NinePool ninePool) {
+        super(EnemyStrategyName.NINEPOOLSPEEDLING);
+        this.game = game;
+        this.ninePool = ninePool;
         openerSwitchWindow = 2880;
 
         buildingResponse();
@@ -28,68 +30,62 @@ public class NinePool extends EnemyStrategy {
             return false;
         }
 
-        if (handedOff) {
-            return false;
+        if (triggered) {
+            return true;
+        }
+
+        if (time.lessThanOrEqual(new Time(4,15)) && game.enemy().getUpgradeLevel(UpgradeType.Metabolic_Boost) > 0) {
+            triggered = true;
+            ninePool.setHandedOff(true);
+            return true;
         }
 
         long knownLings = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Zergling).count();
 
-        if (knownLings >= 8 && time.greaterThan(new Time(2,40)) && time.lessThanOrEqual(new Time(3,20))) {
-            hasMatched = true;
+        if (knownLings >= 8 && time.greaterThan(new Time(3,20)) && time.lessThanOrEqual(new Time(4,0))) {
+            triggered = true;
+            ninePool.setHandedOff(true);
             return true;
         }
-        else if (knownLings >= 6 && time.greaterThan(new Time(2,30)) && time.lessThanOrEqual(new Time(3,20))) {
-            hasMatched = true;
-            return true;
+
+        if (!ninePool.hasMatched()) {
+            return false;
         }
 
         for (EnemyUnits enemyUnit : enemyUnits) {
-            if (enemyUnit.getEnemyPosition() == null) {
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Extractor) {
+                triggered = true;
+                ninePool.setHandedOff(true);
+                return true;
+            }
+
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Drone && enemyUnit.getEnemyUnit().isCarryingGas()) {
+                triggered = true;
+                ninePool.setHandedOff(true);
+                return true;
+            }
+
+            if (enemyUnit.getEnemyType() != UnitType.Zerg_Spawning_Pool) {
                 continue;
             }
 
-            if (enemyUnit.getEnemyType() == UnitType.Zerg_Spawning_Pool) {
-                if (enemyUnit.getEnemyUnit().isCompleted() && time.greaterThan(new Time(1,45)) && time.lessThanOrEqual(new Time(2,5))) {
-                    hasMatched = true;
-                    return true;
-                }
-            }
-
-            if (enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if (mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1200
-                && time.greaterThan(new Time(2,25)) && time.lessThanOrEqual(new Time(3,0))) {
-                    hasMatched = true;
-                    return true;
-                }
-
-                if (mapInfo.getEnemyMain() == null) {
-                    continue;
-                }
-
-                int travelFrames = (int) (mapInfo.getEnemyMain().getCenter().getDistance(enemyUnit.getEnemyPosition()) / 5.49);
-                Time impliedHatchTime = new Time(time.getFrames() - travelFrames);
-
-                if (impliedHatchTime.greaterThan(new Time(2,5)) && impliedHatchTime.lessThanOrEqual(new Time(2,25))) {
-                    hasMatched = true;
-                    return true;
-                }
+            if (enemyUnit.getEnemyUnit().isVisible() && enemyUnit.getEnemyUnit().isUpgrading()
+                    && time.greaterThan(new Time(2,0)) && time.lessThanOrEqual(new Time(3,30))) {
+                triggered = true;
+                ninePool.setHandedOff(true);
+                return true;
             }
         }
+
         return false;
-    }
-
-    public boolean hasMatched() {
-        return hasMatched;
-    }
-
-    public void setHandedOff(boolean handedOff) {
-        this.handedOff = handedOff;
     }
 
     public void buildingResponse() {
         getBuildingResponse().add(UnitType.Terran_Bunker);
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Vulture);
+        getBuildingResponse().add(UnitType.Terran_Vulture);
     }
 
     public void upgradeResponse() {
