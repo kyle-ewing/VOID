@@ -234,6 +234,7 @@ public class ProductionManager {
                         if (!meetsRequirements(pi.getUnitType())) {
                             priorityStop = false;
                             blockedByHigherPriority = false;
+                            continue;
                         }
 
                         if (pi.getBuildPosition() == null) {
@@ -550,7 +551,7 @@ public class ProductionManager {
         }
         else if (freeSupply < 2 && productionQueue.stream()
                 .anyMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Command_Center && pi.getSupply() >= usedSupply)
-                && productionQueue.stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot && pi.getSupply() == 0)
+                && productionQueue.stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot && pi.getSupply() <= usedSupply)
                 && productionQueue.stream().noneMatch(pi -> pi.getUnitType() != null && pi.getUnitType() == UnitType.Terran_Supply_Depot
                         && (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED || pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS))
                 && gameState.isEnemyInNatural()) {
@@ -662,7 +663,7 @@ public class ProductionManager {
 
         for (long i = 0; i < scvsToQueue; i++) {
             if (ownedBases == 1) {
-                if (unitTypeCount.get(UnitType.Terran_SCV) < 16 && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
+                if (unitTypeCount.get(UnitType.Terran_SCV) < 18 && new Time(game.getFrameCount()).greaterThan(new Time(3, 45))
                         || unitTypeCount.get(UnitType.Terran_SCV) < 24 && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
                     addToQueue(UnitType.Terran_SCV, PlannedItemType.UNIT, 1);
                 }
@@ -1024,6 +1025,8 @@ public class ProductionManager {
             toRemove.ifPresent(productionQueue::remove);
         }
 
+        HashSet<PlannedItem> preResponseItems = new HashSet<>(productionQueue);
+
         for (UnitType building : gameState.getEnemyOpener().getBuildingResponse()) {
             boolean alreadyInProgress = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == building && pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED);
 
@@ -1157,6 +1160,13 @@ public class ProductionManager {
             }
         }
 
+        for (PlannedItem pi : productionQueue) {
+            if (preResponseItems.contains(pi)) {
+                continue;
+            }
+
+            pi.setOpenerResponseItem(true);
+        }
     }
 
     private void enemyTechUnitResponse() {
@@ -1663,7 +1673,10 @@ public class ProductionManager {
     }
 
     public void onUnitDestroy(Unit unit) {
-        removeUnitTypeCount(unit);
+        if (unit.isCompleted()) {
+            removeUnitTypeCount(unit);
+        }
+
         removeBuilding(unit);
 
         if (unit.getType().isBuilding()) {

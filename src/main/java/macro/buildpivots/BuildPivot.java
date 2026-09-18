@@ -15,6 +15,7 @@ import util.Time;
 
 public abstract class BuildPivot {
     protected boolean rushActive = false;
+    protected HashSet<EnemyStrategyName> enemyStrategies = new HashSet<>();
 
     public abstract BuildPivotName getBuildPivotName();
     public abstract ArrayList<PlannedItem> getPivotBuild();
@@ -36,6 +37,16 @@ public abstract class BuildPivot {
 
     public HashSet<UnitType> getCancelableBuildings() {
         return new HashSet<>();
+    }
+
+    public boolean retainAddedBuildings() {
+        return false;
+    }
+
+    //How many of each building the pivot needs in place at the time the pivot fires
+    //Used to retain pivot build entries that sit below the current supply
+    public HashMap<UnitType, Integer> getRequiredBuildings() {
+        return new HashMap<>();
     }
 
     public boolean isRushActive() {

@@ -46,8 +46,10 @@ public class RallyPoint {
 
         if (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
             combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+            return;
         }
-        else if (enemyStrategy != null) {
+
+        if (enemyStrategy != null) {
             combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
         }
         else if (gameState.getStartingOpener().getRallyLocation() == RallyLocation.NATURAL) {
@@ -80,8 +82,7 @@ public class RallyPoint {
                 }
                 break;
             case BUNKERRUSH:
-                if (gameState.isEnemyInNatural() || mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()
-                        || gameState.getStartingOpener().getRallyLocation() == RallyLocation.NATURAL) {
+                if (gameState.isEnemyInNatural() || gameState.getStartingOpener().getRallyLocation() == RallyLocation.NATURAL) {
                     combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
                 }
                 else {
@@ -92,12 +93,7 @@ public class RallyPoint {
                 combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
                 break;
             case TWOGATE:
-                if (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
-                    combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
-                }
-                else {
-                    combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
-                }
+                combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
                 break;
             default:
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());

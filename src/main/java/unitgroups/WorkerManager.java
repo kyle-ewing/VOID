@@ -17,6 +17,7 @@ import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.Mineral;
@@ -1161,9 +1162,16 @@ public class WorkerManager {
 
     private boolean gasImbalance() {
         if (gameState.getEnemyOpener() != null) {
-            if (gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.SCVRUSH && gameState.isEnemyInBase() && workers.size() < 13
+            EnemyStrategy enemyStrategy = gameState.getEnemyOpener();
+
+            if (enemyStrategy.getStrategyName() == EnemyStrategyName.SCVRUSH && gameState.isEnemyInBase() && workers.size() < 13
                     && gameState.getResourceTracking().getAvailableMinerals() > 300) {
                 return true;
+            }
+            else if (enemyStrategy.getStrategyName() == EnemyStrategyName.FOURPOOL) {
+                if (enemyInBase()) {
+                    return true;
+                }
             }
         }
 
