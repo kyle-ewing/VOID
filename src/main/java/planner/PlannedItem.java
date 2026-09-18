@@ -17,6 +17,7 @@ public class PlannedItem {
     private Unit addOnParent = null;
     private Unit productionBuilding;
     private boolean needsAddon = false;
+    private boolean openerResponseItem = false;
 
     //priority 1-5, 1 being the highest
     private int priority;
@@ -228,5 +229,13 @@ public class PlannedItem {
 
     public boolean needsAddon() {
         return needsAddon;
+    }
+
+    public boolean isOpenerResponseItem() {
+        return openerResponseItem;
+    }
+
+    public void setOpenerResponseItem(boolean openerResponseItem) {
+        this.openerResponseItem = openerResponseItem;
     }
 }

@@ -1,6 +1,7 @@
 package information;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -96,7 +97,7 @@ public class GameState {
 
         buildTiles = new BuildTiles(game, mapInfo);
         buildOrderManager = new BuildOrderManager(game.enemy().getRace());
-        resourceTracking = new ResourceTracking(player);
+        resourceTracking = new ResourceTracking(player, productionQueue);
         jadeBunkerPosition();
         addOpeningBuildOrders();
     }
@@ -204,18 +205,88 @@ public class GameState {
                     builder.setWorkerStatus(WorkerStatus.IDLE);
                     builder.setBuildingPosition(null);
                 }
-                resourceTracking.unreserveResources(pi.getUnitType());
             }
         }
         productionQueue.removeIf(pi -> cancelableBuildings.contains(pi.getUnitType()));
 
-        productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED);
+        boolean retainAddedBuildings = selectedPivot.retainAddedBuildings();
+
+        productionQueue.removeIf(pi -> {
+            if (pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED) {
+                return false;
+            }
+
+            if (retainAddedBuildings && pi.isOpenerResponseItem()) {
+                return false;
+            }
+
+            return true;
+        });
 
         int currentSupply = game.self().supplyUsed() / 2;
 
         ArrayList<PlannedItem> underwayItems = new ArrayList<>(productionQueue);
+        ArrayList<PlannedItem> pivotBuild = selectedPivot.getPivotBuild();
+        HashMap<UnitType, Integer> requiredBuildings = selectedPivot.getRequiredBuildings();
+        HashSet<PlannedItem> retainedItems = new HashSet<>();
 
-        for (PlannedItem pi : selectedPivot.getPivotBuild()) {
+        for (UnitType buildingType : requiredBuildings.keySet()) {
+            ArrayList<PlannedItem> candidates = new ArrayList<>();
+
+            for (PlannedItem pi : pivotBuild) {
+                if (pi.getPlannedItemType() != PlannedItemType.BUILDING || pi.getUnitType() != buildingType) {
+                    continue;
+                }
+
+                if (pi.getSupply() <= 0 || pi.getSupply() >= currentSupply) {
+                    continue;
+                }
+
+                candidates.add(pi);
+            }
+
+            if (candidates.isEmpty()) {
+                continue;
+            }
+
+            int provided = 0;
+
+            for (Unit building : allBuildings) {
+                if (building.exists() && building.getType() == buildingType) {
+                    provided++;
+                }
+            }
+
+            for (PlannedItem queued : underwayItems) {
+                if (queued.getUnitType() != buildingType) {
+                    continue;
+                }
+
+                if (queued.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED
+                        || queued.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
+                    provided++;
+                }
+            }
+
+            int deficit = Math.min(requiredBuildings.get(buildingType), candidates.size()) - provided;
+
+            if (deficit <= 0) {
+                continue;
+            }
+
+            candidates.sort(Comparator.comparingInt(PlannedItem::getSupply).reversed());
+
+            for (int i = 0; i < deficit && i < candidates.size(); i++) {
+                retainedItems.add(candidates.get(i));
+            }
+        }
+
+        for (PlannedItem pi : pivotBuild) {
+            if (retainedItems.contains(pi)) {
+                productionQueue.add(pi);
+                continue;
+            }
+
             if (pi.getSupply() > 0 && pi.getSupply() < currentSupply) {
                 continue;
             }

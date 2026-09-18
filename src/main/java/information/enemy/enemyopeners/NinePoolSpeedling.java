@@ -6,18 +6,21 @@ import java.util.HashSet;
 import bwapi.Game;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
 
 public class NinePoolSpeedling extends EnemyStrategy {
     private Game game;
+    private MapInfo mapInfo;
     private NinePool ninePool;
     private boolean triggered = false;
 
-    public NinePoolSpeedling(Game game, NinePool ninePool) {
+    public NinePoolSpeedling(Game game, MapInfo mapInfo, NinePool ninePool) {
         super(EnemyStrategyName.NINEPOOLSPEEDLING);
         this.game = game;
+        this.mapInfo = mapInfo;
         this.ninePool = ninePool;
         openerSwitchWindow = 2880;
 
@@ -43,6 +46,24 @@ public class NinePoolSpeedling extends EnemyStrategy {
         long knownLings = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Zergling).count();
 
         if (knownLings >= 8 && time.greaterThan(new Time(3,20)) && time.lessThanOrEqual(new Time(4,0))) {
+            triggered = true;
+            ninePool.setHandedOff(true);
+            return true;
+        }
+
+        boolean hasNaturalHatch = false;
+        if (mapInfo.getEnemyNatural() != null) {
+            hasNaturalHatch = enemyUnits.stream()
+                    .filter(eu -> eu.getEnemyType().isResourceDepot())
+                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
+        }
+
+        boolean poolUpgrading = enemyUnits.stream()
+                .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Spawning_Pool)
+                .anyMatch(eu -> eu.getEnemyUnit().isVisible() && eu.getEnemyUnit().isUpgrading());
+
+        if (poolUpgrading && !hasNaturalHatch
+                && time.greaterThan(new Time(3,30)) && time.lessThanOrEqual(new Time(5,0))) {
             triggered = true;
             ninePool.setHandedOff(true);
             return true;
@@ -81,11 +102,6 @@ public class NinePoolSpeedling extends EnemyStrategy {
     }
 
     public void buildingResponse() {
-        getBuildingResponse().add(UnitType.Terran_Bunker);
-        getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Marine);
-        getBuildingResponse().add(UnitType.Terran_Vulture);
-        getBuildingResponse().add(UnitType.Terran_Vulture);
     }
 
     public void upgradeResponse() {

@@ -29,7 +29,7 @@ public class FactoryExpand extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 9, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 12, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 14, PlannedItemType.UNIT, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Bunker, 15, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Bunker, 16, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 16, PlannedItemType.UNIT, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 17, PlannedItemType.BUILDING, 1, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 17, PlannedItemType.BUILDING, 2));
@@ -48,8 +48,8 @@ public class FactoryExpand extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Science_Facility, 40, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 41, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 46, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 50, PlannedItemType.BUILDING, 3, true));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 50, PlannedItemType.BUILDING, 3));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 42, PlannedItemType.BUILDING, 3, true));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 47, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 46, PlannedItemType.BUILDING, 3));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, 58, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 1, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 56, PlannedItemType.ADDON, 2));

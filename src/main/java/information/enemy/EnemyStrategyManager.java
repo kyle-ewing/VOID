@@ -77,7 +77,7 @@ public class EnemyStrategyManager {
 
         enemyStrategies.add(new FourPool(mapInfo));
         enemyStrategies.add(ninePool);
-        enemyStrategies.add(new NinePoolSpeedling(game, ninePool));
+        enemyStrategies.add(new NinePoolSpeedling(game, mapInfo, ninePool));
         enemyStrategies.add(new CannonRush(mapInfo));
         enemyStrategies.add(new GasSteal(mapInfo));
 //        enemyStrategies.add(new CCFirst(baseInfo));
