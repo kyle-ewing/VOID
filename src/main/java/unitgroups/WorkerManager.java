@@ -914,10 +914,10 @@ public class WorkerManager {
                     && new Time(game.getFrameCount()).greaterThan(new Time(5, 0))
                     && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
                 if (enemyInformation.getNonWorkerEnemySupply() >= 8) {
-                    createRepairForce(bunker, 5);
+                    createRepairForce(bunker, 4);
                 }
                 else {
-                    createRepairForce(bunker, 4);
+                    createRepairForce(bunker, 2);
                 }
             }
             else if (bunker.getDistance(baseCenter) > 550
@@ -1007,16 +1007,16 @@ public class WorkerManager {
                 }
                 return null;
             case NINEPOOL:
-                if (new Time(game.getFrameCount()).greaterThan(new Time(3, 30)) 
-                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
+            case NINEPOOLSPEEDLING:
+                if (mapInfo.getNaturalTiles().contains(bunker.getTilePosition())
+                        && ((new Time(game.getFrameCount()).greaterThan(new Time(3, 30))
+                        && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0)))
+                        || enemyInRange(800))) {
                     return 3;
                 }
                 else if (new Time(game.getFrameCount()).greaterThan(new Time(2, 50))
                         && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
                     return 2;
-                }
-                else if (enemyInRange(800)) {
-                    return 3;
                 }
                 return null;
             case FOURPOOL:
@@ -1034,17 +1034,16 @@ public class WorkerManager {
                 else if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
                 }
-                else if (new Time(game.getFrameCount()).greaterThan(new Time(3, 0))) {
+                else if (new Time(game.getFrameCount()).greaterThan(new Time(3, 30))) {
                     return 2;
                 }
-            case NINEPOOLSPEEDLING:
-                if (new Time(game.getFrameCount()).greaterThan(new Time(4, 10)) && new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 0))) {
+            case TWOBASELURKER:
+                if (!enemyInRange(400) && new Time(game.getFrameCount()).greaterThan(new Time(7, 0))) {
+                    return null;
+                }
+                else if (new Time(game.getFrameCount()).greaterThan(new Time(6, 0))) {
                     return 3;
                 }
-                else if (enemyInRange(800)) {
-                    return 3;
-                }
-                return null;
             default:
                 return null;
         }

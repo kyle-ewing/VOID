@@ -327,7 +327,7 @@ public class ClosestUnit {
                 continue;
             }
 
-            if (!combatUnit.getUnit().hasPath(enemyPosition)) {
+            if (!enemyUnit.getEnemyType().isFlyer() && !combatUnit.getUnit().hasPath(enemyPosition)) {
                 continue;
             }
 

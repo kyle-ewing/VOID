@@ -58,7 +58,7 @@ public class LingRushCounter extends BuildPivot {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if (time.lessThanOrEqual(new Time(10, 0))) {
-            moveOutCondition.put(UnitType.Terran_Marine, 10);
+            moveOutCondition.put(UnitType.Terran_Marine, 14);
             moveOutCondition.put(UnitType.Terran_Medic, 3);
         } else {
             moveOutCondition.put(UnitType.Terran_Marine, 16);

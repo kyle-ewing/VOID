@@ -103,6 +103,9 @@ public class EnemyInformation {
     }
 
     private void enemyInBase() {
+        boolean inBase = false;
+        boolean flyerInBase = false;
+
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (!enemyUnit.getEnemyType().canAttack()
                     && !enemyUnit.getEnemyType().isBuilding()
@@ -113,36 +116,33 @@ public class EnemyInformation {
 
             Position enemyPos = enemyUnit.getEnemyUnit().getPosition();
 
+            if (enemyUnit.getEnemyType().isFlyer() && !enemyUnit.getEnemyType().isBuilding()
+                    && mapInfo.isFlyerInOwnedBase(enemyPos)) {
+                inBase = true;
+                flyerInBase = true;
+                continue;
+            }
+
             if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
-                gameState.setEnemyInBase(true);
-                return;
+                inBase = true;
             }
             else if (mapInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
-                gameState.setEnemyInBase(true);
-                return;
+                inBase = true;
             }
             else if (mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && enemyUnit.getEnemyType().isBuilding()) {
-                gameState.setEnemyInBase(true);
-                return;
+                inBase = true;
             }
             else if (mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural())) {
                 if (enemyUnit.getEnemyType().isWorker()) {
                     continue;
                 }
 
-                gameState.setEnemyInBase(true);
-                return;
-            }
-            else if (enemyUnit.getEnemyType().isFlyer() && !enemyUnit.getEnemyType().isBuilding()) {
-                if (mapInfo.isFlyerInOwnedBase(enemyPos)) {
-                    gameState.setEnemyInBase(true);
-                    gameState.setEnemyFlyerInBase(true);
-                    return;
-                }
+                inBase = true;
             }
         }
-        gameState.setEnemyInBase(false);
-        gameState.setEnemyFlyerInBase(false);
+
+        gameState.setEnemyInBase(inBase);
+        gameState.setEnemyFlyerInBase(flyerInBase);
     }
 
     private void enemyInNatural() {
