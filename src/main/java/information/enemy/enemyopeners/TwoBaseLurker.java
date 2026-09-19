@@ -83,8 +83,6 @@ public class TwoBaseLurker extends EnemyStrategy {
         getBuildingResponse().add(UnitType.Terran_Missile_Turret);
         getBuildingResponse().add(UnitType.Terran_Factory);
         getBuildingResponse().add(UnitType.Terran_Machine_Shop);
-        getBuildingResponse().add(UnitType.Terran_Starport);
-        getBuildingResponse().add(UnitType.Terran_Science_Facility);
         getBuildingResponse().add(UnitType.Terran_Siege_Tank_Tank_Mode);
     }
 

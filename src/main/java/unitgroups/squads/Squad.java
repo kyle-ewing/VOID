@@ -42,7 +42,6 @@ public class Squad {
 
         List<CombatUnits> units = new ArrayList<>(squadUnits);
         boolean tankBias = siegeTankCount() >= TANK_THRESHOLD;
-        boolean medicBias = siegeTankCount() == 0 && medicCount() >= 1;
 
         CombatUnits anchor = units.get(0);
         int maxNeighbors = -1;
@@ -57,10 +56,6 @@ public class Squad {
             }
 
             if (tankBias && !isSiegeTank(candidate)) {
-                continue;
-            }
-
-            if (medicBias && !isMedic(candidate)) {
                 continue;
             }
 
@@ -95,9 +90,6 @@ public class Squad {
                     weight = TANK_WEIGHT;
                 }
 
-                if (medicBias && isMedic(unit)) {
-                    weight = TANK_WEIGHT;
-                }
                 cx += pos.getX() * weight;
                 cy += pos.getY() * weight;
                 count += weight;
@@ -187,12 +179,48 @@ public class Squad {
             return;
         }
 
+        int leadDistance = LEAD_DISTANCE;
+        if (siegeTankCount() == 0) {
+            leadDistance = 150;
+        }
+
         for (CombatUnits unit : squadUnits) {
             if (isScienceVessel(unit)) {
                 continue;
             }
 
-            if (unit.getUnitStatus() != UnitStatus.ATTACK) {
+            if (unit.getUnitStatus() != UnitStatus.ATTACK && unit.getUnitStatus() != UnitStatus.REGROUP) {
+                continue;
+            }
+
+            boolean isolated = false;
+            if (unit.getUnit().getDistance(regroupPosition) > 500) {
+                isolated = true;
+                for (CombatUnits other : squadUnits) {
+                    if (other == unit) {
+                        continue;
+                    }
+
+                    if (isScienceVessel(other)) {
+                        continue;
+                    }
+
+                    if (unit.getUnit().getDistance(other.getUnit().getPosition()) <= 200) {
+                        isolated = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isolated) {
+                unit.setUnitStatus(UnitStatus.REGROUP);
+                unit.setForcedRegroup(true);
+                continue;
+            }
+
+            unit.setForcedRegroup(false);
+
+            if (unit.getUnitStatus() == UnitStatus.REGROUP) {
                 continue;
             }
 
@@ -204,7 +232,7 @@ public class Squad {
                 continue;
             }
 
-            if (unit.getUnit().getDistance(regroupPosition) <= LEAD_DISTANCE) {
+            if (unit.getUnit().getDistance(regroupPosition) <= leadDistance) {
                 continue;
             }
 
@@ -230,8 +258,11 @@ public class Squad {
     public void onFrame() {
         updateRegroupPosition();
 
+        boolean noTanks = siegeTankCount() == 0;
+
         for (CombatUnits unit : squadUnits) {
             unit.setInRunbySquad(isRunbySquad);
+            unit.setTightRegroup(noTanks);
 
             if (isRunbySquad && unit.getUnitStatus() != UnitStatus.REGROUP) {
                 unit.setUnitStatus(UnitStatus.RUNBY);

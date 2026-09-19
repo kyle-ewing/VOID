@@ -43,6 +43,8 @@ public class CombatUnits {
     protected boolean notNeeded = false;
     protected boolean dtUndetected = false;
     protected boolean inRunbySquad = false;
+    protected boolean tightRegroup = false;
+    protected boolean forcedRegroup = false;
 
     protected static final int STUCK_CHECK_INTERVAL = 24;
     protected static final int STUCK_THRESHOLD = 2;
@@ -216,14 +218,19 @@ public class CombatUnits {
             return;
         }
 
-        if (enemyInWeaponRange(64)) {
+        if (!forcedRegroup && enemyInWeaponRange(64)) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(regroupExitStatus());
             return;
         }
 
-        if (unit.getPosition().getDistance(regroupPosition) < 150) {
+        int exitDistance = 150;
+        if (tightRegroup) {
+            exitDistance = 100;
+        }
+
+        if (unit.getPosition().getDistance(regroupPosition) < exitDistance) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(regroupExitStatus());
@@ -273,6 +280,22 @@ public class CombatUnits {
 
     public void setInRunbySquad(boolean inRunbySquad) {
         this.inRunbySquad = inRunbySquad;
+    }
+
+    public boolean isTightRegroup() {
+        return tightRegroup;
+    }
+
+    public void setTightRegroup(boolean tightRegroup) {
+        this.tightRegroup = tightRegroup;
+    }
+
+    public boolean isForcedRegroup() {
+        return forcedRegroup;
+    }
+
+    public void setForcedRegroup(boolean forcedRegroup) {
+        this.forcedRegroup = forcedRegroup;
     }
 
     public void poke() {
