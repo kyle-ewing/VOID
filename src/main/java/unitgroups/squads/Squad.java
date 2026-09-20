@@ -212,7 +212,7 @@ public class Squad {
                 }
             }
 
-            if (isolated) {
+            if (isolated && !regroupMovesTowardEnemy(unit)) {
                 unit.setUnitStatus(UnitStatus.REGROUP);
                 unit.setForcedRegroup(true);
                 continue;
@@ -236,13 +236,21 @@ public class Squad {
                 continue;
             }
 
-            Position enemyPosition = unit.getEnemyUnit().getEnemyPosition();
-            if (unit.getUnit().getDistance(enemyPosition) >= regroupPosition.getDistance(enemyPosition)) {
+            if (regroupMovesTowardEnemy(unit)) {
                 continue;
             }
 
             unit.setUnitStatus(UnitStatus.REGROUP);
         }
+    }
+
+    private boolean regroupMovesTowardEnemy(CombatUnits unit) {
+        if (unit.getEnemyUnit() == null || unit.getEnemyUnit().getEnemyPosition() == null) {
+            return false;
+        }
+
+        Position enemyPosition = unit.getEnemyUnit().getEnemyPosition();
+        return unit.getUnit().getDistance(enemyPosition) >= regroupPosition.getDistance(enemyPosition);
     }
 
     public void addToSquad(CombatUnits unit) {

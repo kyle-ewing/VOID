@@ -106,6 +106,10 @@ public class UnitManager {
             }
         }
 
+        for (CombatUnits combatUnit : combatUnits) {
+            combatUnit.microOnFrame();
+        }
+
         if (frameCount % 8 != 0) {
             return;
         }
@@ -495,8 +499,9 @@ public class UnitManager {
                     }
                     break;
                 case REGROUP:
+                    ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     combatUnit.regroup();
-                    break;    
+                    break;
                 case POKE:
                     if (combatUnit.isDtUndetected()) {
                         combatUnit.setUnitStatus(UnitStatus.RETREAT);

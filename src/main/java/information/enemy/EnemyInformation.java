@@ -30,6 +30,7 @@ public class EnemyInformation {
     private GameState gameState;
     private EnemyUnits startingEnemyBase;
     private EnemyStrategyManager enemyStrategyManager;
+    private EnemyUpgrades enemyUpgrades;
     private EnemyStrategy enemyOpener;
     private int openerDefenseTimer = 0;
     private int openerDetectedFrame = 0;
@@ -49,6 +50,7 @@ public class EnemyInformation {
         startingEnemyBase = gameState.getStartingEnemyBase();
 
         enemyStrategyManager = new EnemyStrategyManager(mapInfo, game);
+        enemyUpgrades = new EnemyUpgrades(game);
     }
 
     private boolean previouslyDiscovered(Unit unit) {
@@ -377,6 +379,7 @@ public class EnemyInformation {
         checkOpenerDefense(currentTime);
         checkTechUnits();
         checkTechBuildings();
+        enemyUpgrades.onFrame();
         gameState.setBeingSieged(beingSieged());
 
         enemyArmySupply = 0;
@@ -648,5 +651,9 @@ public class EnemyInformation {
 
     public float getEnemyArmySupply() {
         return enemyArmySupply;
+    }
+
+    public EnemyUpgrades getEnemyUpgrades() {
+        return enemyUpgrades;
     }
 }
