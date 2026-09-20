@@ -114,14 +114,15 @@ public class CombatUnits {
         if (priorityEnemyUnit != null) {
             setEnemyUnit(priorityEnemyUnit);
             setUnitStatus(UnitStatus.DEFEND);
+            return;
         }
 
-        if (enemyUnit != null) {
+        if (enemyUnit != null && enemyInBase) {
             setUnitStatus(UnitStatus.DEFEND);
+            return;
         }
 
         unit.attack(rallyPoint.toPosition());
-
     }
 
     public void defend() {
@@ -218,7 +219,15 @@ public class CombatUnits {
             return;
         }
 
-        if (!forcedRegroup && enemyInWeaponRange(64)) {
+        if (enemyInWeaponRange(64)) {
+            regroupStuckCounter = 0;
+            lastRegroupCheckPosition = null;
+            setUnitStatus(regroupExitStatus());
+            return;
+        }
+
+        if (enemyUnit != null && enemyUnit.getEnemyPosition() != null
+                && unit.getDistance(enemyUnit.getEnemyPosition()) >= regroupPosition.getDistance(enemyUnit.getEnemyPosition())) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(regroupExitStatus());
@@ -303,6 +312,10 @@ public class CombatUnits {
     }
 
     public void onFrame() {
+
+    }
+
+    public void microOnFrame() {
 
     }
 

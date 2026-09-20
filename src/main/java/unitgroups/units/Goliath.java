@@ -2,6 +2,8 @@ package unitgroups.units;
 
 import bwapi.Game;
 import bwapi.Unit;
+import bwapi.UnitCommand;
+import bwapi.UnitCommandType;
 
 public class Goliath extends CombatUnits {
     public Goliath(Game game, Unit unit) {
@@ -70,19 +72,27 @@ public class Goliath extends CombatUnits {
             return;
         }
 
-        if (enemyUnit.getEnemyUnit().isFlying() && unit.getAirWeaponCooldown() > 0) {
-            return;
-        }
-
-        if (!enemyUnit.getEnemyUnit().isFlying() && unit.getGroundWeaponCooldown() > 0) {
+        if (unit.getLastCommandFrame() >= game.getFrameCount()) {
             return;
         }
 
         if (enemyUnit.getEnemyUnit().isVisible()) {
-            unit.attack(enemyUnit.getEnemyUnit());
+            issueAttack(enemyUnit.getEnemyUnit());
             return;
         }
 
         unit.attack(enemyUnit.getEnemyPosition());
+    }
+
+    private void issueAttack(Unit target) {
+        UnitCommand lastCommand = unit.getLastCommand();
+        if (lastCommand != null
+                && lastCommand.getType() == UnitCommandType.Attack_Unit
+                && lastCommand.getTarget() == target
+                && !unit.isIdle()) {
+            return;
+        }
+
+        unit.attack(target);
     }
 }
