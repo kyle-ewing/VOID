@@ -14,6 +14,7 @@ import information.enemy.enemyopeners.FFE;
 import information.enemy.enemyopeners.FourPool;
 import information.enemy.enemyopeners.FourRax;
 import information.enemy.enemyopeners.GasSteal;
+import information.enemy.enemyopeners.HatchFirst;
 import information.enemy.enemyopeners.NexusFirst;
 import information.enemy.enemyopeners.NinePool;
 import information.enemy.enemyopeners.NinePoolSpeedling;
@@ -91,6 +92,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new OneBaseLurker(mapInfo));
         // enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
         enemyStrategies.add(new TwoBaseLurker(mapInfo));
+        enemyStrategies.add(new HatchFirst(mapInfo));
         enemyStrategies.add(new DTRush());
         enemyStrategies.add(new FFE(mapInfo));
         enemyStrategies.add(new TwoGate(mapInfo));

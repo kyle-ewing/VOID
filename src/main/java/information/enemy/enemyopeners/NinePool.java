@@ -56,8 +56,8 @@ public class NinePool extends EnemyStrategy {
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if (mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1200
-                && time.greaterThan(new Time(2,25)) && time.lessThanOrEqual(new Time(3,0))) {
+                if (mapInfo.getNaturalBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1400
+                && time.greaterThan(new Time(2,30)) && time.lessThanOrEqual(new Time(3,0))) {
                     hasMatched = true;
                     return true;
                 }
