@@ -1020,7 +1020,7 @@ public class WorkerManager {
                 }
                 return null;
             case FOURPOOL:
-                if (enemyInBase() && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
+                if (enemyInRange(400) && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
                     return 4;
                 }
 
