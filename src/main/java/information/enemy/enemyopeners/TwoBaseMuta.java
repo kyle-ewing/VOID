@@ -42,7 +42,7 @@ public class TwoBaseMuta extends EnemyStrategy {
 
             if (enemyUnit.getEnemyType() == UnitType.Zerg_Extractor) {
                 if (natural != null && enemyUnit.getEnemyPosition().getDistance(natural.getEnemyPosition()) < 200) {
-                    Time extractorCompletion = new Time(time.getFrames() + enemyUnit.getEnemyUnit().getRemainingBuildTime());
+                    Time extractorCompletion = new Time(time.getFrames() + remainingBuildFrames(enemyUnit));
                     if (extractorCompletion.lessThanOrEqual(new Time(6, 0))) {
                         return true;
                     }
@@ -53,7 +53,7 @@ public class TwoBaseMuta extends EnemyStrategy {
                 continue;
             }
 
-            Time spireCompletion = new Time(time.getFrames() + enemyUnit.getEnemyUnit().getRemainingBuildTime());
+            Time spireCompletion = new Time(time.getFrames() + remainingBuildFrames(enemyUnit));
             if (spireCompletion.lessThanOrEqual(new Time(6, 15))) {
                 return true;
             }

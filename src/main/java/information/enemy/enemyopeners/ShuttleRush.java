@@ -24,7 +24,7 @@ public class ShuttleRush extends EnemyStrategy{
 
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyType() == UnitType.Protoss_Robotics_Facility) {
-                int predictedFinishFrame = time.getFrames() + enemyUnit.getEnemyUnit().getRemainingBuildTime();
+                int predictedFinishFrame = time.getFrames() + remainingBuildFrames(enemyUnit);
                 if (new Time(predictedFinishFrame).lessThanOrEqual(new Time(4, 15))) {
                     return true;
                 }

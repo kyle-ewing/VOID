@@ -40,8 +40,8 @@ public class FourPool extends EnemyStrategy {
                     return true;
                 }
 
-                if (mapInfo.getNaturalBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1400
-                && time.lessThanOrEqual(new Time(2,30))) {
+                if (mapInfo.getNaturalBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1600
+                && time.lessThanOrEqual(new Time(2,40))) {
                     return true;
                 }
 
