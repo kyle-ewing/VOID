@@ -19,7 +19,7 @@ public class PlannedItem {
     private boolean needsAddon = false;
     private boolean openerResponseItem = false;
 
-    //priority 1-5, 1 being the highest
+    //priority 0-5, 0 being the highest
     private int priority;
     private int resetCounter = 0;
 

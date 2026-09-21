@@ -58,7 +58,6 @@ public class MapInfo {
     private HashSet<Base> halfTransferredBases = new HashSet<>();
     private HashSet<Base> depletionCountedBases = new HashSet<>();
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
-    private HashSet<TilePosition> usedGeysers = new HashSet<>();
     private HashSet<TilePosition> mainCliffEdge = new HashSet<>();
     private HashSet<TilePosition> naturalChokeEdge = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
@@ -1683,10 +1682,6 @@ public class MapInfo {
 
     public HashMap<Base, TilePosition> getGeyserTiles() {
         return geyserTiles;
-    }
-
-    public HashSet<TilePosition> getUsedGeysers() {
-        return usedGeysers;
     }
 
     public PathFinding getPathFinding() {

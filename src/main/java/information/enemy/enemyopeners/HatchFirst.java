@@ -41,7 +41,7 @@ public class HatchFirst extends EnemyStrategy {
                 continue;
             }
 
-            Time finishTime = new Time(time.getFrames() + enemyUnit.getEnemyUnit().getRemainingBuildTime());
+            Time finishTime = new Time(time.getFrames() + remainingBuildFrames(enemyUnit));
 
             if (finishTime.lessThanOrEqual(new Time(3, 10))) {
                 return true;

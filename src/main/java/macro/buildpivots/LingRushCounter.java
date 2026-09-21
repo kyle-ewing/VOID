@@ -32,7 +32,7 @@ public class LingRushCounter extends BuildPivot {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 9, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 9, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 19, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 14, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 15, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 20, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 20, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 23, PlannedItemType.BUILDING, 1));
@@ -112,6 +112,7 @@ public class LingRushCounter extends BuildPivot {
         HashMap<UnitType, Integer> requiredBuildings = new HashMap<>();
         requiredBuildings.put(UnitType.Terran_Barracks, 2);
         requiredBuildings.put(UnitType.Terran_Academy, 1);
+        requiredBuildings.put(UnitType.Terran_Supply_Depot, 2);
         return requiredBuildings;
     }
 }

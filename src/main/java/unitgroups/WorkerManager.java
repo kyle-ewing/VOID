@@ -37,6 +37,9 @@ public class WorkerManager {
     private HashSet<Workers> defenseForce = new HashSet<>();
     private HashSet<Workers> repairForce = new HashSet<>();
     private HashSet<Workers> pulledScvs = new HashSet<>();
+    private HashSet<Workers> leashArrived = new HashSet<>();
+    private HashSet<Workers> leashReleased = new HashSet<>();
+    private Position leashPosition = null;
     private HashMap<Unit, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private HashMap<Base, HashSet<Workers>> mineralSaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
@@ -166,6 +169,33 @@ public class WorkerManager {
                     break;
                 case ATTACKING:
                     if (frameCount % 8 != 0) {
+                        break;
+                    }
+
+                    if (leashPosition != null && pulledScvs.contains(worker)) {
+                        if (worker.getUnit().getDistance(leashPosition) > 150) {
+                            worker.getUnit().move(leashPosition);
+                            break;
+                        }
+
+                        HashSet<EnemyUnits> leashTargets = new HashSet<>();
+                        for (EnemyUnits leashEnemy : gameState.getKnownEnemyUnits()) {
+                            if (leashEnemy.getEnemyPosition() == null) {
+                                continue;
+                            }
+
+                            if (leashEnemy.getEnemyPosition().getDistance(leashPosition) > 150) {
+                                continue;
+                            }
+
+                            leashTargets.add(leashEnemy);
+                        }
+
+                        ClosestUnit.findClosestUnit(worker, leashTargets, 300);
+
+                        if (worker.getEnemyUnit() != null) {
+                            worker.selfDefense();
+                        }
                         break;
                     }
 
@@ -368,17 +398,22 @@ public class WorkerManager {
                 }
             }
             else if (currentCount < gasTarget) {
-                scv = ClosestUnit.findClosestWorker(geyser.getPosition(), workers, mapInfo.getPathFinding(), false);
+                HashSet<Workers> gasCandidates = new HashSet<>();
+                for (Workers candidate : workers) {
+                    if (candidate.getWorkerStatus() != WorkerStatus.MINERALS) {
+                        continue;
+                    }
+
+                    if (candidate.getUnit().isCarryingMinerals()) {
+                        continue;
+                    }
+
+                    gasCandidates.add(candidate);
+                }
+
+                scv = ClosestUnit.findClosestWorker(geyser.getPosition(), gasCandidates, mapInfo.getPathFinding(), false);
 
                 if (scv == null) {
-                    continue;
-                }
-
-                if (scv.getWorkerStatus() == WorkerStatus.ATTACKING) {
-                    continue;
-                }
-
-                if (scv.getUnit().isCarryingMinerals()) {
                     continue;
                 }
 
@@ -613,6 +648,10 @@ public class WorkerManager {
         }
 
         for (Workers worker : workers) {
+            if (leashReleased.contains(worker)) {
+                continue;
+            }
+
             if (worker.getWorkerStatus() == WorkerStatus.MINERALS && pulledScvs.size() < count) {
                 pulledScvs.add(worker);
                 removeMineralSaturation(worker);
@@ -629,6 +668,8 @@ public class WorkerManager {
 
     private void releasePulledScvs() {
         if (pulledScvs.isEmpty()) {
+            leashPosition = null;
+            leashArrived.clear();
             return;
         }
 
@@ -640,14 +681,41 @@ public class WorkerManager {
             Workers worker = iterator.next();
 
             if (worker.getWorkerStatus() != WorkerStatus.ATTACKING) {
+                if (leashPosition != null) {
+                    scvsPulled = false;
+                }
+
+                leashArrived.remove(worker);
                 iterator.remove();
                 continue;
             }
 
             if (worker.getUnit().getHitPoints() < 10) {
+                if (leashPosition != null) {
+                    scvsPulled = false;
+                }
+
                 worker.setWorkerStatus(WorkerStatus.IDLE);
+                leashArrived.remove(worker);
                 iterator.remove();
                 continue;
+            }
+
+            if (leashPosition != null) {
+                if (worker.getUnit().getDistance(leashPosition) <= 150) {
+                    leashArrived.add(worker);
+                }
+                else if (!leashArrived.contains(worker)) {
+                    continue;
+                }
+                else {
+                    worker.setWorkerStatus(WorkerStatus.IDLE);
+                    leashArrived.remove(worker);
+                    leashReleased.add(worker);
+                    scvsPulled = false;
+                    iterator.remove();
+                    continue;
+                }
             }
 
             if (rushGate) {
@@ -673,7 +741,12 @@ public class WorkerManager {
                 continue;
             }
 
+            if (leashPosition != null) {
+                scvsPulled = false;
+            }
+
             worker.setWorkerStatus(WorkerStatus.IDLE);
+            leashArrived.remove(worker);
             iterator.remove();
         }
     }
@@ -810,6 +883,49 @@ public class WorkerManager {
             case NEXUSFIRST:
                 createPulledScvs(6);
                 break;
+            case FOURPOOL:
+                Unit leashBunker = null;
+                for (Unit building : gameState.getAllBuildings()) {
+                    if (building.getType() != UnitType.Terran_Bunker) {
+                        continue;
+                    }
+
+                    if (mapInfo.hasBunkerInNatural() && mapInfo.getNaturalTiles().contains(building.getTilePosition())) {
+                        leashBunker = building;
+                        break;
+                    }
+
+                    if (mapInfo.getBaseTiles().contains(building.getTilePosition())) {
+                        leashBunker = building;
+                    }
+                }
+
+                if (leashBunker == null) {
+                    break;
+                }
+
+                for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                    if (enemyUnit.getEnemyPosition() == null) {
+                        continue;
+                    }
+
+                    if (enemyUnit.getEnemyType() == UnitType.Zerg_Overlord) {
+                        continue;
+                    }
+
+                    if (enemyUnit.getEnemyType().isWorker()) {
+                        continue;
+                    }
+
+                    if (enemyUnit.getEnemyPosition().getDistance(leashBunker.getPosition()) > 150) {
+                        continue;
+                    }
+
+                    leashPosition = leashBunker.getPosition();
+                    createPulledScvs(5);
+                    break;
+                }
+                break;
             default:
                 break;
         }
@@ -857,7 +973,7 @@ public class WorkerManager {
     }
 
     private void preemptiveBunkerRepair() {
-        if (!pulledScvs.isEmpty()) {
+        if (!pulledScvs.isEmpty() && leashPosition == null) {
             return;
         }
 
@@ -1020,7 +1136,7 @@ public class WorkerManager {
                 }
                 return null;
             case FOURPOOL:
-                if (enemyInRange(400) && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
+                if (enemyInRange(250) && new Time(game.getFrameCount()).lessThanOrEqual(new Time(5, 0))) {
                     return 4;
                 }
 
@@ -1168,7 +1284,7 @@ public class WorkerManager {
                 return true;
             }
             else if (enemyStrategy.getStrategyName() == EnemyStrategyName.FOURPOOL) {
-                if (enemyInBase()) {
+                if (enemyInRange(250) && new Time(game.getFrameCount()).lessThanOrEqual(new Time(4, 30))) {
                     return true;
                 }
             }
@@ -1292,6 +1408,8 @@ public class WorkerManager {
 
                 repairForce.remove(worker);
                 pulledScvs.remove(worker);
+                leashArrived.remove(worker);
+                leashReleased.remove(worker);
 
                 for (Unit geyser : refinerySaturation.keySet()) {
                     refinerySaturation.get(geyser).remove(worker);

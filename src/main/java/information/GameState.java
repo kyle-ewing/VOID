@@ -238,7 +238,7 @@ public class GameState {
                     continue;
                 }
 
-                if (pi.getSupply() <= 0 || pi.getSupply() >= currentSupply) {
+                if (pi.getSupply() <= 0 || pi.getSupply() > currentSupply) {
                     continue;
                 }
 
@@ -287,7 +287,7 @@ public class GameState {
                 continue;
             }
 
-            if (pi.getSupply() > 0 && pi.getSupply() < currentSupply) {
+            if (pi.getSupply() > 0 && pi.getSupply() <= currentSupply) {
                 continue;
             }
 

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import bwapi.TechType;
+import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
@@ -33,6 +34,26 @@ public abstract class EnemyStrategy {
 
     public EnemyStrategyName getStrategyName() {
         return strategyName;
+    }
+
+    //getRemainingBuildTime is always zero for enemy units, estimate from health instead
+    protected int remainingBuildFrames(EnemyUnits enemyUnit) {
+        Unit unit = enemyUnit.getEnemyUnit();
+
+        if (unit.isCompleted()) {
+            return 0;
+        }
+
+        UnitType enemyType = enemyUnit.getEnemyType();
+        int maxTotalHealth = enemyType.maxHitPoints() + enemyType.maxShields();
+        int startingHealth = 1 + (maxTotalHealth / 10);
+        double progress = (double) (unit.getHitPoints() + unit.getShields() - startingHealth) / (maxTotalHealth - startingHealth);
+
+        if (progress < 0) {
+            progress = 0;
+        }
+
+        return (int) ((1 - progress) * enemyType.buildTime());
     }
 
     public void techUpgradeResponse() {
