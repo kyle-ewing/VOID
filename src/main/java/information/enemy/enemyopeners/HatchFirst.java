@@ -16,6 +16,7 @@ public class HatchFirst extends EnemyStrategy {
     public HatchFirst(MapInfo mapInfo) {
         super(EnemyStrategyName.HATCHFIRST);
         this.mapInfo = mapInfo;
+        openerSwitchWindow = new Time(2, 30);
 
         buildingResponse();
         upgradeResponse();

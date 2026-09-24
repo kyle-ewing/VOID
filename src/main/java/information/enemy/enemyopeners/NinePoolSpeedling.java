@@ -22,7 +22,7 @@ public class NinePoolSpeedling extends EnemyStrategy {
         this.game = game;
         this.mapInfo = mapInfo;
         this.ninePool = ninePool;
-        openerSwitchWindow = 2880;
+        openerSwitchWindow = new Time(2, 0);
 
         buildingResponse();
     }
