@@ -1284,7 +1284,7 @@ public class WorkerManager {
                 return true;
             }
             else if (enemyStrategy.getStrategyName() == EnemyStrategyName.FOURPOOL) {
-                if (enemyInRange(250) && new Time(game.getFrameCount()).lessThanOrEqual(new Time(4, 30))) {
+                if (enemyInBase() && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
                     return true;
                 }
             }
