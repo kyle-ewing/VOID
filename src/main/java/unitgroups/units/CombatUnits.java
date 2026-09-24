@@ -331,6 +331,10 @@ public class CombatUnits {
         return unit;
     }
 
+    public Game getGame() {
+        return game;
+    }
+
     public UnitStatus getUnitStatus() {
         return unitStatus;
     }

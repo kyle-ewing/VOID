@@ -14,6 +14,7 @@ public class EnemyUnits {
     private Position enemyPosition;
     private TilePosition enemyTilePosition;
     private boolean wasBurrowed = false;
+    private int staleFrame = -1;
 
     public EnemyUnits(int enemyID, Unit enemyUnit) {
         this.enemyID = enemyID;
@@ -77,6 +78,14 @@ public class EnemyUnits {
 
     public void setSweepTimer() {
         this.sweepTimer = sweepTimer + 1;
+    }
+
+    public int getStaleFrame() {
+        return staleFrame;
+    }
+
+    public void setStaleFrame(int staleFrame) {
+        this.staleFrame = staleFrame;
     }
 
     
