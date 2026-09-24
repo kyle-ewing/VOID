@@ -37,7 +37,7 @@ public class NinePoolSpeedling extends EnemyStrategy {
             return true;
         }
 
-        if (time.lessThanOrEqual(new Time(4,15)) && game.enemy().getUpgradeLevel(UpgradeType.Metabolic_Boost) > 0) {
+        if (time.lessThanOrEqual(new Time(5,5)) && game.enemy().getUpgradeLevel(UpgradeType.Metabolic_Boost) > 0) {
             triggered = true;
             ninePool.setHandedOff(true);
             return true;

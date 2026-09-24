@@ -313,9 +313,12 @@ public class ClosestUnit {
                         enemyUnit.setEnemyPosition(null);
                         continue;
                     }
-                }
-                else {
-                    enemyUnit.setEnemyPosition(null);
+
+                    if (combatUnit.getUnit().getDistance(enemyPosition) < 32 && !enemyUnit.getEnemyUnit().isVisible()) {
+                        enemyUnit.setEnemyPosition(null);
+                    }
+
+                    continue;
                 }
 
                 //Hard force position reset if units literally on top of an enemy that is clearly not there anymore
@@ -324,7 +327,15 @@ public class ClosestUnit {
                     continue;
                 }
 
-                continue;
+                int frameCount = combatUnit.getGame().getFrameCount();
+                if (enemyUnit.getStaleFrame() < 0) {
+                    enemyUnit.setStaleFrame(frameCount);
+                }
+
+                if (frameCount - enemyUnit.getStaleFrame() >= new Time(0, 3).getFrames()) {
+                    enemyUnit.setEnemyPosition(null);
+                    continue;
+                }
             }
 
             if (!enemyUnit.getEnemyType().isFlyer() && !combatUnit.getUnit().hasPath(enemyPosition)) {

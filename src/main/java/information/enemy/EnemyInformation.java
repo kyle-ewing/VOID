@@ -391,6 +391,7 @@ public class EnemyInformation {
                 enemyUnit.setEnemyPosition(enemyUnit.getEnemyUnit().getPosition());
                 enemyUnit.setEnemyTilePosition(enemyUnit.getEnemyUnit().getTilePosition());
                 enemyUnit.setBurrowed(enemyUnit.getEnemyUnit().isBurrowed());
+                enemyUnit.setStaleFrame(-1);
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Spell_Scanner_Sweep) {

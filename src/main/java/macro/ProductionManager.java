@@ -1309,10 +1309,12 @@ public class ProductionManager {
 
             techUnit.getFriendlyBuildingResponse().removeIf(buildingPriority ->
                     productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
-                            && (pi.getPriority() <= 1 || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
+                            && ((pi.getPriority() <= 1 && pi.getSupply() == 0) || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
 
             for (UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
-                productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() > 1);
+                productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse
+                        && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
+                        && (pi.getPriority() > 1 || pi.getSupply() > 0));
 
                 if (buildingResponse.isAddon()) {
                     addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
@@ -1437,10 +1439,12 @@ public class ProductionManager {
 
                 techBuilding.getFriendlyBuildingResponse().removeIf(buildingPriority ->
                         productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
-                        && (pi.getPriority() <= 1 || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
+                        && ((pi.getPriority() <= 1 && pi.getSupply() == 0) || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
 
                 for (UnitType buildingResponse : techBuilding.getFriendlyBuildingResponse()) {
-                    productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse && pi.getPriority() > 1);
+                    productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse
+                            && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
+                            && (pi.getPriority() > 1 || pi.getSupply() > 0));
 
                     if (buildingResponse.isAddon()) {
                         addToQueue(buildingResponse, PlannedItemType.ADDON, 1);

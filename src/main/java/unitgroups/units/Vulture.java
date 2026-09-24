@@ -403,8 +403,11 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if (hasTankSupport) {
+        if (hasTankSupport && enemyUnit.getEnemyUnit().isVisible()) {
             unit.attack(enemyUnit.getEnemyUnit());
+        }
+        else if (hasTankSupport) {
+            unit.attack(enemyUnit.getEnemyPosition());
         }
         else if (wallStuckRetreatTimer > 0 && rallyPoint != null) {
             unit.move(rallyPoint.toPosition());
@@ -496,7 +499,14 @@ public class Vulture extends CombatUnits {
             }
         }
 
-        unit.attack(enemyUnit.getEnemyUnit());
+        if (enemyUnit.getEnemyUnit().isVisible()) {
+            unit.attack(enemyUnit.getEnemyUnit());
+            return;
+        }
+
+        if (enemyUnit.getEnemyPosition() != null) {
+            unit.attack(enemyUnit.getEnemyPosition());
+        }
     }
 
     @Override
