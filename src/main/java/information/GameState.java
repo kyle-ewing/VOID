@@ -23,6 +23,7 @@ import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.ResourceTracking;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderManager;
+import macro.buildorders.BuildType;
 import macro.buildorders.BunkerLocation;
 import macro.buildpivots.BuildPivot;
 import macro.buildtransitions.BuildTransition;
@@ -281,30 +282,44 @@ public class GameState {
             }
         }
 
+        HashMap<UnitType, Integer> satisfiedBuildings = new HashMap<>();
+
+        for (Unit building : allBuildings) {
+            if (!building.exists() || !building.isCompleted()) {
+                continue;
+            }
+
+            satisfiedBuildings.merge(building.getType(), 1, Integer::sum);
+        }
+
+        for (PlannedItem underway : underwayItems) {
+            if (underway.getPlannedItemType() != PlannedItemType.BUILDING || underway.getUnitType() == null) {
+                continue;
+            }
+
+            satisfiedBuildings.merge(underway.getUnitType(), 1, Integer::sum);
+        }
+
+        HashMap<UnitType, Integer> pivotDemand = new HashMap<>();
+
         for (PlannedItem pi : pivotBuild) {
+            int demand = 0;
+
+            if (pi.getPlannedItemType() == PlannedItemType.BUILDING && pi.getUnitType() != null) {
+                demand = pivotDemand.getOrDefault(pi.getUnitType(), 0) + 1;
+                pivotDemand.put(pi.getUnitType(), demand);
+            }
+
             if (retainedItems.contains(pi)) {
                 productionQueue.add(pi);
                 continue;
             }
 
-            if (pi.getSupply() > 0 && pi.getSupply() <= currentSupply) {
+            if (demand > 0 && satisfiedBuildings.getOrDefault(pi.getUnitType(), 0) >= demand) {
                 continue;
             }
 
-            PlannedItem duplicate = null;
-            if (pi.getUnitType() != null) {
-                for (PlannedItem underway : underwayItems) {
-                    if (underway.getUnitType() == pi.getUnitType()
-                            && underway.getSupply().equals(pi.getSupply())
-                            && underway.getPlannedItemType() == pi.getPlannedItemType()) {
-                        duplicate = underway;
-                        break;
-                    }
-                }
-            }
-
-            if (duplicate != null) {
-                underwayItems.remove(duplicate);
+            if (pi.getSupply() > 0 && pi.getSupply() <= currentSupply) {
                 continue;
             }
 
@@ -490,6 +505,14 @@ public class GameState {
 
     public BuildOrder getStartingOpener() {
         return startingOpener;
+    }
+
+    public BuildType getCurrentBuildType() {
+        if (selectedPivot != null) {
+            return selectedPivot.buildType();
+        }
+
+        return startingOpener.buildType();
     }
 
     public TilePosition getBunkerPosition() {

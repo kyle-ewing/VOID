@@ -34,7 +34,7 @@ public class LingRushCounter extends BuildPivot {
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 19, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 15, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 20, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 20, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 19, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 23, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(TechType.Stim_Packs, 26, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 1));
         buildOrder.add(new PlannedItem(UpgradeType.U_238_Shells, 26, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 1, 2));

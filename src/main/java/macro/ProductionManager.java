@@ -976,6 +976,15 @@ public class ProductionManager {
                 case NINEPOOL:
                 case NINEPOOLSPEEDLING:
                     if (buildTiles.getMainChokeBunker() != null && buildTiles.getCloseBunkerTile() != null) {
+                        for (Unit building : allBuildings) {
+                            if (building.getType() == UnitType.Terran_Bunker
+                                    && !building.isCompleted()
+                                    && building.getTilePosition().equals(buildTiles.getMainChokeBunker())
+                                    && building.getRemainingBuildTime() * 2 <= building.getType().buildTime()) {
+                                return buildTiles.getMainChokeBunker();
+                            }
+                        }
+
                         for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
                             if (enemyUnit.getEnemyType() != UnitType.Zerg_Zergling || enemyUnit.getEnemyPosition() == null) {
                                 continue;
@@ -1061,6 +1070,10 @@ public class ProductionManager {
         }
 
         if (pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS) {
+            if (pi.getBuildPosition().equals(buildTiles.getCloseBunkerTile())) {
+                return;
+            }
+
             for (Unit building : allBuildings) {
                 if (building.getType() == pi.getUnitType() && building.getTilePosition().equals(pi.getBuildPosition()) && !building.isCompleted()) {
                     building.cancelConstruction();
@@ -1074,6 +1087,10 @@ public class ProductionManager {
                 builder.setWorkerStatus(WorkerStatus.IDLE);
                 builder.setBuildingPosition(null);
             }
+
+            pi.setAssignedBuilder(null);
+            pi.setBuildPosition(correctPosition);
+            pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
         }
     }
 
@@ -1791,7 +1808,7 @@ public class ProductionManager {
                 return;
             }
 
-            if (unit.getType() == UnitType.Terran_Bunker && gameState.getStartingOpener().buildType() != BuildType.BIO) {
+            if (unit.getType() == UnitType.Terran_Bunker && gameState.getCurrentBuildType() != BuildType.BIO) {
                 if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getBuildingResponse().contains(UnitType.Terran_Bunker)) {
                     addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
                 }

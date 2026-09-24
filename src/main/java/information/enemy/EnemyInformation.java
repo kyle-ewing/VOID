@@ -419,7 +419,7 @@ public class EnemyInformation {
             return;
         }
 
-        if (enemyOpener != null && game.getFrameCount() - openerDetectedFrame > enemyOpener.getOpenerSwitchWindow()) {
+        if (enemyOpener != null && game.getFrameCount() - openerDetectedFrame > enemyOpener.getOpenerSwitchWindow().getFrames()) {
             gameState.setOpenerLocked(true);
             return;
         }

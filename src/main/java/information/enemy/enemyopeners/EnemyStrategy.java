@@ -20,7 +20,7 @@ public abstract class EnemyStrategy {
     protected EnemyUnits priorityEnemyUnit = null;
     protected boolean defendedStrategy = false;
     protected boolean hardLockedWhenSeen = false;
-    protected int openerSwitchWindow = 1440;
+    protected Time openerSwitchWindow = new Time(1, 0);
 
     public EnemyStrategy(EnemyStrategyName strategyName) {
         this.strategyName = strategyName;
@@ -92,7 +92,7 @@ public abstract class EnemyStrategy {
         return hardLockedWhenSeen;
     }
 
-    public int getOpenerSwitchWindow() {
+    public Time getOpenerSwitchWindow() {
         return openerSwitchWindow;
     }
 

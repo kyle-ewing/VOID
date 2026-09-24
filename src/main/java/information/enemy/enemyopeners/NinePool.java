@@ -17,7 +17,7 @@ public class NinePool extends EnemyStrategy {
     public NinePool(MapInfo mapInfo) {
         super(EnemyStrategyName.NINEPOOL);
         this.mapInfo = mapInfo;
-        openerSwitchWindow = 2880;
+        openerSwitchWindow = new Time(2, 45);
 
         buildingResponse();
     }
