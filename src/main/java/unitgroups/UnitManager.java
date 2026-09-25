@@ -116,6 +116,7 @@ public class UnitManager {
 
         flyNaturalBaseCC();
         pivotRushRecall();
+        Unit rushBunker = findRushBunker();
 
         for (CombatUnits combatUnit : combatUnits) {
             if (combatUnit.getUnitStatus() == UnitStatus.LIFTABLE  && !combatUnit.getUnit().isLifted()) {
@@ -328,6 +329,10 @@ public class UnitManager {
                         break;
                     }
 
+                    if (leashToCloseBunker(combatUnit, rushBunker, gameState.getKnownEnemyUnits())) {
+                        break;
+                    }
+
                     rallyClockReset(combatUnit);
                     combatUnit.rally();
                     break;
@@ -374,6 +379,10 @@ public class UnitManager {
                     if (combatUnit.isInRangeOfThreat()) {
                         avoidThreat(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.RETREAT);
+                        break;
+                    }
+
+                    if (leashToCloseBunker(combatUnit, rushBunker, defendCandidates)) {
                         break;
                     }
 
@@ -740,6 +749,62 @@ public class UnitManager {
         if (enemyNearBunker() && combatUnit.getUnit().getDistance(bunker.getPosition()) < 200) {
             combatUnit.setUnitStatus(UnitStatus.LOAD);
         }
+    }
+
+    private Unit findRushBunker() {
+        if (gameState.getEnemyOpener() == null
+                || gameState.getEnemyOpener().getStrategyName() != EnemyStrategyName.FOURPOOL
+                || gameState.getEnemyOpener().isStrategyDefended()) {
+            return null;
+        }
+
+        int infantryCount = 0;
+        for (CombatUnits combatUnit : combatUnits) {
+            if (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Firebat) {
+                infantryCount++;
+            }
+        }
+
+        if (infantryCount >= 8) {
+            return null;
+        }
+
+        for (Unit building : gameState.getAllBuildings()) {
+            if (building.getType() == UnitType.Terran_Bunker
+                    && building.getTilePosition().equals(gameState.getBuildTiles().getCloseBunkerTile())) {
+                return building;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean leashToCloseBunker(CombatUnits combatUnit, Unit rushBunker, HashSet<EnemyUnits> candidates) {
+        if (rushBunker == null || combatUnit.getUnitType() != UnitType.Terran_Marine) {
+            return false;
+        }
+
+        HashSet<EnemyUnits> leashCandidates = new HashSet<>();
+
+        for (EnemyUnits enemyUnit : candidates) {
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (rushBunker.getDistance(enemyUnit.getEnemyPosition()) < 300) {
+                leashCandidates.add(enemyUnit);
+            }
+        }
+
+        ClosestUnit.findClosestUnit(combatUnit, leashCandidates, Integer.MAX_VALUE);
+
+        if (combatUnit.getEnemyUnit() == null || rushBunker.getDistance(combatUnit.getUnit().getPosition()) > 200) {
+            combatUnit.getUnit().move(rushBunker.getPosition());
+            return true;
+        }
+
+        combatUnit.attack();
+        return true;
     }
 
     private boolean fleeToProxyBunker(CombatUnits combatUnit) {

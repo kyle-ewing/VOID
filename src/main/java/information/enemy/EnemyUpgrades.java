@@ -3,6 +3,7 @@ package information.enemy;
 import bwapi.Game;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import util.Time;
 
 public class EnemyUpgrades {
     private Game game;
@@ -120,8 +121,9 @@ public class EnemyUpgrades {
             pneumatizedCarapace = true;
         }
 
-        if (game.enemy().getUpgradeLevel(UpgradeType.Metabolic_Boost) > 0) {
+        if (!metabolicBoost && game.enemy().getUpgradeLevel(UpgradeType.Metabolic_Boost) > 0) {
             metabolicBoost = true;
+            System.out.println("Enemy ling speed detected at " + new Time(game.getFrameCount()));
         }
 
         if (game.enemy().getUpgradeLevel(UpgradeType.Adrenal_Glands) > 0) {

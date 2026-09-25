@@ -332,7 +332,7 @@ public class ClosestUnit {
                     enemyUnit.setStaleFrame(frameCount);
                 }
 
-                if (frameCount - enemyUnit.getStaleFrame() >= new Time(0, 3).getFrames()) {
+                if (frameCount - enemyUnit.getStaleFrame() >= new Time(0, 2).getFrames()) {
                     enemyUnit.setEnemyPosition(null);
                     continue;
                 }
