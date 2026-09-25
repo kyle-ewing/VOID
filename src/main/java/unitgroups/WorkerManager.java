@@ -292,7 +292,7 @@ public class WorkerManager {
                         break;
                     }
 
-                    scoutAttack(worker);
+                    //scoutAttack(worker);
                     break;
                 case STUCK:
                     if (frameCount % 24 != 0) {
