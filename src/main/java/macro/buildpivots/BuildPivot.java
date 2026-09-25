@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import bwapi.Race;
+import bwapi.Unit;
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategyName;
@@ -47,6 +48,10 @@ public abstract class BuildPivot {
     //Used to retain pivot build entries that sit below the current supply
     public HashMap<UnitType, Integer> getRequiredBuildings() {
         return new HashMap<>();
+    }
+
+    public int getGasWorkerTarget(int totalGasGathered, HashSet<Unit> allBuildings) {
+        return 3;
     }
 
     public boolean isRushActive() {

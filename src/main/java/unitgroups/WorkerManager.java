@@ -20,6 +20,7 @@ import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import map.bwemwrappers.Base;
+import macro.buildpivots.BuildPivot;
 import map.bwemwrappers.Mineral;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
@@ -425,6 +426,11 @@ public class WorkerManager {
     }
 
     private int getGasWorkerTarget() {
+        BuildPivot selectedPivot = gameState.getSelectedPivot();
+        if (selectedPivot != null) {
+            return selectedPivot.getGasWorkerTarget(player.gatheredGas(), gameState.getAllBuildings());
+        }
+
         return gameState.getStartingOpener().getGasWorkerTarget(player.gatheredGas(), gameState.getAllBuildings());
     }
 

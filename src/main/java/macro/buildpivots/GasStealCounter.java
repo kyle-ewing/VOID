@@ -100,4 +100,12 @@ public class GasStealCounter extends BuildPivot {
         cancelableBuildings.add(UnitType.Terran_Factory);
         return cancelableBuildings;
     }
+
+    @Override
+    public HashMap<UnitType, Integer> getRequiredBuildings() {
+        HashMap<UnitType, Integer> requiredBuildings = new HashMap<>();
+        requiredBuildings.put(UnitType.Terran_Barracks, 2);
+        requiredBuildings.put(UnitType.Terran_Supply_Depot, 3);
+        return requiredBuildings;
+    }
 }

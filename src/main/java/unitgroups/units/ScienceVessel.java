@@ -21,7 +21,6 @@ public class ScienceVessel extends CombatUnits {
         this.enemyUnits = enemyInformation.getEnemyUnits();
 
         priorityTargets.add(UnitType.Zerg_Defiler);
-        priorityTargets.add(UnitType.Zerg_Mutalisk);
         priorityTargets.add(UnitType.Zerg_Lurker);
         priorityTargets.add(UnitType.Zerg_Guardian);
         priorityTargets.add(UnitType.Zerg_Queen);
