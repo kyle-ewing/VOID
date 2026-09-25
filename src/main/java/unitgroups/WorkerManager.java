@@ -1150,7 +1150,7 @@ public class WorkerManager {
                 else if (new Time(game.getFrameCount()).greaterThan(new Time(5, 0))) {
                     return 3;
                 }
-                else if (new Time(game.getFrameCount()).greaterThan(new Time(3, 30))) {
+                else if (new Time(game.getFrameCount()).greaterThan(new Time(4, 0))) {
                     return 2;
                 }
             case TWOBASELURKER:

@@ -46,9 +46,9 @@ public class LingRushCounter extends BuildPivot {
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Weapons, 32, PlannedItemType.UPGRADE,UnitType.Terran_Engineering_Bay, 1, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 34, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 38, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 0, PlannedItemType.ADDON, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 0, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 38, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 4));
-        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
+        buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 40, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 40, PlannedItemType.BUILDING, 1, true));
 
 
@@ -113,7 +113,7 @@ public class LingRushCounter extends BuildPivot {
         HashMap<UnitType, Integer> requiredBuildings = new HashMap<>();
         requiredBuildings.put(UnitType.Terran_Barracks, 2);
         requiredBuildings.put(UnitType.Terran_Academy, 1);
-        requiredBuildings.put(UnitType.Terran_Supply_Depot, 2);
+        requiredBuildings.put(UnitType.Terran_Supply_Depot, 3);
         return requiredBuildings;
     }
 }
