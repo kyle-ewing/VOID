@@ -1054,6 +1054,7 @@ public class ProductionManager {
 
         if (pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED) {
             pi.setBuildPosition(correctPosition);
+            pi.setOpenerResponseItem(true);
             return;
         }
 
@@ -1066,6 +1067,7 @@ public class ProductionManager {
             }
 
             pi.setBuildPosition(correctPosition);
+            pi.setOpenerResponseItem(true);
             return;
         }
 
@@ -1091,6 +1093,7 @@ public class ProductionManager {
             pi.setAssignedBuilder(null);
             pi.setBuildPosition(correctPosition);
             pi.setPlannedItemStatus(PlannedItemStatus.NOT_STARTED);
+            pi.setOpenerResponseItem(true);
         }
     }
 

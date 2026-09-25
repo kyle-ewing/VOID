@@ -212,7 +212,7 @@ public class Squad {
                 }
             }
 
-            if (isolated && !regroupMovesTowardEnemy(unit)) {
+            if (isolated && !unit.enemyInWeaponRange(64) && !regroupMovesTowardEnemy(unit)) {
                 unit.setUnitStatus(UnitStatus.REGROUP);
                 unit.setForcedRegroup(true);
                 continue;

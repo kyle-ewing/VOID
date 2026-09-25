@@ -35,6 +35,7 @@ public class FactoryExpand extends MechBuildOrder {
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 17, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 18, PlannedItemType.UNIT, 3));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Marine, 21, PlannedItemType.UNIT, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 23, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 24, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 24, PlannedItemType.ADDON, 2));
