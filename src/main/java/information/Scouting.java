@@ -1,5 +1,8 @@
 package information;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
@@ -26,7 +29,7 @@ public class Scouting {
     private Workers scout;
     private Workers secondScout = null;
     private Base scoutTargetBase = null;
-    private int scoutRadius = 200;
+    private int scoutRadius = 250;
     private int positionCount = 8;
     private int currentPositionIndex = 0;
     private int secondScoutPositionIndex = 0;
@@ -45,6 +48,7 @@ public class Scouting {
     private Position headingStart = null;
     private int headingStartFrame = 0;
     private Base inferredEnemyMain = null;
+    private ArrayList<Position> enemyMainPerimeter = new ArrayList<>();
 
     private Time time;
 
@@ -197,12 +201,87 @@ public class Scouting {
         return nextIndex;
     }
 
-    private void scoutEnemyPerimeter() {
-        if (scout == null) {
-            return;
+    private Position enemyMainLoopTarget(Workers scoutWorker, boolean directionReversed) {
+        Base enemyMain = mapInfo.getEnemyMain();
+        if (enemyMain == null || enemyMain.getArea() == null) {
+            return null;
         }
 
-        if (scout.getEnemyUnit() != null) {
+        HashSet<TilePosition> enemyMainTiles = mapInfo.getBaseTilesAllBases().get(enemyMain);
+        if (enemyMainTiles == null || !enemyMainTiles.contains(scoutWorker.getUnit().getTilePosition())) {
+            return null;
+        }
+
+        boolean enemyNearby = false;
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType().isBuilding() || !enemyUnit.getEnemyType().canAttack() || !enemyUnit.getEnemyUnit().isVisible()) {
+                continue;
+            }
+
+            if (scoutWorker.getUnit().getDistance(enemyUnit.getEnemyUnit()) <= 64) {
+                enemyNearby = true;
+                break;
+            }
+        }
+
+        if (!enemyNearby) {
+            return null;
+        }
+
+        if (enemyMainPerimeter.isEmpty()) {
+            Position origin = enemyMain.getArea().getTop();
+
+            for (int i = 0; i < 16; i++) {
+                double angle = (Math.PI * 2 * i) / 16;
+                double stepX = Math.cos(angle) * 16;
+                double stepY = Math.sin(angle) * 16;
+
+                int steps = 0;
+                while (enemyMainTiles.contains(new Position((int) (origin.getX() + stepX * steps), (int) (origin.getY() + stepY * steps)).toTilePosition())) {
+                    steps++;
+                }
+
+                for (int inset = steps - 4; inset >= 0; inset--) {
+                    TilePosition candidateTile = new Position((int) (origin.getX() + stepX * inset), (int) (origin.getY() + stepY * inset)).toTilePosition();
+
+                    if (!enemyMainTiles.contains(candidateTile) || !mapInfo.getPathFinding().getTilePositionValidator().isWalkable(candidateTile)) {
+                        continue;
+                    }
+
+                    Position waypoint = new Position(candidateTile.toPosition().getX() + 16, candidateTile.toPosition().getY() + 16);
+                    if (!enemyMainPerimeter.contains(waypoint)) {
+                        enemyMainPerimeter.add(waypoint);
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (enemyMainPerimeter.isEmpty()) {
+            return null;
+        }
+
+        int nearestIndex = 0;
+        int nearestDistance = Integer.MAX_VALUE;
+        for (int i = 0; i < enemyMainPerimeter.size(); i++) {
+            int distance = scoutWorker.getUnit().getDistance(enemyMainPerimeter.get(i));
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestIndex = i;
+            }
+        }
+
+        int step = 1;
+        if (directionReversed) {
+            step = -1;
+        }
+
+        int perimeterSize = enemyMainPerimeter.size();
+        return enemyMainPerimeter.get((nearestIndex + step + perimeterSize) % perimeterSize);
+    }
+
+    private void scoutEnemyPerimeter() {
+        if (scout == null) {
             return;
         }
 
@@ -213,6 +292,16 @@ public class Scouting {
         if (scout.getIdleClock() >= 48) {
             reversed = !reversed;
             scout.setIdleClock(0);
+        }
+
+        Position loopTarget = enemyMainLoopTarget(scout, reversed);
+        if (loopTarget != null) {
+            scout.getUnit().rightClick(loopTarget);
+            return;
+        }
+
+        if (scout.getEnemyUnit() != null) {
+            return;
         }
 
         Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
@@ -244,10 +333,6 @@ public class Scouting {
             return;
         }
 
-        if (secondScout.getEnemyUnit() != null) {
-            return;
-        }
-
         if (secondScout.getUnit().isIdle()) {
             secondScout.setIdleClock(secondScout.getIdleClock() + 1);
         }
@@ -255,6 +340,16 @@ public class Scouting {
         if (secondScout.getIdleClock() >= 48) {
             secondScoutReversed = !secondScoutReversed;
             secondScout.setIdleClock(0);
+        }
+
+        Position loopTarget = enemyMainLoopTarget(secondScout, secondScoutReversed);
+        if (loopTarget != null) {
+            secondScout.getUnit().rightClick(loopTarget);
+            return;
+        }
+
+        if (secondScout.getEnemyUnit() != null) {
+            return;
         }
 
         Position enemyBasePos = gameState.getStartingEnemyBase().getEnemyPosition();
