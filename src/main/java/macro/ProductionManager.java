@@ -1813,7 +1813,10 @@ public class ProductionManager {
             }
 
             if (unit.getType() == UnitType.Terran_Bunker && gameState.getCurrentBuildType() != BuildType.BIO) {
-                if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getBuildingResponse().contains(UnitType.Terran_Bunker)) {
+                boolean bunkerAlreadyQueued = productionQueue.stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Bunker
+                        && (pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED || pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED));
+
+                if (!bunkerAlreadyQueued && gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getBuildingResponse().contains(UnitType.Terran_Bunker)) {
                     addToQueue(unit.getType(), PlannedItemType.BUILDING, 1);
                 }
                 return;

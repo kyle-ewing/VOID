@@ -4,8 +4,10 @@ import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import information.enemy.EnemyUnits;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
@@ -39,6 +41,11 @@ public class Scouting {
     private boolean secondScoutFoundEnemy = false;
     private boolean naturalScanned = false;
 
+    private EnemyUnits headingUnit = null;
+    private Position headingStart = null;
+    private int headingStartFrame = 0;
+    private Base inferredEnemyMain = null;
+
     private Time time;
 
     public Scouting(Game game, MapInfo mapInfo, GameState gameState) {
@@ -61,6 +68,12 @@ public class Scouting {
         }
 
         if (scout == null) {
+            return;
+        }
+
+        if (inferencePending()) {
+            scoutTargetBase = inferredEnemyMain;
+            scout.getUnit().move(inferredEnemyMain.getCenter());
             return;
         }
 
@@ -316,7 +329,7 @@ public class Scouting {
             return;
         }
 
-        if (secondScout == null) {
+        if (secondScout == null && !inferencePending()) {
             for (Workers scv : gameState.getWorkers()) {
                 if (scv.getWorkerStatus() == WorkerStatus.MINERALS) {
                     secondScout = scv;
@@ -327,6 +340,17 @@ public class Scouting {
         }
 
         if (secondScout == null) {
+            return;
+        }
+
+        if (inferencePending() && scout != null
+                && secondScout.getUnit().getDistance(inferredEnemyMain.getCenter()) < scout.getUnit().getDistance(inferredEnemyMain.getCenter())) {
+            Workers oldScout = scout;
+            scout = secondScout;
+            secondScout = null;
+            oldScout.setWorkerStatus(WorkerStatus.MINERALS);
+            scoutTargetBase = inferredEnemyMain;
+            scout.getUnit().move(inferredEnemyMain.getCenter());
             return;
         }
 
@@ -438,8 +462,125 @@ public class Scouting {
         }
     }
 
+    private boolean inferencePending() {
+        return inferredEnemyMain != null
+                && !mapInfo.isExplored(inferredEnemyMain)
+                && gameState.getStartingEnemyBase() == null;
+    }
+
+    private double rayAngle(Position origin, double rayX, double rayY, Position target) {
+        double toTargetX = target.getX() - origin.getX();
+        double toTargetY = target.getY() - origin.getY();
+        double cross = Math.abs((rayX * toTargetY) - (rayY * toTargetX));
+        double dot = (rayX * toTargetX) + (rayY * toTargetY);
+        return Math.atan2(cross, dot);
+    }
+
+    private Base closestBaseOnRay(Position origin, double rayX, double rayY) {
+        Base bestBase = null;
+        double bestAngle = Math.PI / 2;
+
+        for (Base base : mapInfo.getStartingBases()) {
+            if (mapInfo.isExplored(base)) {
+                continue;
+            }
+
+            double angle = rayAngle(origin, rayX, rayY, base.getCenter());
+            if (angle < bestAngle) {
+                bestAngle = angle;
+                bestBase = base;
+            }
+        }
+
+        return bestBase;
+    }
+
+    private void sampleEnemyHeading() {
+        if (inferredEnemyMain != null || gameState.getStartingEnemyBase() != null) {
+            return;
+        }
+
+        Base naturalInferredMain = mapInfo.getEnemyMain();
+        if (naturalInferredMain != null
+                && mapInfo.getStartingBases().contains(naturalInferredMain)
+                && !mapInfo.isExplored(naturalInferredMain)) {
+            inferredEnemyMain = naturalInferredMain;
+            headingUnit = null;
+            return;
+        }
+
+        int frameCount = game.getFrameCount();
+
+        if (headingUnit == null) {
+            for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+                if (!enemyUnit.getEnemyUnit().isVisible() || enemyUnit.getEnemyPosition() == null) {
+                    continue;
+                }
+
+                TilePosition enemyTile = enemyUnit.getEnemyTilePosition();
+
+                boolean overlordSighting = enemyUnit.getEnemyType() == UnitType.Zerg_Overlord
+                        && time.lessThanOrEqual(new Time(2, 45))
+                        && enemyUnit.getEnemyPosition().getDistance(mapInfo.getStartingBase().getCenter()) <= 800;
+
+                boolean workerSighting = enemyUnit.getEnemyType().isWorker()
+                        && time.lessThanOrEqual(new Time(2, 30))
+                        && !mapInfo.getBaseTiles().contains(enemyTile)
+                        && !mapInfo.getNaturalTiles().contains(enemyTile)
+                        && mapInfo.getStartingBases().stream().noneMatch(base -> mapInfo.getBaseTilesAllBases().get(base) != null
+                                && mapInfo.getBaseTilesAllBases().get(base).contains(enemyTile));
+
+                if (!overlordSighting && !workerSighting) {
+                    continue;
+                }
+
+                headingUnit = enemyUnit;
+                headingStart = enemyUnit.getEnemyPosition();
+                headingStartFrame = frameCount;
+                return;
+            }
+            return;
+        }
+
+        boolean overlordHeading = headingUnit.getEnemyType() == UnitType.Zerg_Overlord;
+        int elapsedFrames = frameCount - headingStartFrame;
+
+        if (headingUnit.getEnemyUnit().isVisible()
+                && ((overlordHeading && elapsedFrames < 72) || (!overlordHeading && elapsedFrames < 48))) {
+            return;
+        }
+
+        Position headingEnd = headingUnit.getEnemyPosition();
+        headingUnit = null;
+
+        if (headingEnd == null) {
+            return;
+        }
+
+        double displacement = headingStart.getDistance(headingEnd);
+        if ((overlordHeading && displacement < 25) || (!overlordHeading && displacement < 50)) {
+            return;
+        }
+
+        double headingX = headingEnd.getX() - headingStart.getX();
+        double headingY = headingEnd.getY() - headingStart.getY();
+
+        Base backwardBase = closestBaseOnRay(headingStart, -headingX, -headingY);
+        double ownMainAngle = rayAngle(headingStart, -headingX, -headingY, mapInfo.getStartingBase().getCenter());
+
+        if (ownMainAngle < Math.PI / 2
+                && (backwardBase == null || ownMainAngle < rayAngle(headingStart, -headingX, -headingY, backwardBase.getCenter()))) {
+            inferredEnemyMain = closestBaseOnRay(headingStart, headingX, headingY);
+            return;
+        }
+
+        inferredEnemyMain = backwardBase;
+    }
+
     public void onFrame() {
         time = new Time(game.getFrameCount());
+
+        sampleEnemyHeading();
 
         if (player.supplyUsed() / 2 >= gameState.getStartingOpener().getScoutSupply() && gameState.getStartingEnemyBase() == null) {
             sendScout();

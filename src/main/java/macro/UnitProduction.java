@@ -120,7 +120,7 @@ public class UnitProduction {
                         && isRecruitable(UnitType.Terran_Medic)
                         && unitTypeCount.get(UnitType.Terran_Medic) < medicCap
                         && !hasInQueue(UnitType.Terran_Medic)
-                        && marineCount > 8) {
+                        && marineCount > 6) {
                     items.add(plannedUnit(UnitType.Terran_Medic, 2));
                 } 
                 else if (isRecruitable(UnitType.Terran_Marine) && !hasInQueue(UnitType.Terran_Marine)) {
