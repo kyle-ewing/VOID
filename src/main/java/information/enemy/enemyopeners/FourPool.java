@@ -7,6 +7,7 @@ import bwapi.UnitType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
+import map.bwemwrappers.Area;
 import util.Time;
 
 public class FourPool extends EnemyStrategy {
@@ -38,6 +39,20 @@ public class FourPool extends EnemyStrategy {
             else if (enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
                 if (time.lessThanOrEqual(new Time(2,18))) {
                     return true;
+                }
+
+                if (time.lessThanOrEqual(new Time(2,30))) {
+                    Area lingArea = mapInfo.getGameMap().getArea(enemyUnit.getEnemyPosition().toTilePosition());
+
+                    if (lingArea != null) {
+                        if (lingArea == mapInfo.getStartingBase().getArea() || lingArea == mapInfo.getNaturalBase().getArea()) {
+                            return true;
+                        }
+
+                        if (!lingArea.isStartingArea() && !lingArea.isNaturalArea()) {
+                            return true;
+                        }
+                    }
                 }
 
                 if (mapInfo.getNaturalBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 1600

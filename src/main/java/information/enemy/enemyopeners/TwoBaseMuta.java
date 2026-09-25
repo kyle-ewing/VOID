@@ -40,15 +40,6 @@ public class TwoBaseMuta extends EnemyStrategy {
                 continue;
             }
 
-            if (enemyUnit.getEnemyType() == UnitType.Zerg_Extractor) {
-                if (natural != null && enemyUnit.getEnemyPosition().getDistance(natural.getEnemyPosition()) < 200) {
-                    Time extractorCompletion = new Time(time.getFrames() + remainingBuildFrames(enemyUnit));
-                    if (extractorCompletion.lessThanOrEqual(new Time(6, 0))) {
-                        return true;
-                    }
-                }
-            }
-
             if (enemyUnit.getEnemyType() != UnitType.Zerg_Spire) {
                 continue;
             }

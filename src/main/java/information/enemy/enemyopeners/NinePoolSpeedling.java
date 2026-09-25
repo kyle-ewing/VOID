@@ -51,19 +51,11 @@ public class NinePoolSpeedling extends EnemyStrategy {
             return true;
         }
 
-        boolean hasNaturalHatch = false;
-        if (mapInfo.getEnemyNatural() != null) {
-            hasNaturalHatch = enemyUnits.stream()
-                    .filter(eu -> eu.getEnemyType().isResourceDepot())
-                    .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
-        }
-
         boolean poolUpgrading = enemyUnits.stream()
                 .filter(eu -> eu.getEnemyType() == UnitType.Zerg_Spawning_Pool)
                 .anyMatch(eu -> eu.getEnemyUnit().isVisible() && eu.getEnemyUnit().isUpgrading());
 
-        if (poolUpgrading && !hasNaturalHatch
-                && time.greaterThan(new Time(3,30)) && time.lessThanOrEqual(new Time(5,0))) {
+        if (poolUpgrading && time.greaterThan(new Time(3,0)) && time.lessThanOrEqual(new Time(5,0))) {
             triggered = true;
             ninePool.setHandedOff(true);
             return true;
@@ -74,13 +66,7 @@ public class NinePoolSpeedling extends EnemyStrategy {
         }
 
         for (EnemyUnits enemyUnit : enemyUnits) {
-            if (enemyUnit.getEnemyType() == UnitType.Zerg_Extractor) {
-                triggered = true;
-                ninePool.setHandedOff(true);
-                return true;
-            }
-
-            if (enemyUnit.getEnemyType() == UnitType.Zerg_Drone && enemyUnit.getEnemyUnit().isCarryingGas()) {
+            if (enemyUnit.getEnemyType() == UnitType.Zerg_Drone && enemyUnit.getEnemyUnit().isCarryingGas() && time.lessThanOrEqual(new Time(2,45))) {
                 triggered = true;
                 ninePool.setHandedOff(true);
                 return true;

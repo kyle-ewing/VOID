@@ -41,11 +41,11 @@ public class FactoryExpand extends MechBuildOrder {
         buildOrder.add(new PlannedItem(TechType.Spider_Mines, 40, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 28, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 29, PlannedItemType.BUILDING, 2, true));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Starport, 30, PlannedItemType.BUILDING, 1, true));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Starport, 38, PlannedItemType.BUILDING, 1, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 35, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(TechType.Tank_Siege_Mode, 36, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 39, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 38, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 36, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UpgradeType.Ion_Thrusters, 25, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Academy, 42, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 47, PlannedItemType.BUILDING, 3));

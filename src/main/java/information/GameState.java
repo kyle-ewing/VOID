@@ -289,6 +289,10 @@ public class GameState {
                 continue;
             }
 
+            if (building.getType() == UnitType.Terran_Command_Center && building.getTilePosition().equals(player.getStartLocation())) {
+                continue;
+            }
+
             satisfiedBuildings.merge(building.getType(), 1, Integer::sum);
         }
 
@@ -319,7 +323,7 @@ public class GameState {
                 continue;
             }
 
-            if (pi.getSupply() > 0 && pi.getSupply() <= currentSupply) {
+            if (pi.getPlannedItemType() != PlannedItemType.ADDON && pi.getSupply() > 0 && pi.getSupply() <= currentSupply) {
                 continue;
             }
 

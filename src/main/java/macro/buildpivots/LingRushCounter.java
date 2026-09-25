@@ -29,6 +29,7 @@ public class LingRushCounter extends BuildPivot {
 
     public ArrayList<PlannedItem> getPivotBuild() {
         ArrayList<PlannedItem> buildOrder = new ArrayList<>();
+        buildOrder.add(new PlannedItem(UnitType.Terran_Comsat_Station, 0, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 9, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 9, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 19, PlannedItemType.BUILDING, 1));
