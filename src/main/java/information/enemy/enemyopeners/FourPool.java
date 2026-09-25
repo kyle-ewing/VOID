@@ -37,7 +37,7 @@ public class FourPool extends EnemyStrategy {
                 }
             }
             else if (enemyUnit.getEnemyType() == UnitType.Zerg_Zergling) {
-                if (time.lessThanOrEqual(new Time(2,18))) {
+                if (time.lessThanOrEqual(new Time(2,16))) {
                     return true;
                 }
 
