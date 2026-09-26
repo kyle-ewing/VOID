@@ -179,11 +179,6 @@ public class Squad {
             return;
         }
 
-        int leadDistance = LEAD_DISTANCE;
-        if (siegeTankCount() == 0) {
-            leadDistance = 150;
-        }
-
         for (CombatUnits unit : squadUnits) {
             if (isScienceVessel(unit)) {
                 continue;
@@ -232,7 +227,7 @@ public class Squad {
                 continue;
             }
 
-            if (unit.getUnit().getDistance(regroupPosition) <= leadDistance) {
+            if (unit.getUnit().getDistance(regroupPosition) <= LEAD_DISTANCE) {
                 continue;
             }
 
@@ -266,11 +261,8 @@ public class Squad {
     public void onFrame() {
         updateRegroupPosition();
 
-        boolean noTanks = siegeTankCount() == 0;
-
         for (CombatUnits unit : squadUnits) {
             unit.setInRunbySquad(isRunbySquad);
-            unit.setTightRegroup(noTanks);
 
             if (isRunbySquad && unit.getUnitStatus() != UnitStatus.REGROUP) {
                 unit.setUnitStatus(UnitStatus.RUNBY);

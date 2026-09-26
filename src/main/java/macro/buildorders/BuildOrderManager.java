@@ -29,11 +29,8 @@ public class BuildOrderManager {
     private HashSet<BuildTransition> terranTransitions = new HashSet<>();
     private HashSet<BuildTransition> zergTransitions = new HashSet<>();
     private HashSet<BuildPivot> buildPivots = new HashSet<>();
-    private Race enemyRace;
 
-    public BuildOrderManager(Race enemyRace) {
-        this.enemyRace = enemyRace;
-
+    public BuildOrderManager() {
         initBuildOrders();
         initBuildTransitions();
         initBuildPivots();
@@ -74,7 +71,7 @@ public class BuildOrderManager {
         buildPivots.add(new LingRushCounter());
     }
 
-    public HashSet<BuildOrder> getOpenersForRace() {
+    public HashSet<BuildOrder> getOpenersForRace(Race enemyRace) {
         switch (enemyRace) {
             case Protoss:
                 return protossOpeners;
@@ -87,7 +84,7 @@ public class BuildOrderManager {
         }
     }
 
-    public HashSet<BuildTransition> getBuildTransitions() {
+    public HashSet<BuildTransition> getBuildTransitions(Race enemyRace) {
         switch (enemyRace) {
             case Protoss:
                 return protossTransitions;

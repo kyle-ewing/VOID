@@ -20,7 +20,10 @@ public abstract class EnemyStrategy {
     protected EnemyUnits priorityEnemyUnit = null;
     protected boolean defendedStrategy = false;
     protected boolean hardLockedWhenSeen = false;
+    protected boolean previouslySeen = false;
     protected Time openerSwitchWindow = new Time(1, 0);
+    protected boolean bypassNatural = false;
+    protected Time bypassTime = new Time(0, 0);
 
     public EnemyStrategy(EnemyStrategyName strategyName) {
         this.strategyName = strategyName;
@@ -92,8 +95,24 @@ public abstract class EnemyStrategy {
         return hardLockedWhenSeen;
     }
 
+    public boolean isPreviouslySeen() {
+        return previouslySeen;
+    }
+
+    public void setPreviouslySeen(boolean previouslySeen) {
+        this.previouslySeen = previouslySeen;
+    }
+
     public Time getOpenerSwitchWindow() {
         return openerSwitchWindow;
+    }
+
+    public boolean isBypassNatural() {
+        return bypassNatural;
+    }
+
+    public Time getBypassTime() {
+        return bypassTime;
     }
 
     public void setDefendedStrategy(boolean defendedStrategy) {

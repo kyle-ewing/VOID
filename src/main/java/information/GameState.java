@@ -48,7 +48,7 @@ public class GameState {
     private EnemyStrategy enemyOpener = null;
     private boolean openerLocked = false;
     private BuildPivot selectedPivot = null;
-    private Race enemyRace = null;
+    private Race enemyRace = Race.Unknown;
 
     private BuildOrder startingOpener = null;
     private EnemyUnits startingEnemyBase = null;
@@ -97,7 +97,7 @@ public class GameState {
         }
 
         buildTiles = new BuildTiles(game, mapInfo);
-        buildOrderManager = new BuildOrderManager(game.enemy().getRace());
+        buildOrderManager = new BuildOrderManager();
         resourceTracking = new ResourceTracking(player, productionQueue);
         jadeBunkerPosition();
         addOpeningBuildOrders();
@@ -125,7 +125,7 @@ public class GameState {
 
     //Change when learning is added
     private void addOpeningBuildOrders() {
-        openingBuildOrders = buildOrderManager.getOpenersForRace();
+        openingBuildOrders = buildOrderManager.getOpenersForRace(enemyRace);
 
         for (BuildOrder bo : openingBuildOrders) {
             startingOpener = bo;
@@ -140,7 +140,7 @@ public class GameState {
     }
 
     private void addBuildTransition() {
-        buildTransition = buildOrderManager.getBuildTransitions();
+        buildTransition = buildOrderManager.getBuildTransitions(enemyRace);
 
         for (BuildTransition bt : buildTransition) {           
             if (!bt.transitionsFrom(startingOpener.buildType()) && selectedPivot == null) {
@@ -455,7 +455,7 @@ public class GameState {
     }
 
     private boolean shouldPivot() {
-        if (enemyOpener == null && game.enemy().getRace() != Race.Unknown) {
+        if (enemyOpener == null) {
             return false;
         }
 
