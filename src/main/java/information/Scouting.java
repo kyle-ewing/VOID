@@ -43,6 +43,9 @@ public class Scouting {
     private boolean enemyBaseLocated = false;
     private boolean secondScoutFoundEnemy = false;
     private boolean naturalScanned = false;
+    private boolean scoutKilled = false;
+    private boolean openerRescoutSent = false;
+    private int openerSeenFrame = 0;
 
     private EnemyUnits headingUnit = null;
     private Position headingStart = null;
@@ -218,7 +221,7 @@ public class Scouting {
                 continue;
             }
 
-            if (scoutWorker.getUnit().getDistance(enemyUnit.getEnemyUnit()) <= 64) {
+            if (scoutWorker.getUnit().getDistance(enemyUnit.getEnemyUnit()) <= 96) {
                 enemyNearby = true;
                 break;
             }
@@ -672,6 +675,52 @@ public class Scouting {
         inferredEnemyMain = backwardBase;
     }
 
+    private void enemyOpenerRescout() {
+        if (gameState.getEnemyOpener() == null) {
+            return;
+        }
+
+        if (openerSeenFrame == 0) {
+            openerSeenFrame = game.getFrameCount();
+        }
+
+        switch (gameState.getEnemyOpener().getStrategyName()) {
+            case NINEPOOL:
+                rescoutAfterOpener(new Time(1, 0).getFrames());
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void rescoutAfterOpener(int delayFrames) {
+        if (openerRescoutSent || !scoutKilled) {
+            return;
+        }
+
+        if (scout != null || secondScout != null) {
+            return;
+        }
+
+        if (gameState.getStartingEnemyBase() == null) {
+            return;
+        }
+
+        if (game.getFrameCount() - openerSeenFrame < delayFrames) {
+            return;
+        }
+
+        selectScout();
+
+        if (scout == null) {
+            return;
+        }
+
+        scout.setEnemyUnit(null);
+        secondScoutFoundEnemy = false;
+        openerRescoutSent = true;
+    }
+
     public void onFrame() {
         time = new Time(game.getFrameCount());
 
@@ -706,6 +755,8 @@ public class Scouting {
         if (secondScoutSent && gameState.getStartingEnemyBase() == null) {
             sendSecondScout();
         }
+
+        enemyOpenerRescout();
 
         if (gameState.getStartingEnemyBase() != null) {
             locateEnemyBase();
@@ -749,10 +800,12 @@ public class Scouting {
         if (scout != null && unit.getID() == scout.getUnit().getID()) {
             scout = null;
             scoutTargetBase = null;
+            scoutKilled = true;
         }
 
         if (secondScout != null && unit.getID() == secondScout.getUnit().getID()) {
             secondScout = null;
+            scoutKilled = true;
         }
     }
 
