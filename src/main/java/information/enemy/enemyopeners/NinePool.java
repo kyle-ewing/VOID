@@ -38,7 +38,7 @@ public class NinePool extends EnemyStrategy {
             hasMatched = true;
             return true;
         }
-        else if (knownLings >= 6 && time.greaterThan(new Time(2,30)) && time.lessThanOrEqual(new Time(3,20))) {
+        else if (knownLings >= 6 && time.greaterThan(new Time(2,30)) && time.lessThanOrEqual(new Time(3,10))) {
             hasMatched = true;
             return true;
         }

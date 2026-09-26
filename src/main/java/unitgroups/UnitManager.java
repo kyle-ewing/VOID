@@ -254,6 +254,19 @@ public class UnitManager {
 
             switch (unitStatus) {
                 case ATTACK:
+                    if (combatUnit.isInBase() && gameState.isEnemyInBase()
+                            && combatUnit.getUnitType() != UnitType.Terran_Science_Vessel
+                            && squadManager.getSquadOfUnit(combatUnit) != null) {
+                        HashSet<EnemyUnits> inBaseTargets = new HashSet<>(enemyInformation.getEnemiesInBase());
+                        inBaseTargets.remove(gameState.getEnemyScout());
+                        ClosestUnit.findClosestUnit(combatUnit, inBaseTargets, Integer.MAX_VALUE);
+
+                        if (combatUnit.getEnemyUnit() != null) {
+                            combatUnit.setUnitStatus(UnitStatus.DEFEND);
+                            break;
+                        }
+                    }
+
                     HashSet<EnemyUnits> attackCandidates = gameState.getKnownEnemyUnits();
                     if (gameState.getEnemyScout() != null) {
                         attackCandidates = new HashSet<>(attackCandidates);
@@ -350,13 +363,11 @@ public class UnitManager {
                         defendCandidates.remove(gameState.getEnemyScout());
                     }
 
-                    if (gameState.isEnemyInBase() && gameState.enemyFlyerInBase() && combatUnit.getUnitType().airWeapon().targetsAir()) {
+                    if (gameState.isEnemyInBase()) {
+                        HashSet<EnemyUnits> inBaseTargets = new HashSet<>(enemyInformation.getEnemiesInBase());
+                        inBaseTargets.remove(gameState.getEnemyScout());
                         combatUnit.setEnemyInBase(true);
-                        ClosestUnit.findClosestUnit(combatUnit, defendCandidates, Integer.MAX_VALUE);
-                    }
-                    else if (gameState.isEnemyInBase()) {
-                        combatUnit.setEnemyInBase(true);
-                        ClosestUnit.findClosestUnit(combatUnit, defendCandidates, 1000);
+                        ClosestUnit.findClosestUnit(combatUnit, inBaseTargets, Integer.MAX_VALUE);
                     }
                     else if (priorityTarget != null) {
                         combatUnit.setEnemyInBase(true);
@@ -508,6 +519,19 @@ public class UnitManager {
                     }
                     break;
                 case REGROUP:
+                    if (combatUnit.isInBase() && gameState.isEnemyInBase()
+                            && combatUnit.getUnitType() != UnitType.Terran_Science_Vessel
+                            && squadManager.getSquadOfUnit(combatUnit) != null) {
+                        HashSet<EnemyUnits> inBaseTargets = new HashSet<>(enemyInformation.getEnemiesInBase());
+                        inBaseTargets.remove(gameState.getEnemyScout());
+                        ClosestUnit.findClosestUnit(combatUnit, inBaseTargets, Integer.MAX_VALUE);
+
+                        if (combatUnit.getEnemyUnit() != null) {
+                            combatUnit.setUnitStatus(UnitStatus.DEFEND);
+                            break;
+                        }
+                    }
+
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
                     combatUnit.regroup();
                     break;

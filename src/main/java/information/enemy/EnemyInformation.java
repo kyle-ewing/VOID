@@ -22,6 +22,7 @@ import util.Time;
 public class EnemyInformation {
     private HashSet<EnemyUnits> enemyUnits;
     private HashSet<EnemyUnits> validThreats;
+    private HashSet<EnemyUnits> enemiesInBase = new HashSet<>();
     private HashSet<EnemyTechUnits> enemyTechUnits;
     private HashSet<EnemyTechBuilding> enemyTechBuildings;
     private HashSet<UnitType> techunitResponse;
@@ -107,6 +108,7 @@ public class EnemyInformation {
     private void enemyInBase() {
         boolean inBase = false;
         boolean flyerInBase = false;
+        enemiesInBase.clear();
 
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (!enemyUnit.getEnemyType().canAttack()
@@ -122,17 +124,21 @@ public class EnemyInformation {
                     && mapInfo.isFlyerInOwnedBase(enemyPos)) {
                 inBase = true;
                 flyerInBase = true;
+                enemiesInBase.add(enemyUnit);
                 continue;
             }
 
             if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 inBase = true;
+                enemiesInBase.add(enemyUnit);
             }
             else if (mapInfo.getMinBaseTiles().contains(enemyUnit.getEnemyUnit().getTilePosition())) {
                 inBase = true;
+                enemiesInBase.add(enemyUnit);
             }
             else if (mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && enemyUnit.getEnemyType().isBuilding()) {
                 inBase = true;
+                enemiesInBase.add(enemyUnit);
             }
             else if (mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyUnit().getTilePosition()) && (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural())) {
                 if (enemyUnit.getEnemyType().isWorker()) {
@@ -140,6 +146,7 @@ public class EnemyInformation {
                 }
 
                 inBase = true;
+                enemiesInBase.add(enemyUnit);
             }
         }
 
@@ -631,6 +638,10 @@ public class EnemyInformation {
 
     public HashSet<EnemyUnits> getEnemyUnits() {
         return enemyUnits;
+    }
+
+    public HashSet<EnemyUnits> getEnemiesInBase() {
+        return enemiesInBase;
     }
 
     //Fix later
