@@ -21,12 +21,7 @@ public class Medic extends CombatUnits {
             super.setTargetRange(400);
         }
 
-        if (inBase) {
-            unstick();
-            return;
-        }
-
-        unit.attack(friendlyUnit.getUnit().getPosition());
+        unstick();
     }
 
     @Override

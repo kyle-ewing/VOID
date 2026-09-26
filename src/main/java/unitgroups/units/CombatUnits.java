@@ -43,7 +43,6 @@ public class CombatUnits {
     protected boolean notNeeded = false;
     protected boolean dtUndetected = false;
     protected boolean inRunbySquad = false;
-    protected boolean tightRegroup = false;
     protected boolean forcedRegroup = false;
 
     protected static final int STUCK_CHECK_INTERVAL = 24;
@@ -234,12 +233,7 @@ public class CombatUnits {
             return;
         }
 
-        int exitDistance = 150;
-        if (tightRegroup) {
-            exitDistance = 100;
-        }
-
-        if (unit.getPosition().getDistance(regroupPosition) < exitDistance) {
+        if (unit.getPosition().getDistance(regroupPosition) < 150) {
             regroupStuckCounter = 0;
             lastRegroupCheckPosition = null;
             setUnitStatus(regroupExitStatus());
@@ -273,6 +267,30 @@ public class CombatUnits {
             return;
         }
 
+        if (forcedRegroup) {
+            unit.move(regroupPosition);
+            return;
+        }
+
+        int dx = regroupPosition.getX() - unit.getPosition().getX();
+        int dy = regroupPosition.getY() - unit.getPosition().getY();
+        double angle = Math.toRadians(45);
+        if (unitID % 2 == 1) {
+            angle = -angle;
+        }
+        for (int side = 0; side < 2; side++) {
+            int angledX = (int) (dx * Math.cos(angle) - dy * Math.sin(angle));
+            int angledY = (int) (dx * Math.sin(angle) + dy * Math.cos(angle));
+            int moveX = Math.min(Math.max(unit.getPosition().getX() + angledX, 0), game.mapWidth() * 32);
+            int moveY = Math.min(Math.max(unit.getPosition().getY() + angledY, 0), game.mapHeight() * 32);
+            Position angledPosition = new Position(moveX, moveY);
+            if (game.isWalkable(angledPosition.toWalkPosition())) {
+                unit.move(angledPosition);
+                return;
+            }
+            angle = -angle;
+        }
+
         unit.move(regroupPosition);
     }
 
@@ -289,14 +307,6 @@ public class CombatUnits {
 
     public void setInRunbySquad(boolean inRunbySquad) {
         this.inRunbySquad = inRunbySquad;
-    }
-
-    public boolean isTightRegroup() {
-        return tightRegroup;
-    }
-
-    public void setTightRegroup(boolean tightRegroup) {
-        this.tightRegroup = tightRegroup;
     }
 
     public boolean isForcedRegroup() {

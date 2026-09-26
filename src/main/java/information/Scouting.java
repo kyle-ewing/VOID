@@ -65,7 +65,7 @@ public class Scouting {
     }
 
     public void sendScout() {
-        if (scoutingAttempts >= 2) {
+        if (scoutingAttempts >= 3) {
             attemptsMaxed = true;
             return;
         }
@@ -204,6 +204,15 @@ public class Scouting {
         return nextIndex;
     }
 
+    private boolean isArcEnd(int currentIndex, boolean directionReversed) {
+        int step = 1;
+        if (directionReversed) {
+            step = -1;
+        }
+
+        return !isOpenSideIndex((currentIndex + step + positionCount) % positionCount);
+    }
+
     private Position enemyMainLoopTarget(Workers scoutWorker, boolean directionReversed) {
         Base enemyMain = mapInfo.getEnemyMain();
         if (enemyMain == null || enemyMain.getArea() == null) {
@@ -294,6 +303,7 @@ public class Scouting {
 
         if (scout.getIdleClock() >= 48) {
             reversed = !reversed;
+            currentPositionIndex = nextPerimeterIndex(currentPositionIndex, reversed);
             scout.setIdleClock(0);
         }
 
@@ -321,6 +331,9 @@ public class Scouting {
         Position targetPosition = new Position(x, y);
 
         if (scout.getUnit().getDistance(targetPosition) < 90) {
+            if (isArcEnd(currentPositionIndex, reversed)) {
+                reversed = !reversed;
+            }
             currentPositionIndex = nextPerimeterIndex(currentPositionIndex, reversed);
             angle = (Math.PI * 2 * currentPositionIndex) / positionCount;
             x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
@@ -342,6 +355,7 @@ public class Scouting {
 
         if (secondScout.getIdleClock() >= 48) {
             secondScoutReversed = !secondScoutReversed;
+            secondScoutPositionIndex = nextPerimeterIndex(secondScoutPositionIndex, secondScoutReversed);
             secondScout.setIdleClock(0);
         }
 
@@ -369,6 +383,9 @@ public class Scouting {
         Position targetPosition = new Position(x, y);
 
         if (secondScout.getUnit().getDistance(targetPosition) < 90) {
+            if (isArcEnd(secondScoutPositionIndex, secondScoutReversed)) {
+                secondScoutReversed = !secondScoutReversed;
+            }
             secondScoutPositionIndex = nextPerimeterIndex(secondScoutPositionIndex, secondScoutReversed);
             angle = (Math.PI * 2 * secondScoutPositionIndex) / positionCount;
             x = (int) (enemyBasePos.getX() + scoutRadius * Math.cos(angle));
@@ -427,9 +444,10 @@ public class Scouting {
             return;
         }
 
-        if (secondScout == null && !inferencePending()) {
+        if (secondScout == null && !inferencePending() && scoutingAttempts < 3) {
             for (Workers scv : gameState.getWorkers()) {
                 if (scv.getWorkerStatus() == WorkerStatus.MINERALS) {
+                    scoutingAttempts++;
                     secondScout = scv;
                     scv.setWorkerStatus(WorkerStatus.SCOUTING);
                     break;

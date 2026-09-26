@@ -22,6 +22,7 @@ import information.enemy.enemyopeners.OneBaseLurker;
 import information.enemy.enemyopeners.OneBaseMuta;
 import information.enemy.enemyopeners.SCVRush;
 import information.enemy.enemyopeners.ShuttleRush;
+import information.enemy.enemyopeners.ThreeHatchBeforePool;
 import information.enemy.enemyopeners.TwoBaseLurker;
 import information.enemy.enemyopeners.TwoBaseMuta;
 import information.enemy.enemyopeners.TwoFacTank;
@@ -90,7 +91,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new OneBaseMuta(mapInfo));
         enemyStrategies.add(new TwoBaseMuta(mapInfo));
         enemyStrategies.add(new OneBaseLurker(mapInfo));
-        // enemyStrategies.add(new ThreeHatchBeforePool(baseInfo));
+        enemyStrategies.add(new ThreeHatchBeforePool(mapInfo));
         enemyStrategies.add(new TwoBaseLurker(mapInfo));
         enemyStrategies.add(new HatchFirst(mapInfo));
         enemyStrategies.add(new DTRush());

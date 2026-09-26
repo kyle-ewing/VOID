@@ -1794,6 +1794,19 @@ public class MapInfo {
         return baseTilesAllBases;
     }
 
+    public boolean isInEnemyMain(TilePosition tile) {
+        if (enemyMain == null) {
+            return false;
+        }
+
+        HashSet<TilePosition> enemyMainTiles = baseTilesAllBases.get(enemyMain);
+        if (enemyMainTiles == null) {
+            return false;
+        }
+
+        return enemyMainTiles.contains(tile);
+    }
+
     public HashMap<Area, HashSet<TilePosition>> getAreaTiles() {
         return areaTiles;
     }

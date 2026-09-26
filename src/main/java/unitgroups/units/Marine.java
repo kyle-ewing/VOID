@@ -134,7 +134,7 @@ public class Marine extends CombatUnits {
             unit.useTech(TechType.Stim_Packs);
         }
 
-        if (unit.getOrderTarget() != null && unit.getOrderTarget().getID() != enemyUnit.getEnemyID() && unit.isAttacking()) {
+        if (unit.getOrderTarget() != null && unit.getTarget() != null && unit.getOrderTarget().getID() != enemyUnit.getEnemyID() && unit.isAttacking()) {
             if (badTargetID == null || badTargetID != unit.getTarget().getID()) {
                 unit.stop();
                 return;

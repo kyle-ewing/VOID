@@ -73,6 +73,7 @@ public class WorkerManager {
         enemyScoutResponse.onFrame();
         transferDepletedBaseWorkers();
         updateDepletingBaseFlag();
+        idleWorkerReset();
 
         int frameCount = game.getFrameCount();
 
@@ -608,6 +609,32 @@ public class WorkerManager {
             }
         }
         initialMineralAssignmentDone = true;
+    }
+
+    private void idleWorkerReset() {
+        for (Workers worker : workers) {
+            WorkerStatus status = worker.getWorkerStatus();
+
+            if (status == WorkerStatus.IDLE || status == WorkerStatus.SCOUTING || status == WorkerStatus.COUNTERSCOUT || status == WorkerStatus.REPAIRING || !worker.getUnit().isIdle()) {
+                worker.setIdleFrames(0);
+                continue;
+            }
+
+            worker.setIdleFrames(worker.getIdleFrames() + 1);
+
+            if (worker.getIdleFrames() < 720) {
+                continue;
+            }
+
+            worker.setIdleFrames(0);
+
+            for (Unit geyser : refinerySaturation.keySet()) {
+                refinerySaturation.get(geyser).remove(worker);
+            }
+
+            defenseForce.remove(worker);
+            worker.setWorkerStatus(WorkerStatus.IDLE);
+        }
     }
 
     private void workerBuildClock() {

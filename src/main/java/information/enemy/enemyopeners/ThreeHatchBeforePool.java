@@ -1,20 +1,23 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 public class ThreeHatchBeforePool extends EnemyStrategy {
     private MapInfo mapInfo;
+    private int mainHatchSeenFrames = 0;
 
     public ThreeHatchBeforePool(MapInfo mapInfo) {
         super(EnemyStrategyName.THREEHATCHBEFOREPOOL);
         this.mapInfo = mapInfo;
+        this.bypassNatural = true;
+        this.bypassTime = new Time(4, 15);
 
         buildingResponse();
     }
@@ -35,15 +38,29 @@ public class ThreeHatchBeforePool extends EnemyStrategy {
             return false;
         }
 
-        return enemyUnits.stream().map(EnemyUnits::getEnemyType).filter(et -> et == UnitType.Zerg_Hatchery).count() > 1
-                && enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(et -> et == UnitType.Zerg_Spawning_Pool)
-                && hasNaturalHatch
-                && mainHatch.getEnemyUnit().isVisible()
-                && time.greaterThan(new Time(2, 50))
-                && time.lessThanOrEqual(new Time(3, 0));
+        mainHatchSeenFrames++;
+
+        if (!hasNaturalHatch) {
+            return false;
+        }
+
+        boolean noPoolSeen = enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(et -> et == UnitType.Zerg_Spawning_Pool);
+
+        if (noPoolSeen && mainHatch.getEnemyUnit().isVisible()
+            && mainHatchSeenFrames >= 96
+            && time.greaterThan(new Time(2, 30))
+            && time.lessThanOrEqual(new Time(2, 45))) {
+            return true;
+        }
+
+        return false;
     }
 
 public void buildingResponse() {
+    getBuildingResponse().add(UnitType.Terran_Marine);
+    getBuildingResponse().add(UnitType.Terran_Marine);
+    getBuildingResponse().add(UnitType.Terran_Marine);
+    getBuildingResponse().add(UnitType.Terran_Marine);
 }
 
 public void upgradeResponse() {
@@ -52,8 +69,8 @@ public void upgradeResponse() {
 public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
     HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
-    if (time.lessThanOrEqual(new Time(5,0))) {
-        moveOutCondition.put(UnitType.Terran_Marine, 4);
+    if (time.lessThanOrEqual(new Time(4, 15))) {
+        moveOutCondition.put(UnitType.Terran_Marine, 3);
     }
 
     return moveOutCondition;

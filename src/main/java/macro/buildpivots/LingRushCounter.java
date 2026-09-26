@@ -41,10 +41,10 @@ public class LingRushCounter extends BuildPivot {
         buildOrder.add(new PlannedItem(UpgradeType.U_238_Shells, 26, PlannedItemType.UPGRADE, UnitType.Terran_Academy, 1, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 31, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 30, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 32, PlannedItemType.BUILDING, 2));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 31, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Missile_Turret, 33, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Weapons, 32, PlannedItemType.UPGRADE,UnitType.Terran_Engineering_Bay, 1, 3));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 34, PlannedItemType.BUILDING, 1));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 31, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 38, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 0, PlannedItemType.ADDON, 2));
         buildOrder.add(new PlannedItem(UpgradeType.Terran_Infantry_Armor, 38, PlannedItemType.UPGRADE, UnitType.Terran_Engineering_Bay, 1, 4));
@@ -59,10 +59,10 @@ public class LingRushCounter extends BuildPivot {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if (time.lessThanOrEqual(new Time(10, 0))) {
-            moveOutCondition.put(UnitType.Terran_Marine, 14);
+            moveOutCondition.put(UnitType.Terran_Marine, 18);
             moveOutCondition.put(UnitType.Terran_Medic, 3);
         } else {
-            moveOutCondition.put(UnitType.Terran_Marine, 16);
+            moveOutCondition.put(UnitType.Terran_Marine, 22);
             moveOutCondition.put(UnitType.Terran_Medic, 5);
         }
 

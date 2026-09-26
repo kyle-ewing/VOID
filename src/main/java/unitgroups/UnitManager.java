@@ -17,6 +17,7 @@ import information.MapInfo;
 import information.Scouting;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildpivots.BuildPivot;
@@ -247,6 +248,7 @@ public class UnitManager {
 
             combatUnit.setHasTankSupport(hasTankSupport(combatUnit));
             combatUnit.setEnemyInBase(gameState.isEnemyInBase());
+            skipRegroupDuringBypass(combatUnit);
 
             unitStatus = combatUnit.getUnitStatus();
 
@@ -267,12 +269,21 @@ public class UnitManager {
                         }
                     }
 
+                    if (bypassToEnemyMain(combatUnit)) {
+                        break;
+                    }
+
                     HashSet<EnemyUnits> attackCandidates = gameState.getKnownEnemyUnits();
                     if (gameState.getEnemyScout() != null) {
                         attackCandidates = new HashSet<>(attackCandidates);
                         attackCandidates.remove(gameState.getEnemyScout());
                     }
-                    ClosestUnit.findClosestUnit(combatUnit, attackCandidates, Integer.MAX_VALUE);
+                    if (bypassActive()) {
+                        ClosestUnit.findClosestUnit(combatUnit, enemyMainCandidates(combatUnit, attackCandidates), Integer.MAX_VALUE);
+                    }
+                    else {
+                        ClosestUnit.findClosestUnit(combatUnit, attackCandidates, Integer.MAX_VALUE);
+                    }
 
                     if (combatUnit.getUnitType() == UnitType.Terran_Marine || combatUnit.getUnitType() == UnitType.Terran_Firebat) {
                         if (combatUnit.getUnitType() == UnitType.Terran_Marine && fleeToProxyBunker(combatUnit)) {
@@ -994,6 +1005,67 @@ public class UnitManager {
         }
     }
 
+    private boolean bypassActive() {
+        EnemyStrategy enemyOpener = gameState.getEnemyOpener();
+        if (enemyOpener == null || !enemyOpener.isBypassNatural() || mapInfo.getEnemyMain() == null) {
+            return false;
+        }
+
+        return !new Time(game.getFrameCount()).greaterThan(enemyOpener.getBypassTime());
+    }
+
+    private boolean bypassToEnemyMain(CombatUnits combatUnit) {
+        if (!bypassActive() || mapInfo.isInEnemyMain(combatUnit.getUnit().getTilePosition())) {
+            return false;
+        }
+
+        combatUnit.getUnit().move(mapInfo.getEnemyMain().getCenter());
+        return true;
+    }
+
+    private HashSet<EnemyUnits> enemyMainCandidates(CombatUnits combatUnit, HashSet<EnemyUnits> candidates) {
+        HashSet<EnemyUnits> mainCandidates = new HashSet<>();
+        boolean enemyUnitNearby = false;
+
+        for (EnemyUnits enemyUnit : candidates) {
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (!mapInfo.isInEnemyMain(enemyUnit.getEnemyPosition().toTilePosition())) {
+                continue;
+            }
+
+            mainCandidates.add(enemyUnit);
+
+            if (!enemyUnit.getEnemyType().isBuilding()
+                    && enemyUnit.getEnemyType() != UnitType.Zerg_Larva
+                    && enemyUnit.getEnemyType() != UnitType.Zerg_Overlord
+                    && enemyUnit.getEnemyType() != UnitType.Zerg_Egg
+                    && combatUnit.getUnit().getDistance(enemyUnit.getEnemyPosition()) < 250) {
+                enemyUnitNearby = true;
+            }
+        }
+
+        if (enemyUnitNearby) {
+            mainCandidates.removeIf(eu -> eu.getEnemyType().isBuilding());
+        }
+
+        if (mainCandidates.isEmpty()) {
+            return candidates;
+        }
+
+        return mainCandidates;
+    }
+
+    private void skipRegroupDuringBypass(CombatUnits combatUnit) {
+        if (combatUnit.getUnitStatus() != UnitStatus.REGROUP || !bypassActive()) {
+            return;
+        }
+
+        combatUnit.setUnitStatus(UnitStatus.ATTACK);
+    }
+
     private void enemyOpenerResponse() {
         if (gameState.getEnemyOpener() == null) {
             return;
@@ -1368,13 +1440,16 @@ public class UnitManager {
             }
 
             if (building.getUnitType() == UnitType.Terran_Barracks) {
+                if (gameState.getProductionQueue().stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
+                    return;
+                }
+
                 if (gameState.moveOutConditionsMet()) {
                     building.getUnit().lift();
                     return;
                 }
-                
-                if (combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)
-                        || gameState.getProductionQueue().stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
+
+                if (combatUnits.stream().noneMatch(cu -> cu.getUnitType() == UnitType.Terran_Factory)) {
                     return;
                 }
 

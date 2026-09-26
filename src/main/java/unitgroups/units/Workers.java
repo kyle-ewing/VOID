@@ -16,6 +16,7 @@ public class Workers extends CombatUnits {
     private int nearTargetFrameCount;
     private int attackClock;
     private int idleClock = 0;
+    private int idleFrames = 0;
     private int lastFrameChecked = 0;
     private int hardReset = 0;
     private int unitID;
@@ -215,6 +216,14 @@ public class Workers extends CombatUnits {
 
     public void setIdleClock(int idleClock) {
         this.idleClock = idleClock;
+    }
+
+    public int getIdleFrames() {
+        return idleFrames;
+    }
+
+    public void setIdleFrames(int idleFrames) {
+        this.idleFrames = idleFrames;
     }
 
     public boolean isPreemptiveRepair() {

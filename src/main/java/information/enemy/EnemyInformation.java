@@ -453,7 +453,7 @@ public class EnemyInformation {
         }
 
         for (EnemyStrategy enemyStrategy : enemyStrategyManager.getEnemyStrategies()) {
-            if (enemyStrategy == enemyOpener) {
+            if (enemyStrategy.isPreviouslySeen()) {
                 continue;
             }
 
@@ -463,6 +463,7 @@ public class EnemyInformation {
 
             boolean firstDetection = enemyOpener == null;
             enemyOpener = enemyStrategy;
+            enemyStrategy.setPreviouslySeen(true);
             gameState.setEnemyOpener(enemyOpener);
 
             if (firstDetection) {
