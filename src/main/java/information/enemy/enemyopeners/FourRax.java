@@ -18,6 +18,7 @@ public class FourRax extends  EnemyStrategy {
         super(EnemyStrategyName.FOURRAX);
         this.mapInfo = mapInfo;
         hardLockedWhenSeen = true;
+        safeExpansion = true;
 
         buildingResponse();
     }

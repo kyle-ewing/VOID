@@ -24,6 +24,7 @@ public abstract class EnemyStrategy {
     protected Time openerSwitchWindow = new Time(1, 0);
     protected boolean bypassNatural = false;
     protected Time bypassTime = new Time(0, 0);
+    protected boolean safeExpansion = false;
 
     public EnemyStrategy(EnemyStrategyName strategyName) {
         this.strategyName = strategyName;
@@ -113,6 +114,10 @@ public abstract class EnemyStrategy {
 
     public Time getBypassTime() {
         return bypassTime;
+    }
+
+    public boolean canExpandSafely() {
+        return safeExpansion;
     }
 
     public void setDefendedStrategy(boolean defendedStrategy) {
