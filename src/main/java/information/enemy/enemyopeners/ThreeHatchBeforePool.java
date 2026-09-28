@@ -17,7 +17,7 @@ public class ThreeHatchBeforePool extends EnemyStrategy {
         super(EnemyStrategyName.THREEHATCHBEFOREPOOL);
         this.mapInfo = mapInfo;
         this.bypassNatural = true;
-        this.bypassTime = new Time(4, 15);
+        this.bypassTime = new Time(4, 5);
 
         buildingResponse();
     }
@@ -69,7 +69,7 @@ public void upgradeResponse() {
 public HashMap<UnitType, Integer> getMoveOutCondition(BuildType buildType, Time time, HashSet<EnemyUnits> enemyUnits) {
     HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
-    if (time.lessThanOrEqual(new Time(4, 15))) {
+    if (time.lessThanOrEqual(new Time(4, 5))) {
         moveOutCondition.put(UnitType.Terran_Marine, 3);
     }
 

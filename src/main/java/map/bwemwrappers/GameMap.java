@@ -2,6 +2,7 @@ package map.bwemwrappers;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ public class GameMap {
     private HashMap<Unit, Neutral> neutralsByUnit = new HashMap<>();
     private HashMap<bwem.Area, ArrayList<Area>> subAreasByParent = new HashMap<>();
     private HashMap<Base, Base> naturalsByStartingBase = new HashMap<>();
+    private HashSet<Area> exemptAreas = new HashSet<>();
     private Area[][] areaByTile;
     private boolean[][] walkableByTile;
     private GroundHeight[][] heightByTile;
@@ -62,6 +64,8 @@ public class GameMap {
         markBaseAreas();
         splitAreas();
         cutSnakingAreas();
+        carveBaseAreas();
+        purgeWideSyntheticChokes();
         rehomeChokes();
         rebuildAreaWiring();
         rehomeBasesAndResources();
@@ -403,8 +407,6 @@ public class GameMap {
     }
 
     private void splitAreas() {
-        HashSet<Area> exemptAreas = new HashSet<>();
-
         for (Area area : areas) {
             if (area.isStartingArea() || area.isNaturalArea()) {
                 exemptAreas.add(area);
@@ -907,7 +909,9 @@ public class GameMap {
                 uncuttable.add(choke);
             }
         }
+    }
 
+    private void purgeWideSyntheticChokes() {
         for (ChokePoint choke : new ArrayList<>(chokes)) {
             if (!choke.isSynthetic()) {
                 continue;
@@ -1074,56 +1078,245 @@ public class GameMap {
             return false;
         }
 
-        Area firstHalfArea = new Area(nextSyntheticAreaId, snake.getBwemArea(), snake.getGroundHeight(), firstHalf);
+        replaceArea(snake, firstHalf, secondHalf);
+
+        return true;
+    }
+
+    private void replaceArea(Area old, HashSet<TilePosition> firstTiles, HashSet<TilePosition> secondTiles) {
+        Area firstArea = new Area(nextSyntheticAreaId, old.getBwemArea(), old.getGroundHeight(), firstTiles);
         nextSyntheticAreaId++;
-        Area secondHalfArea = new Area(nextSyntheticAreaId, snake.getBwemArea(), snake.getGroundHeight(), secondHalf);
+        Area secondArea = new Area(nextSyntheticAreaId, old.getBwemArea(), old.getGroundHeight(), secondTiles);
         nextSyntheticAreaId++;
 
-        for (TilePosition tile : firstHalf) {
-            areaByTile[tile.getX()][tile.getY()] = firstHalfArea;
+        for (TilePosition tile : firstTiles) {
+            areaByTile[tile.getX()][tile.getY()] = firstArea;
         }
-        for (TilePosition tile : secondHalf) {
-            areaByTile[tile.getX()][tile.getY()] = secondHalfArea;
+        for (TilePosition tile : secondTiles) {
+            areaByTile[tile.getX()][tile.getY()] = secondArea;
         }
 
-        areas.remove(snake);
-        areas.add(firstHalfArea);
-        areas.add(secondHalfArea);
+        areas.remove(old);
+        areas.add(firstArea);
+        areas.add(secondArea);
 
-        ArrayList<Area> siblings = subAreasByParent.get(snake.getBwemArea());
+        ArrayList<Area> siblings = subAreasByParent.get(old.getBwemArea());
 
-        if (siblings != null) {
-            siblings.remove(snake);
-            siblings.add(firstHalfArea);
-            siblings.add(secondHalfArea);
+        if (siblings == null) {
+            siblings = new ArrayList<>();
+            subAreasByParent.put(old.getBwemArea(), siblings);
+        }
 
-            Area largestSubArea = siblings.get(0);
-            for (Area sibling : siblings) {
-                if (sibling.getTiles().size() > largestSubArea.getTiles().size()) {
-                    largestSubArea = sibling;
-                }
+        siblings.remove(old);
+        siblings.add(firstArea);
+        siblings.add(secondArea);
+
+        Area largestSubArea = siblings.get(0);
+        for (Area sibling : siblings) {
+            if (sibling.getTiles().size() > largestSubArea.getTiles().size()) {
+                largestSubArea = sibling;
             }
-            areasByBwemArea.put(snake.getBwemArea(), largestSubArea);
         }
+        areasByBwemArea.put(old.getBwemArea(), largestSubArea);
 
         for (ChokePoint attached : new ArrayList<>(chokes)) {
-            if (attached.getFirstArea() != snake && attached.getSecondArea() != snake) {
+            if (!attached.isSynthetic()) {
+                continue;
+            }
+
+            if (attached.getFirstArea() != old && attached.getSecondArea() != old) {
                 continue;
             }
 
             chokes.remove(attached);
-            Area other = attached.getOtherArea(snake);
+            Area other = attached.getOtherArea(old);
 
             if (other != null) {
                 other.getChokes().remove(attached);
-                other.getNeighbors().remove(snake);
+                other.getNeighbors().remove(old);
             }
         }
 
-        ArrayList<Area> halves = new ArrayList<>();
-        halves.add(firstHalfArea);
-        halves.add(secondHalfArea);
-        createFrontierChokes(halves);
+        ArrayList<Area> pieces = new ArrayList<>();
+        pieces.add(firstArea);
+        pieces.add(secondArea);
+        createFrontierChokes(pieces);
+    }
+
+    private void carveBaseAreas() {
+        Position goal = pathFinding.findNearestWalkable(new Position(game.mapWidth() * 16, game.mapHeight() * 16));
+
+        if (goal == null) {
+            return;
+        }
+
+        for (Base base : bases) {
+            if (base.isStartingLocation() || base.isNatural()) {
+                continue;
+            }
+
+            Area area = getArea(base.getLocation());
+
+            if (area == null || area.isStartingArea() || area.isNaturalArea() || exemptAreas.contains(area)) {
+                continue;
+            }
+
+            Position start = pathFinding.findNearestWalkable(base.getCenter());
+
+            if (start == null) {
+                continue;
+            }
+
+            List<Position> path = pathFinding.findPath(start, goal);
+
+            if (path == null || path.isEmpty()) {
+                continue;
+            }
+
+            ArrayList<Position[]> candidates = new ArrayList<>();
+            double travelled = 0;
+            Position previous = null;
+
+            for (Position pathPosition : path) {
+                if (previous != null) {
+                    travelled += previous.getDistance(pathPosition);
+                }
+                previous = pathPosition;
+
+                if (getArea(pathPosition.toTilePosition()) != area || travelled > 400) {
+                    break;
+                }
+
+                if (travelled < 200) {
+                    continue;
+                }
+
+                Position sample = new Position(pathPosition.getX() + 16, pathPosition.getY() + 16);
+                double approachAngle = Math.atan2(sample.getY() - base.getCenter().getY(), sample.getX() - base.getCenter().getX());
+                WalkPosition sampleWalk = sample.toWalkPosition();
+
+                for (int angleOffset = -30; angleOffset <= 30; angleOffset += 10) {
+                    double angle = approachAngle + Math.PI / 2 + Math.toRadians(angleOffset);
+                    int stepX = (int) Math.round(Math.cos(angle) * 8);
+                    int stepY = (int) Math.round(Math.sin(angle) * 8);
+                    Position end1 = marchToUnwalkable(sampleWalk, new WalkPosition(sampleWalk.getX() - stepX, sampleWalk.getY() - stepY));
+                    Position end2 = marchToUnwalkable(sampleWalk, new WalkPosition(sampleWalk.getX() + stepX, sampleWalk.getY() + stepY));
+                    candidates.add(new Position[]{end1, end2});
+                }
+            }
+
+            candidates.sort(Comparator.comparingDouble(candidate -> candidate[0].getDistance(candidate[1])));
+
+            for (Position[] candidate : candidates) {
+                if (carvePocket(base, area, candidate[0], candidate[1])) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private boolean carvePocket(Base base, Area area, Position end1, Position end2) {
+        int lineX = end2.getX() - end1.getX();
+        int lineY = end2.getY() - end1.getY();
+        double lineLength = end1.getDistance(end2);
+
+        if (lineLength == 0 || lineLength > 1100) {
+            return false;
+        }
+
+        Position depotCenter = base.getCenter();
+        long depotCross = (long) lineX * (depotCenter.getY() - end1.getY()) - (long) lineY * (depotCenter.getX() - end1.getX());
+
+        if (depotCross == 0) {
+            return false;
+        }
+
+        int depotSide = Long.signum(depotCross);
+        TilePosition seed = base.getLocation();
+        long seedCross = (long) lineX * (seed.getY() * 32 + 16 - end1.getY()) - (long) lineY * (seed.getX() * 32 + 16 - end1.getX());
+
+        if (Long.signum(seedCross) != depotSide) {
+            return false;
+        }
+
+        HashSet<TilePosition> pocket = new HashSet<>();
+        Deque<TilePosition> queue = new ArrayDeque<>();
+        int[][] offsets = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        pocket.add(seed);
+        queue.add(seed);
+
+        while (!queue.isEmpty()) {
+            TilePosition current = queue.poll();
+
+            for (int[] offset : offsets) {
+                TilePosition neighborTile = new TilePosition(current.getX() + offset[0], current.getY() + offset[1]);
+
+                if (pocket.contains(neighborTile) || !area.getTiles().contains(neighborTile)) {
+                    continue;
+                }
+
+                long cross = (long) lineX * (neighborTile.getY() * 32 + 16 - end1.getY()) - (long) lineY * (neighborTile.getX() * 32 + 16 - end1.getX());
+
+                if (Long.signum(cross) != depotSide) {
+                    continue;
+                }
+
+                pocket.add(neighborTile);
+                queue.add(neighborTile);
+            }
+        }
+
+        HashSet<TilePosition> remainder = new HashSet<>(area.getTiles());
+        remainder.removeAll(pocket);
+
+        if (remainder.size() <= 1000) {
+            return false;
+        }
+
+        for (TilePosition tile : pocket) {
+            for (int[] offset : offsets) {
+                TilePosition neighborTile = new TilePosition(tile.getX() + offset[0], tile.getY() + offset[1]);
+
+                if (!remainder.contains(neighborTile)) {
+                    continue;
+                }
+
+                double projection = ((tile.getX() * 32 + 16 - end1.getX()) * lineX + (tile.getY() * 32 + 16 - end1.getY()) * lineY) / lineLength;
+
+                if (projection < -32 || projection > lineLength + 32) {
+                    return false;
+                }
+
+                for (int i = 0; i < 4; i++) {
+                    WalkPosition edgeWalk;
+
+                    if (offset[0] == 1) {
+                        edgeWalk = new WalkPosition(neighborTile.getX() * 4, tile.getY() * 4 + i);
+                    }
+                    else if (offset[0] == -1) {
+                        edgeWalk = new WalkPosition(tile.getX() * 4, tile.getY() * 4 + i);
+                    }
+                    else if (offset[1] == 1) {
+                        edgeWalk = new WalkPosition(tile.getX() * 4 + i, neighborTile.getY() * 4);
+                    }
+                    else {
+                        edgeWalk = new WalkPosition(tile.getX() * 4 + i, tile.getY() * 4);
+                    }
+
+                    for (ChokePoint existing : chokes) {
+                        if (existing.getBwemChoke() == null) {
+                            continue;
+                        }
+
+                        if (existing.getCenter().getApproxDistance(edgeWalk.toPosition()) < 64) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        replaceArea(area, pocket, remainder);
 
         return true;
     }
