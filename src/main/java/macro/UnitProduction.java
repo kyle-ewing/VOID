@@ -187,7 +187,7 @@ public class UnitProduction {
         int tankCount = unitTypeCount.get(UnitType.Terran_Siege_Tank_Tank_Mode) + unitTypeCount.get(UnitType.Terran_Siege_Tank_Siege_Mode);
         int mechCount = unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath);
         int vesselCount = unitTypeCount.get(UnitType.Terran_Science_Vessel);
-        boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 3;
+        boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 2;
         int factoryCap = buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC ? 4 : 5;
         boolean addonFreeFactoryAvailable = productionBuildings.stream()
                 .anyMatch(b -> b.getType() == UnitType.Terran_Factory && b.getAddon() == null && !b.isTraining());
@@ -280,7 +280,7 @@ public class UnitProduction {
                 if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && building.getAddon() != null
                         && !hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
-                        && tankCount < 12
+                        && tankCount < 24
                         && zergTanksAllowed
                         && (firstTankPriority || tankCount < 5 || mechCount * 2 >= tankCount * 3 || ratioOverMaximum)) {
                     if (firstTankPriority) {
@@ -290,7 +290,9 @@ public class UnitProduction {
                         items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 2));
                     }
                 }
-                else if (!firstTankPriority && (!ratioOverMaximum && !addonFreeFactoryAvailable || building.getAddon() == null)) {
+                else if (!firstTankPriority
+                        && (tankCount == 0 || mechCount * 2 < tankCount * 3)
+                        && (!addonFreeFactoryAvailable || building.getAddon() == null)) {
                     if (enemyIsZerg) {
                         boolean armoryComplete = unitTypeCount.getOrDefault(UnitType.Terran_Armory, 0) > 0;
                         boolean vultureRatioMet = unitTypeCount.get(UnitType.Terran_Vulture) * 2 < unitTypeCount.get(UnitType.Terran_Goliath) * 3;
@@ -313,12 +315,12 @@ public class UnitProduction {
                             }
                         }
                     }
-                    else if (!ratioOverMaximum && buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
+                    else if (buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
                         if (isRecruitable(UnitType.Terran_Goliath) && !hasInQueue(UnitType.Terran_Goliath)) {
                             items.add(plannedUnit(UnitType.Terran_Goliath, 3));
                         }
                     }
-                    else if (!ratioOverMaximum && !techUnitResponses.contains(UnitType.Terran_Goliath)) {
+                    else if (!techUnitResponses.contains(UnitType.Terran_Goliath)) {
                         if (isRecruitable(UnitType.Terran_Vulture) && !hasInQueue(UnitType.Terran_Vulture)) {
                             items.add(plannedUnit(UnitType.Terran_Vulture, 3));
                         }
