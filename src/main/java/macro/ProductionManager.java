@@ -916,7 +916,9 @@ public class ProductionManager {
             }
 
             if (!mapInfo.hasBunkerInNatural()) {
-                if (gameState.getEnemyOpener() != null) {
+                if (gameState.getEnemyOpener() != null
+                        && gameState.getEnemyOpener().canExpandSafely()
+                        && !gameState.getEnemyOpener().isStrategyDefended()) {
                     pi.setBuildPosition(buildTiles.getMainBaseCCTile());
                     mapInfo.getOrderedExpansions().remove(natural);
                     return;
