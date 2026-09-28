@@ -44,6 +44,7 @@ public class MapInfo {
     private TilePosition naturalBunkerEbayPosition;
     private TilePosition naturalBunkerBarracksPosition;
     private TilePosition naturalBunkerDepotPosition;
+    private Position naturalBunkerCenter;
     private ChokePoint outsideNaturalChoke;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
@@ -652,13 +653,14 @@ public class MapInfo {
     }
 
     public void setNaturalChokeEdgeFromBunker(TilePosition bunkerTile) {
+        Position bunkerCenter = new Position(bunkerTile.toPosition().getX() + 48, bunkerTile.toPosition().getY() + 32);
+        naturalBunkerCenter = bunkerCenter;
         naturalChokeEdge.clear();
 
         if (naturalTiles.isEmpty() || naturalBase == null) {
             return;
         }
 
-        Position bunkerCenter = new Position(bunkerTile.toPosition().getX() + 48, bunkerTile.toPosition().getY() + 32);
         int minDistance = 64;
         int maxDistance = 160;
 
@@ -695,6 +697,23 @@ public class MapInfo {
         combinedTankTiles.clear();
         combinedTankTiles.addAll(mainCliffEdge);
         combinedTankTiles.addAll(naturalChokeEdge);
+    }
+
+    public boolean isInDefenseZone(Position position) {
+        if (position == null) {
+            return false;
+        }
+
+        TilePosition tile = position.toTilePosition();
+        if (baseTiles.contains(tile) || naturalTiles.contains(tile)) {
+            return true;
+        }
+
+        if (naturalBunkerCenter == null) {
+            return false;
+        }
+
+        return naturalBunkerCenter.getDistance(position) <= 400;
     }
 
     private void combineTankTiles() {
