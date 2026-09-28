@@ -1,6 +1,7 @@
 package unitgroups.units;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -14,16 +15,22 @@ import bwapi.WeaponType;
 import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
+import map.bwemwrappers.GameMap;
+import map.bwemwrappers.GroundHeight;
 
 public class SiegeTank extends CombatUnits {
     private EnemyInformation enemyInformation;
     private MapInfo mapInfo;
+    private GameMap gameMap;
     private UnitType defaultMode = UnitType.Terran_Siege_Tank_Tank_Mode;
     private HashSet<EnemyUnits> enemyUnits;
     private HashSet<TilePosition> mainEdgeTiles = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
     private HashSet<TilePosition> backupSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
+    private HashSet<EnemyUnits> unviewableTargets = new HashSet<>();
+    private EnemyUnits approachTarget = null;
+    private TilePosition approachTile = null;
     private TilePosition siegeTile = null;
     private boolean foundSiegeTile = false;
     private boolean wasNaturalOwned = false;
@@ -36,6 +43,7 @@ public class SiegeTank extends CombatUnits {
         this.enemyInformation = enemyInformation;
         this.enemyUnits = enemyInformation.getEnemyUnits();
         mapInfo = enemyInformation.getBaseInfo();
+        gameMap = mapInfo.getGameMap();
         mainEdgeTiles = mapInfo.getMainCliffEdge();
         combinedTankTiles = mapInfo.getCombinedTankTiles();
         backupSiegeTiles = mapInfo.getBackupMainSiegeTiles();
@@ -48,16 +56,34 @@ public class SiegeTank extends CombatUnits {
             return;
         }
 
+        unviewableTargets.removeIf(enemy -> !enemyUnits.contains(enemy) || enemy.getEnemyUnit().isVisible());
+
         EnemyUnits target = enemyUnit;
         if (!priorityTargetExists) {
             EnemyUnits preferred = findValidTarget();
             if (preferred != null) {
                 target = preferred;
-                enemyUnit = preferred;
             }
+            if (approachTarget != null && enemyUnits.contains(approachTarget)
+                    && !approachTarget.getEnemyUnit().isVisible() && !target.getEnemyUnit().isVisible()) {
+                target = approachTarget;
+            }
+            enemyUnit = target;
         }
 
         siegeLogic();
+
+        if (unviewableTargets.contains(target)) {
+            return;
+        }
+
+        if (approachNeeded(target)) {
+            approachHiddenTarget(target);
+            return;
+        }
+
+        approachTarget = null;
+        approachTile = null;
 
         if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE || !target.getEnemyUnit().isVisible()) {
             unit.attack(target.getEnemyPosition());
@@ -526,8 +552,12 @@ public class SiegeTank extends CombatUnits {
         double otherDist = Double.MAX_VALUE, buildingDist = Double.MAX_VALUE, workerDist = Double.MAX_VALUE;
 
         for (EnemyUnits enemy : enemyUnits) {
-            if ((enemy.getEnemyUnit().isCloaked() 
-                    || enemy.getEnemyUnit().isBurrowed()) 
+            if (unviewableTargets.contains(enemy)) {
+                continue;
+            }
+
+            if ((enemy.getEnemyUnit().isCloaked()
+                    || enemy.getEnemyUnit().isBurrowed())
                     && !enemy.getEnemyUnit().isDetected()) {
                 continue;
             }
@@ -604,6 +634,205 @@ public class SiegeTank extends CombatUnits {
             return worker;
         }
         return building;
+    }
+
+    private boolean approachNeeded(EnemyUnits target) {
+        if (isSieged() || !canSiege()) {
+            return false;
+        }
+
+        if (target.getEnemyPosition() == null || !target.getEnemyType().isBuilding()) {
+            return false;
+        }
+
+        if (target.getEnemyUnit().isVisible()) {
+            return approachTile != null && approachTarget == target
+                    && unit.getDistance(target.getEnemyPosition()) >= SIEGE_RANGE - 32;
+        }
+
+        if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE) {
+            return false;
+        }
+
+        return gameMap.getGroundHeight(unit.getTilePosition()) == gameMap.getGroundHeight(target.getEnemyPosition().toTilePosition());
+    }
+
+    private void approachHiddenTarget(EnemyUnits target) {
+        Position center = target.getEnemyPosition();
+
+        if (approachTarget != target || approachTile == null) {
+            approachTarget = target;
+            approachTile = findApproachTile(target);
+            if (approachTile == null) {
+                markUnviewable(target);
+                return;
+            }
+        }
+
+        Position goal = new Position(approachTile.getX() * 32 + 16, approachTile.getY() * 32 + 16);
+
+        if (unit.getTilePosition().equals(approachTile)) {
+            if (!target.getEnemyUnit().isVisible()) {
+                markUnviewable(target);
+                return;
+            }
+            unit.move(goal);
+            return;
+        }
+        double currentAngle = Math.atan2(unit.getY() - center.getY(), unit.getX() - center.getX());
+        double currentRadius = unit.getPosition().getDistance(center);
+        double goalAngle = Math.atan2(goal.getY() - center.getY(), goal.getX() - center.getX());
+        double goalRadius = goal.getDistance(center);
+        double angleDifference = wrapAngle(goalAngle - currentAngle);
+
+        if (Math.abs(angleDifference) * currentRadius <= 64) {
+            unit.move(goal);
+            return;
+        }
+
+        double waypointAngle = currentAngle + Math.signum(angleDifference) * 64 / currentRadius;
+        double waypointRadius = Math.max(goalRadius, currentRadius);
+
+        for (int nudge = 0; nudge <= 3; nudge++) {
+            Position waypoint = new Position((int) (center.getX() + Math.cos(waypointAngle) * waypointRadius),
+                    (int) (center.getY() + Math.sin(waypointAngle) * waypointRadius));
+            if (standable(waypoint)) {
+                unit.move(waypoint);
+                return;
+            }
+            waypointRadius += 32;
+        }
+
+        markUnviewable(target);
+    }
+
+    private TilePosition findApproachTile(EnemyUnits target) {
+        Position center = target.getEnemyPosition();
+        UnitType targetType = target.getEnemyType();
+        GroundHeight tankHeight = gameMap.getGroundHeight(unit.getTilePosition());
+        int sightTiles = unit.getType().sightRange() / 32;
+        int scanTiles = SIEGE_RANGE / 32;
+
+        HashSet<TilePosition> footprint = new HashSet<>();
+        for (int x = (center.getX() - targetType.dimensionLeft()) / 32; x <= (center.getX() + targetType.dimensionRight()) / 32; x++) {
+            for (int y = (center.getY() - targetType.dimensionUp()) / 32; y <= (center.getY() + targetType.dimensionDown()) / 32; y++) {
+                footprint.add(new TilePosition(x, y));
+            }
+        }
+
+        double bearing = Math.atan2(unit.getY() - center.getY(), unit.getX() - center.getX());
+        TilePosition centerTile = center.toTilePosition();
+        ArrayList<TilePosition> candidates = new ArrayList<>();
+
+        for (int x = centerTile.getX() - scanTiles; x <= centerTile.getX() + scanTiles; x++) {
+            for (int y = centerTile.getY() - scanTiles; y <= centerTile.getY() + scanTiles; y++) {
+                TilePosition tile = new TilePosition(x, y);
+                Position tileCenter = new Position(x * 32 + 16, y * 32 + 16);
+
+                if (gameMap.getGroundHeight(tile) != tankHeight) {
+                    continue;
+                }
+
+                if (boxDistance(tileCenter, center.getX(), center.getY(), center.getX() - 1, center.getY() - 1) >= SIEGE_RANGE - 32) {
+                    continue;
+                }
+
+                if (!standable(tileCenter)) {
+                    continue;
+                }
+
+                if (!unit.hasPath(tileCenter)) {
+                    continue;
+                }
+
+                candidates.add(tile);
+            }
+        }
+
+        candidates.sort(Comparator.comparingDouble(tile -> Math.abs(wrapAngle(
+                Math.atan2(tile.getY() * 32 + 16 - center.getY(), tile.getX() * 32 + 16 - center.getX()) - bearing))));
+
+        for (TilePosition tile : candidates) {
+            if (gameMap.hasSight(tile, sightTiles, footprint)) {
+                return tile;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean standable(Position position) {
+        if (!gameMap.isWalkable(position.toTilePosition())) {
+            return false;
+        }
+
+        for (EnemyUnits enemy : enemyUnits) {
+            if (enemy.getEnemyPosition() == null) {
+                continue;
+            }
+
+            UnitType type = enemy.getEnemyType();
+            if (!type.isBuilding() || enemy.getEnemyUnit().isLifted()) {
+                continue;
+            }
+
+            Position enemyPosition = enemy.getEnemyPosition();
+            int left = enemyPosition.getX() - type.dimensionLeft();
+            int top = enemyPosition.getY() - type.dimensionUp();
+            int right = enemyPosition.getX() + type.dimensionRight();
+            int bottom = enemyPosition.getY() + type.dimensionDown();
+            int gap = boxDistance(position, left, top, right, bottom);
+
+            if (gap == 0) {
+                return false;
+            }
+
+            if (!isStaticDefense(type)) {
+                continue;
+            }
+
+            if (enemy.getEnemyUnit().isVisible() && (enemy.getEnemyUnit().isMorphing() || !enemy.getEnemyUnit().isPowered())) {
+                continue;
+            }
+
+            int range = type.groundWeapon().maxRange();
+            if (type == UnitType.Terran_Bunker) {
+                range = UnitType.Terran_Marine.groundWeapon().maxRange() + 64;
+            }
+
+            if (gap <= range) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private int boxDistance(Position tankCenter, int left, int top, int right, int bottom) {
+        UnitType tankType = unit.getType();
+        int tankLeft = tankCenter.getX() - tankType.dimensionLeft();
+        int tankTop = tankCenter.getY() - tankType.dimensionUp();
+        int tankRight = tankCenter.getX() + tankType.dimensionRight();
+        int tankBottom = tankCenter.getY() + tankType.dimensionDown();
+        int gapX = Math.max(0, Math.max(left - (tankRight + 1), tankLeft - (right + 1)));
+        int gapY = Math.max(0, Math.max(top - (tankBottom + 1), tankTop - (bottom + 1)));
+        return new Position(gapX, gapY).getApproxDistance(new Position(0, 0));
+    }
+
+    private double wrapAngle(double angle) {
+        while (angle > Math.PI) {
+            angle -= 2 * Math.PI;
+        }
+        while (angle <= -Math.PI) {
+            angle += 2 * Math.PI;
+        }
+        return angle;
+    }
+
+    private void markUnviewable(EnemyUnits target) {
+        unviewableTargets.add(target);
+        approachTarget = null;
+        approachTile = null;
     }
 
     private boolean kiteThreshold() {
