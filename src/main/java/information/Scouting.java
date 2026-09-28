@@ -673,6 +673,12 @@ public class Scouting {
             return;
         }
 
+        if (!overlordHeading
+                && (mapInfo.getBaseTiles().contains(headingEnd.toTilePosition())
+                || mapInfo.getNaturalTiles().contains(headingEnd.toTilePosition()))) {
+            return;
+        }
+
         double displacement = headingStart.getDistance(headingEnd);
         if ((overlordHeading && displacement < 25) || (!overlordHeading && displacement < 50)) {
             return;

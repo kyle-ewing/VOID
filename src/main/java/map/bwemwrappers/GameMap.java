@@ -37,6 +37,7 @@ public class GameMap {
     private Area[][] areaByTile;
     private boolean[][] walkableByTile;
     private GroundHeight[][] heightByTile;
+    private boolean[][] blocksViewByTile;
     private Base startingBase;
     private int nextSyntheticAreaId;
 
@@ -79,13 +80,16 @@ public class GameMap {
         areaByTile = new Area[mapWidth][mapHeight];
         walkableByTile = new boolean[mapWidth][mapHeight];
         heightByTile = new GroundHeight[mapWidth][mapHeight];
+        blocksViewByTile = new boolean[mapWidth][mapHeight];
 
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
                 TilePosition tile = new TilePosition(x, y);
                 walkableByTile[x][y] = bwem.getMap().getTile(tile).isWalkable();
 
-                int height = game.getGroundHeight(tile) / 2;
+                int rawHeight = game.getGroundHeight(tile);
+                blocksViewByTile[x][y] = (rawHeight & 1) == 1;
+                int height = rawHeight >> 1;
                 if (height >= 2) {
                     heightByTile[x][y] = GroundHeight.VERY_HIGH_GROUND;
                 }
@@ -1887,6 +1891,67 @@ public class GameMap {
             return null;
         }
         return heightByTile[tile.getX()][tile.getY()];
+    }
+
+    public boolean hasSight(TilePosition viewerTile, int sightTiles, HashSet<TilePosition> targetTiles) {
+        GroundHeight viewerHeight = getGroundHeight(viewerTile);
+        if (viewerHeight == null) {
+            return false;
+        }
+
+        boolean[][] revealed = new boolean[sightTiles * 2 + 1][sightTiles * 2 + 1];
+
+        for (int ring = 0; ring <= sightTiles; ring++) {
+            for (int dx = -ring; dx <= ring; dx++) {
+                for (int dy = -ring; dy <= ring; dy++) {
+                    if (Math.abs(dx) != ring && Math.abs(dy) != ring) {
+                        continue;
+                    }
+                    if (dx * dx + dy * dy > sightTiles * sightTiles) {
+                        continue;
+                    }
+
+                    TilePosition tile = new TilePosition(viewerTile.getX() + dx, viewerTile.getY() + dy);
+                    if (getGroundHeight(tile) == null) {
+                        continue;
+                    }
+
+                    boolean visible = ring <= 1;
+                    if (!visible) {
+                        int stepX = Integer.signum(dx);
+                        int stepY = Integer.signum(dy);
+                        visible = passesSight(revealed, viewerTile, dx - stepX, dy - stepY, sightTiles, viewerHeight);
+                        if (!visible && Math.abs(dx) > Math.abs(dy)) {
+                            visible = passesSight(revealed, viewerTile, dx - stepX, dy, sightTiles, viewerHeight);
+                        }
+                        else if (!visible && Math.abs(dy) > Math.abs(dx)) {
+                            visible = passesSight(revealed, viewerTile, dx, dy - stepY, sightTiles, viewerHeight);
+                        }
+                    }
+
+                    revealed[dx + sightTiles][dy + sightTiles] = visible;
+                    if (visible && targetTiles.contains(tile)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean passesSight(boolean[][] revealed, TilePosition viewerTile, int dx, int dy, int sightTiles, GroundHeight viewerHeight) {
+        if (!revealed[dx + sightTiles][dy + sightTiles]) {
+            return false;
+        }
+
+        int x = viewerTile.getX() + dx;
+        int y = viewerTile.getY() + dy;
+        if (blocksViewByTile[x][y]) {
+            return false;
+        }
+
+        return heightByTile[x][y].ordinal() <= viewerHeight.ordinal();
     }
 
     public Area getArea(bwem.Area bwemArea) {
