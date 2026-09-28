@@ -133,6 +133,7 @@ public class UnitManager {
             }
 
             combatUnit.onFrame();
+            combatUnit.setHasTankSupport(hasTankSupport(combatUnit));
             inRangeOfThreat(combatUnit);
 
             //Set rally point if not set
@@ -246,7 +247,6 @@ public class UnitManager {
                 scouts++;
             }
 
-            combatUnit.setHasTankSupport(hasTankSupport(combatUnit));
             combatUnit.setEnemyInBase(gameState.isEnemyInBase());
             skipRegroupDuringBypass(combatUnit);
 
@@ -1285,8 +1285,10 @@ public class UnitManager {
             return;
         }
 
+        boolean tankCanSiege = combatUnit instanceof SiegeTank
+                && game.self().hasResearched(TechType.Tank_Siege_Mode);
         boolean ignoreStaticDefense = (combatUnit.getUnitStatus() == UnitStatus.ATTACK || combatUnit.getUnitStatus() == UnitStatus.AVOID)
-                && enemyInformation.staticDefenseCount() <= 2;
+                && (tankCanSiege || (enemyInformation.staticDefenseCount() <= 2 && !combatUnit.hasTankSupport()));
 
         boolean inRange = false;
 

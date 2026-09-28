@@ -415,13 +415,17 @@ public class EnemyInformation {
                 enemyArmySupply += enemyType.supplyRequired() / 2.0f;
             }
         }
-        //Edge case where buildings aren't removed on death but position is null from units walking over it
         enemyUnits.removeIf(eu -> eu.getEnemyType().isBuilding()
-                && eu.getEnemyPosition() == null
-                 && !eu.getEnemyUnit().canLift());
+                && eu.getEnemyPosition() != null
+                && !eu.getEnemyUnit().isVisible()
+                && game.isVisible(eu.getEnemyPosition().toTilePosition()));
+
+        if (!checkForBuildings()) {
+            gameState.setEnemyBuildingDiscovered(false);
+        }
 
         enemyUnits.removeIf(eu -> eu.getIrradiateTimer() > 240 || eu.getSweepTimer() > 224);
-        validThreats.removeIf(eu -> eu.getIrradiateTimer() > 240);
+        validThreats.removeIf(eu -> eu.getIrradiateTimer() > 240 || !enemyUnits.contains(eu));
 
         if (gameState.isOpenerLocked()) {
             return;

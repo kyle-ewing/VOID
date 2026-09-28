@@ -50,9 +50,10 @@ public class SiegeTank extends CombatUnits {
 
         EnemyUnits target = enemyUnit;
         if (!priorityTargetExists) {
-            EnemyUnits preferred = null;
+            EnemyUnits preferred = findValidTarget();
             if (preferred != null) {
                 target = preferred;
+                enemyUnit = preferred;
             }
         }
 
@@ -80,6 +81,12 @@ public class SiegeTank extends CombatUnits {
 
         if (super.getRallyPoint().toPosition().getApproxDistance(unit.getPosition()) < 128) {
             super.setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
+
+        if (isSieged()) {
+            super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
+            unit.unsiege();
             return;
         }
 
@@ -141,10 +148,6 @@ public class SiegeTank extends CombatUnits {
         }
 
         siegeLogic();
-
-        if (!isSieged() && getUnitType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-            return;
-        }
 
         if (unit.getDistance(target.getEnemyPosition()) > SIEGE_RANGE) {
             unit.attack(target.getEnemyPosition());
@@ -486,7 +489,7 @@ public class SiegeTank extends CombatUnits {
                 }
                 break;
             case REGROUP:
-                if (isSieged() && distToEnemy < 64 || distToEnemy > SIEGE_RANGE) {
+                if (isSieged() && (distToEnemy < 64 || distToEnemy > SIEGE_RANGE)) {
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
@@ -534,10 +537,18 @@ public class SiegeTank extends CombatUnits {
             }
 
             double dist = unit.getDistance(enemy.getEnemyPosition());
-            
+
             UnitType type = enemy.getEnemyType();
 
             if (type.isWorker()) {
+                continue;
+            }
+
+            if (type.isFlyer() || enemy.getEnemyUnit().isLifted()) {
+                continue;
+            }
+
+            if (!type.isBuilding() && !enemy.getEnemyUnit().isVisible()) {
                 continue;
             }
 
