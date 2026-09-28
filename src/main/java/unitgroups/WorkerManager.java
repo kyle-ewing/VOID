@@ -144,7 +144,16 @@ public class WorkerManager {
                     worker.setWorkerStatus(WorkerStatus.MINERALS);
                     break;
                 case DEFEND:
-                    ClosestUnit.findClosestUnit(worker, gameState.getKnownEnemyUnits(), 1100);
+                    HashSet<EnemyUnits> defendTargets = new HashSet<>();
+                    for (EnemyUnits defendEnemy : gameState.getKnownEnemyUnits()) {
+                        if (!mapInfo.isInDefenseZone(defendEnemy.getEnemyPosition())) {
+                            continue;
+                        }
+
+                        defendTargets.add(defendEnemy);
+                    }
+
+                    ClosestUnit.findClosestUnit(worker, defendTargets, Integer.MAX_VALUE);
                     workerAttackClock(worker);
 
                     if (frameCount % 24 != 0) {
@@ -152,16 +161,11 @@ public class WorkerManager {
                     }
 
                     if (worker.getEnemyUnit() != null) {
-                        TilePosition enemyTile = worker.getEnemyUnit().getEnemyPosition().toTilePosition();
-                        if (mapInfo.getBaseTiles().contains(enemyTile) || mapInfo.getNaturalTiles().contains(enemyTile)) {
-                            worker.selfDefense();
-                        }
+                        worker.selfDefense();
                     }
 
                     if ((worker.getAttackClock() > 300 && worker.getEnemyUnit() == null) || !enemyInBase()
-                            || (worker.getEnemyUnit() == null
-                            && !mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())
-                            && !mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition()))
+                            || (worker.getEnemyUnit() == null && !mapInfo.isInDefenseZone(worker.getUnit().getPosition()))
                             || hasCompletedCannonInBase()) {
                         worker.setWorkerStatus(WorkerStatus.IDLE);
                         worker.setAttackClock(0);
@@ -815,8 +819,7 @@ public class WorkerManager {
         Iterator<Workers> iterator = defenseForce.iterator();
         while (iterator.hasNext()) {
             Workers worker = iterator.next();
-            if (mapInfo.getNaturalTiles().contains(worker.getUnit().getTilePosition())
-                    || mapInfo.getBaseTiles().contains(worker.getUnit().getTilePosition())) {
+            if (mapInfo.isInDefenseZone(worker.getUnit().getPosition())) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
                 worker.setAssignedToBase(false);
                 worker.setAttackClock(0);
@@ -861,8 +864,7 @@ public class WorkerManager {
                 continue;
             }
 
-            TilePosition enemyTile = enemyUnit.getEnemyPosition().toTilePosition();
-            if (mapInfo.getBaseTiles().contains(enemyTile) || mapInfo.getNaturalTiles().contains(enemyTile)) {
+            if (mapInfo.isInDefenseZone(enemyUnit.getEnemyPosition())) {
                 return true;
             }
         }
@@ -877,8 +879,7 @@ public class WorkerManager {
             if (!enemyUnit.getEnemyUnit().isCompleted() || !enemyUnit.getEnemyUnit().isPowered()) {
                 continue;
             }
-            TilePosition cannonTile = enemyUnit.getEnemyTilePosition();
-            if (mapInfo.getBaseTiles().contains(cannonTile) || mapInfo.getNaturalTiles().contains(cannonTile)) {
+            if (mapInfo.isInDefenseZone(enemyUnit.getEnemyPosition())) {
                 return true;
             }
         }
