@@ -326,7 +326,8 @@ public class ProductionManager {
                         break;
                     }
 
-                    if (pi.getUnitType() == UnitType.Terran_Bunker && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
+                    if (pi.getUnitType() == UnitType.Terran_Bunker && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD
+                            && !buildingInProduction(pi.getBuildPosition(), pi.getUnitType())) {
                         TilePosition correctBunkerPosition = setBunkerPosition();
                         if (correctBunkerPosition != null && !correctBunkerPosition.equals(pi.getBuildPosition())) {
                             pi.setBuildPosition(correctBunkerPosition);
