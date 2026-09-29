@@ -163,7 +163,8 @@ public class UnitManager {
                     }
 
                     if (bunker != null && combatUnit.isInBunker() && isRushUnloadOpener()
-                            && gameState.getEnemyOpener() != null && !gameState.getEnemyOpener().isStrategyDefended()) {
+                            && gameState.getEnemyOpener() != null && !gameState.getEnemyOpener().isStrategyDefended()
+                            && !enemyNearBunker()) {
                         rushUnloadActive = true;
                         unLoadBunker(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.RALLY);
@@ -497,35 +498,10 @@ public class UnitManager {
                         }
                     }
                     else if (combatUnit.getUnitType() == UnitType.Terran_Barracks) {
-                        if (gameState.getEnemyRace() == Race.Protoss) {
-                            TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
+                        TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
 
-                            boolean enemyBuildingInNatural = gameState.getKnownEnemyUnits().stream()
-                                    .anyMatch(eu -> eu.getEnemyType().isBuilding()
-                                            && mapInfo.getNaturalTiles().contains(eu.getEnemyTilePosition()));
-
-                            if (landPosition != null && !enemyBuildingInNatural
-                                    && (!gameState.isEnemyInNatural() || mapInfo.hasBunkerInNatural())
-                                    && !gameState.moveOutConditionsMet()) {
-                                if (combatUnit.getUnit().isLifted() && !enemyWithinRangeOfWall(combatUnit, 224)) {
-                                    Position hoverPos = new Position(
-                                            landPosition.getX() * 32 + combatUnit.getUnitType().tileWidth() * 16,
-                                            landPosition.getY() * 32 + combatUnit.getUnitType().tileHeight() * 16 - 32);
-                                    if (combatUnit.getUnit().getPosition().getDistance(hoverPos) > 16) {
-                                        combatUnit.getUnit().move(hoverPos);
-                                    }
-                                    break;
-                                }
-                                if (!combatUnit.getUnit().isLifted() && combatUnit.getUnit().getTilePosition().equals(landPosition)) {
-                                    ((Building) combatUnit).setInWall(true);
-                                }
-                                combatUnit.getUnit().land(landPosition);
-                            }
-                            else {
-                                if (combatUnit.getRallyPoint() != null) {
-                                    //combatUnit.getUnit().move(combatUnit.getRallyPoint().toPosition());
-                                }
-                            }
+                        if (landPosition != null && !combatUnit.getUnit().isLifted() && combatUnit.getUnit().getTilePosition().equals(landPosition)) {
+                            ((Building) combatUnit).setInWall(true);
                         }
                     }
                     break;
@@ -873,6 +849,10 @@ public class UnitManager {
             return false;
         }
 
+        if (bunker.isUnderAttack()) {
+            return true;
+        }
+
         for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             if (enemyUnit.getEnemyPosition() == null) {
                 continue;
@@ -888,6 +868,10 @@ public class UnitManager {
     private boolean enemyWithinBunkerDefenseRange() {
         if (bunker == null) {
             return false;
+        }
+
+        if (bunker.isUnderAttack()) {
+            return true;
         }
 
         int bunkerRange = UnitType.Terran_Marine.groundWeapon().maxRange() + 32;
@@ -1478,11 +1462,20 @@ public class UnitManager {
             return;
         }
 
+        TilePosition landTile = building.getUnit().getInitialTilePosition();
+        TilePosition wallTile = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
+
+        if (building.getUnitType() == UnitType.Terran_Barracks
+                && gameState.getEnemyRace() == Race.Protoss
+                && wallTile != null) {
+            landTile = wallTile;
+        }
+
         if (building.getUnitType() == UnitType.Terran_Barracks
                 && building.getUnit().isLifted()
                 && gameState.getProductionQueue().stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
             building.setNotNeeded(false);
-            building.getUnit().land(building.getUnit().getInitialTilePosition());
+            building.getUnit().land(landTile);
             return;
         }
 
@@ -1501,12 +1494,12 @@ public class UnitManager {
         if (gameState.getEnemyOpener() != null
                 && gameState.getEnemyOpener().overrideBuildingLift()
                 && !gameState.getEnemyOpener().isStrategyDefended()) {
-            building.getUnit().land(building.getUnit().getInitialTilePosition());
+            building.getUnit().land(landTile);
         }
 
         if (gameState.getKnownEnemyTechUnits().stream().anyMatch(EnemyTechUnits::isFlyer) &&
                 building.getUnitType() == UnitType.Terran_Barracks && gameState.getUnitTypeCount().get(UnitType.Terran_Armory) == 0) {
-            building.getUnit().land(building.getUnit().getInitialTilePosition());
+            building.getUnit().land(landTile);
         }
     }
 
@@ -1518,7 +1511,7 @@ public class UnitManager {
                 || building.getUnit().getTilePosition().getY() != wallTile.getY()) {
             return false;
         }
-        if (enemyWithinRangeOfWall(building, 160)) {
+        if (enemyWithinRangeOfWall(building, 256)) {
             return true;
         }
         if (friendlyPassingThroughWall(building, 152)) {
@@ -1545,12 +1538,20 @@ public class UnitManager {
         if (wallTile == null) {
             return false;
         }
-        TilePosition initial = building.getUnit().getInitialTilePosition();
-        if (initial == null || initial.getX() != wallTile.getX() || initial.getY() != wallTile.getY()) {
-            return false;
-        }
 
         if (building.getUnitType() == UnitType.Terran_Barracks) {
+            if (gameState.getEnemyRace() != Race.Protoss) {
+                return false;
+            }
+
+            boolean enemyBuildingInNatural = gameState.getKnownEnemyUnits().stream()
+                    .anyMatch(eu -> eu.getEnemyType().isBuilding()
+                            && mapInfo.getNaturalTiles().contains(eu.getEnemyTilePosition()));
+
+            if (enemyBuildingInNatural || (gameState.isEnemyInNatural() && !mapInfo.hasBunkerInNatural())) {
+                return false;
+            }
+
             if (!enemyWithinRangeOfWall(building, 256)
                     && gameState.getProductionQueue().stream().noneMatch(pi -> pi.getUnitType() == UnitType.Terran_Marine)) {
                 Position hoverPos = new Position(
@@ -1564,6 +1565,11 @@ public class UnitManager {
             building.setNotNeeded(false);
             building.getUnit().land(wallTile);
             return true;
+        }
+
+        TilePosition initial = building.getUnit().getInitialTilePosition();
+        if (initial == null || initial.getX() != wallTile.getX() || initial.getY() != wallTile.getY()) {
+            return false;
         }
 
         if (enemyWithinRangeOfWall(building, 256)) {

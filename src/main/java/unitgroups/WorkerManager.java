@@ -22,6 +22,7 @@ import information.enemy.enemyopeners.EnemyStrategyName;
 import map.bwemwrappers.Base;
 import macro.buildpivots.BuildPivot;
 import map.bwemwrappers.Mineral;
+import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;
 import unitgroups.units.Workers;
 import util.ClosestUnit;
@@ -1031,7 +1032,7 @@ public class WorkerManager {
             return;
         }
 
-        if (bunker.getLoadedUnits().isEmpty()) {
+        if (bunker.getLoadedUnits().isEmpty() && !marineNearBunker(bunker)) {
             if (!enemyInRange(400)) {
                 for (Workers worker : repairForce) {
                     worker.setWorkerStatus(WorkerStatus.IDLE);
@@ -1089,6 +1090,19 @@ public class WorkerManager {
                 repairForce.clear();
             }
         }
+    }
+
+    private boolean marineNearBunker(Unit bunker) {
+        for (CombatUnits combatUnit : gameState.getCombatUnits()) {
+            if (combatUnit.getUnitType() != UnitType.Terran_Marine) {
+                continue;
+            }
+
+            if (combatUnit.getUnit().getPosition().getApproxDistance(bunker.getPosition()) < 400) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void createRepairForce(Unit bunker, int repairSize) {

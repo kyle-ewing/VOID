@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1164,7 +1165,12 @@ public class ProductionManager {
                         TilePosition bunkerTile = currentBunkerTile();
 
                         if (gameState.getEnemyOpener().mineralLineTurretsOnly()) {
-                            for (Base base : mapInfo.getOwnedBases()) {
+                            LinkedHashSet<Base> turretBases = new LinkedHashSet<>();
+                            turretBases.add(mapInfo.getStartingBase());
+                            turretBases.add(mapInfo.getNaturalBase());
+                            turretBases.addAll(mapInfo.getOwnedBases());
+
+                            for (Base base : turretBases) {
                                 TilePosition turretTile = buildTiles.getMineralLineTurrets().get(base);
                                 if (turretTile != null && !hasTurretAtBase(turretTile) && !hasPositionInQueue(turretTile) && !tileTaken(turretTile)) {
                                     addToQueue(UnitType.Terran_Missile_Turret, PlannedItemType.BUILDING, turretTile, 1);

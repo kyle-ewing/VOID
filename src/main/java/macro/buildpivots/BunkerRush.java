@@ -70,11 +70,12 @@ public class BunkerRush extends BuildPivot {
             moveOutCondition.put(UnitType.Terran_Marine, 1);
         }
         else if (time.lessThanOrEqual(new Time(12,30)) && !rushActive && enemyArmySupply < 15 ) {
-            moveOutCondition.put(UnitType.Terran_Marine, 15);
+            moveOutCondition.put(UnitType.Terran_Marine, 18);
+            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 2);
             moveOutCondition.put(UnitType.Terran_Medic, 4);
         }
         else {
-            moveOutCondition.put(UnitType.Terran_Marine, 15);
+            moveOutCondition.put(UnitType.Terran_Marine, 24);
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 3);
             moveOutCondition.put(UnitType.Terran_Medic, 4);
         }
