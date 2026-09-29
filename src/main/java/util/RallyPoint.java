@@ -44,6 +44,22 @@ public class RallyPoint {
             return;
         }
 
+        if (enemyStrategy != null && !enemyStrategy.isStrategyDefended()) {
+            switch (enemyStrategy.getStrategyName()) {
+                case SHUTTLERUSH:
+                    combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
+                    return;
+                case FOURPOOL:
+                    if (!mapInfo.hasBunkerInNatural()) {
+                        combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
+                        return;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
         if (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
             combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
             return;
@@ -68,10 +84,6 @@ public class RallyPoint {
         }
 
         switch (enemyStrategy.getStrategyName()) {
-            case FOURPOOL:
-            case SHUTTLERUSH:
-                combatUnit.setRallyPoint(startingBase.getCenter().toTilePosition());
-                break;
             case GASSTEAL:
                 Base gasStealEnemyNatural = mapInfo.getEnemyNatural();
                 if (gasStealEnemyNatural == null) {

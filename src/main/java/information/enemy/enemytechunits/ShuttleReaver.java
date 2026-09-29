@@ -9,7 +9,7 @@ public class ShuttleReaver extends EnemyTechUnits {
     public ShuttleReaver() {
         super("Shuttle Reaver", UnitType.Terran_Wraith, true);
 
-
+        buildingResponse();
     }
 
     public boolean isEnemyTechUnit(HashSet<EnemyUnits> enemyUnits) {
@@ -23,6 +23,10 @@ public class ShuttleReaver extends EnemyTechUnits {
             }
         }
         return false;
+    }
+
+    public void buildingResponse() {
+        getFriendlyBuildingResponse().add(UnitType.Terran_Starport);
     }
 
     public void techBuildingResponse() {

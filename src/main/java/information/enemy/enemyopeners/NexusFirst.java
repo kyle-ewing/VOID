@@ -15,6 +15,7 @@ public class NexusFirst extends  EnemyStrategy {
     public NexusFirst(MapInfo mapInfo) {
         super(EnemyStrategyName.NEXUSFIRST);
         this.mapInfo = mapInfo;
+        hardLockedWhenSeen = true;
         
         buildingResponse();
         upgradeResponse();

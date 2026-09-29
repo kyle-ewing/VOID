@@ -6,11 +6,11 @@ import java.util.HashSet;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
-import map.bwemwrappers.Base;
-import map.bwemwrappers.ChokePoint;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
+import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import util.Time;
 
 public class FFE extends EnemyStrategy{

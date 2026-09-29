@@ -43,6 +43,13 @@ public class ShuttleRush extends EnemyStrategy{
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
         getBuildingResponse().add(UnitType.Terran_Marine);
+        getBuildingResponse().add(UnitType.Terran_Missile_Turret);
+        getBuildingResponse().add(UnitType.Terran_Missile_Turret);
+    }
+
+    @Override
+    public boolean mineralLineTurretsOnly() {
+        return true;
     }
 
     public void upgradeResponse() {
