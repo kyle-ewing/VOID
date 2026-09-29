@@ -8,6 +8,7 @@ import bwapi.Game;
 import bwapi.UnitType;
 import information.GameState;
 import information.enemy.EnemyInformation;
+import map.bwemwrappers.ChokePoint;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
 import util.Time;
@@ -17,6 +18,7 @@ public class SquadManager {
     private GameState gamestate;
     private EnemyInformation enemyInformation;
     private List<Squad> squads = new ArrayList<>();
+    private ArrayList<ChokePoint> narrowChokes = new ArrayList<>();
     private HashMap<UnitType, Integer> compositionLimits = new HashMap<>();
     private float enemyArmySupply = 0;
     private int runbySquadCooldown = 0;
@@ -26,7 +28,12 @@ public class SquadManager {
         this.game = game;
         this.gamestate = gamestate;
         this.enemyInformation = enemyInformation;
-        squads.add(new Squad(game));
+        for (ChokePoint choke : gamestate.getBaseInfo().getGameMap().getChokes()) {
+            if (choke.getWidth() < 250) {
+                narrowChokes.add(choke);
+            }
+        }
+        squads.add(new Squad(game, narrowChokes));
         initCompositionLimits();
     }
 
@@ -66,7 +73,7 @@ public class SquadManager {
             }
         }
 
-        Squad newSquad = new Squad(game);
+        Squad newSquad = new Squad(game, narrowChokes);
         newSquad.addToSquad(unit);
         squads.add(newSquad);
     }
@@ -91,7 +98,7 @@ public class SquadManager {
         }
         squads.removeIf(squad -> squad.getSquadUnits().isEmpty());
         if (squads.isEmpty()) {
-            squads.add(new Squad(game));
+            squads.add(new Squad(game, narrowChokes));
         }
     }
 
@@ -190,7 +197,7 @@ public class SquadManager {
     }
 
     private void createRunbySquad() {
-        Squad runbySquad = new Squad(game, true);
+        Squad runbySquad = new Squad(game, narrowChokes, true);
         int addedUnits = 0;
         for (Squad squad : squads) {
             if (squad.isRunbySquad()) {
