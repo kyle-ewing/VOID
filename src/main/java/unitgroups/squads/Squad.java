@@ -8,6 +8,7 @@ import java.util.List;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.UnitType;
+import map.bwemwrappers.ChokePoint;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
 
@@ -16,6 +17,7 @@ public class Squad {
     private Position regroupPosition;
     private HashSet<CombatUnits> squadUnits = new HashSet<>();
     private HashMap<Integer, UnitType> squadComposition = new HashMap<>();
+    private ArrayList<ChokePoint> narrowChokes;
     private boolean enemyArmyExists = false;
     private boolean isRunbySquad = false;
 
@@ -25,12 +27,14 @@ public class Squad {
     private static final int TANK_THRESHOLD = 2;
     private static final int LEAD_DISTANCE = 200;
 
-    public Squad(Game game) {
+    public Squad(Game game, ArrayList<ChokePoint> narrowChokes) {
         this.game = game;
+        this.narrowChokes = narrowChokes;
     }
 
-    public Squad(Game game, boolean isRunbySquad) {
+    public Squad(Game game, ArrayList<ChokePoint> narrowChokes, boolean isRunbySquad) {
         this.game = game;
+        this.narrowChokes = narrowChokes;
         this.isRunbySquad = isRunbySquad;
     }
 
@@ -188,6 +192,14 @@ public class Squad {
                 continue;
             }
 
+            if (regroupPathNearNarrowChoke(unit)) {
+                if (unit.getUnitStatus() == UnitStatus.REGROUP) {
+                    unit.setUnitStatus(UnitStatus.ATTACK);
+                }
+                unit.setForcedRegroup(false);
+                continue;
+            }
+
             boolean isolated = false;
             if (unit.getUnit().getDistance(regroupPosition) > 500) {
                 isolated = true;
@@ -237,6 +249,37 @@ public class Squad {
 
             unit.setUnitStatus(UnitStatus.REGROUP);
         }
+    }
+
+    private boolean regroupPathNearNarrowChoke(CombatUnits unit) {
+        Position unitPosition = unit.getUnit().getPosition();
+        double segmentX = regroupPosition.getX() - unitPosition.getX();
+        double segmentY = regroupPosition.getY() - unitPosition.getY();
+        double segmentLengthSquared = segmentX * segmentX + segmentY * segmentY;
+
+        for (ChokePoint choke : narrowChokes) {
+            Position chokeCenter = choke.getCenter();
+            double toChokeX = chokeCenter.getX() - unitPosition.getX();
+            double toChokeY = chokeCenter.getY() - unitPosition.getY();
+
+            double t = 0;
+            if (segmentLengthSquared > 0) {
+                t = (toChokeX * segmentX + toChokeY * segmentY) / segmentLengthSquared;
+                t = Math.max(0, Math.min(1, t));
+            }
+
+            double nearestX = unitPosition.getX() + segmentX * t;
+            double nearestY = unitPosition.getY() + segmentY * t;
+            double dx = chokeCenter.getX() - nearestX;
+            double dy = chokeCenter.getY() - nearestY;
+            double radius = choke.getWidth() / 2.0 + 192;
+
+            if (dx * dx + dy * dy < radius * radius) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean regroupMovesTowardEnemy(CombatUnits unit) {
