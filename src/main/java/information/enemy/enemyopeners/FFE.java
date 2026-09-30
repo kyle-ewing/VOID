@@ -48,7 +48,7 @@ public class FFE extends EnemyStrategy{
                     HashSet<TilePosition> baseTiles = mapInfo.getBaseTilesAllBases().get(startingBase);
                     if (baseTiles != null && baseTiles.contains(enemyUnit.getEnemyPosition().toTilePosition())) {
                         ChokePoint mainChoke = mapInfo.getStartingBaseMainChoke(startingBase);
-                        if (mainChoke != null && enemyUnit.getEnemyPosition().getDistance(mainChoke.getCenter()) < 500) {
+                        if (mainChoke != null && enemyUnit.getEnemyPosition().getDistance(mainChoke.getCenter()) < 300) {
                             continue;
                         }
 
