@@ -911,6 +911,12 @@ public class ProductionManager {
         if (!mapInfo.getOrderedExpansions().isEmpty() && mapInfo.getOrderedExpansions().get(0) == mapInfo.getNaturalBase()) {
             Base natural = mapInfo.getNaturalBase();
 
+            if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.TWOGATE) {
+                pi.setBuildPosition(buildTiles.getMainBaseCCTile());
+                mapInfo.getOrderedExpansions().remove(natural);
+                return;
+            }
+
             if (gameState.isEnemyInNatural() && !mapInfo.hasBunkerInNatural()) {
                 pi.setBuildPosition(buildTiles.getMainBaseCCTile());
                 mapInfo.getOrderedExpansions().remove(natural);
@@ -1002,11 +1008,7 @@ public class ProductionManager {
 
                     return buildTiles.getMainChokeBunker();
                 case TWOGATE:
-                    if (gameState.getKnownEnemyUnits().stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Protoss_Zealot 
-                            && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 0)))) {
-                        return buildTiles.getMainChokeBunker();
-                    }
-                    return buildTiles.getNaturalChokeBunker();
+                    return buildTiles.getMainChokeBunker();
                 case FOURPOOL:
                     if (buildTiles.getCloseBunkerTile() == null) {
                         return null;

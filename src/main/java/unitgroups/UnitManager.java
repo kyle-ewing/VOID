@@ -1447,7 +1447,8 @@ public class UnitManager {
                         return;
                     }
 
-                if (handleWallPassThroughLift(building, gameState.getBuildTiles().getNaturalBunkerBarracksPosition())) {
+                if ((mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural())
+                        && handleWallPassThroughLift(building, gameState.getBuildTiles().getNaturalBunkerBarracksPosition())) {
                     return;
                 }
             }
@@ -1467,6 +1468,7 @@ public class UnitManager {
 
         if (building.getUnitType() == UnitType.Terran_Barracks
                 && gameState.getEnemyRace() == Race.Protoss
+                && (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural())
                 && wallTile != null) {
             landTile = wallTile;
         }
@@ -1540,7 +1542,8 @@ public class UnitManager {
         }
 
         if (building.getUnitType() == UnitType.Terran_Barracks) {
-            if (gameState.getEnemyRace() != Race.Protoss) {
+            if (gameState.getEnemyRace() != Race.Protoss
+                    || (!mapInfo.isNaturalOwned() && !mapInfo.hasBunkerInNatural())) {
                 return false;
             }
 
