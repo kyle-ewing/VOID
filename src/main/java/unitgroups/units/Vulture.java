@@ -143,12 +143,15 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if (unit.isAttackFrame()) {
-            return;
-        }
+        Unit target = enemyUnit.getEnemyUnit();
+        boolean canFireNow = target != null
+                && target.isVisible()
+                && !unit.isStartingAttack()
+                && unit.getGroundWeaponCooldown() == 0
+                && unit.getDistance(target) <= weaponRange();
 
         Position kitePos = getKitePosition();
-        if (kitePos != null) {
+        if (kitePos != null && !canFireNow) {
             issueMove(kitePos);
             return;
         }
@@ -161,6 +164,15 @@ public class Vulture extends CombatUnits {
         Position enemyPos = enemyUnit.getEnemyPosition();
 
         if (target == null || !target.isVisible()) {
+            UnitCommand lastCommand = unit.getLastCommand();
+            if (lastCommand != null
+                    && lastCommand.getType() == UnitCommandType.Attack_Move
+                    && lastCommand.getTargetPosition() != null
+                    && lastCommand.getTargetPosition().getApproxDistance(enemyPos) < 32
+                    && !unit.isIdle()) {
+                return;
+            }
+
             unit.attack(enemyPos);
             return;
         }
@@ -341,12 +353,17 @@ public class Vulture extends CombatUnits {
 
         if (lastMoveTarget != null
                 && unit.getOrder() == Order.Move
-                && game.getFrameCount() - lastMoveFrame < 6
-                && lastMoveTarget.getApproxDistance(destination) < 32
+                && game.getFrameCount() - lastMoveFrame < 12
                 && unit.getPosition().getDistance(lastMoveTarget) > brakingDistance
                 && unit.isMoving()
                 && !unit.isStuck()) {
-            return;
+            int heldDx = lastMoveTarget.getX() - unit.getPosition().getX();
+            int heldDy = lastMoveTarget.getY() - unit.getPosition().getY();
+            int newDx = destination.getX() - unit.getPosition().getX();
+            int newDy = destination.getY() - unit.getPosition().getY();
+            if (heldDx * newDx + heldDy * newDy > 0) {
+                return;
+            }
         }
 
         unit.move(destination);
@@ -471,7 +488,7 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        if (unit.isStartingAttack() || unit.isAttackFrame()) {
+        if (game.getFrameCount() + game.getRemainingLatencyFrames() < lastAttackStartFrame + 4) {
             return;
         }
 
@@ -925,6 +942,11 @@ public class Vulture extends CombatUnits {
                     continue;
                 }
 
+                double candidateAwayAngle = Math.atan2(ty - enemyPos.getY(), tx - enemyPos.getX());
+                if (!hasWalkableFollowUp(candidate, candidateAwayAngle, d)) {
+                    continue;
+                }
+
                 return candidate;
             }
         }
@@ -932,15 +954,46 @@ public class Vulture extends CombatUnits {
         return null;
     }
 
+    private boolean hasWalkableFollowUp(Position spot, double awayAngle, int hop) {
+        double[] offsets = {0, 0.5236, -0.5236, 1.0472, -1.0472, 1.5708, -1.5708};
+
+        for (double offset : offsets) {
+            double angle = awayAngle + offset;
+            int nextX = (int) (spot.getX() + Math.cos(angle) * hop);
+            int nextY = (int) (spot.getY() + Math.sin(angle) * hop);
+
+            if (walkableRay(spot, new Position(nextX, nextY))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private boolean walkableRay(Position from, Position to) {
-        int sampleSteps = 8;
-        for (int s = 1; s <= sampleSteps; s++) {
-            int sx = from.getX() + (to.getX() - from.getX()) * s / sampleSteps;
-            int sy = from.getY() + (to.getY() - from.getY()) * s / sampleSteps;
+        int maxX = game.mapWidth() * 32 - 1;
+        int maxY = game.mapHeight() * 32 - 1;
+
+        if (to.getX() < 0 || to.getY() < 0 || to.getX() > maxX || to.getY() > maxY) {
+            return false;
+        }
+
+        int steps = Math.max(1, (int) Math.ceil(from.getDistance(to) / 8));
+
+        for (int s = 1; s <= steps; s++) {
+            int sx = from.getX() + (to.getX() - from.getX()) * s / steps;
+            int sy = from.getY() + (to.getY() - from.getY()) * s / steps;
             if (!game.isWalkable(new Position(sx, sy).toWalkPosition())) {
                 return false;
             }
         }
+
+        for (Unit nearbyUnit : game.getUnitsInRadius(to, 16)) {
+            if (nearbyUnit.getType().isBuilding() && !nearbyUnit.isLifted()) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -953,6 +1006,8 @@ public class Vulture extends CombatUnits {
         int staticThreatCount = 0;
         boolean anyThreat = false;
         boolean ignoreStaticDefense = unitStatus == UnitStatus.ATTACK && enemyInformation.staticDefenseCount() <= 2;
+        double mySpeed = game.self().topSpeed(unit.getType());
+        int rampDistance = (int) (mySpeed * mySpeed / acceleration());
 
         for (EnemyUnits enemy : enemyUnits) {
             int range = getGroundThreatRange(enemy);
@@ -998,7 +1053,7 @@ public class Vulture extends CombatUnits {
                 safeDistance = range + 192;
             }
             else if (range <= 32) {
-                safeDistance = range + 64;
+                safeDistance = range + 64 + rampDistance;
             }
             else {
                 safeDistance = 64;
@@ -1059,6 +1114,10 @@ public class Vulture extends CombatUnits {
 
             Position kitePos = new Position((int) rawX, (int) rawY);
             if (!walkableRay(unitPos, kitePos)) {
+                continue;
+            }
+
+            if (!hasWalkableFollowUp(kitePos, Math.atan2(sumDy, sumDx), projection)) {
                 continue;
             }
 
