@@ -13,6 +13,7 @@ public class Marine extends CombatUnits {
     private static final int UPGRADE_RANGE = 32;
     private static final double[] KITE_ANGLE_OFFSETS = {0, 0.5236, -0.5236, 1.0472, -1.0472, 1.5708, -1.5708};
     private Integer badTargetID = null;
+    private int lastAttackStartFrame = -100;
 
     public Marine(Game game, Unit unit) {
         super(game, unit);
@@ -126,6 +127,10 @@ public class Marine extends CombatUnits {
 
     @Override
     public void microOnFrame() {
+        if (unit.isStartingAttack()) {
+            lastAttackStartFrame = game.getFrameCount();
+        }
+
         if (unitStatus != UnitStatus.ATTACK && unitStatus != UnitStatus.DEFEND && unitStatus != UnitStatus.SALLYOUT) {
             return;
         }
@@ -157,7 +162,11 @@ public class Marine extends CombatUnits {
             badTargetID = null;
         }
 
-        if (!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0 && !unit.isAttackFrame()) {
+        if (game.getFrameCount() + game.getRemainingLatencyFrames() < lastAttackStartFrame + 4) {
+            return;
+        }
+
+        if (!unit.isStartingAttack() && unit.getGroundWeaponCooldown() == 0) {
             if (enemyUnit.getEnemyUnit().isVisible()) {
                 unit.attack(enemyUnit.getEnemyUnit());
             }
@@ -180,7 +189,11 @@ public class Marine extends CombatUnits {
             return;
         }
 
-        if (unit.isStartingAttack() || unit.isAttackFrame()) {
+        if (unit.isStartingAttack()) {
+            return;
+        }
+
+        if (game.getFrameCount() + game.getRemainingLatencyFrames() < lastAttackStartFrame + 4) {
             return;
         }
 

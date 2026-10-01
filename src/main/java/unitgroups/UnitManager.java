@@ -220,7 +220,7 @@ public class UnitManager {
 
                     combatUnit.setUnitStatus(UnitStatus.ATTACK);
                 }
-                else if (unitStatus == UnitStatus.LOAD && !enemyNearBunker()) {
+                else if (unitStatus == UnitStatus.LOAD && !enemyNearBunker() && !fleeToProxyBunker(combatUnit)) {
                     unLoadBunker(combatUnit);
                 }
             }
@@ -819,7 +819,7 @@ public class UnitManager {
     }
 
     private boolean fleeToProxyBunker(CombatUnits combatUnit) {
-        if (!(gameState.getSelectedPivot() instanceof BunkerRush)) {
+        if (!(gameState.getSelectedPivot() instanceof BunkerRush) || !gameState.getSelectedPivot().isRushActive()) {
             return false;
         }
 
@@ -833,6 +833,10 @@ public class UnitManager {
             }
 
             if (enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+
+            if (!enemyUnit.getEnemyUnit().isVisible()) {
                 continue;
             }
 

@@ -19,8 +19,8 @@ import information.enemy.EnemyScoutResponse;
 import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
-import map.bwemwrappers.Base;
 import macro.buildpivots.BuildPivot;
+import map.bwemwrappers.Base;
 import map.bwemwrappers.Mineral;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.WorkerStatus;
@@ -916,7 +916,9 @@ public class WorkerManager {
                 }
                 break;
             case NEXUSFIRST:
-                createPulledScvs(6);
+                if (gameState.moveOutConditionsMet()) {
+                    createPulledScvs(6);
+                }
                 break;
             case FOURPOOL:
                 Unit leashBunker = null;
@@ -1333,6 +1335,11 @@ public class WorkerManager {
             }
             else if (enemyStrategy.getStrategyName() == EnemyStrategyName.FOURPOOL) {
                 if (enemyInBase() && new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
+                    return true;
+                }
+            }
+            else if (enemyStrategy.getStrategyName() == EnemyStrategyName.NEXUSFIRST) {
+                if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(4, 0))) {
                     return true;
                 }
             }
