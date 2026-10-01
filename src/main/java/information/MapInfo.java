@@ -514,11 +514,11 @@ public class MapInfo {
         int maxDistance = 275;
 
         if (outsideArea.getTiles().size() > 500) {
-            if (outsideArea.getBases().isEmpty()) {
+            Base outsideBase = getOutsideNaturalBase();
+            if (outsideBase == null) {
                 return;
             }
 
-            Base outsideBase = outsideArea.getBases().get(0);
             TilePosition chokeTile = naturalChokePoint.getCenter().toTilePosition();
             TilePosition baseTile = outsideBase.getLocation();
 
@@ -883,6 +883,41 @@ public class MapInfo {
         }
 
         return naturalChokePoint.getSecondArea();
+    }
+
+    public Base getOutsideNaturalBase() {
+        Area outsideArea = getOutsideNaturalArea();
+        if (outsideArea == null) {
+            return null;
+        }
+
+        if (!outsideArea.getBases().isEmpty()) {
+            return outsideArea.getBases().get(0);
+        }
+
+        Base closestBase = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (ChokePoint choke : outsideArea.getChokes()) {
+            Area farArea = choke.getOtherArea(outsideArea);
+            if (farArea == null || farArea == startingBase.getArea() || farArea == naturalBase.getArea()) {
+                continue;
+            }
+
+            for (Base base : farArea.getBases()) {
+                if (base.isStartingLocation()) {
+                    continue;
+                }
+
+                int distance = base.getCenter().getApproxDistance(naturalChokePoint.getCenter());
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestBase = base;
+                }
+            }
+        }
+
+        return closestBase;
     }
 
     public void setNaturalChoke() {

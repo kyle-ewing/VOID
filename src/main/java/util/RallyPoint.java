@@ -10,7 +10,6 @@ import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
 import macro.buildorders.RallyLocation;
 import map.PathFinding;
-import map.bwemwrappers.Area;
 import map.bwemwrappers.Base;
 import unitgroups.units.CombatUnits;
 
@@ -143,10 +142,10 @@ public class RallyPoint {
             return;
         }
 
-        Area outsideArea = mapInfo.getOutsideNaturalArea();
+        Base outsideBase = mapInfo.getOutsideNaturalBase();
 
-        if (outsideArea != null && !outsideArea.getBases().isEmpty()) {
-            lateGameRallyPoint = rallyPath(mapInfo.getNaturalChoke().getCenter(), outsideArea.getBases().get(0).getCenter(), 0.7);
+        if (outsideBase != null) {
+            lateGameRallyPoint = rallyPath(mapInfo.getNaturalChoke().getCenter(), outsideBase.getCenter(), 0.7);
             return;
         }
 
