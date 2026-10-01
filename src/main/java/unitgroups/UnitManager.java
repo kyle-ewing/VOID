@@ -445,12 +445,12 @@ public class UnitManager {
                         break;
                     }
                 
-                    ((SiegeTank) combatUnit).siegeDef();
-
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
                     }
+
+                    ((SiegeTank) combatUnit).siegeDef();
                     break;
                 case HUNTING:
                     ClosestUnit.priorityTargets(combatUnit, combatUnit.getPriorityTargets(), gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
