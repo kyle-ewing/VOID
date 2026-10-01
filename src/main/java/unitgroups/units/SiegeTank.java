@@ -48,10 +48,20 @@ public class SiegeTank extends CombatUnits {
         combinedTankTiles = mapInfo.getCombinedTankTiles();
         backupSiegeTiles = mapInfo.getBackupMainSiegeTiles();
         ccExclusionTiles = mapInfo.getCcExclusionTiles();
+
+        priorityTargets.add(UnitType.Terran_Siege_Tank_Tank_Mode);
+        priorityTargets.add(UnitType.Terran_Siege_Tank_Siege_Mode);
+        priorityTargets.add(UnitType.Zerg_Lurker);
+        priorityTargets.add(UnitType.Protoss_Reaver);
+        priorityTargets.add(UnitType.Protoss_High_Templar);
+        priorityTargets.add(UnitType.Zerg_Defiler);
+        priorityTargets.add(UnitType.Terran_Ghost);
     }
 
     @Override
     public void attack() {
+        targetPriorityEnemy();
+
         if (enemyUnit == null) {
             return;
         }
@@ -153,6 +163,8 @@ public class SiegeTank extends CombatUnits {
 
     @Override
     public void defend() {
+        targetPriorityEnemy();
+
         if (enemyUnit == null) {
             setUnitStatus(UnitStatus.RALLY);
             return;
@@ -227,6 +239,8 @@ public class SiegeTank extends CombatUnits {
 
     @Override
     public void sallyOut() {
+        targetPriorityEnemy();
+
         if (enemyUnit == null) {
             return;
         }
@@ -324,6 +338,11 @@ public class SiegeTank extends CombatUnits {
     }
 
     public void siegeDef() {
+        if (targetPriorityEnemy()) {
+            unit.attack(enemyUnit.getEnemyUnit());
+            return;
+        }
+
         boolean naturalOwned = mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural();
         if (naturalOwned && !wasNaturalOwned) {
             mapInfo.removeClaimedSiegeTile(siegeTile);
@@ -577,7 +596,50 @@ public class SiegeTank extends CombatUnits {
         }
     }
 
-    
+    private boolean targetPriorityEnemy() {
+        priorityTargetExists = false;
+
+        if (!isSieged()) {
+            return false;
+        }
+
+        int minRange = UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().minRange();
+        int closestDistance = Integer.MAX_VALUE;
+        EnemyUnits closestPriority = null;
+
+        for (EnemyUnits enemy : enemyUnits) {
+            if (!priorityTargets.contains(enemy.getEnemyType())) {
+                continue;
+            }
+
+            if (enemy.getEnemyPosition() == null || !enemy.getEnemyUnit().isVisible()) {
+                continue;
+            }
+
+            if ((enemy.getEnemyUnit().isCloaked() || enemy.getEnemyUnit().isBurrowed()) && !enemy.getEnemyUnit().isDetected()) {
+                continue;
+            }
+
+            int distance = unit.getDistance(enemy.getEnemyPosition());
+            if (distance - enemy.getEnemyType().width() / 2 < minRange || distance > SIEGE_RANGE) {
+                continue;
+            }
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestPriority = enemy;
+            }
+        }
+
+        if (closestPriority == null) {
+            return false;
+        }
+
+        enemyUnit = closestPriority;
+        priorityTargetExists = true;
+        return true;
+    }
+
     private EnemyUnits findValidTarget() {
         EnemyUnits tank = null, lurker = null, staticDefense = null, other = null, building = null, worker = null;
         double tankDist = Double.MAX_VALUE, lurkerDist = Double.MAX_VALUE, staticDist = Double.MAX_VALUE;

@@ -61,6 +61,7 @@ public class MapInfo {
     private HashSet<ChokePoint> chokePoints = new HashSet<>();
     private HashSet<TilePosition> mainCliffEdge = new HashSet<>();
     private HashSet<TilePosition> naturalChokeEdge = new HashSet<>();
+    private HashSet<TilePosition> naturalOverlookTiles = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
     private HashSet<TilePosition> outsideNaturalSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> claimedSiegeTiles = new HashSet<>();
@@ -652,7 +653,11 @@ public class MapInfo {
         return false;
     }
 
-    public void setNaturalChokeEdgeFromBunker(TilePosition bunkerTile) {
+    public void setNaturalChokeEdgeFromBunker(TilePosition bunkerTile, HashSet<TilePosition> reservedTiles) {
+        if (bunkerTile == null || reservedTiles == null) {
+            return;
+        }
+
         Position bunkerCenter = new Position(bunkerTile.toPosition().getX() + 48, bunkerTile.toPosition().getY() + 32);
         naturalBunkerCenter = bunkerCenter;
         naturalChokeEdge.clear();
@@ -697,6 +702,47 @@ public class MapInfo {
         combinedTankTiles.clear();
         combinedTankTiles.addAll(mainCliffEdge);
         combinedTankTiles.addAll(naturalChokeEdge);
+
+        naturalOverlookTiles.clear();
+
+        if (mainChokePoint == null) {
+            return;
+        }
+
+        for (TilePosition tile : baseTiles) {
+            Position tilePosition = tile.toPosition();
+
+            if (mainChokePoint.getCenter().getApproxDistance(tilePosition) < 160) {
+                continue;
+            }
+
+            if (bunkerCenter.getApproxDistance(tilePosition) > UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().maxRange() + 96) {
+                continue;
+            }
+
+            if (reservedTiles.contains(tile)) {
+                continue;
+            }
+
+            if (!pathFinding.getTilePositionValidator().isWalkable(tile)) {
+                continue;
+            }
+
+            boolean nearEdge = false;
+            for (int dx = -2; dx <= 2 && !nearEdge; dx++) {
+                for (int dy = -2; dy <= 2 && !nearEdge; dy++) {
+                    if (!baseTiles.contains(new TilePosition(tile.getX() + dx, tile.getY() + dy))) {
+                        nearEdge = true;
+                    }
+                }
+            }
+
+            if (nearEdge) {
+                naturalOverlookTiles.add(tile);
+            }
+        }
+
+        combinedTankTiles.addAll(naturalOverlookTiles);
     }
 
     public boolean isInDefenseZone(Position position) {

@@ -15,12 +15,12 @@ import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import information.MapInfo;
 import map.bwemwrappers.Area;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.ChokePoint;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
-import information.MapInfo;
 import util.PositionInterpolator;
 
 public class BuildTiles {
@@ -100,6 +100,13 @@ public class BuildTiles {
         generateMainBaseCCTile();
         generateLargeTiles(frontBaseTiles);
         generateMediumTiles(backBaseTiles);
+        HashSet<TilePosition> reservedFootprints = new HashSet<>();
+        addFootprintTiles(largeBuildTiles, BARRACKS_WIDTH, BARRACKS_HEIGHT, reservedFootprints);
+        addFootprintTiles(largeBuildTilesNoGap, BARRACKS_WIDTH, BARRACKS_HEIGHT, reservedFootprints);
+        addFootprintTiles(mediumBuildTiles, DEPOT_WIDTH, DEPOT_HEIGHT, reservedFootprints);
+        if (naturalChokeBunker != null) {
+            mapInfo.setNaturalChokeEdgeFromBunker(naturalChokeBunker, reservedFootprints);
+        }
         generateTurretTiles();
     }
 
@@ -1034,7 +1041,6 @@ public class BuildTiles {
             if (naturalBunker != null) {
                 naturalChokeBunker = naturalBunker;
                 computeNaturalBunkerWall(naturalBunker, chokeTile);
-                mapInfo.setNaturalChokeEdgeFromBunker(naturalChokeBunker);
             }
         }
     }
@@ -1708,6 +1714,10 @@ public class BuildTiles {
 
     //Force choke turrets to be as close to the bunker as possible
     private TilePosition generateChokeTurretTile(TilePosition bunkerTile, Base base) {
+        if (bunkerTile == null || base == null) {
+            return null;
+        }
+
         int bx = bunkerTile.getX();
         int by = bunkerTile.getY();
 
@@ -2329,6 +2339,16 @@ public class BuildTiles {
                 continue;
             }
             backBaseTiles.add(tilePosition);
+        }
+    }
+
+    private void addFootprintTiles(Set<TilePosition> anchors, int width, int height, HashSet<TilePosition> target) {
+        for (TilePosition anchor : anchors) {
+            for (int x = -1; x <= width; x++) {
+                for (int y = -1; y <= height; y++) {
+                    target.add(new TilePosition(anchor.getX() + x, anchor.getY() + y));
+                }
+            }
         }
     }
 
