@@ -11,6 +11,7 @@ import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
+import information.enemy.enemyopeners.EnemyStrategyName;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
@@ -46,6 +47,9 @@ public class Scouting {
     private boolean scoutKilled = false;
     private boolean openerRescoutSent = false;
     private int openerSeenFrame = 0;
+    private Workers locationCheckWorker = null;
+    private Position locationCheckTarget = null;
+    private boolean naturalCheckSent = false;
 
     private EnemyUnits headingUnit = null;
     private Position headingStart = null;
@@ -745,6 +749,105 @@ public class Scouting {
         openerRescoutSent = true;
     }
 
+    private void forgeInMainNaturalCheck() {
+        if (naturalCheckSent) {
+            return;
+        }
+
+        if (time.greaterThan(new Time(2, 30))) {
+            return;
+        }
+
+        if (gameState.getEnemyOpener() != null && gameState.getEnemyOpener().getStrategyName() == EnemyStrategyName.FFE) {
+            return;
+        }
+
+        if (mapInfo.getNaturalChoke() == null) {
+            return;
+        }
+
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType() != UnitType.Protoss_Forge || enemyUnit.getEnemyTilePosition() == null) {
+                continue;
+            }
+
+            for (Base startingBase : mapInfo.getStartingBases()) {
+                if (startingBase == mapInfo.getStartingBase()) {
+                    continue;
+                }
+
+                HashSet<TilePosition> startingBaseTiles = mapInfo.getBaseTilesAllBases().get(startingBase);
+                if (startingBaseTiles == null || !startingBaseTiles.contains(enemyUnit.getEnemyTilePosition())) {
+                    continue;
+                }
+
+                naturalCheckSent = sendLocationCheck(mapInfo.getNaturalChoke().getCenter());
+                return;
+            }
+        }
+    }
+
+    private boolean sendLocationCheck(Position target) {
+        if (locationCheckWorker != null) {
+            return false;
+        }
+
+        for (Workers scv : gameState.getWorkers()) {
+            if (scv.getWorkerStatus() != WorkerStatus.MINERALS) {
+                continue;
+            }
+
+            if (!mapInfo.getBaseTiles().contains(scv.getUnit().getTilePosition())) {
+                continue;
+            }
+
+            locationCheckWorker = scv;
+            locationCheckTarget = target;
+            scv.setWorkerStatus(WorkerStatus.SCOUTING);
+            scv.getUnit().move(target);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void locationCheck() {
+        if (locationCheckWorker == null) {
+            return;
+        }
+
+        Unit checkUnit = locationCheckWorker.getUnit();
+
+        if (checkUnit.getDistance(locationCheckTarget) > 96) {
+            if (checkUnit.isIdle()) {
+                checkUnit.move(locationCheckTarget);
+            }
+            return;
+        }
+
+        boolean buildingFound = false;
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (!enemyUnit.getEnemyType().isBuilding()) {
+                continue;
+            }
+
+            if (mapInfo.isInDefenseZone(enemyUnit.getEnemyPosition())) {
+                buildingFound = true;
+                break;
+            }
+        }
+
+        if (buildingFound) {
+            locationCheckWorker.setWorkerStatus(WorkerStatus.DEFEND);
+        }
+        else {
+            locationCheckWorker.setWorkerStatus(WorkerStatus.MINERALS);
+        }
+
+        locationCheckWorker = null;
+        locationCheckTarget = null;
+    }
+
     public void onFrame() {
         time = new Time(game.getFrameCount());
 
@@ -781,6 +884,8 @@ public class Scouting {
         }
 
         enemyOpenerRescout();
+        forgeInMainNaturalCheck();
+        locationCheck();
 
         if (gameState.getStartingEnemyBase() != null) {
             locateEnemyBase();
@@ -830,6 +935,11 @@ public class Scouting {
         if (secondScout != null && unit.getID() == secondScout.getUnit().getID()) {
             secondScout = null;
             scoutKilled = true;
+        }
+
+        if (locationCheckWorker != null && unit.getID() == locationCheckWorker.getUnit().getID()) {
+            locationCheckWorker = null;
+            locationCheckTarget = null;
         }
     }
 
