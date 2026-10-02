@@ -22,6 +22,7 @@ public class PlannedItem {
     //priority 0-5, 0 being the highest
     private int priority;
     private int resetCounter = 0;
+    private Position lastBuilderPosition = null;
 
     public PlannedItem(UnitType unitType, Integer supply, PlannedItemType plannedItemType, int priority) {
         this.unitType = unitType;
@@ -225,6 +226,14 @@ public class PlannedItem {
 
     public void setResetCounter(int resetCounter) {
         this.resetCounter = resetCounter;
+    }
+
+    public Position getLastBuilderPosition() {
+        return lastBuilderPosition;
+    }
+
+    public void setLastBuilderPosition(Position lastBuilderPosition) {
+        this.lastBuilderPosition = lastBuilderPosition;
     }
 
     public boolean needsAddon() {

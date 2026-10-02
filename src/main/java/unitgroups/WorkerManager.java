@@ -303,7 +303,7 @@ public class WorkerManager {
                     break;
                 case STUCK:
                     if (frameCount % 24 != 0) {
-                        return;
+                        break;
                     }
 
                     if (worker.getUnit().isGatheringMinerals()) {

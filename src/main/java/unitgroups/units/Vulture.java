@@ -20,9 +20,9 @@ import bwapi.WeaponType;
 import information.MapInfo;
 import information.enemy.EnemyInformation;
 import information.enemy.EnemyUnits;
+import macro.buildorders.BuildOrderName;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.ChokePoint;
-import map.bwemwrappers.Mineral;
 import util.Time;
 
 public class Vulture extends CombatUnits {
@@ -649,40 +649,10 @@ public class Vulture extends CombatUnits {
             return;
         }
 
-        ArrayList<Base> enemyExpansions = mapInfo.scoredBestEnemyExpansion(enemyUnits);
         Base enemyNatural = mapInfo.getEnemyNatural();
         Base enemyMain = mapInfo.getEnemyMain();
 
-        List<Base> enemyOwnedBeyondNatural = new ArrayList<>();
-        for (Base base : mapInfo.getMapBases()) {
-            if (base == enemyNatural || base == enemyMain) {
-                continue;
-            }
-            if (!enemyDepotNearBase(base)) {
-                continue;
-            }
-            enemyOwnedBeyondNatural.add(base);
-        }
-
-        Position vulturePos = unit.getPosition();
-
-        List<Base> targets = new ArrayList<>();
-        if (!enemyOwnedBeyondNatural.isEmpty()) {
-            enemyOwnedBeyondNatural.sort((a, b) -> Double.compare(
-                    vulturePos.getDistance(a.getCenter()),
-                    vulturePos.getDistance(b.getCenter())));
-            targets.addAll(enemyOwnedBeyondNatural);
-        }
-
-        List<Base> scoredSorted = new ArrayList<>(enemyExpansions);
-        scoredSorted.sort((a, b) -> Double.compare(
-                vulturePos.getDistance(a.getCenter()),
-                vulturePos.getDistance(b.getCenter())));
-        for (Base scored : scoredSorted) {
-            if (!targets.contains(scored)) {
-                targets.add(scored);
-            }
-        }
+        List<Base> targets = mapInfo.runbyTargets(unit.getPosition(), enemyUnits);
 
         for (Base expansion : targets) {
             if (visitedExpansions.contains(expansion)) {
@@ -691,14 +661,19 @@ public class Vulture extends CombatUnits {
 
             targetedEnemyExpansion = expansion;
 
-            ArrayList<Base> ordered = mapInfo.getOrderedExpansions();
-            if (!ordered.isEmpty() && unit.getDistance(ordered.get(0).getCenter()) < 160) {
+            BuildOrderName buildOrderName = null;
+            if (enemyInformation.getStartingOpener() != null) {
+                buildOrderName = enemyInformation.getStartingOpener().getBuildOrderName();
+            }
+
+            Base stagingBase = mapInfo.runbyStagingBase(buildOrderName, enemyUnits);
+            if (stagingBase != null && unit.getDistance(stagingBase.getCenter()) < 160) {
                 approachingStagingBase = false;
                 runbyStagingComplete = true;
             }
-            else if (!runbyStagingComplete && !ordered.isEmpty()
-                    && unit.getDistance(ordered.get(0).getCenter()) < unit.getDistance(expansion.getCenter())) {
-                Position stagingPos = ordered.get(0).getCenter();
+            else if (!runbyStagingComplete && stagingBase != null
+                    && unit.getDistance(stagingBase.getCenter()) < unit.getDistance(expansion.getCenter())) {
+                Position stagingPos = stagingBase.getCenter();
                 approachingStagingBase = true;
                 if (unit.getDistance(stagingPos) > 500 && dodgeToward(stagingPos)) {
                     return;
@@ -707,10 +682,10 @@ public class Vulture extends CombatUnits {
                 return;
             }
 
-            EnemyUnits depot = findDepotNearBase(expansion);
+            EnemyUnits depot = mapInfo.findEnemyDepotNearBase(expansion, enemyUnits);
             if (depot != null) {
                 runbyStagingComplete = true;
-                Position attackPos = runbyAttackPos(expansion, depot);
+                Position attackPos = mapInfo.runbyAttackPos(expansion, depot);
                 if (unit.getDistance(attackPos) >= 150) {
                     if (unit.getDistance(attackPos) > 500 && dodgeToward(attackPos)) {
                         return;
@@ -740,9 +715,9 @@ public class Vulture extends CombatUnits {
             targetedEnemyExpansion = enemyNatural;
             runbyStagingComplete = true;
 
-            EnemyUnits naturalDepot = findDepotNearBase(enemyNatural);
+            EnemyUnits naturalDepot = mapInfo.findEnemyDepotNearBase(enemyNatural, enemyUnits);
             if (naturalDepot != null) {
-                Position attackPos = runbyAttackPos(enemyNatural, naturalDepot);
+                Position attackPos = mapInfo.runbyAttackPos(enemyNatural, naturalDepot);
                 if (unit.getDistance(attackPos) >= 150) {
                     unit.move(attackPos);
                     return;
@@ -761,9 +736,9 @@ public class Vulture extends CombatUnits {
             targetedEnemyExpansion = enemyMain;
             runbyStagingComplete = true;
 
-            EnemyUnits mainDepot = findDepotNearBase(enemyMain);
+            EnemyUnits mainDepot = mapInfo.findEnemyDepotNearBase(enemyMain, enemyUnits);
             if (mainDepot != null) {
-                Position attackPos = runbyAttackPos(enemyMain, mainDepot);
+                Position attackPos = mapInfo.runbyAttackPos(enemyMain, mainDepot);
                 if (unit.getDistance(attackPos) >= 150) {
                     unit.move(attackPos);
                     return;
@@ -1377,7 +1352,7 @@ public class Vulture extends CombatUnits {
             }
         }
 
-        if (miningExpansion && targetedEnemyExpansion != null && enemyDepotNearBase(targetedEnemyExpansion)) {
+        if (miningExpansion && targetedEnemyExpansion != null && mapInfo.findEnemyDepotNearBase(targetedEnemyExpansion, enemyUnits) != null) {
             miningExpansion = false;
             layingMines = false;
             approachingStagingBase = false;
@@ -1432,7 +1407,7 @@ public class Vulture extends CombatUnits {
                 }
             }
 
-            if (enemyDepotNearBase(expansion)) {
+            if (mapInfo.findEnemyDepotNearBase(expansion, enemyUnits) != null) {
                 continue;
             }
 
@@ -1474,55 +1449,6 @@ public class Vulture extends CombatUnits {
             return;
         }
         unit.attack(base.getCenter());
-    }
-
-    private boolean enemyDepotNearBase(Base base) {
-        return findDepotNearBase(base) != null;
-    }
-
-    private EnemyUnits findDepotNearBase(Base base) {
-        for (EnemyUnits eu : enemyUnits) {
-            if (!eu.getEnemyType().isResourceDepot()) {
-                continue;
-            }
-            if (eu.getEnemyPosition() == null) {
-                continue;
-            }
-            if (eu.getEnemyPosition().getDistance(base.getCenter()) < 256) {
-                return eu;
-            }
-        }
-        return null;
-    }
-
-    private Position runbyAttackPos(Base base, EnemyUnits depot) {
-        Position depotPos = depot.getEnemyPosition();
-        if (depotPos == null) {
-            depotPos = base.getCenter();
-        }
-
-        List<Mineral> patches = mapInfo.getBasePatches(base);
-        int sumX = 0;
-        int sumY = 0;
-        int count = 0;
-        for (Mineral patch : patches) {
-            Position p = patch.getPosition();
-            if (p == null) {
-                continue;
-            }
-            sumX += p.getX();
-            sumY += p.getY();
-            count++;
-        }
-
-        if (count == 0) {
-            return depotPos;
-        }
-
-        Position mineralCentroid = new Position(sumX / count, sumY / count);
-        return new Position(
-                (depotPos.getX() + mineralCentroid.getX()) / 2,
-                (depotPos.getY() + mineralCentroid.getY()) / 2);
     }
 
     public boolean isLobotomyOverride() {

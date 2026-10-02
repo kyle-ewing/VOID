@@ -198,6 +198,9 @@ public class CombatUnits {
     public void runby() {
     }
 
+    public void resetRunby() {
+    }
+
     public boolean enemyInWeaponRange(int buffer) {
         if (enemyUnit == null || enemyUnit.getEnemyPosition() == null) {
             return false;

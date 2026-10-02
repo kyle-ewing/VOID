@@ -21,8 +21,7 @@ public class SquadManager {
     private ArrayList<ChokePoint> narrowChokes = new ArrayList<>();
     private HashMap<UnitType, Integer> compositionLimits = new HashMap<>();
     private float enemyArmySupply = 0;
-    private int runbySquadCooldown = 0;
-    private boolean runbySquadActive = false;
+    private HashMap<UnitType, Integer> runbyStartFrames = new HashMap<>();
 
     public SquadManager(Game game, GameState gamestate, EnemyInformation enemyInformation) {
         this.game = game;
@@ -196,7 +195,7 @@ public class SquadManager {
         return null;
     }
 
-    private void createRunbySquad() {
+    private void createRunbySquad(UnitType type, int size) {
         Squad runbySquad = new Squad(game, narrowChokes, true);
         int addedUnits = 0;
         for (Squad squad : squads) {
@@ -204,14 +203,14 @@ public class SquadManager {
                 continue;
             }
 
-            if (addedUnits >= 4) {
+            if (addedUnits >= size) {
                 break;
             }
             for (CombatUnits unit : new ArrayList<>(squad.getSquadUnits())) {
-                if (addedUnits >= 4) {
+                if (addedUnits >= size) {
                     break;
                 }
-                if (unit.getUnitType() == UnitType.Terran_Vulture) {
+                if (unit.getUnitType() == type) {
                     transferUnit(unit, squad, runbySquad);
                     addedUnits++;
                 }
@@ -220,6 +219,54 @@ public class SquadManager {
 
         if (addedUnits > 0) {
             squads.add(runbySquad);
+        }
+    }
+
+    private void triggerRunbySquads() {
+        if (new Time(game.getFrameCount()).greaterThan(new Time(10,30))
+                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 8
+                && squads.stream().noneMatch(s -> s.isRunbySquad() && s.getCountOf(UnitType.Terran_Vulture) > 0)
+                && enemyInformation.getEnemyUnits().stream().filter(eu -> eu.getEnemyType().isResourceDepot()).count() >= 2
+                && runbyCooldownElapsed(UnitType.Terran_Vulture)) {
+            createRunbySquad(UnitType.Terran_Vulture, 4);
+            runbyStartFrames.put(UnitType.Terran_Vulture, game.getFrameCount());
+        }
+
+        if (gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Goliath, 0) >= 9
+                && squads.stream().noneMatch(s -> s.isRunbySquad() && s.getCountOf(UnitType.Terran_Goliath) > 0)
+                && runbyCooldownElapsed(UnitType.Terran_Goliath)) {
+            createRunbySquad(UnitType.Terran_Goliath, 5);
+            runbyStartFrames.put(UnitType.Terran_Goliath, game.getFrameCount());
+        }
+    }
+
+    private boolean runbyCooldownElapsed(UnitType type) {
+        if (!runbyStartFrames.containsKey(type)) {
+            return true;
+        }
+
+        return new Time(game.getFrameCount() - runbyStartFrames.get(type)).greaterThan(new Time(2,0));
+    }
+
+    private void releaseFinishedRunbySquads() {
+        for (Squad squad : new ArrayList<>(squads)) {
+            if (!squad.isRunbySquad()) {
+                continue;
+            }
+
+            if (squad.getSquadUnits().stream().allMatch(CombatUnits::isInRunbySquad)) {
+                continue;
+            }
+
+            squads.remove(squad);
+
+            for (CombatUnits unit : new ArrayList<>(squad.getSquadUnits())) {
+                squad.removeFromSquad(unit);
+                unit.setInRunbySquad(false);
+                unit.resetRunby();
+                unit.setUnitStatus(UnitStatus.RALLY);
+                addUnitToSquad(unit);
+            }
         }
     }
 
@@ -235,6 +282,7 @@ public class SquadManager {
     public void onFrame() {
         enemyArmySupply = enemyInformation.getEnemyArmySupply();
 
+        releaseFinishedRunbySquads();
         manageVesselSquads();
 
         for (Squad squad : squads) {
@@ -248,24 +296,7 @@ public class SquadManager {
             squad.onFrame();
         }
 
-        if (new Time(game.getFrameCount()).greaterThan(new Time(10,30))
-                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 8
-                && squads.stream().filter(s -> s.isRunbySquad()).count() == 0
-                && enemyInformation.getEnemyUnits().stream().filter(eu -> eu.getEnemyType().isResourceDepot()).count() >= 2
-                && !runbySquadActive) {
-            createRunbySquad();
-            runbySquadActive = true;
-        }
-
-        if (runbySquadActive) {
-            runbySquadCooldown++;
-
-            if (new Time(runbySquadCooldown).greaterThan(new Time(2,0))) {
-                runbySquadActive = false;
-                runbySquadCooldown = 0;
-            }
-        }
-
+        triggerRunbySquads();
         updateRegroupPositions();
     }
 
