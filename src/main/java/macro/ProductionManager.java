@@ -431,12 +431,43 @@ public class ProductionManager {
                             Workers replacement = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), gameState.getWorkers(), mapInfo.getPathFinding(), preferAttacking);
                             if (replacement != null) {
                                 pi.setAssignedBuilder(replacement);
+                                pi.setResetCounter(0);
                                 replacement.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
                             }
                         }
 
+                        if (pi.getAssignedBuilder() == null || pi.getBuildPosition() == null) {
+                            continue;
+                        }
+
                         for (Unit building : player.getUnits()) {
                             if (!building.isCompleted() && building.getType() == pi.getUnitType() && !building.isBeingConstructed()) {
+                                Position builderPosition = pi.getAssignedBuilder().getUnit().getPosition();
+
+                                if (pi.getLastBuilderPosition() != null && builderPosition.equals(pi.getLastBuilderPosition())) {
+                                    pi.setResetCounter(pi.getResetCounter() + 1);
+                                }
+                                else {
+                                    pi.setResetCounter(0);
+                                }
+
+                                pi.setLastBuilderPosition(builderPosition);
+
+                                if (pi.getResetCounter() > 600) {
+                                    Workers staleBuilder = pi.getAssignedBuilder();
+                                    HashSet<Workers> candidates = new HashSet<>(gameState.getWorkers());
+                                    candidates.remove(staleBuilder);
+                                    boolean preferAttacking = !mapInfo.getBaseTiles().contains(pi.getBuildPosition()) && !mapInfo.getNaturalTiles().contains(pi.getBuildPosition());
+                                    Workers replacement = ClosestUnit.findClosestWorker(pi.getBuildPosition().toPosition(), candidates, mapInfo.getPathFinding(), preferAttacking);
+                                    pi.setResetCounter(0);
+
+                                    if (replacement != null) {
+                                        staleBuilder.setWorkerStatus(WorkerStatus.STUCK);
+                                        pi.setAssignedBuilder(replacement);
+                                        replacement.setWorkerStatus(WorkerStatus.MOVING_TO_BUILD);
+                                    }
+                                }
+
                                 pi.getAssignedBuilder().getUnit().rightClick(building);
                                 break;
                             }

@@ -292,6 +292,7 @@ public class Squad {
     }
 
     public void addToSquad(CombatUnits unit) {
+        unit.setInRunbySquad(isRunbySquad);
         squadUnits.add(unit);
         squadComposition.put(unit.getUnitID(), unit.getUnitType());
     }

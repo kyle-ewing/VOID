@@ -403,9 +403,10 @@ public class SiegeTank extends CombatUnits {
                 }
             }
 
-            if (unit.getDistance(siegeTile.toPosition()) > 64) {
+            Position siegeTileCenter = new Position(siegeTile.getX() * 32 + 16, siegeTile.getY() * 32 + 16);
+            if (unit.getPosition().getApproxDistance(siegeTileCenter) > 16) {
                 if (game.getFrameCount() % 24 == 0) {
-                    unit.move(siegeTile.toPosition());
+                    unit.move(siegeTileCenter);
                 }
             }
             else {

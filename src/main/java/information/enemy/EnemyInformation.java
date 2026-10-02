@@ -13,6 +13,7 @@ import information.MapInfo;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildType;
 import macro.buildpivots.BuildPivot;
 import macro.buildpivots.BuildPivotName;
@@ -656,6 +657,10 @@ public class EnemyInformation {
 
     public MapInfo getBaseInfo() {
         return mapInfo;
+    }
+
+    public BuildOrder getStartingOpener() {
+        return gameState.getStartingOpener();
     }
 
     public HashSet<EnemyTechUnits> getEnemyTechUnits() {

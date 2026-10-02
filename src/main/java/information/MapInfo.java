@@ -23,7 +23,6 @@ import map.bwemwrappers.ChokePoint;
 import map.bwemwrappers.GameMap;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
-import util.PositionInterpolator;
 
 public class MapInfo {
     private static final int FLYER_BASE_TILE_BUFFER = 2;
@@ -46,6 +45,7 @@ public class MapInfo {
     private TilePosition naturalBunkerDepotPosition;
     private Position naturalBunkerCenter;
     private ChokePoint outsideNaturalChoke;
+    private Position pastNaturalRallyPoint;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
@@ -131,6 +131,7 @@ public class MapInfo {
         setCcExclusionTiles();
         setAllBaseTiles();
         setAreaTiles();
+        setPastNaturalRallyPoint();
         setOutsideNaturalSiegeTiles();
         setBlockingMinerals();
 
@@ -498,87 +499,81 @@ public class MapInfo {
         }
     }
 
+    private void setPastNaturalRallyPoint() {
+        if (naturalChokePoint == null || outsideNaturalChoke == null) {
+            return;
+        }
+
+        Position pathStart = pathFinding.findNearestWalkable(naturalChokePoint.getCenter());
+        Position pathEnd = pathFinding.findNearestWalkable(outsideNaturalChoke.getCenter());
+
+        if (pathStart == null || pathEnd == null) {
+            return;
+        }
+
+        List<Position> outsidePath = pathFinding.findPath(pathStart, pathEnd);
+
+        if (outsidePath == null || outsidePath.isEmpty()) {
+            return;
+        }
+
+        int index = outsidePath.size() - 1;
+        int backedOff = 0;
+
+        while (index > 0 && backedOff < 128) {
+            backedOff += outsidePath.get(index).getApproxDistance(outsidePath.get(index - 1));
+            index--;
+        }
+
+        pastNaturalRallyPoint = outsidePath.get(index);
+    }
+
     private void setOutsideNaturalSiegeTiles() {
-        Area outsideArea = getOutsideNaturalArea();
-
-        if (outsideArea == null) {
+        if (pastNaturalRallyPoint == null || naturalChokePoint == null) {
             return;
         }
 
-        HashSet<TilePosition> outsideAreaTiles = areaTiles.get(outsideArea);
+        Area rallyArea = gameMap.getNearestArea(pastNaturalRallyPoint.toTilePosition());
 
-        if (outsideAreaTiles == null) {
+        if (rallyArea == null) {
             return;
         }
 
-        int minDistance = 96;
-        int maxDistance = 275;
+        HashSet<TilePosition> rallyAreaTiles = areaTiles.get(rallyArea);
 
-        if (outsideArea.getTiles().size() > 500) {
-            Base outsideBase = getOutsideNaturalBase();
-            if (outsideBase == null) {
-                return;
+        if (rallyAreaTiles == null) {
+            return;
+        }
+
+        for (TilePosition tile : rallyAreaTiles) {
+            Position tilePosition = tile.toPosition();
+            int distanceToRally = pastNaturalRallyPoint.getApproxDistance(tilePosition);
+
+            if (distanceToRally < 96 || distanceToRally > 275) {
+                continue;
             }
 
-            TilePosition chokeTile = naturalChokePoint.getCenter().toTilePosition();
-            TilePosition baseTile = outsideBase.getLocation();
+            if (naturalChokePoint.getCenter().getApproxDistance(tilePosition) < 250) {
+                continue;
+            }
 
-            for (int i = 0; i <= 250; i++) {
-                double percent = i / 250.0;
-                TilePosition lineTile = PositionInterpolator.interpolate(chokeTile, baseTile, percent);
+            boolean nearBase = false;
+            for (Base base : rallyArea.getBases()) {
+                if (base == null || base.getCenter() == null) {
+                    continue;
+                }
 
-                for (int xOffset = -2; xOffset <= 2; xOffset++) {
-                    for (int yOffset = -2; yOffset <= 2; yOffset++) {
-                        TilePosition candidateTile = new TilePosition(lineTile.getX() + xOffset, lineTile.getY() + yOffset);
-
-                        if (!outsideAreaTiles.contains(candidateTile)) {
-                            continue;
-                        }
-
-                        Position candidatePosition = candidateTile.toPosition();
-
-                        if (naturalChokePoint.getCenter().getApproxDistance(candidatePosition) < 250) {
-                            continue;
-                        }
-
-                        if (outsideBase.getCenter().getApproxDistance(candidatePosition) < 150) {
-                            continue;
-                        }
-
-                        if (pathFinding.getTilePositionValidator().isWalkable(candidateTile)) {
-                            outsideNaturalSiegeTiles.add(candidateTile);
-                        }
-                    }
+                if (base.getCenter().getApproxDistance(tilePosition) < 150) {
+                    nearBase = true;
                 }
             }
 
-            return;
-        }
-
-        for (ChokePoint choke : outsideArea.getChokes()) {
-            if (choke == naturalChokePoint) {
+            if (nearBase) {
                 continue;
             }
 
-            if (choke.getFirstArea() == null || choke.getSecondArea() == null) {
-                continue;
-            }
-
-            Area farArea = choke.getOtherArea(outsideArea);
-            if (farArea != null && !farArea.getBases().isEmpty()) {
-                continue;
-            }
-
-            Position chokeCenter = choke.getCenter();
-
-            for (TilePosition tile : outsideAreaTiles) {
-                int distanceToChoke = chokeCenter.getApproxDistance(tile.toPosition());
-
-                if (distanceToChoke >= minDistance && distanceToChoke <= maxDistance) {
-                    if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
-                        outsideNaturalSiegeTiles.add(tile);
-                    }
-                }
+            if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
+                outsideNaturalSiegeTiles.add(tile);
             }
         }
     }
@@ -618,36 +613,20 @@ public class MapInfo {
             return false;
         }
 
-        Area startingArea = startingBase.getArea();
-        Area naturalArea = naturalBase.getArea();
+        if (pastNaturalRallyPoint != null) {
+            HashSet<TilePosition> outsideAreaTiles = areaTiles.get(gameMap.getNearestArea(pastNaturalRallyPoint.toTilePosition()));
+
+            if (outsideAreaTiles != null && outsideAreaTiles.size() > 1000) {
+                return false;
+            }
+        }
 
         for (Base owned : ownedBases) {
-            Area ownedArea = owned.getArea();
-            if (ownedArea == null) {
-                continue;
-            }
-            if (ownedArea == startingArea || ownedArea == naturalArea) {
+            if (owned == null || owned == startingBase || owned == naturalBase) {
                 continue;
             }
 
-            List<Area> path = areaBfsPath(naturalArea, ownedArea);
-            if (path == null || path.size() <= 1) {
-                continue;
-            }
-
-            boolean qualifies = true;
-            for (int i = 1; i <= path.size() - 2; i++) {
-                Area intermediate = path.get(i);
-                HashSet<TilePosition> tiles = areaTiles.get(intermediate);
-                if (tiles != null && tiles.size() > 600) {
-                    qualifies = false;
-                    break;
-                }
-            }
-
-            if (qualifies) {
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -705,14 +684,27 @@ public class MapInfo {
 
         naturalOverlookTiles.clear();
 
-        if (mainChokePoint == null) {
+        if (mainChokePoint == null || naturalChokePoint == null) {
             return;
         }
+
+        Position mainChokeCenter = mainChokePoint.getCenter();
+        int rampX = naturalBase.getCenter().getX() - mainChokeCenter.getX();
+        int rampY = naturalBase.getCenter().getY() - mainChokeCenter.getY();
+        long chokeSide = (long) rampX * (naturalChokePoint.getCenter().getY() - mainChokeCenter.getY())
+                - (long) rampY * (naturalChokePoint.getCenter().getX() - mainChokeCenter.getX());
 
         for (TilePosition tile : baseTiles) {
             Position tilePosition = tile.toPosition();
 
-            if (mainChokePoint.getCenter().getApproxDistance(tilePosition) < 160) {
+            if (mainChokeCenter.getApproxDistance(tilePosition) < 160) {
+                continue;
+            }
+
+            long tileSide = (long) rampX * (tilePosition.getY() - mainChokeCenter.getY())
+                    - (long) rampY * (tilePosition.getX() - mainChokeCenter.getX());
+
+            if (tileSide * chokeSide <= 0) {
                 continue;
             }
 
@@ -1604,7 +1596,9 @@ public class MapInfo {
 
             boolean enemyOwned = false;
             for (EnemyUnits enemyUnit : knownEnemyUnits) {
-                if (enemyUnit.getEnemyType().isResourceDepot() && enemyUnit.getEnemyPosition().getDistance(base.getLocation().toPosition()) < 200) {
+                if (enemyUnit.getEnemyType().isResourceDepot()
+                        && enemyUnit.getEnemyPosition() != null
+                        && enemyUnit.getEnemyPosition().getDistance(base.getLocation().toPosition()) < 200) {
                     enemyOwned = true;
                     break;
                 }
@@ -1640,6 +1634,18 @@ public class MapInfo {
         }
 
         return bestBase;
+    }
+
+    public Base runbyStagingBase(BuildOrderName buildOrder, HashSet<EnemyUnits> knownEnemyUnits) {
+        for (Base owned : ownedBases) {
+            if (owned == startingBase || owned == naturalBase) {
+                continue;
+            }
+
+            return owned;
+        }
+
+        return scoredBestExpansion(buildOrder, knownEnemyUnits);
     }
 
     public ArrayList<Base> scoredBestEnemyExpansion(HashSet<EnemyUnits> knownEnemyUnits) {
@@ -1714,6 +1720,89 @@ public class MapInfo {
         });
 
         return new ArrayList<>(candidates.subList(0, Math.min(3, candidates.size())));
+    }
+
+    public ArrayList<Base> runbyTargets(Position from, HashSet<EnemyUnits> knownEnemyUnits) {
+        ArrayList<Base> targets = new ArrayList<>();
+        if (from == null) {
+            return targets;
+        }
+
+        for (Base base : mapBases) {
+            if (base == enemyNatural || base == enemyMain) {
+                continue;
+            }
+            if (findEnemyDepotNearBase(base, knownEnemyUnits) == null) {
+                continue;
+            }
+            targets.add(base);
+        }
+
+        targets.sort((a, b) -> Double.compare(
+                from.getDistance(a.getCenter()),
+                from.getDistance(b.getCenter())));
+
+        ArrayList<Base> scoredSorted = scoredBestEnemyExpansion(knownEnemyUnits);
+        scoredSorted.sort((a, b) -> Double.compare(
+                from.getDistance(a.getCenter()),
+                from.getDistance(b.getCenter())));
+
+        for (Base scored : scoredSorted) {
+            if (!targets.contains(scored)) {
+                targets.add(scored);
+            }
+        }
+
+        return targets;
+    }
+
+    public EnemyUnits findEnemyDepotNearBase(Base base, HashSet<EnemyUnits> knownEnemyUnits) {
+        if (base == null) {
+            return null;
+        }
+
+        for (EnemyUnits enemyUnit : knownEnemyUnits) {
+            if (!enemyUnit.getEnemyType().isResourceDepot()) {
+                continue;
+            }
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+            if (enemyUnit.getEnemyPosition().getDistance(base.getCenter()) < 256) {
+                return enemyUnit;
+            }
+        }
+        return null;
+    }
+
+    public Position runbyAttackPos(Base base, EnemyUnits depot) {
+        Position depotPos = depot.getEnemyPosition();
+        if (depotPos == null) {
+            depotPos = base.getCenter();
+        }
+
+        List<Mineral> patches = getBasePatches(base);
+        int sumX = 0;
+        int sumY = 0;
+        int count = 0;
+        for (Mineral patch : patches) {
+            Position p = patch.getPosition();
+            if (p == null) {
+                continue;
+            }
+            sumX += p.getX();
+            sumY += p.getY();
+            count++;
+        }
+
+        if (count == 0) {
+            return depotPos;
+        }
+
+        Position mineralCentroid = new Position(sumX / count, sumY / count);
+        return new Position(
+                (depotPos.getX() + mineralCentroid.getX()) / 2,
+                (depotPos.getY() + mineralCentroid.getY()) / 2);
     }
 
     public HashSet<Base> getStartingBases() {

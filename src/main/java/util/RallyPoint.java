@@ -142,14 +142,28 @@ public class RallyPoint {
             return;
         }
 
-        Base outsideBase = mapInfo.getOutsideNaturalBase();
+        Position pathStart = pathFinding.findNearestWalkable(mapInfo.getNaturalChoke().getCenter());
+        Position pathEnd = pathFinding.findNearestWalkable(mapInfo.getOutsideNaturalChoke().getCenter());
 
-        if (outsideBase != null) {
-            lateGameRallyPoint = rallyPath(mapInfo.getNaturalChoke().getCenter(), outsideBase.getCenter(), 0.7);
+        if (pathStart == null || pathEnd == null) {
             return;
         }
 
-        lateGameRallyPoint = rallyPath(mapInfo.getOutsideNaturalChoke().getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.6);
+        List<Position> outsidePath = pathFinding.findPath(pathStart, pathEnd);
+
+        if (outsidePath == null || outsidePath.isEmpty()) {
+            return;
+        }
+
+        int index = outsidePath.size() - 1;
+        int backedOff = 0;
+
+        while (index > 0 && backedOff < 128) {
+            backedOff += outsidePath.get(index).getApproxDistance(outsidePath.get(index - 1));
+            index--;
+        }
+
+        lateGameRallyPoint = outsidePath.get(index);
     }
 
     public void onFrame() {
