@@ -113,13 +113,11 @@ public class Wraith extends CombatUnits {
         Position unitPos = unit.getPosition();
         double distToEnemy = unitPos.getDistance(enemyPos);
 
-        if (!unit.isCloaked() || unit.isDetected()) {
-            Position kitePos = getKitePosition();
+        Position kitePos = getKitePosition();
 
-            if (kitePos != null) {
-                unit.move(kitePos);
-                return;
-            }
+        if (kitePos != null) {
+            unit.move(kitePos);
+            return;
         }
 
         if (target.getEnemyUnit().isDetected()) {
@@ -274,7 +272,27 @@ public class Wraith extends CombatUnits {
         double sumDx = 0;
         double sumDy = 0;
         boolean anyThreat = false;
-        boolean cloakedSafe = unit.isCloaked() && !unit.isDetected();
+        boolean detectedByEnemy = false;
+        for (EnemyUnits enemy : enemyUnits) {
+            if (!enemy.getEnemyType().isDetector()) {
+                continue;
+            }
+
+            if (enemy.getEnemyPosition() == null || enemy.getEnemyUnit() == null || !enemy.getEnemyUnit().isVisible()) {
+                continue;
+            }
+
+            int detectionRange = enemy.getEnemyType().sightRange() + 64;
+            if (enemy.getEnemyType() == UnitType.Spell_Scanner_Sweep) {
+                detectionRange = SCAN_RANGE + SCAN_BUFFER;
+            }
+
+            if (unitPos.getDistance(enemy.getEnemyPosition()) < detectionRange) {
+                detectedByEnemy = true;
+                break;
+            }
+        }
+        boolean cloakedSafe = unit.isCloaked() && !detectedByEnemy;
 
         for (EnemyUnits enemy : enemyUnits) {
             if (enemy.getEnemyType() == UnitType.Spell_Scanner_Sweep) {
@@ -389,8 +407,22 @@ public class Wraith extends CombatUnits {
     }
 
     private int getAntiAirRange(EnemyUnits enemy) {
-        if (enemy.getEnemyType().airWeapon() != WeaponType.None) {
-            return enemy.getEnemyType().airWeapon().maxRange();
+        UnitType type = enemy.getEnemyType();
+        int rangeBonus = 0;
+        if (enemyInformation.getEnemyUpgrades().hasRangeUpgrade(type)) {
+            if (type == UnitType.Terran_Goliath) {
+                rangeBonus = 96;
+            }
+            else if (type == UnitType.Protoss_Dragoon) {
+                rangeBonus = 64;
+            }
+            else {
+                rangeBonus = 32;
+            }
+        }
+
+        if (type.airWeapon() != WeaponType.None) {
+            return type.airWeapon().maxRange() + rangeBonus;
         }
 
         if (enemy.getEnemyType().groundWeapon().targetsAir()) {
