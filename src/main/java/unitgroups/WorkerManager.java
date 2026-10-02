@@ -42,6 +42,7 @@ public class WorkerManager {
     private HashSet<Workers> leashArrived = new HashSet<>();
     private HashSet<Workers> leashReleased = new HashSet<>();
     private Position leashPosition = null;
+    private HashSet<TilePosition> defendLeashTiles = null;
     private HashMap<Unit, HashSet<Workers>> refinerySaturation = new HashMap<>();
     private HashMap<Base, HashSet<Workers>> mineralSaturation = new HashMap<>();
     private HashMap<Unit, Workers> buildingRepair = new HashMap<>();
@@ -147,7 +148,13 @@ public class WorkerManager {
                 case DEFEND:
                     HashSet<EnemyUnits> defendTargets = new HashSet<>();
                     for (EnemyUnits defendEnemy : gameState.getKnownEnemyUnits()) {
-                        if (!mapInfo.isInDefenseZone(defendEnemy.getEnemyPosition())) {
+                        if (defendLeashTiles != null) {
+                            if (defendEnemy.getEnemyPosition() == null
+                                    || !defendLeashTiles.contains(defendEnemy.getEnemyPosition().toTilePosition())) {
+                                continue;
+                            }
+                        }
+                        else if (!mapInfo.isInDefenseZone(defendEnemy.getEnemyPosition())) {
                             continue;
                         }
 
@@ -156,6 +163,13 @@ public class WorkerManager {
 
                     ClosestUnit.findClosestUnit(worker, defendTargets, Integer.MAX_VALUE);
                     workerAttackClock(worker);
+
+                    if (defendLeashTiles != null && worker.getEnemyUnit() == null) {
+                        worker.setAttackClock(0);
+                        worker.setAssignedToBase(false);
+                        removeDefenseForce(worker);
+                        break;
+                    }
 
                     if (frameCount % 24 != 0) {
                         break;
@@ -906,7 +920,9 @@ public class WorkerManager {
                 }
                 break;
             case SCVRUSH:
-                if (gameState.isEnemyInBase()) {
+                defendLeashTiles = mapInfo.getBaseTiles();
+                if (gameState.getKnownEnemyUnits().stream().anyMatch(unit -> unit.getEnemyPosition() != null
+                        && mapInfo.getBaseTiles().contains(unit.getEnemyPosition().toTilePosition()))) {
                     createDefenseForce(3);
                 }
                 break;
