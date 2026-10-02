@@ -118,16 +118,6 @@ public class WorkerManager {
 
             switch (worker.getWorkerStatus()) {
                 case MINERALS:
-                    for (Unit building : buildingRepair.keySet()) {
-                        if (buildingRepair.get(building) == null) {
-                            buildingRepair.put(building, worker);
-                            worker.setRepairTarget(building);
-                            removeMineralSaturation(worker);
-                            worker.setAssignedToBase(false);
-                            worker.setWorkerStatus(WorkerStatus.REPAIRING);
-                        }
-                    }
-
                     if (worker.getUnit().isGatheringGas() && !worker.getUnit().isCarryingGas()) {
                         worker.getUnit().stop();
                     }
@@ -996,6 +986,34 @@ public class WorkerManager {
                 if (!buildingRepair.containsKey(building)) {
                     buildingRepair.put(building, null);
                 }
+
+                if (buildingRepair.get(building) != null) {
+                    continue;
+                }
+
+                Workers closestRepairer = null;
+                int closestDistance = Integer.MAX_VALUE;
+                for (Workers worker : workers) {
+                    if (worker.getUnit() == null || worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+                        continue;
+                    }
+
+                    int distance = worker.getUnit().getDistance(building);
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestRepairer = worker;
+                    }
+                }
+
+                if (closestRepairer == null) {
+                    continue;
+                }
+
+                buildingRepair.put(building, closestRepairer);
+                closestRepairer.setRepairTarget(building);
+                removeMineralSaturation(closestRepairer);
+                closestRepairer.setAssignedToBase(false);
+                closestRepairer.setWorkerStatus(WorkerStatus.REPAIRING);
             }
 
             if (building.getType().isBuilding() && building.getHitPoints() >= building.getType().maxHitPoints() && building.isCompleted()) {
