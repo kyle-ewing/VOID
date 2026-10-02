@@ -593,6 +593,10 @@ public class BuildTiles {
         for (int y = 0; y < DEPOT_HEIGHT; y++) {
             TilePosition gapTile = new TilePosition(topLeft.getX() + 2 * DEPOT_WIDTH, topLeft.getY() + y);
 
+            if (!tilePositionValidator.isWithinMap(gapTile)) {
+                continue;
+            }
+
             if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile)) {
                 return false;
             }
@@ -614,6 +618,10 @@ public class BuildTiles {
 
         for (int y = 0; y < 2 * DEPOT_HEIGHT; y++) {
             TilePosition gapTile = new TilePosition(topTile.getX() + DEPOT_WIDTH, topTile.getY() + y);
+
+            if (!tilePositionValidator.isWithinMap(gapTile)) {
+                continue;
+            }
 
             if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile)) {
                 return false;
@@ -643,6 +651,10 @@ public class BuildTiles {
 
         for (int y = 0; y < 2 * DEPOT_HEIGHT; y++) {
             TilePosition gapTile = new TilePosition(topLeft.getX() + 2 * DEPOT_WIDTH, topLeft.getY() + y);
+
+            if (!tilePositionValidator.isWithinMap(gapTile)) {
+                continue;
+            }
 
             if (intersectsExclusionZones(gapTile) || !tilePositionValidator.isWalkable(gapTile)) {
                 return false;
