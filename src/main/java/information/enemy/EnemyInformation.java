@@ -37,6 +37,7 @@ public class EnemyInformation {
     private int openerDefenseTimer = 0;
     private int openerDetectedFrame = 0;
     private float enemyArmySupply = 0;
+    private float enemySupplyLost = 0;
     private static final int OPENER_DEFENSE_TIME = 4320;
 
     public EnemyInformation(MapInfo mapInfo, Game game, GameState gameState) {
@@ -300,7 +301,7 @@ public class EnemyInformation {
                     }
                     break;
                 case TWOFACTANK:
-                    if (currentTime.greaterThan(new Time(7,0))) {
+                    if (currentTime.greaterThan(new Time(6,0))) {
                         enemyOpener.setDefendedStrategy(true);
                         return;
                     }
@@ -588,6 +589,10 @@ public class EnemyInformation {
     }
 
     public void onUnitDestroy(Unit unit) {
+        if (unit.getPlayer() == game.self() && !unit.getType().isWorker() && unit.getType().supplyRequired() > 0) {
+            enemySupplyLost = 0;
+        }
+
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyOpener != null && enemyOpener.getPriorityEnemyUnit() != null) {
                 if (enemyOpener.getPriorityEnemyUnit().getEnemyID() == unit.getID()) {
@@ -596,10 +601,15 @@ public class EnemyInformation {
             }
 
             if (enemyUnit.getEnemyID() == unit.getID()) {
+                if (!enemyUnit.getEnemyType().isWorker()) {
+                    enemySupplyLost += enemyUnit.getEnemyType().supplyRequired() / 2.0f;
+                }
                 enemyUnits.remove(enemyUnit);
                 break;
             }
         }
+
+        gameState.setEnemySupplyLost(enemySupplyLost);
 
         for (EnemyUnits threat : validThreats) {
             if (threat.getEnemyID() == unit.getID()) {

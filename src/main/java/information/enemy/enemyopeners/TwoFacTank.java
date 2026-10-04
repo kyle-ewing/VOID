@@ -1,12 +1,12 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class TwoFacTank extends  EnemyStrategy {
     public TwoFacTank() {
@@ -51,7 +51,6 @@ public class TwoFacTank extends  EnemyStrategy {
 
     public HashSet<UnitType> removeBuildings() {
         HashSet<UnitType> removeBuildings = new HashSet<>();
-        removeBuildings.add(UnitType.Terran_Engineering_Bay);
         return removeBuildings;
     }
 

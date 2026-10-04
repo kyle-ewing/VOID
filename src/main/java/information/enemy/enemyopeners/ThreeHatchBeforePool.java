@@ -27,10 +27,12 @@ public class ThreeHatchBeforePool extends EnemyStrategy {
         if (mapInfo.getEnemyNatural() != null) {
             hasNaturalHatch = enemyUnits.stream()
                     .filter(eu -> eu.getEnemyType().isResourceDepot())
+                    .filter(eu -> eu.getEnemyPosition() != null)
                     .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
         }
 
         EnemyUnits mainHatch = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Hatchery)
+                .filter(eu -> eu.getEnemyPosition() != null)
                 .filter(eu -> mapInfo.getEnemyMain() != null && eu.getEnemyPosition().getDistance(mapInfo.getEnemyMain().getCenter()) < 50)
                 .findFirst().orElse(null);
 

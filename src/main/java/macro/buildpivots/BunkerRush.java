@@ -56,7 +56,7 @@ public class BunkerRush extends BuildPivot {
         return buildOrder;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         float enemyArmySupply = 0;
         for (EnemyUnits enemyUnit : enemyUnits) {

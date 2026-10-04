@@ -13,6 +13,7 @@ import util.Time;
 public class DoubleEightRax extends  EnemyStrategy {
     private MapInfo mapInfo;
     private boolean isStartingBase = false;
+    private HashSet<EnemyUnits> earlyBarracks = new HashSet<>();
 
     public DoubleEightRax(MapInfo mapInfo) {
         super(EnemyStrategyName.DOUBLEEIGHTRAX);
@@ -27,18 +28,16 @@ public class DoubleEightRax extends  EnemyStrategy {
                 continue;
             }
 
-            int completedBarracks = 0;
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Barracks && enemyUnit.getEnemyUnit().isVisible()) {
+                Time finishTime = new Time(time.getFrames() + remainingBuildFrames(enemyUnit));
 
-            if (time.lessThanOrEqual(new Time(2, 45))) {
-                    if (enemyUnit.getEnemyType() == UnitType.Terran_Barracks) {
-                        if (enemyUnit.getEnemyUnit().getHitPoints() > 250) {
-                            completedBarracks++;
-                        }
-                    }
-
-                if (completedBarracks >= 2) {
-                    return true;
+                if (finishTime.lessThanOrEqual(new Time(2, 45))) {
+                    earlyBarracks.add(enemyUnit);
                 }
+            }
+
+            if (earlyBarracks.size() >= 2) {
+                return true;
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Terran_Marine

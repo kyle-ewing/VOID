@@ -55,6 +55,7 @@ public class GameState {
     private EnemyUnits enemyScout = null;
     private TilePosition bunkerPosition = null;
     private Time time = new Time(0);
+    private float enemySupplyLost = 0;
 
     private boolean enemyInBase = false;
     private boolean enemyInNatural = false;
@@ -130,7 +131,7 @@ public class GameState {
         for (BuildOrder bo : openingBuildOrders) {
             startingOpener = bo;
             productionQueue.addAll(bo.getBuildOrder());
-            openerMoveOutCondition = bo.getMoveOutCondition(time, knownEnemyUnits);
+            openerMoveOutCondition = bo.getMoveOutCondition(time, knownEnemyUnits, enemySupplyLost);
             liftableBuildings.addAll(bo.getLiftableBuildings());
 
             if (bunkerPosition == null) {
@@ -397,11 +398,11 @@ public class GameState {
 
             if (enemyMoveOutCondition.isEmpty()) {
                 if (selectedPivot != null) {
-                    openerMoveOutCondition = selectedPivot.getMoveOutCondition(time, knownEnemyUnits);
+                    openerMoveOutCondition = selectedPivot.getMoveOutCondition(time, knownEnemyUnits, enemySupplyLost);
                     return;
                 }
                 else {
-                    openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits);
+                    openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits, enemySupplyLost);
                 }
                 return;
             }
@@ -409,7 +410,7 @@ public class GameState {
             openerMoveOutCondition = enemyMoveOutCondition;
         }
         else {
-            openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits);
+            openerMoveOutCondition = startingOpener.getMoveOutCondition(time, knownEnemyUnits, enemySupplyLost);
         }
     }
 
@@ -665,6 +666,10 @@ public class GameState {
 
     public void setEnemyRace(Race enemyRace) {
         this.enemyRace = enemyRace;
+    }
+
+    public void setEnemySupplyLost(float enemySupplyLost) {
+        this.enemySupplyLost = enemySupplyLost;
     }
 
     

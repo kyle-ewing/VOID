@@ -22,6 +22,7 @@ public class SquadManager {
     private HashMap<UnitType, Integer> compositionLimits = new HashMap<>();
     private float enemyArmySupply = 0;
     private HashMap<UnitType, Integer> runbyStartFrames = new HashMap<>();
+    private int goliathRunbyEmptyFrame = -1;
 
     public SquadManager(Game game, GameState gamestate, EnemyInformation enemyInformation) {
         this.game = game;
@@ -93,7 +94,11 @@ public class SquadManager {
 
     public void removeUnitFromSquad(CombatUnits unit) {
         for (Squad squad : squads) {
+            boolean wasGoliathRunby = squad.isRunbySquad() && squad.getCountOf(UnitType.Terran_Goliath) > 0;
             squad.removeFromSquad(unit);
+            if (wasGoliathRunby && squad.getSquadUnits().isEmpty()) {
+                goliathRunbyEmptyFrame = game.getFrameCount();
+            }
         }
         squads.removeIf(squad -> squad.getSquadUnits().isEmpty());
         if (squads.isEmpty()) {
@@ -232,11 +237,11 @@ public class SquadManager {
             runbyStartFrames.put(UnitType.Terran_Vulture, game.getFrameCount());
         }
 
-        if (gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Goliath, 0) >= 9
+        if (new Time(game.getFrameCount()).greaterThan(new Time(9,30))
+                && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Goliath, 0) >= 10
                 && squads.stream().noneMatch(s -> s.isRunbySquad() && s.getCountOf(UnitType.Terran_Goliath) > 0)
-                && runbyCooldownElapsed(UnitType.Terran_Goliath)) {
+                && (goliathRunbyEmptyFrame == -1 || new Time(game.getFrameCount() - goliathRunbyEmptyFrame).greaterThan(new Time(3,0)))) {
             createRunbySquad(UnitType.Terran_Goliath, 5);
-            runbyStartFrames.put(UnitType.Terran_Goliath, game.getFrameCount());
         }
     }
 
@@ -259,6 +264,10 @@ public class SquadManager {
             }
 
             squads.remove(squad);
+
+            if (squad.getCountOf(UnitType.Terran_Goliath) > 0) {
+                goliathRunbyEmptyFrame = game.getFrameCount();
+            }
 
             for (CombatUnits unit : new ArrayList<>(squad.getSquadUnits())) {
                 squad.removeFromSquad(unit);

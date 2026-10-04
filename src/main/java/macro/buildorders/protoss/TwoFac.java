@@ -71,7 +71,7 @@ public class TwoFac extends MechBuildOrder {
         return BuildType.MECH;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         moveOutCondition.put(UnitType.Terran_Vulture, 6);
         moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 5);

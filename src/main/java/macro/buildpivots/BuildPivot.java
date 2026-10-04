@@ -20,7 +20,7 @@ public abstract class BuildPivot {
 
     public abstract BuildPivotName getBuildPivotName();
     public abstract ArrayList<PlannedItem> getPivotBuild();
-    public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits);
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost);
     public abstract BuildType buildType();
     public abstract BunkerLocation getBunkerLocation();
 

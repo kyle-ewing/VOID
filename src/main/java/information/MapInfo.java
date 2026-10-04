@@ -63,7 +63,9 @@ public class MapInfo {
     private HashSet<TilePosition> naturalChokeEdge = new HashSet<>();
     private HashSet<TilePosition> naturalOverlookTiles = new HashSet<>();
     private HashSet<TilePosition> combinedTankTiles = new HashSet<>();
-    private HashSet<TilePosition> outsideNaturalSiegeTiles = new HashSet<>();
+    private HashMap<ChokePoint, HashSet<TilePosition>> outsideNaturalSiegeTilesByChoke = new HashMap<>();
+    private HashMap<Base, ChokePoint> outsideNaturalChokeByStart = new HashMap<>();
+    private HashMap<ChokePoint, Position> pastNaturalRallyPointByChoke = new HashMap<>();
     private HashSet<TilePosition> claimedSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> backupMainSiegeTiles = new HashSet<>();
     private HashSet<TilePosition> ccExclusionTiles = new HashSet<>();
@@ -478,7 +480,82 @@ public class MapInfo {
             return;
         }
 
+        HashMap<ChokePoint, Integer> chokeVotes = new HashMap<>();
+        Position naturalGoal = pathFinding.findNearestWalkable(naturalBase.getCenter());
+
+        for (Base enemyStart : startingBases) {
+            if (naturalGoal == null || enemyStart == null || enemyStart.getCenter() == null) {
+                continue;
+            }
+
+            Position enemyPosition = pathFinding.findNearestWalkable(enemyStart.getCenter());
+
+            if (enemyPosition == null) {
+                continue;
+            }
+
+            List<Position> path = pathFinding.findPath(enemyPosition, naturalGoal);
+
+            if (path == null || path.isEmpty()) {
+                continue;
+            }
+
+            Position entryPoint = null;
+
+            for (Position pathPosition : path) {
+                if (gameMap.getArea(pathPosition.toTilePosition()) == outsideNaturalArea) {
+                    entryPoint = pathPosition;
+                    break;
+                }
+            }
+
+            if (entryPoint == null) {
+                continue;
+            }
+
+            ChokePoint entryChoke = null;
+            int closestEntryDistance = Integer.MAX_VALUE;
+
+            for (ChokePoint choke : outsideNaturalArea.getChokes()) {
+                if (choke == naturalChokePoint || choke.getCenter() == null) {
+                    continue;
+                }
+
+                int distanceToEntry = choke.getCenter().getApproxDistance(entryPoint);
+
+                if (distanceToEntry < closestEntryDistance) {
+                    closestEntryDistance = distanceToEntry;
+                    entryChoke = choke;
+                }
+            }
+
+            if (entryChoke == null) {
+                continue;
+            }
+
+            outsideNaturalChokeByStart.put(enemyStart, entryChoke);
+            chokeVotes.put(entryChoke, chokeVotes.getOrDefault(entryChoke, 0) + 1);
+        }
+
         Position mapCenter = new Position(game.mapWidth() * 16, game.mapHeight() * 16);
+        int mostVotes = 0;
+        int winnerDistanceToCenter = Integer.MAX_VALUE;
+
+        for (ChokePoint choke : chokeVotes.keySet()) {
+            int votes = chokeVotes.get(choke);
+            int distanceToCenter = choke.getCenter().getApproxDistance(mapCenter);
+
+            if (votes > mostVotes || (votes == mostVotes && distanceToCenter < winnerDistanceToCenter)) {
+                mostVotes = votes;
+                winnerDistanceToCenter = distanceToCenter;
+                outsideNaturalChoke = choke;
+            }
+        }
+
+        if (outsideNaturalChoke != null) {
+            return;
+        }
+
         int closestDistance = Integer.MAX_VALUE;
 
         for (ChokePoint choke : outsideNaturalArea.getChokes()) {
@@ -504,17 +581,38 @@ public class MapInfo {
             return;
         }
 
+        HashSet<ChokePoint> anchorChokes = new HashSet<>(outsideNaturalChokeByStart.values());
+        anchorChokes.add(outsideNaturalChoke);
+
+        for (ChokePoint choke : anchorChokes) {
+            Position anchor = backedOffFromNaturalChoke(choke);
+
+            if (anchor == null) {
+                continue;
+            }
+
+            pastNaturalRallyPointByChoke.put(choke, anchor);
+        }
+
+        pastNaturalRallyPoint = pastNaturalRallyPointByChoke.get(outsideNaturalChoke);
+    }
+
+    private Position backedOffFromNaturalChoke(ChokePoint choke) {
+        if (choke == null || choke.getCenter() == null) {
+            return null;
+        }
+
         Position pathStart = pathFinding.findNearestWalkable(naturalChokePoint.getCenter());
-        Position pathEnd = pathFinding.findNearestWalkable(outsideNaturalChoke.getCenter());
+        Position pathEnd = pathFinding.findNearestWalkable(choke.getCenter());
 
         if (pathStart == null || pathEnd == null) {
-            return;
+            return null;
         }
 
         List<Position> outsidePath = pathFinding.findPath(pathStart, pathEnd);
 
         if (outsidePath == null || outsidePath.isEmpty()) {
-            return;
+            return null;
         }
 
         int index = outsidePath.size() - 1;
@@ -525,63 +623,74 @@ public class MapInfo {
             index--;
         }
 
-        pastNaturalRallyPoint = outsidePath.get(index);
+        return outsidePath.get(index);
     }
 
     private void setOutsideNaturalSiegeTiles() {
-        if (pastNaturalRallyPoint == null || naturalChokePoint == null) {
+        if (naturalChokePoint == null || pastNaturalRallyPointByChoke.isEmpty()) {
             return;
         }
 
-        Area rallyArea = gameMap.getNearestArea(pastNaturalRallyPoint.toTilePosition());
+        Area outsideArea = getOutsideNaturalArea();
 
-        if (rallyArea == null) {
+        if (outsideArea == null) {
             return;
         }
 
-        HashSet<TilePosition> rallyAreaTiles = areaTiles.get(rallyArea);
+        HashSet<TilePosition> outsideAreaTiles = areaTiles.get(outsideArea);
 
-        if (rallyAreaTiles == null) {
+        if (outsideAreaTiles == null) {
             return;
         }
 
-        for (TilePosition tile : rallyAreaTiles) {
-            Position tilePosition = tile.toPosition();
-            int distanceToRally = pastNaturalRallyPoint.getApproxDistance(tilePosition);
+        for (ChokePoint choke : pastNaturalRallyPointByChoke.keySet()) {
+            Position anchor = pastNaturalRallyPointByChoke.get(choke);
+            HashSet<TilePosition> chokeTiles = new HashSet<>();
 
-            if (distanceToRally < 96 || distanceToRally > 275) {
-                continue;
-            }
+            for (TilePosition tile : outsideAreaTiles) {
+                Position tilePosition = tile.toPosition();
+                int distanceToAnchor = anchor.getApproxDistance(tilePosition);
 
-            if (naturalChokePoint.getCenter().getApproxDistance(tilePosition) < 250) {
-                continue;
-            }
-
-            boolean nearBase = false;
-            for (Base base : rallyArea.getBases()) {
-                if (base == null || base.getCenter() == null) {
+                if (distanceToAnchor < 96 || distanceToAnchor > 275) {
                     continue;
                 }
 
-                if (base.getCenter().getApproxDistance(tilePosition) < 150) {
-                    nearBase = true;
+                if (naturalChokePoint.getCenter().getApproxDistance(tilePosition) < 250) {
+                    continue;
+                }
+
+                boolean nearBase = false;
+                for (Base base : outsideArea.getBases()) {
+                    if (base == null || base.getCenter() == null) {
+                        continue;
+                    }
+
+                    if (base.getCenter().getApproxDistance(tilePosition) < 150) {
+                        nearBase = true;
+                    }
+                }
+
+                if (nearBase) {
+                    continue;
+                }
+
+                if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
+                    chokeTiles.add(tile);
                 }
             }
 
-            if (nearBase) {
-                continue;
-            }
-
-            if (pathFinding.getTilePositionValidator().isWalkable(tile)) {
-                outsideNaturalSiegeTiles.add(tile);
+            if (!chokeTiles.isEmpty()) {
+                outsideNaturalSiegeTilesByChoke.put(choke, chokeTiles);
             }
         }
     }
 
     public HashSet<TilePosition> getSiegeDefTiles() {
         if (hasExpansionPastNatural()) {
-            if (!outsideNaturalSiegeTiles.isEmpty()) {
-                return new HashSet<>(outsideNaturalSiegeTiles);
+            HashSet<TilePosition> outsideTiles = getOutsideNaturalSiegeTiles();
+
+            if (!outsideTiles.isEmpty()) {
+                return new HashSet<>(outsideTiles);
             }
 
             return new HashSet<>(combinedTankTiles);
@@ -613,8 +722,10 @@ public class MapInfo {
             return false;
         }
 
-        if (pastNaturalRallyPoint != null) {
-            HashSet<TilePosition> outsideAreaTiles = areaTiles.get(gameMap.getNearestArea(pastNaturalRallyPoint.toTilePosition()));
+        Position rallyAnchor = getPastNaturalRallyPoint();
+
+        if (rallyAnchor != null) {
+            HashSet<TilePosition> outsideAreaTiles = areaTiles.get(gameMap.getNearestArea(rallyAnchor.toTilePosition()));
 
             if (outsideAreaTiles != null && outsideAreaTiles.size() > 1000) {
                 return false;
@@ -1894,7 +2005,13 @@ public class MapInfo {
     }
 
     public HashSet<TilePosition> getOutsideNaturalSiegeTiles() {
-        return outsideNaturalSiegeTiles;
+        HashSet<TilePosition> chokeTiles = outsideNaturalSiegeTilesByChoke.get(getOutsideNaturalChoke());
+
+        if (chokeTiles == null) {
+            return new HashSet<>();
+        }
+
+        return chokeTiles;
     }
 
     public HashSet<TilePosition> getBackupMainSiegeTiles() {
@@ -2005,7 +2122,21 @@ public class MapInfo {
     }
 
     public ChokePoint getOutsideNaturalChoke() {
+        if (enemyMain != null && outsideNaturalChokeByStart.containsKey(enemyMain)) {
+            return outsideNaturalChokeByStart.get(enemyMain);
+        }
+
         return outsideNaturalChoke;
+    }
+
+    public Position getPastNaturalRallyPoint() {
+        Position anchor = pastNaturalRallyPointByChoke.get(getOutsideNaturalChoke());
+
+        if (anchor == null) {
+            return pastNaturalRallyPoint;
+        }
+
+        return anchor;
     }
 
     public void setOutsideNaturalChoke(ChokePoint outsideNaturalChoke) {

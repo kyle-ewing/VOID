@@ -20,7 +20,7 @@ public class TvTMech extends BuildTransition {
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 2, 5));
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Vehicle_Weapons, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 3, 4));
         transitionItems.add(new PlannedItem(UpgradeType.Terran_Vehicle_Plating, PlannedItemType.UPGRADE, UnitType.Terran_Armory, 3, 5));
-        transitionItems.add(new PlannedItem(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 2));
+        transitionItems.add(new PlannedItem(UnitType.Terran_Command_Center, PlannedItemType.BUILDING, 3));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 50, PlannedItemType.BUILDING, 3, true));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemType.BUILDING, 3, false));
         transitionItems.add(new PlannedItem(UnitType.Terran_Factory, 55, PlannedItemType.BUILDING, 3, false));

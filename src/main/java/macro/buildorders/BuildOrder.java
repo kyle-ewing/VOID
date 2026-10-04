@@ -22,7 +22,7 @@ public abstract class BuildOrder {
     public abstract HashSet<UnitType> getLiftableBuildings();
     public abstract BunkerLocation getBunkerLocation();
     public abstract BuildType buildType();
-    public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits);
+    public abstract HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost);
 
     public int getGasWorkerTarget(int totalGasGathered, HashSet<Unit> allBuildings) {
         return 3;

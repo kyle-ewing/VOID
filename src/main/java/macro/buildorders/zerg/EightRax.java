@@ -40,7 +40,7 @@ public class EightRax extends BuildOrder {
         return BuildType.BIO;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         return moveOutCondition;
     }

@@ -95,7 +95,7 @@ public class FactoryExpand extends MechBuildOrder {
         return 3;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
         long lurkerCount = enemyUnits.stream().filter(eu -> eu.getEnemyType() == UnitType.Zerg_Lurker || eu.getEnemyType() == UnitType.Zerg_Lurker_Egg).count();
 
