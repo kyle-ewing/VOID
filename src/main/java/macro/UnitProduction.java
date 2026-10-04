@@ -27,6 +27,7 @@ import map.BuildTiles;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
+import util.Time;
 
 public class UnitProduction {
     private final GameState gameState;
@@ -100,6 +101,11 @@ public class UnitProduction {
                     }
                 }
                 else if (unitType == UnitType.Terran_Wraith) {
+                    if (gameState.getEnemyRace() == Race.Terran
+                            && (new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))
+                            || new Time(game.getFrameCount()).greaterThan(new Time(14, 0)))) {
+                        continue;
+                    }
                     if (unitTypeCount.get(unitType) < 1) {
                         items.add(plannedUnit(unitType, 1));
                     }
@@ -227,6 +233,11 @@ public class UnitProduction {
                     }
 
                     if (unitType == UnitType.Terran_Wraith) {
+                        if (gameState.getEnemyRace() == Race.Terran
+                                && (new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))
+                                || new Time(game.getFrameCount()).greaterThan(new Time(14, 0)))) {
+                            continue;
+                        }
                         if (unitTypeCount.get(unitType) < 1) {
                             items.add(plannedUnit(unitType, 1));
                         }

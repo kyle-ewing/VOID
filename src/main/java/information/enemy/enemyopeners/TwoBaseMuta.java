@@ -25,6 +25,7 @@ public class TwoBaseMuta extends EnemyStrategy {
         if (mapInfo.getEnemyNatural() != null) {
             natural = enemyUnits.stream()
                     .filter(eu -> eu.getEnemyType().isResourceDepot())
+                    .filter(eu -> eu.getEnemyPosition() != null)
                     .filter(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200)
                     .findFirst()
                     .orElse(null);

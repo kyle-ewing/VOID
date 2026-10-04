@@ -27,6 +27,7 @@ import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
+import information.enemy.enemytechunits.SiegeTank;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildType;
 import map.BuildTiles;
@@ -1344,6 +1345,12 @@ public class ProductionManager {
         }
 
         for (EnemyTechUnits techUnit : gameState.getKnownEnemyTechUnits()) {
+            if (techUnit instanceof SiegeTank
+                    && gameState.getEnemyRace() == Race.Terran
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
+                continue;
+            }
+
             if (techUnit.getFriendlyBuildingResponse().isEmpty()) {
                 continue;
             }

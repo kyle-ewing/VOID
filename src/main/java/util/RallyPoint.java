@@ -23,7 +23,6 @@ public class RallyPoint {
     private Base naturalBase;
     private Position mainRallyPoint;
     private Position naturalRallyPoint;
-    private Position lateGameRallyPoint;
 
     public RallyPoint(Game game, PathFinding pathFinding, GameState gameState, MapInfo mapInfo) {
         this.game = game;
@@ -38,6 +37,7 @@ public class RallyPoint {
     }
 
     public void setRallyPoint(CombatUnits combatUnit) {
+        Position lateGameRallyPoint = mapInfo.getPastNaturalRallyPoint();
         if (mapInfo.hasExpansionPastNatural() && lateGameRallyPoint != null) {
             combatUnit.setRallyPoint(lateGameRallyPoint.toTilePosition());
             return;
@@ -137,33 +137,6 @@ public class RallyPoint {
     private void setInitialRallyPoints() {
         mainRallyPoint = rallyPath(startingBase.getCenter(), mapInfo.getMainChoke().getCenter(), 0.72);
         naturalRallyPoint = rallyPath(naturalBase.getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.62);
-
-        if (mapInfo.getOutsideNaturalChoke() == null) {
-            return;
-        }
-
-        Position pathStart = pathFinding.findNearestWalkable(mapInfo.getNaturalChoke().getCenter());
-        Position pathEnd = pathFinding.findNearestWalkable(mapInfo.getOutsideNaturalChoke().getCenter());
-
-        if (pathStart == null || pathEnd == null) {
-            return;
-        }
-
-        List<Position> outsidePath = pathFinding.findPath(pathStart, pathEnd);
-
-        if (outsidePath == null || outsidePath.isEmpty()) {
-            return;
-        }
-
-        int index = outsidePath.size() - 1;
-        int backedOff = 0;
-
-        while (index > 0 && backedOff < 128) {
-            backedOff += outsidePath.get(index).getApproxDistance(outsidePath.get(index - 1));
-            index--;
-        }
-
-        lateGameRallyPoint = outsidePath.get(index);
     }
 
     public void onFrame() {
@@ -179,7 +152,7 @@ public class RallyPoint {
     }
 
     public Position getLateGameRallyPoint() {
-        return lateGameRallyPoint;
+        return mapInfo.getPastNaturalRallyPoint();
     }
 
 

@@ -74,11 +74,18 @@ public class GoliathFE extends MechBuildOrder {
         return RallyLocation.NATURAL;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if (enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Barracks).count() > 1) {
             moveOutCondition.put(UnitType.Terran_Goliath, 12);
+            moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
+        }
+        else if (enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Barracks).count() < 2 
+                && time.greaterThan(new Time(7,0)) 
+                && time.lessThanOrEqual(new Time(10,0)) 
+                && enemySupplyLost > 18) {
+            moveOutCondition.put(UnitType.Terran_Goliath, 5);
             moveOutCondition.put(UnitType.Terran_Siege_Tank_Tank_Mode, 4);
         }
         else if (enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Starport).count() > 1 && time.lessThanOrEqual(new Time(6,0))) {

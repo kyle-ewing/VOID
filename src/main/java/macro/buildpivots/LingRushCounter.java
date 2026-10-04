@@ -55,7 +55,7 @@ public class LingRushCounter extends BuildPivot {
         return buildOrder;
     }
 
-    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits) {
+    public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
 
         if (time.lessThanOrEqual(new Time(10, 0))) {

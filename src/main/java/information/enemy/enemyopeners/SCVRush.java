@@ -1,13 +1,13 @@
 package information.enemy.enemyopeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import bwapi.UnitType;
 import information.MapInfo;
 import information.enemy.EnemyUnits;
 import macro.buildorders.BuildType;
 import util.Time;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 //Stone Cold Steve Austin's favorite strategy
 public class SCVRush extends EnemyStrategy {
@@ -30,13 +30,13 @@ public class SCVRush extends EnemyStrategy {
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Terran_SCV) {
-                if (mapInfo.getStartingBase().getCenter().getDistance(enemyUnit.getEnemyPosition()) < 500) {
+                if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyTilePosition()) || mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyTilePosition())) {
                     scvAtBase++;
                 }
             }
         }
 
-        if (scvAtBase >= 3 && time.lessThanOrEqual(new Time(3, 0))) {
+        if (scvAtBase >= 3 && time.lessThanOrEqual(new Time(3, 5))) {
             return true;
         }
         else {

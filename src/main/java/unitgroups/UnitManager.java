@@ -23,7 +23,9 @@ import information.enemy.enemytechunits.EnemyTechUnits;
 import macro.buildpivots.BuildPivot;
 import macro.buildpivots.BunkerRush;
 import map.PathFinding;
+import map.bwemwrappers.Area;
 import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
 import planner.PlannedItemType;
@@ -471,6 +473,10 @@ public class UnitManager {
                     break;
                 case LIFTABLE:
                     if (combatUnit.getUnitType() == UnitType.Terran_Engineering_Bay) {
+                        if (floatEbayToThirdChoke(combatUnit)) {
+                            break;
+                        }
+
                         if (gameState.getBunkerPosition() != null && mapInfo.getNaturalBase() != null) {
                             switch (gameState.getEnemyRace()) {
                                 case Terran:
@@ -1587,6 +1593,75 @@ public class UnitManager {
         }
         building.setNotNeeded(false);
         building.getUnit().land(wallTile);
+        return true;
+    }
+
+    private boolean floatEbayToThirdChoke(CombatUnits combatUnit) {
+        if (gameState.getEnemyRace() != Race.Terran) {
+            return false;
+        }
+
+        if (!combatUnit.getUnit().isLifted() || !combatUnit.notNeeded()) {
+            return false;
+        }
+
+        Base naturalBase = mapInfo.getNaturalBase();
+        Base startingBase = mapInfo.getStartingBase();
+        if (naturalBase == null || startingBase == null) {
+            return false;
+        }
+
+        boolean thirdTaken = false;
+        for (Base owned : mapInfo.getOwnedBases()) {
+            if (owned != null && owned != startingBase && owned != naturalBase) {
+                thirdTaken = true;
+                break;
+            }
+        }
+
+        if (!thirdTaken) {
+            return false;
+        }
+
+        if (combatUnit.getUnit().isUnderAttack()) {
+            if (gameState.getBunkerPosition() != null) {
+                combatUnit.getUnit().move(gameState.getBunkerPosition().toPosition());
+                return true;
+            }
+
+            if (naturalBase.getCenter() != null) {
+                combatUnit.getUnit().move(naturalBase.getCenter());
+                return true;
+            }
+        }
+
+        Area outsideArea = mapInfo.getOutsideNaturalArea();
+        if (outsideArea == null || outsideArea.getTop() == null) {
+            return false;
+        }
+
+        ChokePoint targetChoke = mapInfo.getOutsideNaturalChoke();
+        if (targetChoke == null || targetChoke.getCenter() == null) {
+            return false;
+        }
+
+        Position chokeCenter = targetChoke.getCenter();
+        Position anchor = outsideArea.getTop();
+        double dx = chokeCenter.getX() - anchor.getX();
+        double dy = chokeCenter.getY() - anchor.getY();
+        double length = Math.sqrt(dx * dx + dy * dy);
+        if (length == 0) {
+            return false;
+        }
+
+        int targetX = Math.min(Math.max((int) (chokeCenter.getX() + (dx / length) * 128), 0), game.mapWidth() * 32 - 1);
+        int targetY = Math.min(Math.max((int) (chokeCenter.getY() + (dy / length) * 128), 0), game.mapHeight() * 32 - 1);
+        Position target = new Position(targetX, targetY);
+
+        if (combatUnit.getUnit().getPosition().getDistance(target) > 16) {
+            combatUnit.getUnit().move(target);
+        }
+
         return true;
     }
 
