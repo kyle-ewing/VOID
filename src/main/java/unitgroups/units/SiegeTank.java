@@ -81,6 +81,10 @@ public class SiegeTank extends CombatUnits {
             enemyUnit = target;
         }
 
+        if (target.getEnemyPosition() == null) {
+            return;
+        }
+
         siegeLogic();
 
         if (unviewableTargets.contains(target)) {
@@ -337,7 +341,7 @@ public class SiegeTank extends CombatUnits {
         unit.move(regroupPosition);
     }
 
-    public void siegeDef() {
+    public void siegeDef(TilePosition naturalChokeBunker) {
         if (targetPriorityEnemy()) {
             unit.attack(enemyUnit.getEnemyUnit());
             return;
@@ -355,8 +359,23 @@ public class SiegeTank extends CombatUnits {
             }
         }
 
+        boolean enemyNearNaturalBunker = false;
+        if (naturalChokeBunker != null) {
+            Position naturalBunkerCenter = new Position(naturalChokeBunker.getX() * 32 + 48, naturalChokeBunker.getY() * 32 + 32);
+            for (EnemyUnits enemy : enemyUnits) {
+                if (enemy.getEnemyPosition() == null) {
+                    continue;
+                }
+
+                if (enemy.getEnemyPosition().getDistance(naturalBunkerCenter) < 500) {
+                    enemyNearNaturalBunker = true;
+                    break;
+                }
+            }
+        }
+
         HashSet<TilePosition> validTiles = mapInfo.getSiegeDefTiles();
-        if (siegeTile != null && !validTiles.contains(siegeTile)) {
+        if (siegeTile != null && !validTiles.contains(siegeTile) && !enemyNearNaturalBunker) {
             mapInfo.removeClaimedSiegeTile(siegeTile);
             siegeTile = null;
             foundSiegeTile = false;

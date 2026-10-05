@@ -36,7 +36,7 @@ public class SCVRush extends EnemyStrategy {
             }
         }
 
-        if (scvAtBase >= 3 && time.lessThanOrEqual(new Time(3, 5))) {
+        if (scvAtBase >= 3 && time.lessThanOrEqual(new Time(3, 25))) {
             return true;
         }
         else {

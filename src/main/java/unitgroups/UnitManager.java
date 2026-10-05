@@ -227,7 +227,7 @@ public class UnitManager {
                 }
             }
             else {
-                if (gameState.isBeingSieged()) {
+                if (canSallyOut()) {
                     if (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF) {
                         combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
                     }
@@ -429,6 +429,7 @@ public class UnitManager {
                     break;
                 case ADDON:
                     scanInvisibleUnits(combatUnit);
+                    scanEnemySiegeTanks(combatUnit);
                     break;
                 case OBSTRUCTING:
                     if (!obstructingBuild(combatUnit)) {
@@ -452,7 +453,7 @@ public class UnitManager {
                         combatUnit.setEnemyInBase(true);
                     }
 
-                    ((SiegeTank) combatUnit).siegeDef();
+                    ((SiegeTank) combatUnit).siegeDef(gameState.getBuildTiles().getNaturalChokeBunker());
                     break;
                 case HUNTING:
                     ClosestUnit.priorityTargets(combatUnit, combatUnit.getPriorityTargets(), gameState.getKnownEnemyUnits(), Integer.MAX_VALUE);
@@ -463,7 +464,7 @@ public class UnitManager {
                     avoidThreat(combatUnit);
                     break;
                 case SALLYOUT:
-                    if (!gameState.isBeingSieged()) {
+                    if (!canSallyOut()) {
                         combatUnit.setUnitStatus(UnitStatus.RALLY);
                     }
                     else {
@@ -504,6 +505,10 @@ public class UnitManager {
                         }
                     }
                     else if (combatUnit.getUnitType() == UnitType.Terran_Barracks) {
+                        if (floatBarracksForTankVision(combatUnit)) {
+                            break;
+                        }
+
                         TilePosition landPosition = gameState.getBuildTiles().getNaturalBunkerBarracksPosition();
 
                         if (landPosition != null && !combatUnit.getUnit().isLifted() && combatUnit.getUnit().getTilePosition().equals(landPosition)) {
@@ -711,7 +716,7 @@ public class UnitManager {
                 && (mapInfo.getBaseTiles().contains(bunker.getTilePosition())
                     || mapInfo.getNaturalTiles().contains(bunker.getTilePosition()));
 
-        if (gameState.isBeingSieged()) {
+        if (canSallyOut()) {
             combatUnit.setUnitStatus(UnitStatus.SALLYOUT);
         }
         else if (gameState.isEnemyInBase() && bunkerAtHome) {
@@ -852,6 +857,22 @@ public class UnitManager {
         }
 
         return false;
+    }
+
+    private boolean canSallyOut() {
+        if (!gameState.isBeingSieged()) {
+            return false;
+        }
+
+        int enemyTanks = 0;
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Tank_Mode
+                    || enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+                enemyTanks++;
+            }
+        }
+
+        return enemyTanks < 5;
     }
 
     private boolean enemyNearBunker() {
@@ -1107,6 +1128,58 @@ public class UnitManager {
                 }
                 return;
             }
+        }
+    }
+
+    private void scanEnemySiegeTanks(CombatUnits combatUnit) {
+        if (combatUnit.getUnitType() != UnitType.Terran_Comsat_Station) {
+            return;
+        }
+
+        if (lastScanFrame == game.getFrameCount()) {
+            return;
+        }
+
+        int siegeRange = UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().maxRange();
+
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode) {
+                continue;
+            }
+
+            Position enemyPosition = enemyUnit.getEnemyPosition();
+            if (enemyPosition == null) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyUnit().isVisible()) {
+                continue;
+            }
+
+            if (game.isVisible(enemyPosition.toTilePosition())) {
+                continue;
+            }
+
+            boolean tankInRange = false;
+            for (CombatUnits friendlyUnit : combatUnits) {
+                if (!(friendlyUnit instanceof SiegeTank)) {
+                    continue;
+                }
+
+                if (friendlyUnit.getUnit().getDistance(enemyPosition) <= siegeRange) {
+                    tankInRange = true;
+                    break;
+                }
+            }
+
+            if (!tankInRange) {
+                continue;
+            }
+
+            if (combatUnit.getUnit().useTech(TechType.Scanner_Sweep, enemyPosition)) {
+                lastScanFrame = game.getFrameCount();
+            }
+            return;
         }
     }
 
@@ -1605,34 +1678,34 @@ public class UnitManager {
             return false;
         }
 
+        if (!thirdBaseTaken()) {
+            return false;
+        }
+
+        return floatPastOutsideNaturalChoke(combatUnit, mapInfo.getOutsideNaturalChoke(), 178);
+    }
+
+    private boolean thirdBaseTaken() {
         Base naturalBase = mapInfo.getNaturalBase();
         Base startingBase = mapInfo.getStartingBase();
         if (naturalBase == null || startingBase == null) {
             return false;
         }
 
-        boolean thirdTaken = false;
         for (Base owned : mapInfo.getOwnedBases()) {
             if (owned != null && owned != startingBase && owned != naturalBase) {
-                thirdTaken = true;
-                break;
+                return true;
             }
         }
 
-        if (!thirdTaken) {
-            return false;
-        }
+        return false;
+    }
 
-        if (combatUnit.getUnit().isUnderAttack()) {
-            if (gameState.getBunkerPosition() != null) {
-                combatUnit.getUnit().move(gameState.getBunkerPosition().toPosition());
-                return true;
-            }
-
-            if (naturalBase.getCenter() != null) {
-                combatUnit.getUnit().move(naturalBase.getCenter());
-                return true;
-            }
+    private boolean floatPastOutsideNaturalChoke(CombatUnits combatUnit, ChokePoint targetChoke, int distance) {
+        Base naturalBase = mapInfo.getNaturalBase();
+        if (combatUnit.getUnit().isUnderAttack() && naturalBase != null && naturalBase.getCenter() != null) {
+            combatUnit.getUnit().move(naturalBase.getCenter());
+            return true;
         }
 
         Area outsideArea = mapInfo.getOutsideNaturalArea();
@@ -1640,7 +1713,6 @@ public class UnitManager {
             return false;
         }
 
-        ChokePoint targetChoke = mapInfo.getOutsideNaturalChoke();
         if (targetChoke == null || targetChoke.getCenter() == null) {
             return false;
         }
@@ -1654,8 +1726,87 @@ public class UnitManager {
             return false;
         }
 
-        int targetX = Math.min(Math.max((int) (chokeCenter.getX() + (dx / length) * 128), 0), game.mapWidth() * 32 - 1);
-        int targetY = Math.min(Math.max((int) (chokeCenter.getY() + (dy / length) * 128), 0), game.mapHeight() * 32 - 1);
+        int targetX = Math.min(Math.max((int) (chokeCenter.getX() + (dx / length) * distance), 0), game.mapWidth() * 32 - 1);
+        int targetY = Math.min(Math.max((int) (chokeCenter.getY() + (dy / length) * distance), 0), game.mapHeight() * 32 - 1);
+        Position target = new Position(targetX, targetY);
+
+        if (combatUnit.getUnit().getPosition().getDistance(target) > 16) {
+            combatUnit.getUnit().move(target);
+        }
+
+        return true;
+    }
+
+    private ChokePoint barracksOutsideChoke() {
+        ChokePoint ebayChoke = mapInfo.getOutsideNaturalChoke();
+        Area outsideArea = mapInfo.getOutsideNaturalArea();
+        Base startingBase = mapInfo.getStartingBase();
+        Base naturalBase = mapInfo.getNaturalBase();
+        if (outsideArea == null || startingBase == null || naturalBase == null) {
+            return ebayChoke;
+        }
+
+        Position mapCenter = new Position(game.mapWidth() * 16, game.mapHeight() * 16);
+        ChokePoint bestChoke = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        for (ChokePoint choke : outsideArea.getChokes()) {
+            if (choke == null || choke == ebayChoke || choke == mapInfo.getSecondaryNaturalChoke() || choke.getCenter() == null) {
+                continue;
+            }
+
+            Area farArea = choke.getOtherArea(outsideArea);
+            if (farArea == null || farArea == startingBase.getArea() || farArea == naturalBase.getArea()) {
+                continue;
+            }
+
+            int distanceToCenter = choke.getCenter().getApproxDistance(mapCenter);
+            if (distanceToCenter < closestDistance) {
+                closestDistance = distanceToCenter;
+                bestChoke = choke;
+            }
+        }
+
+        if (bestChoke == null) {
+            return ebayChoke;
+        }
+
+        return bestChoke;
+    }
+
+    private boolean floatBarracksForTankVision(CombatUnits combatUnit) {
+        if (gameState.getEnemyRace() != Race.Terran) {
+            return false;
+        }
+
+        if (!combatUnit.getUnit().isLifted() || !combatUnit.notNeeded()) {
+            return false;
+        }
+
+        if (thirdBaseTaken() && floatPastOutsideNaturalChoke(combatUnit, barracksOutsideChoke(), 178)) {
+            return true;
+        }
+
+        Base startingBase = mapInfo.getStartingBase();
+        Position edge = mapInfo.getMainEdgeTowardCenter();
+        if (startingBase == null || startingBase.getCenter() == null || edge == null) {
+            return false;
+        }
+
+        if (combatUnit.getUnit().isUnderAttack()) {
+            combatUnit.getUnit().move(startingBase.getCenter());
+            return true;
+        }
+
+        double dx = game.mapWidth() * 16 - edge.getX();
+        double dy = game.mapHeight() * 16 - edge.getY();
+        double length = Math.sqrt(dx * dx + dy * dy);
+        if (length == 0) {
+            return false;
+        }
+
+        int targetX = Math.min(Math.max((int) (edge.getX() + (dx / length) * 250), 0), game.mapWidth() * 32 - 1);
+        int targetY = Math.min(Math.max((int) (edge.getY() + (dy / length) * 250), 0), game.mapHeight() * 32 - 1);
         Position target = new Position(targetX, targetY);
 
         if (combatUnit.getUnit().getPosition().getDistance(target) > 16) {

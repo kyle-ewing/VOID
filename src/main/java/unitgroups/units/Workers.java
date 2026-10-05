@@ -178,6 +178,10 @@ public class Workers extends CombatUnits {
         this.buildFrameCount = buildFrameCount;
     }
 
+    public int getNearTargetFrameCount() {
+        return nearTargetFrameCount;
+    }
+
     public void setNearTargetFrameCount(int nearTargetFrameCount) {
         this.nearTargetFrameCount = nearTargetFrameCount;
     }

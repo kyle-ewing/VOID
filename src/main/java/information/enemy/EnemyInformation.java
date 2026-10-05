@@ -256,6 +256,7 @@ public class EnemyInformation {
                     enemyTechUnit.techBuildingResponse();
                     enemyTechUnit.techUpgradeResponse();
                     enemyTechUnit.setTriggeredResponse(true);
+                    enemyTechUnit.setFirstDetectedFrame(game.getFrameCount());
                 }
 
                 enemyTechUnits.add(enemyTechUnit);

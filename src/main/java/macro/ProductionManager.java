@@ -358,7 +358,7 @@ public class ProductionManager {
                     if (worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                         if (worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
                             if (pi.getUnitType() == UnitType.Terran_Command_Center
-                                    && worker.getIdleClock() > 24) {
+                                    && worker.getNearTargetFrameCount() > 72) {
                                 gameState.scanPosition(pi.getBuildPosition().toPosition());
                                 worker.setWorkerStatus(WorkerStatus.CLEARINGMINE);
                                 worker.setIdleClock(0);
@@ -1347,7 +1347,8 @@ public class ProductionManager {
         for (EnemyTechUnits techUnit : gameState.getKnownEnemyTechUnits()) {
             if (techUnit instanceof SiegeTank
                     && gameState.getEnemyRace() == Race.Terran
-                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))
+                    && new Time(techUnit.getFirstDetectedFrame()).greaterThan(new Time(6, 0))) {
                 continue;
             }
 

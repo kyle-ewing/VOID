@@ -18,6 +18,7 @@ public abstract class EnemyTechUnits {
     private ArrayList<PlannedItem> friendlyUpgradeResponse = new ArrayList<>();
     private boolean isFlyer;
     private boolean triggeredResponse = false;
+    private int firstDetectedFrame = 0;
 
     public EnemyTechUnits(String techName, UnitType unitType, boolean isFlyer) {
         this(techName, isFlyer, Collections.singletonList(unitType), Collections.singletonList(unitType));
@@ -76,5 +77,13 @@ public abstract class EnemyTechUnits {
 
     public void setTriggeredResponse(boolean triggeredResponse) {
         this.triggeredResponse = triggeredResponse;
+    }
+
+    public int getFirstDetectedFrame() {
+        return firstDetectedFrame;
+    }
+
+    public void setFirstDetectedFrame(int firstDetectedFrame) {
+        this.firstDetectedFrame = firstDetectedFrame;
     }
 }

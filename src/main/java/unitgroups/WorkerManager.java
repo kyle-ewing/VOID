@@ -983,6 +983,11 @@ public class WorkerManager {
                     continue;
                 }
 
+                if (building.isLifted() && gameState.getKnownEnemyUnits().stream()
+                        .anyMatch(eu -> eu.getEnemyPosition() != null && eu.getEnemyPosition().getDistance(building.getPosition()) < 400)) {
+                    continue;
+                }
+
                 if (!buildingRepair.containsKey(building)) {
                     buildingRepair.put(building, null);
                 }
@@ -1288,8 +1293,8 @@ public class WorkerManager {
 
         int distance = Math.max(1, builderPos.getApproxDistance(workerPos));
 
-        int moveX = workerPos.getX() + (workerPos.getX() - builderPos.getX() * 100 / distance);
-        int moveY = workerPos.getY() + (workerPos.getY() - builderPos.getY() * 100 / distance);
+        int moveX = workerPos.getX() + (workerPos.getX() - builderPos.getX()) * 100 / distance;
+        int moveY = workerPos.getY() + (workerPos.getY() - builderPos.getY()) * 100 / distance;
         moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
         moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
 

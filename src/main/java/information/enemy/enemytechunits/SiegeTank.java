@@ -36,6 +36,7 @@ public class SiegeTank extends EnemyTechUnits {
     }
 
     public void techUpgradeResponse() {
+        getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Tank_Siege_Mode, 0, PlannedItemType.UPGRADE, UnitType.Terran_Machine_Shop, 1));
         getFriendlyUpgradeResponse().add(new PlannedItem(TechType.Cloaking_Field, 0, PlannedItemType.UPGRADE, UnitType.Terran_Control_Tower, 2));
     }
 }

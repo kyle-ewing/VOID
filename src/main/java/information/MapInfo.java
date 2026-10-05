@@ -46,6 +46,7 @@ public class MapInfo {
     private Position naturalBunkerCenter;
     private ChokePoint outsideNaturalChoke;
     private Position pastNaturalRallyPoint;
+    private Position mainEdgeTowardCenter;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
@@ -122,6 +123,7 @@ public class MapInfo {
         setNaturalChoke();
         setOutsideNaturalChoke();
         setStartingBaseTiles();
+        setMainEdgeTowardCenter();
         setNaturalBaseTiles();
         extendNaturalTiles();
         setOrderedExpansions();
@@ -259,6 +261,28 @@ public class MapInfo {
 
     private void setNaturalBaseTiles() {
         naturalTiles = getTilesForBase(naturalBase);
+    }
+
+    private void setMainEdgeTowardCenter() {
+        if (startingBase == null || startingBase.getCenter() == null) {
+            return;
+        }
+
+        Position baseCenter = startingBase.getCenter();
+        long towardX = game.mapWidth() * 16 - baseCenter.getX();
+        long towardY = game.mapHeight() * 16 - baseCenter.getY();
+        long bestProjection = Long.MIN_VALUE;
+
+        for (TilePosition tile : baseTiles) {
+            long tileX = tile.getX() * 32 + 16;
+            long tileY = tile.getY() * 32 + 16;
+            long projection = tileX * towardX + tileY * towardY;
+
+            if (projection > bestProjection) {
+                bestProjection = projection;
+                mainEdgeTowardCenter = new Position((int) tileX, (int) tileY);
+            }
+        }
     }
 
     private void setStartingMineralPatches() {
@@ -1998,6 +2022,10 @@ public class MapInfo {
 
     public HashSet<TilePosition> getMainCliffEdge() {
         return mainCliffEdge;
+    }
+
+    public Position getMainEdgeTowardCenter() {
+        return mainEdgeTowardCenter;
     }
 
     public HashSet<TilePosition> getCombinedTankTiles() {
