@@ -2,6 +2,7 @@ package map.bwemwrappers;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class GameMap {
     private boolean[][] blocksViewByTile;
     private Base startingBase;
     private int nextSyntheticAreaId;
+    private boolean rebuildingPassableRuns;
 
     public GameMap(Game game) {
         this.game = game;
@@ -66,6 +68,7 @@ public class GameMap {
         splitAreas();
         cutSnakingAreas();
         carveBaseAreas();
+        splitHeightTransitionChokes();
         purgeWideSyntheticChokes();
         rehomeChokes();
         rebuildAreaWiring();
@@ -161,8 +164,8 @@ public class GameMap {
 
             WalkPosition end1Node = bwemChoke.getNodePosition(Node.END1);
             WalkPosition end2Node = bwemChoke.getNodePosition(Node.END2);
-            Position end1 = marchToUnwalkable(end1Node, end2Node);
-            Position end2 = marchToUnwalkable(end2Node, end1Node);
+            Position end1 = marchToUnwalkable(end1Node, end2Node, 4);
+            Position end2 = marchToUnwalkable(end2Node, end1Node, 4);
             choke.setEnd1(end1);
             choke.setEnd2(end2);
             choke.setWidth((int) end1.getDistance(end2));
@@ -184,6 +187,10 @@ public class GameMap {
     }
 
     private Position marchToUnwalkable(WalkPosition from, WalkPosition away) {
+        return marchToUnwalkable(from, away, Integer.MAX_VALUE);
+    }
+
+    private Position marchToUnwalkable(WalkPosition from, WalkPosition away, int maxSteps) {
         double directionX = from.getX() - away.getX();
         double directionY = from.getY() - away.getY();
         double magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
@@ -199,8 +206,15 @@ public class GameMap {
         int walkHeight = game.mapHeight() * 4;
         double currentX = from.getX();
         double currentY = from.getY();
+        int steps = 0;
 
         while (true) {
+            steps++;
+
+            if (steps > maxSteps) {
+                return from.toPosition();
+            }
+
             currentX += directionX;
             currentY += directionY;
 
@@ -692,6 +706,7 @@ public class GameMap {
         HashSet<Area> targetSet = new HashSet<>(targetAreas);
         HashMap<Long, ArrayList<int[]>> edgesByPair = new HashMap<>();
         HashMap<Long, Area[]> areasByPair = new HashMap<>();
+        HashMap<String, Integer> crossParentEdges = new HashMap<>();
         int[][] offsets = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 
         for (Area target : targetAreas) {
@@ -705,6 +720,10 @@ public class GameMap {
                     }
 
                     if (neighbor.getBwemArea() != target.getBwemArea()) {
+                        if (rebuildingPassableRuns && (offset[0] > 0 || offset[1] > 0) && target.getGroundHeight() != neighbor.getGroundHeight()) {
+                            String pairLabel = Math.min(target.getId(), neighbor.getId()) + "<->" + Math.max(target.getId(), neighbor.getId());
+                            crossParentEdges.put(pairLabel, crossParentEdges.getOrDefault(pairLabel, 0) + 1);
+                        }
                         continue;
                     }
 
@@ -738,6 +757,10 @@ public class GameMap {
                     areasByPair.put(pairKey, new Area[]{lowArea, highArea});
                 }
             }
+        }
+
+        for (String pairLabel : crossParentEdges.keySet()) {
+            System.out.println("[ChokeDebug] height break between different BWEM parents, no synthetic choke possible: areas " + pairLabel + " tileEdges=" + crossParentEdges.get(pairLabel));
         }
 
         for (Long pairKey : edgesByPair.keySet()) {
@@ -793,21 +816,80 @@ public class GameMap {
 
     private void buildChokeFromSegment(ArrayList<int[]> segment, Area firstArea, Area secondArea) {
         ArrayList<WalkPosition> geometry = new ArrayList<>();
+        boolean heightTransition = firstArea.getGroundHeight() == null || firstArea.getGroundHeight() != secondArea.getGroundHeight();
+        boolean passableOnly = rebuildingPassableRuns && heightTransition;
 
         for (int[] edge : segment) {
             boolean horizontalAdjacency = edge[2] - edge[0] == 1;
 
             for (int i = 0; i < 4; i++) {
+                WalkPosition boundaryWalk;
+                WalkPosition acrossWalk;
+
                 if (horizontalAdjacency) {
-                    geometry.add(new WalkPosition(edge[2] * 4, edge[1] * 4 + i));
+                    boundaryWalk = new WalkPosition(edge[2] * 4, edge[1] * 4 + i);
+                    acrossWalk = new WalkPosition(edge[2] * 4 - 1, edge[1] * 4 + i);
                 }
                 else {
-                    geometry.add(new WalkPosition(edge[0] * 4 + i, edge[3] * 4));
+                    boundaryWalk = new WalkPosition(edge[0] * 4 + i, edge[3] * 4);
+                    acrossWalk = new WalkPosition(edge[0] * 4 + i, edge[3] * 4 - 1);
                 }
+
+                if (passableOnly && (!game.isWalkable(boundaryWalk.getX(), boundaryWalk.getY()) || !game.isWalkable(acrossWalk.getX(), acrossWalk.getY()))) {
+                    continue;
+                }
+
+                if (passableOnly) {
+                    boolean nearBwemChoke = false;
+
+                    for (ChokePoint existing : chokes) {
+                        if (existing.getBwemChoke() != null && existing.getCenter().getApproxDistance(boundaryWalk.toPosition()) < 64) {
+                            nearBwemChoke = true;
+                            break;
+                        }
+                    }
+
+                    if (nearBwemChoke) {
+                        continue;
+                    }
+                }
+
+                geometry.add(boundaryWalk);
             }
         }
 
+        if (passableOnly) {
+            System.out.println("[ChokeDebug] height break areas " + firstArea.getId() + "(" + firstArea.getGroundHeight() + ")<->" + secondArea.getId() + "(" + secondArea.getGroundHeight() + ") boundaryPoints=" + segment.size() * 4 + " passablePoints=" + geometry.size());
+        }
+
         if (geometry.isEmpty()) {
+            return;
+        }
+
+        if (passableOnly) {
+            boolean[] assigned = new boolean[geometry.size()];
+
+            for (int i = 0; i < geometry.size(); i++) {
+                if (assigned[i]) {
+                    continue;
+                }
+
+                double[] runDistances = edgeDistancesFrom(geometry, i);
+                ArrayList<WalkPosition> run = new ArrayList<>();
+
+                for (int j = 0; j < geometry.size(); j++) {
+                    if (runDistances[j] == Double.MAX_VALUE) {
+                        continue;
+                    }
+
+                    assigned[j] = true;
+                    run.add(geometry.get(j));
+                }
+
+                System.out.println("[ChokeDebug]   run areas " + firstArea.getId() + "<->" + secondArea.getId() + " points=" + run.size() + " from " + run.get(0).toPosition() + " to " + run.get(run.size() - 1).toPosition());
+                addSyntheticChoke(run, firstArea, secondArea, run.get(0).toPosition(), run.get(run.size() - 1).toPosition());
+            }
+
             return;
         }
 
@@ -829,9 +911,13 @@ public class GameMap {
 
         Position bestEnd1 = marchToUnwalkable(firstExtreme, secondExtreme);
         Position bestEnd2 = marchToUnwalkable(secondExtreme, firstExtreme);
-        int bestWidth = (int) bestEnd1.getDistance(bestEnd2);
 
-        Position midpoint = new Position((bestEnd1.getX() + bestEnd2.getX()) / 2, (bestEnd1.getY() + bestEnd2.getY()) / 2);
+        addSyntheticChoke(geometry, firstArea, secondArea, bestEnd1, bestEnd2);
+    }
+
+    private void addSyntheticChoke(List<WalkPosition> geometry, Area firstArea, Area secondArea, Position end1, Position end2) {
+        int width = (int) end1.getDistance(end2);
+        Position midpoint = new Position((end1.getX() + end2.getX()) / 2, (end1.getY() + end2.getY()) / 2);
         WalkPosition centerWalk = geometry.get(0);
         int closestDistance = Integer.MAX_VALUE;
 
@@ -853,12 +939,15 @@ public class GameMap {
 
             for (WalkPosition boundaryWalk : geometry) {
                 if (existing.getCenter().getApproxDistance(boundaryWalk.toPosition()) < 64) {
+                    if (rebuildingPassableRuns) {
+                        System.out.println("[ChokeDebug]   dropped by BWEM choke centered " + existing.getCenter() + " areas " + firstArea.getId() + "<->" + secondArea.getId() + " points=" + geometry.size() + " nearPoint=" + boundaryWalk.toPosition());
+                    }
                     return;
                 }
             }
         }
 
-        ChokePoint choke = new ChokePoint(center, firstArea, secondArea, geometry, bestEnd1, bestEnd2, bestWidth);
+        ChokePoint choke = new ChokePoint(center, firstArea, secondArea, geometry, end1, end2, width);
 
         if (firstArea.getGroundHeight() != null && firstArea.getGroundHeight() == secondArea.getGroundHeight()) {
             choke.setHeightTransition(false);
@@ -915,9 +1004,171 @@ public class GameMap {
         }
     }
 
-    private void purgeWideSyntheticChokes() {
+    private void splitHeightTransitionChokes() {
         for (ChokePoint choke : new ArrayList<>(chokes)) {
             if (!choke.isSynthetic()) {
+                continue;
+            }
+
+            chokes.remove(choke);
+
+            if (choke.getFirstArea() != null) {
+                choke.getFirstArea().getChokes().remove(choke);
+            }
+            if (choke.getSecondArea() != null) {
+                choke.getSecondArea().getChokes().remove(choke);
+            }
+        }
+
+        rebuildingPassableRuns = true;
+        createFrontierChokes(new ArrayList<>(areas));
+        rebuildingPassableRuns = false;
+
+        for (ChokePoint choke : new ArrayList<>(chokes)) {
+            if (!choke.isSynthetic() || !choke.isHeightTransition()) {
+                continue;
+            }
+
+            List<WalkPosition> geometry = choke.getGeometry();
+            Area firstArea = choke.getFirstArea();
+            Area secondArea = choke.getSecondArea();
+
+            if (geometry.size() < 2 || firstArea == null || secondArea == null) {
+                continue;
+            }
+
+            double[] sweepDistances = edgeDistancesFrom(geometry, 0);
+            int firstEndIndex = 0;
+
+            for (int i = 0; i < geometry.size(); i++) {
+                if (sweepDistances[i] != Double.MAX_VALUE && sweepDistances[i] > sweepDistances[firstEndIndex]) {
+                    firstEndIndex = i;
+                }
+            }
+
+            double[] edgeDistances = edgeDistancesFrom(geometry, firstEndIndex);
+            int secondEndIndex = firstEndIndex;
+
+            for (int i = 0; i < geometry.size(); i++) {
+                if (edgeDistances[i] != Double.MAX_VALUE && edgeDistances[i] > edgeDistances[secondEndIndex]) {
+                    secondEndIndex = i;
+                }
+            }
+
+            double edgeLength = edgeDistances[secondEndIndex];
+
+            if (edgeLength == 0) {
+                continue;
+            }
+
+            Position firstEnd = geometry.get(firstEndIndex).toPosition();
+            Position secondEnd = geometry.get(secondEndIndex).toPosition();
+
+            chokes.remove(choke);
+            firstArea.getChokes().remove(choke);
+            secondArea.getChokes().remove(choke);
+
+            System.out.println("[ChokeDebug] built height choke areas " + firstArea.getId() + "<->" + secondArea.getId() + " edgeLength=" + (int) edgeLength + " ends " + firstEnd + " " + secondEnd);
+
+            if (edgeLength <= 1000) {
+                addSyntheticChoke(geometry, firstArea, secondArea, firstEnd, secondEnd);
+                continue;
+            }
+
+            double halfwayAlongEdge = edgeLength / 2;
+            ArrayList<WalkPosition> firstHalf = new ArrayList<>();
+            ArrayList<WalkPosition> secondHalf = new ArrayList<>();
+            int firstInnerIndex = -1;
+            int secondInnerIndex = -1;
+
+            for (int i = 0; i < geometry.size(); i++) {
+                WalkPosition walk = geometry.get(i);
+                boolean inFirstHalf;
+
+                if (edgeDistances[i] == Double.MAX_VALUE) {
+                    inFirstHalf = walk.toPosition().getDistance(firstEnd) < walk.toPosition().getDistance(secondEnd);
+                }
+                else {
+                    inFirstHalf = edgeDistances[i] <= halfwayAlongEdge;
+                }
+
+                if (inFirstHalf) {
+                    firstHalf.add(walk);
+
+                    if (edgeDistances[i] != Double.MAX_VALUE && (firstInnerIndex == -1 || edgeDistances[i] > edgeDistances[firstInnerIndex])) {
+                        firstInnerIndex = i;
+                    }
+                }
+                else {
+                    secondHalf.add(walk);
+
+                    if (edgeDistances[i] != Double.MAX_VALUE && (secondInnerIndex == -1 || edgeDistances[i] < edgeDistances[secondInnerIndex])) {
+                        secondInnerIndex = i;
+                    }
+                }
+            }
+
+            if (firstHalf.isEmpty() || secondHalf.isEmpty() || firstInnerIndex == -1 || secondInnerIndex == -1) {
+                addSyntheticChoke(geometry, firstArea, secondArea, firstEnd, secondEnd);
+                continue;
+            }
+
+            addSyntheticChoke(firstHalf, firstArea, secondArea, firstEnd, geometry.get(firstInnerIndex).toPosition());
+            addSyntheticChoke(secondHalf, firstArea, secondArea, geometry.get(secondInnerIndex).toPosition(), secondEnd);
+        }
+    }
+
+    private double[] edgeDistancesFrom(List<WalkPosition> geometry, int source) {
+        double[] edgeDistances = new double[geometry.size()];
+        boolean[] settled = new boolean[geometry.size()];
+        Arrays.fill(edgeDistances, Double.MAX_VALUE);
+        edgeDistances[source] = 0;
+
+        while (true) {
+            int current = -1;
+
+            for (int i = 0; i < geometry.size(); i++) {
+                if (settled[i] || edgeDistances[i] == Double.MAX_VALUE) {
+                    continue;
+                }
+
+                if (current == -1 || edgeDistances[i] < edgeDistances[current]) {
+                    current = i;
+                }
+            }
+
+            if (current == -1) {
+                break;
+            }
+
+            settled[current] = true;
+            WalkPosition currentWalk = geometry.get(current);
+
+            for (int j = 0; j < geometry.size(); j++) {
+                if (settled[j]) {
+                    continue;
+                }
+
+                WalkPosition candidateWalk = geometry.get(j);
+
+                if (Math.abs(candidateWalk.getX() - currentWalk.getX()) > 4 || Math.abs(candidateWalk.getY() - currentWalk.getY()) > 4) {
+                    continue;
+                }
+
+                double stepDistance = edgeDistances[current] + currentWalk.toPosition().getDistance(candidateWalk.toPosition());
+
+                if (stepDistance < edgeDistances[j]) {
+                    edgeDistances[j] = stepDistance;
+                }
+            }
+        }
+
+        return edgeDistances;
+    }
+
+    private void purgeWideSyntheticChokes() {
+        for (ChokePoint choke : new ArrayList<>(chokes)) {
+            if (!choke.isSynthetic() || choke.isHeightTransition()) {
                 continue;
             }
 
