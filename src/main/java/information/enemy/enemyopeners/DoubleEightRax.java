@@ -31,7 +31,7 @@ public class DoubleEightRax extends  EnemyStrategy {
             if (enemyUnit.getEnemyType() == UnitType.Terran_Barracks && enemyUnit.getEnemyUnit().isVisible()) {
                 Time finishTime = new Time(time.getFrames() + remainingBuildFrames(enemyUnit));
 
-                if (finishTime.lessThanOrEqual(new Time(2, 45))) {
+                if (finishTime.lessThanOrEqual(new Time(2, 40))) {
                     earlyBarracks.add(enemyUnit);
                 }
             }

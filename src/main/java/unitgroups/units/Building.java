@@ -30,8 +30,8 @@ public class Building extends CombatUnits {
         }
 
         Position target = new Position(
-                (int) (bunkerPosition.x + (dx / length) * 160),
-                (int) (bunkerPosition.y + (dy / length) * 160));
+                (int) (bunkerPosition.x + (dx / length) * 210),
+                (int) (bunkerPosition.y + (dy / length) * 210));
 
         unit.move(target);
     }

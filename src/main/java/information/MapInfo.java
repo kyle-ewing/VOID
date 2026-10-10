@@ -23,6 +23,7 @@ import map.bwemwrappers.ChokePoint;
 import map.bwemwrappers.GameMap;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
+import util.Time;
 
 public class MapInfo {
     private static final int FLYER_BASE_TILE_BUFFER = 2;
@@ -46,6 +47,7 @@ public class MapInfo {
     private Position naturalBunkerCenter;
     private ChokePoint outsideNaturalChoke;
     private Position pastNaturalRallyPoint;
+    private Position mainEdgeTowardCenter;
     private HashSet<Base> mapBases = new HashSet<>();
     private HashSet<Base> startingBases = new HashSet<>();
     private HashSet<Mineral> startingMinerals = new HashSet<>();
@@ -83,6 +85,7 @@ public class MapInfo {
     private HashMap<Base, Base> startingBaseMinOnlys = new HashMap<>();
     private HashMap<Base, ChokePoint> startingBaseMainChokes = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
+    private HashMap<Base, Integer> expansionLockouts = new HashMap<>();
     private boolean naturalOwned = false;
 
     public MapInfo(Game game, GameMap gameMap) {
@@ -122,6 +125,7 @@ public class MapInfo {
         setNaturalChoke();
         setOutsideNaturalChoke();
         setStartingBaseTiles();
+        setMainEdgeTowardCenter();
         setNaturalBaseTiles();
         extendNaturalTiles();
         setOrderedExpansions();
@@ -259,6 +263,28 @@ public class MapInfo {
 
     private void setNaturalBaseTiles() {
         naturalTiles = getTilesForBase(naturalBase);
+    }
+
+    private void setMainEdgeTowardCenter() {
+        if (startingBase == null || startingBase.getCenter() == null) {
+            return;
+        }
+
+        Position baseCenter = startingBase.getCenter();
+        long towardX = game.mapWidth() * 16 - baseCenter.getX();
+        long towardY = game.mapHeight() * 16 - baseCenter.getY();
+        long bestProjection = Long.MIN_VALUE;
+
+        for (TilePosition tile : baseTiles) {
+            long tileX = tile.getX() * 32 + 16;
+            long tileY = tile.getY() * 32 + 16;
+            long projection = tileX * towardX + tileY * towardY;
+
+            if (projection > bestProjection) {
+                bestProjection = projection;
+                mainEdgeTowardCenter = new Position((int) tileX, (int) tileY);
+            }
+        }
     }
 
     private void setStartingMineralPatches() {
@@ -1700,6 +1726,10 @@ public class MapInfo {
                 continue;
             }
 
+            if (expansionLockouts.containsKey(base) && game.getFrameCount() - expansionLockouts.get(base) < new Time(2, 0).getFrames()) {
+                continue;
+            }
+
             List<Position> path = allPathsMap.get(base);
             if (path == null || path.isEmpty()) {
                 continue;
@@ -2000,6 +2030,10 @@ public class MapInfo {
         return mainCliffEdge;
     }
 
+    public Position getMainEdgeTowardCenter() {
+        return mainEdgeTowardCenter;
+    }
+
     public HashSet<TilePosition> getCombinedTankTiles() {
         return combinedTankTiles;
     }
@@ -2194,6 +2228,7 @@ public class MapInfo {
             }
 
             if (destroyedBase != null) {
+                expansionLockouts.put(destroyedBase, game.getFrameCount());
                 HashSet<TilePosition> expansionTiles = baseTilesAllBases.get(destroyedBase);
                 if (expansionTiles != null) {
                     baseTiles.removeAll(expansionTiles);

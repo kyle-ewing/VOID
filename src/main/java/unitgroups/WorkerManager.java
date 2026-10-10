@@ -277,6 +277,11 @@ public class WorkerManager {
                     }
                     break;
                 case REPAIRING:
+                    if (worker.getUnit().getHitPoints() < 25) {
+                        releaseDamagedRepairer(worker);
+                        break;
+                    }
+
                     if (worker.isPreemptiveRepair()) {
                         Unit nearbyDamaged = findNearbyDamagedBuilding(worker, 75);
                         if (nearbyDamaged != null) {
@@ -983,6 +988,11 @@ public class WorkerManager {
                     continue;
                 }
 
+                if (building.isLifted() && gameState.getKnownEnemyUnits().stream()
+                        .anyMatch(eu -> eu.getEnemyPosition() != null && eu.getEnemyPosition().getDistance(building.getPosition()) < 400)) {
+                    continue;
+                }
+
                 if (!buildingRepair.containsKey(building)) {
                     buildingRepair.put(building, null);
                 }
@@ -994,7 +1004,7 @@ public class WorkerManager {
                 Workers closestRepairer = null;
                 int closestDistance = Integer.MAX_VALUE;
                 for (Workers worker : workers) {
-                    if (worker.getUnit() == null || worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+                    if (worker.getUnit() == null || worker.getWorkerStatus() != WorkerStatus.MINERALS || worker.getUnit().getHitPoints() < 25) {
                         continue;
                     }
 
@@ -1041,6 +1051,21 @@ public class WorkerManager {
             }
             repairForce.clear();
         }
+    }
+
+    private void releaseDamagedRepairer(Workers worker) {
+        repairForce.remove(worker);
+
+        for (Unit building : buildingRepair.keySet()) {
+            if (buildingRepair.get(building) == worker) {
+                buildingRepair.put(building, null);
+            }
+        }
+
+        worker.setRepairTarget(null);
+        worker.setPreemptiveRepair(false);
+        worker.setAssignedToBase(false);
+        worker.setWorkerStatus(WorkerStatus.IDLE);
     }
 
     private void preemptiveBunkerRepair() {
@@ -1158,7 +1183,7 @@ public class WorkerManager {
             return;
         }
         HashSet<Workers> availableWorkers = (HashSet<Workers>) new HashSet<>(workers).stream()
-                .filter(worker -> worker.getWorkerStatus() == WorkerStatus.MINERALS).collect(Collectors.toSet());
+                .filter(worker -> worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().getHitPoints() >= 25).collect(Collectors.toSet());
 
         Workers repairWorker = ClosestUnit.findClosestWorker(bunker.getPosition(), availableWorkers, mapInfo.getPathFinding(), false);
 
@@ -1288,8 +1313,8 @@ public class WorkerManager {
 
         int distance = Math.max(1, builderPos.getApproxDistance(workerPos));
 
-        int moveX = workerPos.getX() + (workerPos.getX() - builderPos.getX() * 100 / distance);
-        int moveY = workerPos.getY() + (workerPos.getY() - builderPos.getY() * 100 / distance);
+        int moveX = workerPos.getX() + (workerPos.getX() - builderPos.getX()) * 100 / distance;
+        int moveY = workerPos.getY() + (workerPos.getY() - builderPos.getY()) * 100 / distance;
         moveX = Math.min(Math.max(moveX, 0), game.mapWidth() * 32);
         moveY = Math.min(Math.max(moveY, 0), game.mapHeight() * 32);
 

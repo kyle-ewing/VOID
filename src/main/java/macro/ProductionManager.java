@@ -53,6 +53,9 @@ public class ProductionManager {
     private HashSet<Unit> productionBuildings;
     private HashSet<Unit> allBuildings;
     private HashSet<TilePosition> reservedTurretPositions = new HashSet<>();
+    private HashMap<Position, Integer> destroyedBuildingFrames = new HashMap<>();
+    private HashSet<Position> excludedBuildZones = new HashSet<>();
+    private HashMap<PlannedItem, Integer> deferredPriorities = new HashMap<>();
     private PriorityQueue<PlannedItem> productionQueue;
     private BuildOrder startingOpener;
     private UnitProduction unitProduction;
@@ -246,6 +249,11 @@ public class ProductionManager {
                     }
                     else if (pi.getPlannedItemType() == PlannedItemType.BUILDING) {
                         if (!meetsRequirements(pi.getUnitType())) {
+                            boolean noLargeTiles = pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty();
+                            boolean noMediumTiles = pi.getUnitType().tileHeight() == 2 && pi.getUnitType().tileWidth() == 3 && buildTiles.getMediumBuildTiles().isEmpty();
+                            if (noLargeTiles || noMediumTiles) {
+                                pi.setSupply(0);
+                            }
                             priorityStop = false;
                             blockedByHigherPriority = false;
                             continue;
@@ -265,6 +273,12 @@ public class ProductionManager {
                             //Skip over if out of tiles
                             if (pi.getBuildPosition() == null) {
                                 hasHighPriorityBuilding = false;
+                                if (pi.getPriority() <= 1) {
+                                    priorityStop = false;
+                                }
+                                if (pi.getUnitType() != UnitType.Terran_Command_Center) {
+                                    pi.setSupply(0);
+                                }
                                 continue;
                             }
                         }
@@ -279,6 +293,18 @@ public class ProductionManager {
                             worker = pi.getAssignedBuilder();
 
                             if ((worker.getWorkerStatus() == WorkerStatus.MINERALS || worker.getWorkerStatus() == WorkerStatus.ATTACKING) && worker.getUnit().canBuild(pi.getUnitType())) {
+                                if (pi.getUnitType() == UnitType.Terran_Supply_Depot) {
+                                    pi.setResetCounter(pi.getResetCounter() + 1);
+
+                                    if (pi.getResetCounter() > 3) {
+                                        buildTiles.getMediumBuildTiles().remove(pi.getBuildPosition());
+                                        pi.setBuildPosition(null);
+                                        pi.setAssignedBuilder(null);
+                                        pi.setResetCounter(0);
+                                        continue;
+                                    }
+                                }
+
                                 worker.build(pi, gameState.getResourceTracking());
                             }
                             else if (worker.getWorkerStatus() != WorkerStatus.MINERALS && worker.getWorkerStatus() != WorkerStatus.ATTACKING) {
@@ -358,7 +384,7 @@ public class ProductionManager {
                     if (worker == pi.getAssignedBuilder() && worker.getWorkerStatus() == WorkerStatus.MOVING_TO_BUILD) {
                         if (worker.getUnit().getDistance(pi.getBuildPosition().toPosition()) < 224) {
                             if (pi.getUnitType() == UnitType.Terran_Command_Center
-                                    && worker.getIdleClock() > 24) {
+                                    && worker.getNearTargetFrameCount() > 72) {
                                 gameState.scanPosition(pi.getBuildPosition().toPosition());
                                 worker.setWorkerStatus(WorkerStatus.CLEARINGMINE);
                                 worker.setIdleClock(0);
@@ -592,7 +618,12 @@ public class ProductionManager {
                 return;
             }
 
-            if (freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() >= 2) {
+            if (freeSupply <= 6 && totalSupply >= 100 && buildTiles.getMediumBuildTiles().size() >= 3) {
+                addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
+                addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
+                addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
+            }
+            else if (freeSupply <= 4 && buildTiles.getMediumBuildTiles().size() >= 2) {
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
                 addToQueue(UnitType.Terran_Supply_Depot, PlannedItemType.BUILDING, 1);
             }
@@ -793,9 +824,31 @@ public class ProductionManager {
         return false;
     }
 
+    private double distanceToExcludedZone(TilePosition tilePosition, UnitType unitType) {
+        double closestZoneDistance = Integer.MAX_VALUE;
+
+        if (tilePosition == null || unitType == null) {
+            return closestZoneDistance;
+        }
+
+        Position candidateCenter = new Position(tilePosition.getX() * 32 + unitType.tileWidth() * 16, tilePosition.getY() * 32 + unitType.tileHeight() * 16);
+
+        for (Position zoneCenter : excludedBuildZones) {
+            double zoneDistance = zoneCenter.getDistance(candidateCenter);
+
+            if (zoneDistance < closestZoneDistance) {
+                closestZoneDistance = zoneDistance;
+            }
+        }
+
+        return closestZoneDistance;
+    }
+
     private void setBuildingPosition(PlannedItem pi) {
         TilePosition cloestBuildTile = null;
         int distanceFromSCV = Integer.MAX_VALUE;
+        TilePosition fallbackTile = null;
+        double fallbackZoneDistance = -1;
 
         if (pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4) {
             if (buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty() && pi.getUnitType().canBuildAddon()) {
@@ -809,6 +862,15 @@ public class ProductionManager {
                     }
 
                     if (!hasWalkablePerimeter(tilePosition, pi.getUnitType())) {
+                        continue;
+                    }
+
+                    double zoneDistance = distanceToExcludedZone(tilePosition, pi.getUnitType());
+                    if (zoneDistance <= 150) {
+                        if (zoneDistance > fallbackZoneDistance) {
+                            fallbackZoneDistance = zoneDistance;
+                            fallbackTile = tilePosition;
+                        }
                         continue;
                     }
 
@@ -831,6 +893,15 @@ public class ProductionManager {
                             continue;
                         }
 
+                        double zoneDistance = distanceToExcludedZone(tilePosition, pi.getUnitType());
+                        if (zoneDistance <= 150) {
+                            if (zoneDistance > fallbackZoneDistance) {
+                                fallbackZoneDistance = zoneDistance;
+                                fallbackTile = tilePosition;
+                            }
+                            continue;
+                        }
+
                         int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                         if (distance < distanceFromSCV) {
@@ -850,6 +921,15 @@ public class ProductionManager {
                         continue;
                     }
 
+                    double zoneDistance = distanceToExcludedZone(tilePosition, pi.getUnitType());
+                    if (zoneDistance <= 150) {
+                        if (zoneDistance > fallbackZoneDistance) {
+                            fallbackZoneDistance = zoneDistance;
+                            fallbackTile = tilePosition;
+                        }
+                        continue;
+                    }
+
                     int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                     if (distance < distanceFromSCV) {
@@ -857,6 +937,10 @@ public class ProductionManager {
                         cloestBuildTile = tilePosition;
                     }
                 }
+            }
+
+            if (cloestBuildTile == null) {
+                cloestBuildTile = fallbackTile;
             }
             pi.setBuildPosition(cloestBuildTile);
 
@@ -905,6 +989,15 @@ public class ProductionManager {
                     continue;
                 }
 
+                double zoneDistance = distanceToExcludedZone(tilePosition, pi.getUnitType());
+                if (zoneDistance <= 150) {
+                    if (zoneDistance > fallbackZoneDistance) {
+                        fallbackZoneDistance = zoneDistance;
+                        fallbackTile = tilePosition;
+                    }
+                    continue;
+                }
+
                 int distance = tilePosition.getApproxDistance(mapInfo.getStartingBase().getLocation());
 
                 if (useFurthest) {
@@ -919,6 +1012,10 @@ public class ProductionManager {
                         cloestBuildTile = tilePosition;
                     }
                 }
+            }
+
+            if (cloestBuildTile == null) {
+                cloestBuildTile = fallbackTile;
             }
             pi.setBuildPosition(cloestBuildTile);
         }
@@ -1012,6 +1109,7 @@ public class ProductionManager {
             switch (gameState.getEnemyOpener().getStrategyName()) {
                 case CANNONRUSH:
                 case FOURRAX:
+                case MARINERUSH:
                 case SCVRUSH:
                 case DOUBLEEIGHTRAX:
                     return buildTiles.getMainChokeBunker();
@@ -1170,6 +1268,22 @@ public class ProductionManager {
                         pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED)
                     .min(Comparator.comparingInt(PlannedItem::getSupply))
                     .ifPresent(productionQueue::remove);
+            }
+
+            for (UnitType deferredBuilding : gameState.getEnemyOpener().deferredBuildings()) {
+                for (PlannedItem pi : productionQueue) {
+                    if (pi.getUnitType() != deferredBuilding || pi.getPlannedItemStatus() == PlannedItemStatus.IN_PROGRESS || pi.getPlannedItemStatus() == PlannedItemStatus.COMPLETE) {
+                        continue;
+                    }
+
+                    if (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED && pi.getAssignedBuilder() != null) {
+                        pi.getAssignedBuilder().buildReset(pi, gameState.getResourceTracking());
+                        pi.setAssignedBuilder(null);
+                    }
+
+                    deferredPriorities.putIfAbsent(pi, pi.getPriority());
+                    pi.setPriority(2);
+                }
             }
         }
         else {
@@ -1347,9 +1461,16 @@ public class ProductionManager {
         for (EnemyTechUnits techUnit : gameState.getKnownEnemyTechUnits()) {
             if (techUnit instanceof SiegeTank
                     && gameState.getEnemyRace() == Race.Terran
-                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))) {
+                    && new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))
+                    && new Time(techUnit.getFirstDetectedFrame()).greaterThan(new Time(6, 0))) {
                 continue;
             }
+
+            int responsePriority = 1;
+            if (techUnit instanceof SiegeTank) {
+                responsePriority = 2;
+            }
+            int finalResponsePriority = responsePriority;
 
             if (techUnit.getFriendlyBuildingResponse().isEmpty()) {
                 continue;
@@ -1361,22 +1482,22 @@ public class ProductionManager {
 
             techUnit.getFriendlyBuildingResponse().removeIf(buildingPriority ->
                     productionQueue.stream().anyMatch(pi -> pi.getUnitType() == buildingPriority
-                            && ((pi.getPriority() <= 1 && pi.getSupply() == 0) || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
+                            && ((pi.getPriority() <= finalResponsePriority && pi.getSupply() == 0) || pi.getPlannedItemStatus() != PlannedItemStatus.NOT_STARTED)));
 
             for (UnitType buildingResponse : techUnit.getFriendlyBuildingResponse()) {
                 productionQueue.removeIf(pi -> pi.getUnitType() == buildingResponse
                         && pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED
-                        && (pi.getPriority() > 1 || pi.getSupply() > 0));
+                        && (pi.getPriority() > finalResponsePriority || pi.getSupply() > 0));
 
                 if (buildingResponse.isAddon()) {
-                    addToQueue(buildingResponse, PlannedItemType.ADDON, 1);
+                    addToQueue(buildingResponse, PlannedItemType.ADDON, finalResponsePriority);
                 }
                 else {
                     if (buildingResponse.canBuildAddon()) {
-                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1, true);
+                        addToQueue(buildingResponse, PlannedItemType.BUILDING, finalResponsePriority, true);
                     }
                     else {
-                        addToQueue(buildingResponse, PlannedItemType.BUILDING, 1);
+                        addToQueue(buildingResponse, PlannedItemType.BUILDING, finalResponsePriority);
                     }
                 }
 
@@ -1839,6 +1960,13 @@ public class ProductionManager {
     public void onUnitComplete(Unit unit) {
         addUnitTypeCount(unit);
 
+        if (unit.getType() == UnitType.Terran_Bunker && !deferredPriorities.isEmpty()) {
+            for (Map.Entry<PlannedItem, Integer> deferred : deferredPriorities.entrySet()) {
+                deferred.getKey().setPriority(deferred.getValue());
+            }
+            deferredPriorities.clear();
+        }
+
         if (unit.getType() == UnitType.Terran_Command_Center
                 && productionQueue.stream()
                 .noneMatch(pi -> pi.getUnitType() == UnitType.Terran_Refinery
@@ -1860,6 +1988,22 @@ public class ProductionManager {
         removeBuilding(unit);
 
         if (unit.getType().isBuilding()) {
+            if (unit.getType() != UnitType.Terran_Bunker && unit.getType() != UnitType.Terran_Missile_Turret && unit.getPosition() != null) {
+                int destroyedFrame = game.getFrameCount();
+                int windowFrames = new Time(1, 0).getFrames();
+                Position destroyedCenter = unit.getPosition();
+                destroyedBuildingFrames.values().removeIf(previousFrame -> destroyedFrame - previousFrame >= windowFrames);
+
+                for (Position previousCenter : destroyedBuildingFrames.keySet()) {
+                    if (previousCenter.getDistance(destroyedCenter) <= 96) {
+                        excludedBuildZones.add(destroyedCenter);
+                        break;
+                    }
+                }
+
+                destroyedBuildingFrames.put(destroyedCenter, destroyedFrame);
+            }
+
             if (unit.getType() == UnitType.Terran_Refinery) {
                 return;
             }

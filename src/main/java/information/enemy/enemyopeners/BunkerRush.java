@@ -26,6 +26,13 @@ public class BunkerRush extends EnemyStrategy {
                 continue;
             }
 
+            if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker
+                    && time.lessThanOrEqual(new Time(5, 0))
+                    && mapInfo.getNaturalBase() != null
+                    && enemyUnit.getEnemyPosition().getDistance(mapInfo.getNaturalBase().getCenter()) < 640) {
+                return true;
+            }
+
             if (mapInfo.getBaseTiles().contains(enemyUnit.getEnemyPosition().toTilePosition()) || mapInfo.getNaturalTiles().contains(enemyUnit.getEnemyPosition().toTilePosition())) {
                 if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker ) {
                     return true;

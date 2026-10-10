@@ -32,6 +32,7 @@ public class OneBaseLurker extends EnemyStrategy {
         if (mapInfo.getEnemyNatural() != null) {
             hasNaturalHatch = enemyUnits.stream()
                     .filter(eu -> eu.getEnemyType().isResourceDepot())
+                    .filter(eu -> eu.getEnemyPosition() != null)
                     .anyMatch(eu -> eu.getEnemyPosition().getDistance(mapInfo.getEnemyNatural().getLocation().toPosition()) < 200);
         }
 

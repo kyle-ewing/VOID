@@ -19,6 +19,8 @@ import information.enemy.enemyarmycomposition.EnemyArmyCompManager;
 import information.enemy.enemyarmycomposition.EnemyArmyCompResponse;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
+import information.enemy.enemytechunits.EnemyTechUnits;
+import information.enemy.enemytechunits.SiegeTank;
 import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderName;
 import macro.buildorders.BuildType;
@@ -102,7 +104,7 @@ public class UnitProduction {
                 }
                 else if (unitType == UnitType.Terran_Wraith) {
                     if (gameState.getEnemyRace() == Race.Terran
-                            && (new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))
+                            && ((new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0)) && !earlyEnemyTankSeen())
                             || new Time(game.getFrameCount()).greaterThan(new Time(14, 0)))) {
                         continue;
                     }
@@ -201,6 +203,7 @@ public class UnitProduction {
         boolean enemyIsZerg = gameState.getEnemyRace() == Race.Zerg;
         boolean hydraOrLurkerSeen = false;
         int sunkenCount = 0;
+        int enemyTankCount = 0;
         for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {
             UnitType enemyType = enemy.getEnemyType();
             if (enemyType == UnitType.Zerg_Hydralisk || enemyType == UnitType.Zerg_Lurker || enemyType == UnitType.Zerg_Lurker_Egg) {
@@ -208,6 +211,9 @@ public class UnitProduction {
             }
             else if (enemyType == UnitType.Zerg_Sunken_Colony) {
                 sunkenCount++;
+            }
+            else if (enemyType == UnitType.Terran_Siege_Tank_Tank_Mode || enemyType == UnitType.Terran_Siege_Tank_Siege_Mode) {
+                enemyTankCount++;
             }
         }
         boolean zergTanksAllowed = !enemyIsZerg || hydraOrLurkerSeen || sunkenCount > 2;
@@ -234,7 +240,7 @@ public class UnitProduction {
 
                     if (unitType == UnitType.Terran_Wraith) {
                         if (gameState.getEnemyRace() == Race.Terran
-                                && (new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0))
+                                && ((new Time(game.getFrameCount()).lessThanOrEqual(new Time(8, 0)) && !earlyEnemyTankSeen())
                                 || new Time(game.getFrameCount()).greaterThan(new Time(14, 0)))) {
                             continue;
                         }
@@ -293,7 +299,7 @@ public class UnitProduction {
                         && !hasInQueue(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && tankCount < 24
                         && zergTanksAllowed
-                        && (firstTankPriority || tankCount < 5 || mechCount * 2 >= tankCount * 3 || ratioOverMaximum)) {
+                        && (firstTankPriority || tankCount < 5 || mechCount * 2 >= tankCount * 3 || ratioOverMaximum || enemyTankCount > tankCount)) {
                     if (firstTankPriority) {
                         items.add(plannedUnit(UnitType.Terran_Siege_Tank_Tank_Mode, 1));
                     }
@@ -443,6 +449,15 @@ public class UnitProduction {
         return priority == 1
                 && freeSupply >= unitType.supplyRequired() / 2
                 && gameState.getResourceTracking().getAvailableGas() <= unitType.gasPrice();
+    }
+
+    private boolean earlyEnemyTankSeen() {
+        for (EnemyTechUnits techUnit : gameState.getKnownEnemyTechUnits()) {
+            if (techUnit instanceof SiegeTank && new Time(techUnit.getFirstDetectedFrame()).lessThanOrEqual(new Time(6, 0))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isLurkerOpener() {

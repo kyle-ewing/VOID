@@ -120,6 +120,10 @@ public class EnemyInformation {
                 continue;
             }
 
+            if (enemyUnit.getEnemyType().isBuilding() && enemyUnit.getEnemyUnit().isLifted()) {
+                continue;
+            }
+
             Position enemyPos = enemyUnit.getEnemyUnit().getPosition();
 
             if (enemyUnit.getEnemyType().isFlyer() && !enemyUnit.getEnemyType().isBuilding()
@@ -256,6 +260,7 @@ public class EnemyInformation {
                     enemyTechUnit.techBuildingResponse();
                     enemyTechUnit.techUpgradeResponse();
                     enemyTechUnit.setTriggeredResponse(true);
+                    enemyTechUnit.setFirstDetectedFrame(game.getFrameCount());
                 }
 
                 enemyTechUnits.add(enemyTechUnit);

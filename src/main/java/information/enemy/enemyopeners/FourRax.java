@@ -24,6 +24,12 @@ public class FourRax extends  EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        if (enemyUnits.stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Terran_Refinery
+                || eu.getEnemyType() == UnitType.Terran_Factory
+                || eu.getEnemyType() == UnitType.Terran_Academy)) {
+            return false;
+        }
+
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyType() == null || enemyUnit.getEnemyPosition() == null ) {
                 continue;
@@ -37,7 +43,9 @@ public class FourRax extends  EnemyStrategy {
                     && enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_SCV).count() <= 10
                     && (time.lessThanOrEqual(new Time(2, 20))
                     || (enemyUnit.getEnemyUnit().getDistance(mapInfo.getStartingBase().getCenter()) < 1500) && time.lessThanOrEqual(new Time(2, 50))
+                        && (mapInfo.getEnemyMain() == null || enemyUnit.getEnemyPosition().getDistance(mapInfo.getEnemyMain().getCenter()) >= 900)
                     || enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Marine).count() >= 2 && time.lessThanOrEqual(new Time(2, 45))
+                        && (mapInfo.getEnemyMain() == null || mapInfo.getEnemyMain().getCenter() == null || enemyUnit.getEnemyPosition().getDistance(mapInfo.getEnemyMain().getCenter()) >= 900)
                     || enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Marine).count() >= 3 && time.lessThanOrEqual(new Time(3, 5)))) {
                     return true;
             }
@@ -61,5 +69,12 @@ public class FourRax extends  EnemyStrategy {
 
     public HashSet<UnitType> removeBuildings() {
         return new HashSet<>();
+    }
+
+    @Override
+    public HashSet<UnitType> deferredBuildings() {
+        HashSet<UnitType> deferredBuildings = new HashSet<>();
+        deferredBuildings.add(UnitType.Terran_Factory);
+        return deferredBuildings;
     }
 }

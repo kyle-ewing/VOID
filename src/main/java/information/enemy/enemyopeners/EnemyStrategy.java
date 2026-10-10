@@ -84,6 +84,10 @@ public abstract class EnemyStrategy {
         return new HashSet<>();
     }
 
+    public HashSet<UnitType> deferredBuildings() {
+        return new HashSet<>();
+    }
+
     public boolean mineralLineTurretsOnly() {
         return false;
     }
