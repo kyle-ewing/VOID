@@ -120,6 +120,10 @@ public class EnemyInformation {
                 continue;
             }
 
+            if (enemyUnit.getEnemyType().isBuilding() && enemyUnit.getEnemyUnit().isLifted()) {
+                continue;
+            }
+
             Position enemyPos = enemyUnit.getEnemyUnit().getPosition();
 
             if (enemyUnit.getEnemyType().isFlyer() && !enemyUnit.getEnemyType().isBuilding()

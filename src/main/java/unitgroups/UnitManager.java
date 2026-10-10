@@ -153,7 +153,7 @@ public class UnitManager {
                         unLoadBunker(combatUnit);
                     }
 
-                    if (bunker != null && bunker.exists() && !combatUnit.isInBunker() && gameState.isEnemyInBase() && onlyScoutInBase() && combatUnit.getUnitStatus() != UnitStatus.LOAD) {
+                    if (bunker != null && bunker.exists() && bunker.getSpaceRemaining() > 0 && !combatUnit.isInBunker() && gameState.isEnemyInBase() && onlyScoutInBase() && combatUnit.getUnitStatus() != UnitStatus.LOAD) {
                         combatUnit.setUnitStatus(UnitStatus.LOAD);
                     }
 
@@ -211,7 +211,7 @@ public class UnitManager {
             if (gameState.moveOutConditionsMet()) {
                 if (unitStatus == UnitStatus.RALLY || unitStatus == UnitStatus.SIEGEDEF || unitStatus == UnitStatus.POKE) {
                     if (combatUnit instanceof SiegeTank) {
-                        if (((SiegeTank) combatUnit).isSieged()) {
+                        if (((SiegeTank) combatUnit).isSieged() && !visibleTargetInSiegeRange(combatUnit)) {
                             combatUnit.getUnit().unsiege();
                         }
                     }
@@ -314,7 +314,7 @@ public class UnitManager {
                         break;
                     }
 
-                    if (combatUnit.isInRangeOfThreat()) {
+                    if (combatUnit.isInRangeOfThreat() && !(combatUnit instanceof SiegeTank && ((SiegeTank) combatUnit).isSieged())) {
                         avoidThreat(combatUnit);
                         combatUnit.setUnitStatus(UnitStatus.AVOID);
                         break;
@@ -447,7 +447,7 @@ public class UnitManager {
                     if (obstructingBuild(combatUnit)) {
                         break;
                     }
-                
+
                     ClosestUnit.findClosestUnit(combatUnit, gameState.getKnownEnemyUnits(), 900);
                     if (gameState.isEnemyInBase()) {
                         combatUnit.setEnemyInBase(true);
@@ -696,7 +696,14 @@ public class UnitManager {
             return;
         }
 
-        combatUnit.getUnit().load(bunker);
+        if (!combatUnit.getUnit().isLoaded() && !combatUnit.getUnit().load(bunker)) {
+            if (combatUnit.isInBunker()) {
+                bunkerLoad--;
+            }
+            combatUnit.setInBunker(false);
+            combatUnit.setUnitStatus(UnitStatus.RALLY);
+            return;
+        }
 
         if (!combatUnit.isInBunker()) {
             bunkerLoad++;
@@ -864,6 +871,10 @@ public class UnitManager {
             return false;
         }
 
+        if (game.self().hasResearched(TechType.Tank_Siege_Mode)) {
+            return false;
+        }
+
         int enemyTanks = 0;
         for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
             if (enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Tank_Mode
@@ -873,6 +884,34 @@ public class UnitManager {
         }
 
         return enemyTanks < 5;
+    }
+
+    private boolean visibleTargetInSiegeRange(CombatUnits combatUnit) {
+        if (combatUnit.getUnit().getPosition() == null) {
+            return false;
+        }
+
+        int siegeRange = UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().maxRange();
+
+        for (EnemyUnits enemyUnit : gameState.getKnownEnemyUnits()) {
+            if (enemyUnit.getEnemyPosition() == null || enemyUnit.getEnemyType() == null) {
+                continue;
+            }
+
+            if (!enemyUnit.getEnemyUnit().isVisible()) {
+                continue;
+            }
+
+            if (enemyUnit.getEnemyType().isWorker() || enemyUnit.getEnemyType().isFlyer()) {
+                continue;
+            }
+
+            if (combatUnit.getUnit().getDistance(enemyUnit.getEnemyPosition()) <= siegeRange) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean enemyNearBunker() {
@@ -1136,7 +1175,7 @@ public class UnitManager {
             return;
         }
 
-        if (lastScanFrame == game.getFrameCount()) {
+        if (game.getFrameCount() - lastScanFrame < 24) {
             return;
         }
 
@@ -1157,6 +1196,23 @@ public class UnitManager {
             }
 
             if (game.isVisible(enemyPosition.toTilePosition())) {
+                enemyUnit.setEnemyPosition(null);
+                continue;
+            }
+
+            boolean sweepNearby = false;
+            for (CombatUnits scanUnit : combatUnits) {
+                if (scanUnit.getUnitStatus() != UnitStatus.SCAN || scanUnit.getUnit().getPosition() == null) {
+                    continue;
+                }
+
+                if (scanUnit.getUnit().getDistance(enemyPosition) <= 300) {
+                    sweepNearby = true;
+                    break;
+                }
+            }
+
+            if (sweepNearby) {
                 continue;
             }
 

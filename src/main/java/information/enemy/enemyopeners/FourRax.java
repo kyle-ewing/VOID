@@ -70,4 +70,11 @@ public class FourRax extends  EnemyStrategy {
     public HashSet<UnitType> removeBuildings() {
         return new HashSet<>();
     }
+
+    @Override
+    public HashSet<UnitType> deferredBuildings() {
+        HashSet<UnitType> deferredBuildings = new HashSet<>();
+        deferredBuildings.add(UnitType.Terran_Factory);
+        return deferredBuildings;
+    }
 }

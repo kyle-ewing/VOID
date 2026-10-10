@@ -353,7 +353,7 @@ public class SiegeTank extends CombatUnits {
             siegeTile = null;
             foundSiegeTile = false;
             wasNaturalOwned = true;
-            if (isSieged()) {
+            if (isSieged() && !inEnemySiegeRange(unit.getPosition())) {
                 super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                 unit.unsiege();
             }
@@ -375,11 +375,12 @@ public class SiegeTank extends CombatUnits {
         }
 
         HashSet<TilePosition> validTiles = mapInfo.getSiegeDefTiles();
-        if (siegeTile != null && !validTiles.contains(siegeTile) && !enemyNearNaturalBunker) {
+        boolean enemyThreatNearNatural = enemyThreatNearNatural();
+        if (siegeTile != null && ((!validTiles.contains(siegeTile) && !enemyNearNaturalBunker && !enemyThreatNearNatural) || inEnemySiegeRange(siegeTile.toPosition()))) {
             mapInfo.removeClaimedSiegeTile(siegeTile);
             siegeTile = null;
             foundSiegeTile = false;
-            if (isSieged()) {
+            if (isSieged() && !inEnemySiegeRange(unit.getPosition())) {
                 super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                 unit.unsiege();
             }
@@ -400,7 +401,7 @@ public class SiegeTank extends CombatUnits {
             if (isSieged()) {
                 boolean enemyInRange = enemyPosition != null && unit.getDistance(enemyPosition) < SIEGE_RANGE;
                 boolean atSiegeTile = unit.getDistance(siegeTile.toPosition()) <= 64;
-                if (!enemyInRange && !atSiegeTile) {
+                if (!enemyInRange && !atSiegeTile && !inEnemySiegeRange(unit.getPosition())) {
                     super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
                     unit.unsiege();
                 }
@@ -478,6 +479,9 @@ public class SiegeTank extends CombatUnits {
             if (tooCloseToClaimed(targetTile, claimedTiles, minSeparationPixels)) {
                 continue;
             }
+            if (inEnemySiegeRange(targetTile.toPosition())) {
+                continue;
+            }
             siegeTile = targetTile;
             foundSiegeTile = true;
             mapInfo.addClaimedSiegeTile(siegeTile);
@@ -489,11 +493,62 @@ public class SiegeTank extends CombatUnits {
             if (ccExclusionTiles.contains(targetTile)) {
                 continue;
             }
+            if (claimedTiles.contains(targetTile)) {
+                continue;
+            }
+            if (inEnemySiegeRange(targetTile.toPosition())) {
+                continue;
+            }
             siegeTile = targetTile;
             foundSiegeTile = true;
             mapInfo.addClaimedSiegeTile(siegeTile);
             return;
         }
+    }
+
+    private boolean inEnemySiegeRange(Position position) {
+        if (position == null) {
+            return false;
+        }
+
+        int range = UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().maxRange();
+        for (EnemyUnits enemy : enemyUnits) {
+            if (enemy.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode || enemy.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (position.getDistance(enemy.getEnemyPosition()) <= range) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean enemyThreatNearNatural() {
+        if (mapInfo.getNaturalBase() == null || mapInfo.getNaturalBase().getCenter() == null) {
+            return false;
+        }
+
+        Position naturalCenter = mapInfo.getNaturalBase().getCenter();
+        for (EnemyUnits enemy : enemyUnits) {
+            if (enemy.getEnemyPosition() == null || enemy.getEnemyType() == null) {
+                continue;
+            }
+
+            UnitType enemyType = enemy.getEnemyType();
+            boolean enemyTank = enemyType == UnitType.Terran_Siege_Tank_Tank_Mode || enemyType == UnitType.Terran_Siege_Tank_Siege_Mode;
+            boolean visibleArmy = !enemyType.isWorker() && !enemyType.isBuilding() && !enemyType.isFlyer()
+                    && enemy.getEnemyUnit() != null && enemy.getEnemyUnit().isVisible();
+
+            if (!enemyTank && !visibleArmy) {
+                continue;
+            }
+
+            if (enemy.getEnemyPosition().getDistance(naturalCenter) < 900) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean tooCloseToClaimed(TilePosition target, HashSet<TilePosition> claimedTiles, int minSeparationPixels) {
@@ -571,7 +626,7 @@ public class SiegeTank extends CombatUnits {
                         }
                     }
 
-                    if (!firableInRange) {
+                    if (!firableInRange && enemyUnit.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode) {
                         super.setUnitStatus(UnitStatus.DEFEND);
                         if (isSieged()) {
                             super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
@@ -609,7 +664,8 @@ public class SiegeTank extends CombatUnits {
         if ((distToEnemy > SIEGE_RANGE || !enemyUnit.getEnemyUnit().isVisible())
                 && isSieged()
                 && unsiegeClock > 144
-                && !enemyUnit.getEnemyUnit().isLifted()) {
+                && !enemyUnit.getEnemyUnit().isLifted()
+                && !inEnemySiegeRange(unit.getPosition())) {
             super.setUnitType(UnitType.Terran_Siege_Tank_Tank_Mode);
             unsiegeClock = 0;
             unit.unsiege();

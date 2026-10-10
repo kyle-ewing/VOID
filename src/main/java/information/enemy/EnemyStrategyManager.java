@@ -15,6 +15,7 @@ import information.enemy.enemyopeners.FourPool;
 import information.enemy.enemyopeners.FourRax;
 import information.enemy.enemyopeners.GasSteal;
 import information.enemy.enemyopeners.HatchFirst;
+import information.enemy.enemyopeners.MarineRush;
 import information.enemy.enemyopeners.NexusFirst;
 import information.enemy.enemyopeners.NinePool;
 import information.enemy.enemyopeners.NinePoolSpeedling;
@@ -84,6 +85,7 @@ public class EnemyStrategyManager {
         enemyStrategies.add(new GasSteal(mapInfo));
 //        enemyStrategies.add(new CCFirst(baseInfo));
         enemyStrategies.add(new FourRax(mapInfo));
+        enemyStrategies.add(new MarineRush(mapInfo));
         enemyStrategies.add(new TwoFacTank());
         enemyStrategies.add(new BunkerRush(mapInfo));
         enemyStrategies.add(new SCVRush(mapInfo));

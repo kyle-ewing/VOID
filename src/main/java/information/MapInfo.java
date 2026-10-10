@@ -23,6 +23,7 @@ import map.bwemwrappers.ChokePoint;
 import map.bwemwrappers.GameMap;
 import map.bwemwrappers.Geyser;
 import map.bwemwrappers.Mineral;
+import util.Time;
 
 public class MapInfo {
     private static final int FLYER_BASE_TILE_BUFFER = 2;
@@ -84,6 +85,7 @@ public class MapInfo {
     private HashMap<Base, Base> startingBaseMinOnlys = new HashMap<>();
     private HashMap<Base, ChokePoint> startingBaseMainChokes = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
+    private HashMap<Base, Integer> expansionLockouts = new HashMap<>();
     private boolean naturalOwned = false;
 
     public MapInfo(Game game, GameMap gameMap) {
@@ -1724,6 +1726,10 @@ public class MapInfo {
                 continue;
             }
 
+            if (expansionLockouts.containsKey(base) && game.getFrameCount() - expansionLockouts.get(base) < new Time(2, 0).getFrames()) {
+                continue;
+            }
+
             List<Position> path = allPathsMap.get(base);
             if (path == null || path.isEmpty()) {
                 continue;
@@ -2222,6 +2228,7 @@ public class MapInfo {
             }
 
             if (destroyedBase != null) {
+                expansionLockouts.put(destroyedBase, game.getFrameCount());
                 HashSet<TilePosition> expansionTiles = baseTilesAllBases.get(destroyedBase);
                 if (expansionTiles != null) {
                     baseTiles.removeAll(expansionTiles);

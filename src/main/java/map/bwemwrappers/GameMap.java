@@ -706,7 +706,6 @@ public class GameMap {
         HashSet<Area> targetSet = new HashSet<>(targetAreas);
         HashMap<Long, ArrayList<int[]>> edgesByPair = new HashMap<>();
         HashMap<Long, Area[]> areasByPair = new HashMap<>();
-        HashMap<String, Integer> crossParentEdges = new HashMap<>();
         int[][] offsets = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 
         for (Area target : targetAreas) {
@@ -720,10 +719,6 @@ public class GameMap {
                     }
 
                     if (neighbor.getBwemArea() != target.getBwemArea()) {
-                        if (rebuildingPassableRuns && (offset[0] > 0 || offset[1] > 0) && target.getGroundHeight() != neighbor.getGroundHeight()) {
-                            String pairLabel = Math.min(target.getId(), neighbor.getId()) + "<->" + Math.max(target.getId(), neighbor.getId());
-                            crossParentEdges.put(pairLabel, crossParentEdges.getOrDefault(pairLabel, 0) + 1);
-                        }
                         continue;
                     }
 
@@ -757,10 +752,6 @@ public class GameMap {
                     areasByPair.put(pairKey, new Area[]{lowArea, highArea});
                 }
             }
-        }
-
-        for (String pairLabel : crossParentEdges.keySet()) {
-            System.out.println("[ChokeDebug] height break between different BWEM parents, no synthetic choke possible: areas " + pairLabel + " tileEdges=" + crossParentEdges.get(pairLabel));
         }
 
         for (Long pairKey : edgesByPair.keySet()) {
@@ -858,10 +849,6 @@ public class GameMap {
             }
         }
 
-        if (passableOnly) {
-            System.out.println("[ChokeDebug] height break areas " + firstArea.getId() + "(" + firstArea.getGroundHeight() + ")<->" + secondArea.getId() + "(" + secondArea.getGroundHeight() + ") boundaryPoints=" + segment.size() * 4 + " passablePoints=" + geometry.size());
-        }
-
         if (geometry.isEmpty()) {
             return;
         }
@@ -886,7 +873,6 @@ public class GameMap {
                     run.add(geometry.get(j));
                 }
 
-                System.out.println("[ChokeDebug]   run areas " + firstArea.getId() + "<->" + secondArea.getId() + " points=" + run.size() + " from " + run.get(0).toPosition() + " to " + run.get(run.size() - 1).toPosition());
                 addSyntheticChoke(run, firstArea, secondArea, run.get(0).toPosition(), run.get(run.size() - 1).toPosition());
             }
 
@@ -939,9 +925,6 @@ public class GameMap {
 
             for (WalkPosition boundaryWalk : geometry) {
                 if (existing.getCenter().getApproxDistance(boundaryWalk.toPosition()) < 64) {
-                    if (rebuildingPassableRuns) {
-                        System.out.println("[ChokeDebug]   dropped by BWEM choke centered " + existing.getCenter() + " areas " + firstArea.getId() + "<->" + secondArea.getId() + " points=" + geometry.size() + " nearPoint=" + boundaryWalk.toPosition());
-                    }
                     return;
                 }
             }
@@ -1067,8 +1050,6 @@ public class GameMap {
             chokes.remove(choke);
             firstArea.getChokes().remove(choke);
             secondArea.getChokes().remove(choke);
-
-            System.out.println("[ChokeDebug] built height choke areas " + firstArea.getId() + "<->" + secondArea.getId() + " edgeLength=" + (int) edgeLength + " ends " + firstEnd + " " + secondEnd);
 
             if (edgeLength <= 1000) {
                 addSyntheticChoke(geometry, firstArea, secondArea, firstEnd, secondEnd);

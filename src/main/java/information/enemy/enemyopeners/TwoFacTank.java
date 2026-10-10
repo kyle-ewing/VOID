@@ -41,7 +41,6 @@ public class TwoFacTank extends  EnemyStrategy {
 
     public HashSet<UnitType> additionalBuildings() {
         HashSet<UnitType> additionalBuildings = new HashSet<>();
-        additionalBuildings.add(UnitType.Terran_Barracks);
         return additionalBuildings;
     }
 

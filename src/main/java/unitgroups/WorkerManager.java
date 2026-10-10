@@ -277,6 +277,11 @@ public class WorkerManager {
                     }
                     break;
                 case REPAIRING:
+                    if (worker.getUnit().getHitPoints() < 25) {
+                        releaseDamagedRepairer(worker);
+                        break;
+                    }
+
                     if (worker.isPreemptiveRepair()) {
                         Unit nearbyDamaged = findNearbyDamagedBuilding(worker, 75);
                         if (nearbyDamaged != null) {
@@ -999,7 +1004,7 @@ public class WorkerManager {
                 Workers closestRepairer = null;
                 int closestDistance = Integer.MAX_VALUE;
                 for (Workers worker : workers) {
-                    if (worker.getUnit() == null || worker.getWorkerStatus() != WorkerStatus.MINERALS) {
+                    if (worker.getUnit() == null || worker.getWorkerStatus() != WorkerStatus.MINERALS || worker.getUnit().getHitPoints() < 25) {
                         continue;
                     }
 
@@ -1046,6 +1051,21 @@ public class WorkerManager {
             }
             repairForce.clear();
         }
+    }
+
+    private void releaseDamagedRepairer(Workers worker) {
+        repairForce.remove(worker);
+
+        for (Unit building : buildingRepair.keySet()) {
+            if (buildingRepair.get(building) == worker) {
+                buildingRepair.put(building, null);
+            }
+        }
+
+        worker.setRepairTarget(null);
+        worker.setPreemptiveRepair(false);
+        worker.setAssignedToBase(false);
+        worker.setWorkerStatus(WorkerStatus.IDLE);
     }
 
     private void preemptiveBunkerRepair() {
@@ -1163,7 +1183,7 @@ public class WorkerManager {
             return;
         }
         HashSet<Workers> availableWorkers = (HashSet<Workers>) new HashSet<>(workers).stream()
-                .filter(worker -> worker.getWorkerStatus() == WorkerStatus.MINERALS).collect(Collectors.toSet());
+                .filter(worker -> worker.getWorkerStatus() == WorkerStatus.MINERALS && worker.getUnit().getHitPoints() >= 25).collect(Collectors.toSet());
 
         Workers repairWorker = ClosestUnit.findClosestWorker(bunker.getPosition(), availableWorkers, mapInfo.getPathFinding(), false);
 

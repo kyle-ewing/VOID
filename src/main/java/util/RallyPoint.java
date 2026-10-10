@@ -5,8 +5,10 @@ import java.util.List;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
+import bwapi.UnitType;
 import information.GameState;
 import information.MapInfo;
+import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import macro.buildorders.RallyLocation;
 import map.PathFinding;
@@ -38,7 +40,21 @@ public class RallyPoint {
 
     public void setRallyPoint(CombatUnits combatUnit) {
         Position lateGameRallyPoint = mapInfo.getPastNaturalRallyPoint();
-        if (mapInfo.hasExpansionPastNatural() && lateGameRallyPoint != null) {
+        boolean lateRallySieged = false;
+        if (lateGameRallyPoint != null) {
+            for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {
+                if (enemy.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode || enemy.getEnemyPosition() == null) {
+                    continue;
+                }
+
+                if (enemy.getEnemyPosition().getDistance(lateGameRallyPoint) <= UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().maxRange() + 64) {
+                    lateRallySieged = true;
+                    break;
+                }
+            }
+        }
+
+        if (mapInfo.hasExpansionPastNatural() && lateGameRallyPoint != null && !lateRallySieged) {
             combatUnit.setRallyPoint(lateGameRallyPoint.toTilePosition());
             return;
         }
