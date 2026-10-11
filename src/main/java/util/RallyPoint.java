@@ -13,6 +13,7 @@ import information.enemy.enemyopeners.EnemyStrategy;
 import macro.buildorders.RallyLocation;
 import map.PathFinding;
 import map.bwemwrappers.Base;
+import map.bwemwrappers.ChokePoint;
 import unitgroups.units.CombatUnits;
 
 public class RallyPoint {
@@ -151,8 +152,22 @@ public class RallyPoint {
     }
 
     private void setInitialRallyPoints() {
-        mainRallyPoint = rallyPath(startingBase.getCenter(), mapInfo.getMainChoke().getCenter(), 0.72);
-        naturalRallyPoint = rallyPath(naturalBase.getCenter(), mapInfo.getNaturalChoke().getCenter(), 0.62);
+        ChokePoint mainChoke = mapInfo.getMainChoke();
+        ChokePoint naturalChoke = mapInfo.getNaturalChoke();
+
+        if (mainChoke == null) {
+            mainRallyPoint = startingBase.getCenter();
+        }
+        else {
+            mainRallyPoint = rallyPath(startingBase.getCenter(), mainChoke.getCenter(), 0.72);
+        }
+
+        if (naturalChoke == null) {
+            naturalRallyPoint = naturalBase.getCenter();
+        }
+        else {
+            naturalRallyPoint = rallyPath(naturalBase.getCenter(), naturalChoke.getCenter(), 0.62);
+        }
     }
 
     public void onFrame() {

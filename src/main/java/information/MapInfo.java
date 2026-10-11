@@ -494,8 +494,13 @@ public class MapInfo {
             return;
         }
 
+        Area insideArea = naturalBase.getArea();
+        if (naturalChokePoint == mainChokePoint) {
+            insideArea = startingBase.getArea();
+        }
+
         Area outsideNaturalArea;
-        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
+        if (naturalChokePoint.getFirstArea() != insideArea) {
             outsideNaturalArea = naturalChokePoint.getFirstArea();
         }
         else {
@@ -503,6 +508,7 @@ public class MapInfo {
         }
 
         if (outsideNaturalArea == null) {
+            outsideNaturalChoke = naturalChokePoint;
             return;
         }
 
@@ -599,6 +605,10 @@ public class MapInfo {
                 closestDistance = distanceToCenter;
                 outsideNaturalChoke = choke;
             }
+        }
+
+        if (outsideNaturalChoke == null) {
+            outsideNaturalChoke = naturalChokePoint;
         }
     }
 
@@ -977,6 +987,91 @@ public class MapInfo {
             return;
         }
 
+        Area startArea = startingBase.getArea();
+        Area naturalArea = naturalBase.getArea();
+        boolean naturalDeadEnd = false;
+
+        if (startArea != null && naturalArea != null && naturalArea != startArea && !naturalArea.getChokes().isEmpty()) {
+            naturalDeadEnd = true;
+
+            for (ChokePoint choke : naturalArea.getChokes()) {
+                if (choke.getOtherArea(naturalArea) != startArea) {
+                    naturalDeadEnd = false;
+                    break;
+                }
+            }
+        }
+
+        if (naturalDeadEnd) {
+            List<ChokePoint> exitChokes = new ArrayList<>();
+
+            for (ChokePoint choke : startArea.getChokes()) {
+                if (!chokePoints.contains(choke) || choke.getOtherArea(startArea) == naturalArea) {
+                    continue;
+                }
+
+                exitChokes.add(choke);
+            }
+
+            if (exitChokes.size() == 1) {
+                mainChokePoint = exitChokes.get(0);
+                return;
+            }
+
+            if (exitChokes.size() > 1) {
+                List<List<Position>> enemyPaths = new ArrayList<>();
+                Position mainPosition = pathFinding.findNearestWalkable(startingBase.getCenter());
+
+                for (Base enemyStart : startingBases) {
+                    if (mainPosition == null || enemyStart.getCenter() == null) {
+                        continue;
+                    }
+
+                    Position enemyPosition = pathFinding.findNearestWalkable(enemyStart.getCenter());
+
+                    if (enemyPosition == null) {
+                        continue;
+                    }
+
+                    List<Position> enemyPath = pathFinding.findPath(mainPosition, enemyPosition);
+
+                    if (enemyPath == null || enemyPath.isEmpty()) {
+                        continue;
+                    }
+
+                    enemyPaths.add(enemyPath);
+                }
+
+                ChokePoint bestExitChoke = null;
+                int bestTotalDistance = Integer.MAX_VALUE;
+
+                for (ChokePoint choke : exitChokes) {
+                    int totalDistance = 0;
+
+                    for (List<Position> enemyPath : enemyPaths) {
+                        int closestDistance = Integer.MAX_VALUE;
+
+                        for (Position pathPos : enemyPath) {
+                            int distance = choke.getCenter().getApproxDistance(pathPos);
+                            if (distance < closestDistance) {
+                                closestDistance = distance;
+                            }
+                        }
+
+                        totalDistance += closestDistance;
+                    }
+
+                    if (totalDistance < bestTotalDistance) {
+                        bestTotalDistance = totalDistance;
+                        bestExitChoke = choke;
+                    }
+                }
+
+                mainChokePoint = bestExitChoke;
+                return;
+            }
+        }
+
         List<Position> path = pathFinding.findPath(startingBase.getLocation().toPosition(), naturalBase.getLocation().toPosition()
         );
 
@@ -1053,7 +1148,12 @@ public class MapInfo {
             return null;
         }
 
-        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
+        Area insideArea = naturalBase.getArea();
+        if (naturalChokePoint == mainChokePoint) {
+            insideArea = startingBase.getArea();
+        }
+
+        if (naturalChokePoint.getFirstArea() != insideArea) {
             return naturalChokePoint.getFirstArea();
         }
 
@@ -1114,6 +1214,8 @@ public class MapInfo {
         }
 
         if (candidateChokes.isEmpty()) {
+            naturalChokePoint = getMainChoke();
+            setSecondaryNaturalChoke();
             return;
         }
 
@@ -1164,6 +1266,10 @@ public class MapInfo {
             }
         }
 
+        if (naturalChokePoint == null) {
+            naturalChokePoint = getMainChoke();
+        }
+
         setSecondaryNaturalChoke();
     }
 
@@ -1172,8 +1278,13 @@ public class MapInfo {
             return;
         }
 
+        Area insideArea = naturalBase.getArea();
+        if (naturalChokePoint == mainChokePoint) {
+            insideArea = startingBase.getArea();
+        }
+
         Area primaryOutsideArea;
-        if (naturalChokePoint.getFirstArea() != naturalBase.getArea()) {
+        if (naturalChokePoint.getFirstArea() != insideArea) {
             primaryOutsideArea = naturalChokePoint.getFirstArea();
         }
         else {
@@ -2160,7 +2271,15 @@ public class MapInfo {
             return outsideNaturalChokeByStart.get(enemyMain);
         }
 
-        return outsideNaturalChoke;
+        if (outsideNaturalChoke != null) {
+            return outsideNaturalChoke;
+        }
+
+        if (naturalChokePoint != null) {
+            return naturalChokePoint;
+        }
+
+        return mainChokePoint;
     }
 
     public Position getPastNaturalRallyPoint() {

@@ -113,7 +113,7 @@ public class BuildTiles {
     private void regenerateBuildTiles() {
         if (!naturalTilesGenerated && mediumBuildTiles.isEmpty() || mediumBuildTiles.size() == 1) {
             chokeExclusionZone(mapInfo.getNaturalBase());
-            //generateMediumTiles(frontBaseTiles);
+            generateMediumTiles(frontBaseTiles);
             //generateMediumTiles(mapInfo.getNaturalTiles());
             naturalTilesGenerated = true;
         }
