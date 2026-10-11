@@ -73,6 +73,7 @@ public class GameMap {
         rehomeChokes();
         rebuildAreaWiring();
         rehomeBasesAndResources();
+        mergeMainPlateauAreas();
         mergeSmallAreasOutsideNatural();
         validateGraph();
     }
@@ -1697,6 +1698,68 @@ public class GameMap {
             }
 
             area.getGeysers().add(geyser);
+        }
+    }
+
+    private void mergeMainPlateauAreas() {
+        for (Base base : bases) {
+            if (!base.isStartingLocation()) {
+                continue;
+            }
+
+            Area startArea = base.getArea();
+
+            if (startArea == null) {
+                continue;
+            }
+
+            GroundHeight startHeight = startArea.getGroundHeight();
+
+            if (startHeight != GroundHeight.HIGH_GROUND && startHeight != GroundHeight.VERY_HIGH_GROUND) {
+                continue;
+            }
+
+            HashSet<Area> plateau = new HashSet<>();
+            Deque<Area> queue = new ArrayDeque<>();
+            boolean reachesBase = false;
+            plateau.add(startArea);
+            queue.add(startArea);
+
+            while (!queue.isEmpty() && !reachesBase) {
+                Area current = queue.poll();
+
+                for (ChokePoint choke : current.getChokes()) {
+                    if (choke.isBlocked()) {
+                        continue;
+                    }
+
+                    Area neighbor = choke.getOtherArea(current);
+
+                    if (neighbor == null || plateau.contains(neighbor) || neighbor.getGroundHeight() != startHeight) {
+                        continue;
+                    }
+
+                    if (!neighbor.getBases().isEmpty()) {
+                        reachesBase = true;
+                        break;
+                    }
+
+                    plateau.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+
+            if (reachesBase || plateau.size() == 1) {
+                continue;
+            }
+
+            plateau.remove(startArea);
+
+            for (Area candidate : plateau) {
+                absorbArea(candidate, startArea);
+            }
+
+            rebuildAreaWiring();
         }
     }
 

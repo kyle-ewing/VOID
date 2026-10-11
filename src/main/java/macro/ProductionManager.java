@@ -249,7 +249,7 @@ public class ProductionManager {
                     }
                     else if (pi.getPlannedItemType() == PlannedItemType.BUILDING) {
                         if (!meetsRequirements(pi.getUnitType())) {
-                            boolean noLargeTiles = pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty();
+                            boolean noLargeTiles = pi.getUnitType().tileHeight() == 3 && pi.getUnitType().tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty();
                             boolean noMediumTiles = pi.getUnitType().tileHeight() == 2 && pi.getUnitType().tileWidth() == 3 && buildTiles.getMediumBuildTiles().isEmpty();
                             if (noLargeTiles || noMediumTiles) {
                                 pi.setSupply(0);
@@ -1840,7 +1840,7 @@ public class ProductionManager {
         }
 
         if (unitType.isBuilding()) {
-            if (unitType.tileHeight() == 3 && unitType.tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty()) {
+            if (unitType.tileHeight() == 3 && unitType.tileWidth() == 4 && buildTiles.getLargeBuildTiles().isEmpty() && buildTiles.getLargeBuildTilesNoGap().isEmpty()) {
                 return false;
             }
             if (unitType.tileHeight() == 2 && unitType.tileWidth() == 3 && buildTiles.getMediumBuildTiles().isEmpty()) {
