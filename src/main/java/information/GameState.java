@@ -294,6 +294,12 @@ public class GameState {
                 continue;
             }
 
+            if (selectedPivot.proxyBuildings().contains(building.getType())
+                    && (mapInfo.getBaseTiles().contains(building.getTilePosition())
+                        || mapInfo.getNaturalTiles().contains(building.getTilePosition()))) {
+                continue;
+            }
+
             satisfiedBuildings.merge(building.getType(), 1, Integer::sum);
         }
 

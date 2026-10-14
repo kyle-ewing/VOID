@@ -35,7 +35,7 @@ public class TwoFacTank extends  EnemyStrategy {
 
     public HashSet<UnitType> getUnitResponse() {
         HashSet<UnitType> response = new HashSet<>();
-        response.add(UnitType.Terran_Marine);
+        response.add(UnitType.Terran_Siege_Tank_Tank_Mode);
         return response;
     }
 
@@ -51,10 +51,5 @@ public class TwoFacTank extends  EnemyStrategy {
     public HashSet<UnitType> removeBuildings() {
         HashSet<UnitType> removeBuildings = new HashSet<>();
         return removeBuildings;
-    }
-
-    @Override
-    public boolean overrideBuildingLift() {
-        return true;
     }
 }

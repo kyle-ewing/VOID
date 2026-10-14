@@ -91,6 +91,13 @@ public class Scouting {
         if (mapInfo.getStartingBases().size() == 3) {
             Base diagonalBase = getDiagonalBase();
 
+            if (inferredEnemyMain != null && inferredEnemyMain != diagonalBase && mapInfo.isExplored(inferredEnemyMain)
+                    && diagonalBase != null && !mapInfo.isExplored(diagonalBase)) {
+                scoutTargetBase = diagonalBase;
+                scout.getUnit().move(diagonalBase.getCenter());
+                return;
+            }
+
             Base furthestAdjacent = null;
             int furthestGroundDistance = Integer.MIN_VALUE;
 

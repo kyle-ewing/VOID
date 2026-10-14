@@ -88,6 +88,12 @@ public class Workers extends CombatUnits {
         }
 
         if (idleClock > 48) {
+            if (unit.getDistance(buildingPosition) > 96) {
+                workerStatus = WorkerStatus.STUCK;
+                idleClock = 0;
+                return;
+            }
+
             int randomDistance = (int)(Math.random() * 5) + 1;
             double randomAngle = Math.random() * 2 * Math.PI;
             int offsetX = (int)(randomDistance * Math.cos(randomAngle));
@@ -133,6 +139,7 @@ public class Workers extends CombatUnits {
         resourceTracking.reserveResources(pi.getUnitType());
         this.setBuildingPosition(pi.getBuildPosition().toPosition());
         this.distanceToBuildTarget = this.getUnit().getDistance(pi.getBuildPosition().toPosition());
+        this.hardReset = 0;
         this.getUnit().move(pi.getBuildPosition().toPosition());
         pi.setPlannedItemStatus(PlannedItemStatus.SCV_ASSIGNED);
 

@@ -69,7 +69,7 @@ public class BunkerRush extends BuildPivot {
         if (time.lessThanOrEqual(new Time(5,0)) && rushActive) {
             moveOutCondition.put(UnitType.Terran_Marine, 1);
         }
-        else if (time.lessThanOrEqual(new Time(7,30)) && enemyArmySupply <= 2 || enemyArmySupply == 0) {
+    else if (time.lessThanOrEqual(new Time(7,30)) && enemyArmySupply <= 2 || enemyArmySupply == 0) {
             moveOutCondition.put(UnitType.Terran_Marine, 4);
         }
         else if (time.lessThanOrEqual(new Time(12,30)) && !rushActive && enemyArmySupply < 15 ) {

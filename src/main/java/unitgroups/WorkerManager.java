@@ -20,6 +20,7 @@ import information.enemy.EnemyUnits;
 import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import macro.buildpivots.BuildPivot;
+import macro.buildpivots.BuildPivotName;
 import map.bwemwrappers.Base;
 import map.bwemwrappers.Mineral;
 import unitgroups.units.CombatUnits;
@@ -241,8 +242,11 @@ public class WorkerManager {
                         break;
                     }
 
-                    if (naturalBunker != null) {
-                        if (worker.getUnit().getDistance(naturalBunker.getPosition()) > 150) {
+                    BuildPivot attackPivot = gameState.getSelectedPivot();
+                    boolean naturalDepotKilled = attackPivot != null && attackPivot.isNaturalDepotKilled();
+
+                    if (naturalBunker != null && !naturalDepotKilled) {
+                        if (worker.getUnit().getDistance(naturalBunker.getPosition()) > 182) {
                             worker.getUnit().move(naturalBunker.getPosition());
                             break;
                         }
@@ -253,7 +257,11 @@ public class WorkerManager {
                         attackCandidates = new HashSet<>(attackCandidates);
                         attackCandidates.remove(gameState.getEnemyScout());
                     }
-                    ClosestUnit.findClosestUnit(worker, attackCandidates, 160);
+                    int attackRange = 160;
+                    if (naturalDepotKilled) {
+                        attackRange = 400;
+                    }
+                    ClosestUnit.findClosestUnit(worker, attackCandidates, attackRange);
                     if (worker.getEnemyUnit() != null) {
                         worker.selfDefense();
                         break;
@@ -722,6 +730,9 @@ public class WorkerManager {
 
         boolean rushGate = new Time(game.getFrameCount() - pullFrame).lessThanOrEqual(new Time(2, 0))
                 && gameState.getSelectedPivot() != null && gameState.getSelectedPivot().isRushActive();
+        boolean mechRushOver = gameState.getSelectedPivot() != null
+                && gameState.getSelectedPivot().getBuildPivotName() == BuildPivotName.MECHBUNKERRUSH
+                && new Time(game.getFrameCount()).greaterThan(new Time(6, 30));
 
         Iterator<Workers> iterator = pulledScvs.iterator();
         while (iterator.hasNext()) {
@@ -742,6 +753,13 @@ public class WorkerManager {
                     scvsPulled = false;
                 }
 
+                worker.setWorkerStatus(WorkerStatus.IDLE);
+                leashArrived.remove(worker);
+                iterator.remove();
+                continue;
+            }
+
+            if (mechRushOver) {
                 worker.setWorkerStatus(WorkerStatus.IDLE);
                 leashArrived.remove(worker);
                 iterator.remove();
@@ -926,6 +944,7 @@ public class WorkerManager {
                     createDefenseForce(3);
                 }
                 break;
+            case CCFIRST:
             case NEXUSFIRST:
                 if (gameState.moveOutConditionsMet()) {
                     createPulledScvs(6);

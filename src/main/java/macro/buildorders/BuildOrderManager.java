@@ -12,6 +12,7 @@ import macro.buildpivots.BuildPivot;
 import macro.buildpivots.BunkerRush;
 import macro.buildpivots.GasStealCounter;
 import macro.buildpivots.LingRushCounter;
+import macro.buildpivots.MechBunkerRush;
 import macro.buildtransitions.BuildTransition;
 import macro.buildtransitions.TvPBio;
 import macro.buildtransitions.TvPMech;
@@ -67,6 +68,7 @@ public class BuildOrderManager {
 
     private void initBuildPivots() {
         buildPivots.add(new BunkerRush());
+        buildPivots.add(new MechBunkerRush());
         buildPivots.add(new GasStealCounter());
         buildPivots.add(new LingRushCounter());
     }

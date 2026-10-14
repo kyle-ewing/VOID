@@ -25,6 +25,7 @@ import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderName;
 import macro.buildorders.BuildType;
 import macro.buildorders.MechBuildOrder;
+import macro.buildpivots.BuildPivot;
 import map.BuildTiles;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
@@ -75,6 +76,17 @@ public class UnitProduction {
             currentBuildType = gameState.getSelectedPivot().buildType();
         }
 
+        BuildPivot selectedPivot = gameState.getSelectedPivot();
+        if (selectedPivot != null && selectedPivot.isRushActive() && !selectedPivot.getRushUnitTypes().isEmpty()) {
+            productionQueue.addAll(getRushUnits(selectedPivot.getRushUnitTypes()));
+            return;
+        }
+
+        if (selectedPivot != null && selectedPivot.isNaturalDepotKilled() && gameState.moveOutConditionsMet()
+                && new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 30))) {
+            productionQueue.addAll(getRushUnits(selectedPivot.getRushUnitTypes()));
+        }
+
         List<PlannedItem> items;
         switch (currentBuildType) {
             case BIO:  items = getBioUnits();  break;
@@ -82,6 +94,22 @@ public class UnitProduction {
             default:   return;
         }
         productionQueue.addAll(items);
+    }
+
+    private List<PlannedItem> getRushUnits(HashSet<UnitType> rushUnitTypes) {
+        List<PlannedItem> items = new ArrayList<>();
+
+        for (Unit building : productionBuildings) {
+            for (UnitType unitType : rushUnitTypes) {
+                if (!canBuild(building, unitType.whatBuilds().getKey()) || !isRecruitable(unitType) || hasInQueue(unitType)) {
+                    continue;
+                }
+
+                items.add(plannedUnit(unitType, 3));
+            }
+        }
+
+        return items;
     }
 
     // --- BIO ---

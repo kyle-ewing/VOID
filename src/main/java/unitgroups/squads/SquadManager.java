@@ -8,6 +8,7 @@ import bwapi.Game;
 import bwapi.UnitType;
 import information.GameState;
 import information.enemy.EnemyInformation;
+import information.enemy.EnemyUnits;
 import map.bwemwrappers.ChokePoint;
 import unitgroups.units.CombatUnits;
 import unitgroups.units.UnitStatus;
@@ -228,6 +229,19 @@ public class SquadManager {
     }
 
     private void triggerRunbySquads() {
+        ChokePoint naturalChoke = gamestate.getBaseInfo().getNaturalChoke();
+        if (naturalChoke != null && naturalChoke.getCenter() != null) {
+            for (EnemyUnits enemy : enemyInformation.getEnemyUnits()) {
+                if (enemy.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode || enemy.getEnemyPosition() == null) {
+                    continue;
+                }
+
+                if (enemy.getEnemyPosition().getDistance(naturalChoke.getCenter()) <= 800) {
+                    return;
+                }
+            }
+        }
+
         if (new Time(game.getFrameCount()).greaterThan(new Time(10,30))
                 && gamestate.getUnitTypeCount().getOrDefault(UnitType.Terran_Vulture, 0) >= 8
                 && squads.stream().noneMatch(s -> s.isRunbySquad() && s.getCountOf(UnitType.Terran_Vulture) > 0)

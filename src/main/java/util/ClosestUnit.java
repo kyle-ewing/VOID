@@ -405,22 +405,28 @@ public class ClosestUnit {
             }
             //Focus units over buildings if visible and not static defense
             else if (closestEnemy != null && closestEnemy.getEnemyType().isBuilding()
-                    && !isStaticDefense(closestEnemy.getEnemyType())
+                    && !isStaticDefense(closestEnemy.getEnemyType(), combatUnit)
                     && enemyUnit.getEnemyUnit().isVisible()
-                    && distance < 500
-                    && (!enemyUnit.getEnemyType().isBuilding() || isStaticDefense(enemyUnit.getEnemyType()))) {
+                    && distance < 400
+                    && (!enemyUnit.getEnemyType().isBuilding() || isStaticDefense(enemyUnit.getEnemyType(), combatUnit))) {
                 closestDistance = distance;
                 closestEnemy = enemyUnit;
             }
             else if (distance < closestDistance
                     && !(closestEnemy != null
-                            && isStaticDefense(closestEnemy.getEnemyType())
+                            && isStaticDefense(closestEnemy.getEnemyType(), combatUnit)
                             && enemyUnit.getEnemyType().isWorker())
+                    && !(closestEnemy != null
+                            && !closestEnemy.getEnemyType().isBuilding()
+                            && closestEnemy.getEnemyUnit().isVisible()
+                            && closestDistance < 400
+                            && enemyUnit.getEnemyType().isBuilding()
+                            && !isStaticDefense(enemyUnit.getEnemyType(), combatUnit))
                     && (closestEnemy == null
                     || !closestEnemy.getEnemyType().isBuilding()
                     || !enemyUnit.getEnemyType().isBuilding()
-                    || !isStaticDefense(closestEnemy.getEnemyType())
-                    || isStaticDefense(enemyUnit.getEnemyType()))) {
+                    || !isStaticDefense(closestEnemy.getEnemyType(), combatUnit)
+                    || isStaticDefense(enemyUnit.getEnemyType(), combatUnit))) {
 
                 closestDistance = distance;
                 closestEnemy = enemyUnit;
@@ -462,9 +468,16 @@ public class ClosestUnit {
         return combatUnit.getUnit().getDistance(enemyUnit.getEnemyPosition()) < detectionRange;
     }
 
-    private static boolean isStaticDefense(UnitType unitType) {
-        return unitType == UnitType.Zerg_Sunken_Colony
-                || unitType == UnitType.Zerg_Creep_Colony
+    private static boolean isStaticDefense(UnitType unitType, CombatUnits combatUnit) {
+        if (unitType == UnitType.Zerg_Spore_Colony) {
+            return combatUnit.getUnitType().isFlyer();
+        }
+
+        if (unitType == UnitType.Zerg_Sunken_Colony) {
+            return !combatUnit.getUnitType().isFlyer();
+        }
+
+        return unitType == UnitType.Zerg_Creep_Colony
                 || unitType == UnitType.Protoss_Photon_Cannon
                 || unitType == UnitType.Terran_Missile_Turret
                 || unitType == UnitType.Terran_Bunker;
