@@ -21,13 +21,16 @@ public class BunkerRush extends EnemyStrategy {
     }
 
     public boolean isEnemyStrategy(HashSet<EnemyUnits> enemyUnits, Time time) {
+        if (time.greaterThan(new Time(5, 0))) {
+            return false;
+        }
+
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyPosition() == null ) {
                 continue;
             }
 
             if (enemyUnit.getEnemyType() == UnitType.Terran_Bunker
-                    && time.lessThanOrEqual(new Time(5, 0))
                     && mapInfo.getNaturalBase() != null
                     && enemyUnit.getEnemyPosition().getDistance(mapInfo.getNaturalBase().getCenter()) < 640) {
                 return true;

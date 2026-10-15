@@ -109,6 +109,8 @@ public class GameState {
 
         resourceTracking.onFrame();
 
+        swapRaceOpener();
+
         amendMoveOutCondition();
         moveOutConditionsMet();
 
@@ -138,6 +140,53 @@ public class GameState {
                 setBunkerPosition(bo.getBunkerLocation());
             }
         }
+    }
+
+    private void swapRaceOpener() {
+        HashSet<BuildOrder> raceOpeners = buildOrderManager.getOpenersForRace(enemyRace);
+
+        if (raceOpeners.contains(startingOpener)) {
+            return;
+        }
+
+        HashMap<UnitType, Integer> startedCount = new HashMap<>();
+
+        for (PlannedItem pi : startingOpener.getBuildOrder()) {
+            startedCount.merge(pi.getUnitType(), 1, Integer::sum);
+        }
+
+        for (PlannedItem pi : productionQueue) {
+            if (pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() != null && pi.getSupply() > 0) {
+                startedCount.merge(pi.getUnitType(), -1, Integer::sum);
+            }
+        }
+
+        productionQueue.removeIf(pi -> pi.getPlannedItemStatus() == PlannedItemStatus.NOT_STARTED && pi.getSupply() != null && pi.getSupply() > 0);
+
+        BuildOrder previousOpener = startingOpener;
+        openingBuildOrders = raceOpeners;
+
+        for (BuildOrder bo : raceOpeners) {
+            startingOpener = bo;
+            HashMap<UnitType, Integer> seenCount = new HashMap<>();
+
+            for (PlannedItem pi : bo.getBuildOrder()) {
+                if (pi.getUnitType() != null) {
+                    int ordinal = seenCount.merge(pi.getUnitType(), 1, Integer::sum);
+
+                    if (ordinal <= startedCount.getOrDefault(pi.getUnitType(), 0)) {
+                        continue;
+                    }
+                }
+
+                productionQueue.add(pi);
+            }
+
+            liftableBuildings.clear();
+            liftableBuildings.addAll(bo.getLiftableBuildings());
+        }
+
+        System.out.println("Swapping opener from " + previousOpener.getBuildOrderName() + " to " + startingOpener.getBuildOrderName() + " against " + enemyRace + " at " + time.toString());
     }
 
     private void addBuildTransition() {
@@ -291,6 +340,12 @@ public class GameState {
             }
 
             if (building.getType() == UnitType.Terran_Command_Center && building.getTilePosition().equals(player.getStartLocation())) {
+                continue;
+            }
+
+            if (selectedPivot.proxyBuildings().contains(building.getType())
+                    && (mapInfo.getBaseTiles().contains(building.getTilePosition())
+                        || mapInfo.getNaturalTiles().contains(building.getTilePosition()))) {
                 continue;
             }
 

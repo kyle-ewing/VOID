@@ -171,30 +171,20 @@ public class EnemyScoutResponse {
     }
 
     public void onFrame() {
-        if (new Time(game.getFrameCount()).greaterThan(new Time(3,30)) && gameState.getEnemyScout() == null) {
-            if (counterScout == null) {
-                return;
-            }
-
-            clearCounterScout();
-            return;
-        }
-
         if (gameState.getEnemyScout() == null) {
             initialScoutInBase();
         }
 
         if (gameState.getEnemyScout() == null) {
             clearCounterScout();
+            return;
         }
 
-
-        if (gameState.getEnemyScout() != null) {
+        if (new Time(game.getFrameCount()).lessThanOrEqual(new Time(3, 30))) {
             assignCounterScout();
-            followScout();
-            clearEnemyScout();
         }
 
-
+        followScout();
+        clearEnemyScout();
     }
 }

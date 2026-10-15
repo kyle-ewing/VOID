@@ -5,6 +5,7 @@ import java.util.HashSet;
 import bwapi.Race;
 import information.enemy.EnemyInformation;
 import macro.buildorders.protoss.OneFacFE;
+import macro.buildorders.random.RandomStub;
 import macro.buildorders.terran.GoliathFE;
 import macro.buildorders.zerg.FactoryExpand;
 import macro.buildorders.zerg.TwoRaxAcademy;
@@ -12,6 +13,7 @@ import macro.buildpivots.BuildPivot;
 import macro.buildpivots.BunkerRush;
 import macro.buildpivots.GasStealCounter;
 import macro.buildpivots.LingRushCounter;
+import macro.buildpivots.MechBunkerRush;
 import macro.buildtransitions.BuildTransition;
 import macro.buildtransitions.TvPBio;
 import macro.buildtransitions.TvPMech;
@@ -53,7 +55,7 @@ public class BuildOrderManager {
         zergOpeners.add(new FactoryExpand());
 
         //Random
-        randomOpeners.add(new TwoRaxAcademy());
+        randomOpeners.add(new RandomStub());
 
     }
 
@@ -67,6 +69,7 @@ public class BuildOrderManager {
 
     private void initBuildPivots() {
         buildPivots.add(new BunkerRush());
+        buildPivots.add(new MechBunkerRush());
         buildPivots.add(new GasStealCounter());
         buildPivots.add(new LingRushCounter());
     }

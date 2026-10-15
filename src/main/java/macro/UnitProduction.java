@@ -21,10 +21,10 @@ import information.enemy.enemyopeners.EnemyStrategy;
 import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import information.enemy.enemytechunits.SiegeTank;
-import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildOrderName;
 import macro.buildorders.BuildType;
 import macro.buildorders.MechBuildOrder;
+import macro.buildpivots.BuildPivot;
 import map.BuildTiles;
 import planner.PlannedItem;
 import planner.PlannedItemStatus;
@@ -34,7 +34,6 @@ import util.Time;
 public class UnitProduction {
     private final GameState gameState;
     private final Game game;
-    private final BuildOrder buildOrder;
     private final HashSet<Unit> productionBuildings;
     private final HashSet<UnitType> techUnitResponses;
     private final HashMap<UnitType, Integer> unitTypeCount;
@@ -56,14 +55,13 @@ public class UnitProduction {
     public UnitProduction(GameState gameState, Game game) {
         this.gameState = gameState;
         this.game = game;
-        this.buildOrder = gameState.getStartingOpener();
         this.productionBuildings = gameState.getProductionBuildings();
         this.techUnitResponses = gameState.getTechUnitResponse();
         this.unitTypeCount = gameState.getUnitTypeCount();
         this.buildTiles = gameState.getBuildTiles();
         this.productionQueue = gameState.getProductionQueue();
         this.armyCompositionManager = gameState.getArmyCompositionManager();
-        this.currentBuildType = buildOrder.buildType();
+        this.currentBuildType = gameState.getStartingOpener().buildType();
     }
 
     public void onFrame() {
@@ -75,6 +73,17 @@ public class UnitProduction {
             currentBuildType = gameState.getSelectedPivot().buildType();
         }
 
+        BuildPivot selectedPivot = gameState.getSelectedPivot();
+        if (selectedPivot != null && selectedPivot.isRushActive() && !selectedPivot.getRushUnitTypes().isEmpty()) {
+            productionQueue.addAll(getRushUnits(selectedPivot.getRushUnitTypes()));
+            return;
+        }
+
+        if (selectedPivot != null && selectedPivot.isNaturalDepotKilled() && gameState.moveOutConditionsMet()
+                && new Time(game.getFrameCount()).lessThanOrEqual(new Time(6, 30))) {
+            productionQueue.addAll(getRushUnits(selectedPivot.getRushUnitTypes()));
+        }
+
         List<PlannedItem> items;
         switch (currentBuildType) {
             case BIO:  items = getBioUnits();  break;
@@ -82,6 +91,22 @@ public class UnitProduction {
             default:   return;
         }
         productionQueue.addAll(items);
+    }
+
+    private List<PlannedItem> getRushUnits(HashSet<UnitType> rushUnitTypes) {
+        List<PlannedItem> items = new ArrayList<>();
+
+        for (Unit building : productionBuildings) {
+            for (UnitType unitType : rushUnitTypes) {
+                if (!canBuild(building, unitType.whatBuilds().getKey()) || !isRecruitable(unitType) || hasInQueue(unitType)) {
+                    continue;
+                }
+
+                items.add(plannedUnit(unitType, 3));
+            }
+        }
+
+        return items;
     }
 
     // --- BIO ---
@@ -196,7 +221,7 @@ public class UnitProduction {
         int mechCount = unitTypeCount.get(UnitType.Terran_Vulture) + unitTypeCount.get(UnitType.Terran_Goliath);
         int vesselCount = unitTypeCount.get(UnitType.Terran_Science_Vessel);
         boolean ratioOverMaximum = tankCount > 0 && mechCount >= tankCount * 2;
-        int factoryCap = buildOrder.getBuildOrderName() == BuildOrderName.TWOFAC ? 4 : 5;
+        int factoryCap = gameState.getStartingOpener().getBuildOrderName() == BuildOrderName.TWOFAC ? 4 : 5;
         boolean addonFreeFactoryAvailable = productionBuildings.stream()
                 .anyMatch(b -> b.getType() == UnitType.Terran_Factory && b.getAddon() == null && !b.isTraining());
 
@@ -291,8 +316,8 @@ public class UnitProduction {
 
             if (canBuild(building, UnitType.Terran_Factory)) {
                 boolean firstTankPriority = tankCount < 2
-                        && buildOrder instanceof MechBuildOrder
-                        && ((MechBuildOrder) buildOrder).prioritizeTankFirst();
+                        && gameState.getStartingOpener() instanceof MechBuildOrder
+                        && ((MechBuildOrder) gameState.getStartingOpener()).prioritizeTankFirst();
 
                 if (isRecruitable(UnitType.Terran_Siege_Tank_Tank_Mode)
                         && building.getAddon() != null
@@ -332,7 +357,7 @@ public class UnitProduction {
                             }
                         }
                     }
-                    else if (buildOrder.getBuildOrderName() == BuildOrderName.GOLIATHFE) {
+                    else if (gameState.getStartingOpener().getBuildOrderName() == BuildOrderName.GOLIATHFE) {
                         if (isRecruitable(UnitType.Terran_Goliath) && !hasInQueue(UnitType.Terran_Goliath)) {
                             items.add(plannedUnit(UnitType.Terran_Goliath, 3));
                         }

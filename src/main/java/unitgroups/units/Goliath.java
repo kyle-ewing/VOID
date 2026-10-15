@@ -46,6 +46,9 @@ public class Goliath extends CombatUnits {
         }
 
         if (!inBase) {
+            if (rallyPoint != null) {
+                issueMove(rallyPoint.toPosition());
+            }
             setUnitStatus(UnitStatus.RETREAT);
             return;
         }

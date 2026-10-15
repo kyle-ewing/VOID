@@ -60,6 +60,11 @@ public class RallyPoint {
             return;
         }
 
+        Position naturalRallyTarget = naturalRallyPoint;
+        if (isNaturalRallySieged()) {
+            naturalRallyTarget = naturalBase.getCenter();
+        }
+
         if (enemyStrategy != null && !enemyStrategy.isStrategyDefended()) {
             switch (enemyStrategy.getStrategyName()) {
                 case SHUTTLERUSH:
@@ -77,7 +82,7 @@ public class RallyPoint {
         }
 
         if (mapInfo.isNaturalOwned() || mapInfo.hasBunkerInNatural()) {
-            combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+            combatUnit.setRallyPoint(naturalRallyTarget.toTilePosition());
             return;
         }
 
@@ -85,7 +90,7 @@ public class RallyPoint {
             combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
         }
         else if (gameState.getStartingOpener().getRallyLocation() == RallyLocation.NATURAL) {
-            combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+            combatUnit.setRallyPoint(naturalRallyTarget.toTilePosition());
         }
         else {
             combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
@@ -111,23 +116,36 @@ public class RallyPoint {
                 break;
             case BUNKERRUSH:
                 if (gameState.isEnemyInNatural() || gameState.getStartingOpener().getRallyLocation() == RallyLocation.NATURAL) {
-                    combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                    combatUnit.setRallyPoint(naturalRallyTarget.toTilePosition());
                 }
                 else {
                     combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
                 }
                 break;
             case TWOFACTANK:
-                combatUnit.setRallyPoint(naturalRallyPoint.toTilePosition());
+                combatUnit.setRallyPoint(naturalRallyTarget.toTilePosition());
                 break;
             case TWOGATE:
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
                 break;
             default:
                 combatUnit.setRallyPoint(mainRallyPoint.toTilePosition());
-                break;    
+                break;
         }
 
+    }
+
+    public boolean isNaturalRallySieged() {
+        for (EnemyUnits enemy : gameState.getKnownEnemyUnits()) {
+            if (enemy.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode || enemy.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (enemy.getEnemyPosition().getDistance(naturalRallyPoint) <= UnitType.Terran_Siege_Tank_Siege_Mode.groundWeapon().maxRange()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //Percentage is how far along the path to go (0.0 = start, 1.0 = end)

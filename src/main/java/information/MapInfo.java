@@ -84,6 +84,7 @@ public class MapInfo {
     private HashMap<Base, List<Mineral>> basePatches = new HashMap<>();
     private HashMap<Base, Base> startingBaseMinOnlys = new HashMap<>();
     private HashMap<Base, ChokePoint> startingBaseMainChokes = new HashMap<>();
+    private HashMap<Base, Base> startingBaseNaturals = new HashMap<>();
     private ArrayList<Base> orderedExpansions = new ArrayList<>();
     private HashMap<Base, Integer> expansionLockouts = new HashMap<>();
     private boolean naturalOwned = false;
@@ -1351,6 +1352,8 @@ public class MapInfo {
             return null;
         }
 
+        startingBaseNaturals.put(sb, sbNatural);
+
         List<Position> pathToNatural = pathFinding.findPath(sb.getLocation().toPosition(), sbNatural.getLocation().toPosition());
         if (pathToNatural == null || pathToNatural.isEmpty()) {
             return null;
@@ -2239,6 +2242,10 @@ public class MapInfo {
 
     public ChokePoint getStartingBaseMainChoke(Base base) {
         return startingBaseMainChokes.get(base);
+    }
+
+    public Base getStartingBaseNatural(Base base) {
+        return startingBaseNaturals.get(base);
     }
 
     public HashMap<Base, HashSet<TilePosition>> getBaseTilesAllBases() {

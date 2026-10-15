@@ -327,6 +327,17 @@ public class EnemyInformation {
         }
     }
 
+    private void endTimedPivotRush(Time currentTime) {
+        BuildPivot selectedPivot = gameState.getSelectedPivot();
+        if (selectedPivot == null || !selectedPivot.isRushActive()) {
+            return;
+        }
+
+        if (selectedPivot.getBuildPivotName() == BuildPivotName.MECHBUNKERRUSH && currentTime.greaterThan(new Time(5, 0))) {
+            selectedPivot.setRushActive(false);
+        }
+    }
+
     public boolean beingSieged() {
         for (EnemyUnits enemyUnit : enemyUnits) {
             if (enemyUnit.getEnemyType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
@@ -391,6 +402,7 @@ public class EnemyInformation {
         enemyInBase();
         enemyInNatural();
         checkOpenerDefense(currentTime);
+        endTimedPivotRush(currentTime);
         checkTechUnits();
         checkTechBuildings();
         enemyUpgrades.onFrame();
@@ -628,13 +640,26 @@ public class EnemyInformation {
         }
 
         BuildPivot selectedPivot = gameState.getSelectedPivot();
-        if (selectedPivot != null && selectedPivot.isRushActive()) {
-            if (selectedPivot.getBuildPivotName() == BuildPivotName.BUNKERRUSH) {
-                if (unit.getType() == UnitType.Protoss_Nexus && mapInfo.getEnemyNatural() != null 
-                        && mapInfo.getEnemyNatural().getLocation().getDistance(unit.getTilePosition()) < 10) {
-                    selectedPivot.setRushActive(false);
-                    return;
-                }
+        if (selectedPivot == null) {
+            return;
+        }
+
+        if (selectedPivot.proxyBuildings().contains(UnitType.Terran_Bunker)
+                && unit.getType().isResourceDepot() && unit.getPlayer() != game.self() && mapInfo.getEnemyNatural() != null
+                && mapInfo.getEnemyNatural().getLocation().getDistance(unit.getTilePosition()) < 10) {
+            selectedPivot.setNaturalDepotKilled(selectedPivot.getBuildPivotName() == BuildPivotName.MECHBUNKERRUSH);
+            selectedPivot.setRushActive(false);
+            return;
+        }
+
+        if (selectedPivot.isRushActive()) {
+            if (selectedPivot.getBuildPivotName() == BuildPivotName.MECHBUNKERRUSH
+                    && unit.getPlayer() == game.self()
+                    && unit.getType() == UnitType.Terran_Bunker
+                    && !mapInfo.getBaseTiles().contains(unit.getTilePosition())
+                    && !mapInfo.getNaturalTiles().contains(unit.getTilePosition())) {
+                selectedPivot.setRushActive(false);
+                return;
             }
         }
     }

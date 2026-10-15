@@ -91,6 +91,13 @@ public class Scouting {
         if (mapInfo.getStartingBases().size() == 3) {
             Base diagonalBase = getDiagonalBase();
 
+            if (inferredEnemyMain != null && inferredEnemyMain != diagonalBase && mapInfo.isExplored(inferredEnemyMain)
+                    && diagonalBase != null && !mapInfo.isExplored(diagonalBase)) {
+                scoutTargetBase = diagonalBase;
+                scout.getUnit().move(diagonalBase.getCenter());
+                return;
+            }
+
             Base furthestAdjacent = null;
             int furthestGroundDistance = Integer.MIN_VALUE;
 
@@ -615,8 +622,29 @@ public class Scouting {
         return bestBase;
     }
 
+    private boolean inStartingMainOrNatural(TilePosition tile) {
+        for (Base startingBase : mapInfo.getStartingBases()) {
+            HashSet<TilePosition> mainTiles = mapInfo.getBaseTilesAllBases().get(startingBase);
+            if (mainTiles != null && mainTiles.contains(tile)) {
+                return true;
+            }
+
+            Base startingNatural = mapInfo.getStartingBaseNatural(startingBase);
+            if (startingNatural == null) {
+                continue;
+            }
+
+            HashSet<TilePosition> naturalTiles = mapInfo.getBaseTilesAllBases().get(startingNatural);
+            if (naturalTiles != null && naturalTiles.contains(tile)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void sampleEnemyHeading() {
-        if (inferredEnemyMain != null || gameState.getStartingEnemyBase() != null) {
+        if (gameState.getStartingEnemyBase() != null) {
             return;
         }
 
@@ -626,6 +654,10 @@ public class Scouting {
                 && !mapInfo.isExplored(naturalInferredMain)) {
             inferredEnemyMain = naturalInferredMain;
             headingUnit = null;
+            return;
+        }
+
+        if (inferredEnemyMain != null) {
             return;
         }
 
@@ -647,8 +679,7 @@ public class Scouting {
                         && time.lessThanOrEqual(new Time(2, 30))
                         && !mapInfo.getBaseTiles().contains(enemyTile)
                         && !mapInfo.getNaturalTiles().contains(enemyTile)
-                        && mapInfo.getStartingBases().stream().noneMatch(base -> mapInfo.getBaseTilesAllBases().get(base) != null
-                                && mapInfo.getBaseTilesAllBases().get(base).contains(enemyTile));
+                        && !inStartingMainOrNatural(enemyTile);
 
                 if (!overlordSighting && !workerSighting) {
                     continue;
@@ -679,7 +710,8 @@ public class Scouting {
 
         if (!overlordHeading
                 && (mapInfo.getBaseTiles().contains(headingEnd.toTilePosition())
-                || mapInfo.getNaturalTiles().contains(headingEnd.toTilePosition()))) {
+                || mapInfo.getNaturalTiles().contains(headingEnd.toTilePosition())
+                || inStartingMainOrNatural(headingEnd.toTilePosition()))) {
             return;
         }
 

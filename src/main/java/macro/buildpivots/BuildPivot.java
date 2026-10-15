@@ -16,6 +16,8 @@ import util.Time;
 
 public abstract class BuildPivot {
     protected boolean rushActive = false;
+    protected boolean naturalDepotKilled = false;
+    protected boolean naturalDepotPushOver = false;
     protected HashSet<EnemyStrategyName> enemyStrategies = new HashSet<>();
 
     public abstract BuildPivotName getBuildPivotName();
@@ -50,6 +52,10 @@ public abstract class BuildPivot {
         return new HashMap<>();
     }
 
+    public HashSet<UnitType> getRushUnitTypes() {
+        return new HashSet<>();
+    }
+
     public int getGasWorkerTarget(int totalGasGathered, HashSet<Unit> allBuildings) {
         return 3;
     }
@@ -60,6 +66,22 @@ public abstract class BuildPivot {
 
     public void setRushActive(boolean rushActive) {
         this.rushActive = rushActive;
+    }
+
+    public boolean isNaturalDepotKilled() {
+        return naturalDepotKilled;
+    }
+
+    public void setNaturalDepotKilled(boolean naturalDepotKilled) {
+        this.naturalDepotKilled = naturalDepotKilled;
+    }
+
+    public boolean isNaturalDepotPushOver() {
+        return naturalDepotPushOver;
+    }
+
+    public void setNaturalDepotPushOver(boolean naturalDepotPushOver) {
+        this.naturalDepotPushOver = naturalDepotPushOver;
     }
 
 }
