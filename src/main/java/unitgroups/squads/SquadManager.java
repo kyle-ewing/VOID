@@ -232,7 +232,8 @@ public class SquadManager {
         ChokePoint naturalChoke = gamestate.getBaseInfo().getNaturalChoke();
         if (naturalChoke != null && naturalChoke.getCenter() != null) {
             for (EnemyUnits enemy : enemyInformation.getEnemyUnits()) {
-                if (enemy.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode || enemy.getEnemyPosition() == null) {
+                if ((enemy.getEnemyType() != UnitType.Terran_Siege_Tank_Siege_Mode && enemy.getEnemyType() != UnitType.Terran_Siege_Tank_Tank_Mode)
+                        || enemy.getEnemyPosition() == null) {
                     continue;
                 }
 

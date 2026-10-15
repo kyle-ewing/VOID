@@ -28,7 +28,6 @@ import information.enemy.enemyopeners.EnemyStrategyName;
 import information.enemy.enemytechbuildings.EnemyTechBuilding;
 import information.enemy.enemytechunits.EnemyTechUnits;
 import information.enemy.enemytechunits.SiegeTank;
-import macro.buildorders.BuildOrder;
 import macro.buildorders.BuildType;
 import map.BuildTiles;
 import map.TilePositionValidator;
@@ -58,7 +57,6 @@ public class ProductionManager {
     private HashSet<Position> excludedBuildZones = new HashSet<>();
     private HashMap<PlannedItem, Integer> deferredPriorities = new HashMap<>();
     private PriorityQueue<PlannedItem> productionQueue;
-    private BuildOrder startingOpener;
     private UnitProduction unitProduction;
     private ExpansionCriteria expansionCriteria;
     private TilePosition bunkerPosition = null;
@@ -79,7 +77,6 @@ public class ProductionManager {
         productionBuildings = gameState.getProductionBuildings();
         allBuildings = gameState.getAllBuildings();
         buildTiles = gameState.getBuildTiles();
-        startingOpener = gameState.getStartingOpener();
         bunkerPosition = gameState.getBunkerPosition();
 
         tilePositionValidator = new TilePositionValidator(game);
@@ -1110,7 +1107,7 @@ public class ProductionManager {
             return;
         }
 
-        Base best = mapInfo.scoredBestExpansion(startingOpener.getBuildOrderName(), gameState.getKnownEnemyUnits());
+        Base best = mapInfo.scoredBestExpansion(gameState.getStartingOpener().getBuildOrderName(), gameState.getKnownEnemyUnits());
         if (best == null) {
             return;
         }
@@ -1310,7 +1307,7 @@ public class ProductionManager {
             }
         }
 
-        if (startingOpener.buildType() == BuildType.MECH) {
+        if (gameState.getStartingOpener().buildType() == BuildType.MECH) {
             boolean factoryActiveOrComplete = unitTypeCount.get(UnitType.Terran_Factory) > 0 ||
                 productionQueue.stream().anyMatch(pi -> pi.getUnitType() == UnitType.Terran_Factory &&
                     (pi.getPlannedItemStatus() == PlannedItemStatus.SCV_ASSIGNED ||

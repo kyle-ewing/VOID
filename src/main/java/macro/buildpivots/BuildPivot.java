@@ -17,6 +17,7 @@ import util.Time;
 public abstract class BuildPivot {
     protected boolean rushActive = false;
     protected boolean naturalDepotKilled = false;
+    protected boolean naturalDepotPushOver = false;
     protected HashSet<EnemyStrategyName> enemyStrategies = new HashSet<>();
 
     public abstract BuildPivotName getBuildPivotName();
@@ -73,6 +74,14 @@ public abstract class BuildPivot {
 
     public void setNaturalDepotKilled(boolean naturalDepotKilled) {
         this.naturalDepotKilled = naturalDepotKilled;
+    }
+
+    public boolean isNaturalDepotPushOver() {
+        return naturalDepotPushOver;
+    }
+
+    public void setNaturalDepotPushOver(boolean naturalDepotPushOver) {
+        this.naturalDepotPushOver = naturalDepotPushOver;
     }
 
 }

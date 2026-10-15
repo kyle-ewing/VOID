@@ -5,6 +5,7 @@ import java.util.HashSet;
 import bwapi.Race;
 import information.enemy.EnemyInformation;
 import macro.buildorders.protoss.OneFacFE;
+import macro.buildorders.random.RandomStub;
 import macro.buildorders.terran.GoliathFE;
 import macro.buildorders.zerg.FactoryExpand;
 import macro.buildorders.zerg.TwoRaxAcademy;
@@ -54,7 +55,7 @@ public class BuildOrderManager {
         zergOpeners.add(new FactoryExpand());
 
         //Random
-        randomOpeners.add(new TwoRaxAcademy());
+        randomOpeners.add(new RandomStub());
 
     }
 

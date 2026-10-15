@@ -15,6 +15,8 @@ public class CCFirst extends  EnemyStrategy {
     private boolean barracksUnitSeenEarly = false;
     private int earliestBarracksStartFrame = Integer.MAX_VALUE;
     private int naturalCCStartFrame = Integer.MAX_VALUE;
+    private int naturalCCSeenFrame = -1;
+    private boolean enemyMainCCSeen = false;
 
     public CCFirst(MapInfo mapInfo) {
         super(EnemyStrategyName.CCFIRST);
@@ -31,7 +33,12 @@ public class CCFirst extends  EnemyStrategy {
             return false;
         }
 
+        if (enemyUnits.stream().anyMatch(eu -> eu.getEnemyType() == UnitType.Terran_Bunker)) {
+            return false;
+        }
+
         Base enemyNatural = mapInfo.getEnemyNatural();
+        Base enemyMain = mapInfo.getEnemyMain();
 
         for (EnemyUnits enemyUnit : enemyUnits) {
             UnitType enemyType = enemyUnit.getEnemyType();
@@ -50,7 +57,16 @@ public class CCFirst extends  EnemyStrategy {
                 continue;
             }
 
-            if (enemyNatural == null || enemyUnit.getEnemyPosition() == null) {
+            if (enemyUnit.getEnemyPosition() == null) {
+                continue;
+            }
+
+            if (enemyMain != null && enemyMain.getLocation().getApproxDistance(enemyUnit.getEnemyPosition().toTilePosition()) < 10) {
+                enemyMainCCSeen = true;
+                continue;
+            }
+
+            if (enemyNatural == null) {
                 continue;
             }
 
@@ -61,16 +77,23 @@ public class CCFirst extends  EnemyStrategy {
             naturalCCStartFrame = Math.min(naturalCCStartFrame, startFrame);
         }
 
-        if (naturalCCStartFrame == Integer.MAX_VALUE || earliestBarracksStartFrame == Integer.MAX_VALUE) {
+        if (naturalCCStartFrame == Integer.MAX_VALUE) {
             return false;
+        }
+
+        if (naturalCCSeenFrame < 0) {
+            naturalCCSeenFrame = time.getFrames();
         }
 
         if (earliestBarracksStartFrame < naturalCCStartFrame) {
             return false;
         }
 
-        if (time.lessThanOrEqual(new Time(3, 49))
-                && enemyUnits.stream().map(EnemyUnits::getEnemyType).noneMatch(ut -> ut == UnitType.Terran_Bunker)) {
+        if (!enemyMainCCSeen && time.getFrames() - naturalCCSeenFrame < new Time(0, 10).getFrames()) {
+            return false;
+        }
+
+        if (time.lessThanOrEqual(new Time(3, 49))) {
             return true;
         }
 

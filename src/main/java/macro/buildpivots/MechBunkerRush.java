@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import bwapi.Race;
 import bwapi.TechType;
+import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import information.enemy.EnemyUnits;
@@ -17,6 +18,7 @@ import planner.PlannedItemType;
 import util.Time;
 
 public class MechBunkerRush extends BuildPivot {
+    private boolean gasThrottleLifted = false;
 
     public MechBunkerRush() {
         rushActive = true;
@@ -33,11 +35,11 @@ public class MechBunkerRush extends BuildPivot {
         buildOrder.add(new PlannedItem(UnitType.Terran_Barracks, 11, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Refinery, 12, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 16, PlannedItemType.BUILDING, 1));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 17, PlannedItemType.BUILDING, 1, true));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 19, PlannedItemType.BUILDING, 1, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Command_Center, 23, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 24, PlannedItemType.BUILDING, 1));
         buildOrder.add(new PlannedItem(UnitType.Terran_Engineering_Bay, 25, PlannedItemType.BUILDING, 2));
-        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 17, PlannedItemType.ADDON, 3));
+        buildOrder.add(new PlannedItem(UnitType.Terran_Machine_Shop, 19, PlannedItemType.ADDON, 3));
         buildOrder.add(new PlannedItem(UnitType.Terran_Armory, 27, PlannedItemType.BUILDING, 2));
         buildOrder.add(new PlannedItem(UnitType.Terran_Factory, 29, PlannedItemType.BUILDING, 2, true));
         buildOrder.add(new PlannedItem(UnitType.Terran_Supply_Depot, 36, PlannedItemType.BUILDING, 1));
@@ -54,18 +56,11 @@ public class MechBunkerRush extends BuildPivot {
 
     public HashMap<UnitType, Integer> getMoveOutCondition(Time time, HashSet<EnemyUnits> enemyUnits, float enemySupplyLost) {
         HashMap<UnitType, Integer> moveOutCondition = new HashMap<>();
-        float enemyArmySupply = 0;
-        for (EnemyUnits enemyUnit : enemyUnits) {
-            if (enemyUnit.getEnemyType().isWorker() || enemyUnit.getEnemyType().isBuilding()) {
-                continue;
-            }
-            enemyArmySupply += enemyUnit.getEnemyType().supplyRequired() / 2.0f;
-        }
 
         if (time.lessThanOrEqual(new Time(5, 0)) && rushActive) {
             moveOutCondition.put(UnitType.Terran_Marine, 1);
         }
-        else if (time.lessThanOrEqual(new Time(6, 30)) && naturalDepotKilled && enemyArmySupply < 4) {
+        else if (naturalDepotKilled && !naturalDepotPushOver) {
             moveOutCondition.put(UnitType.Terran_Marine, 1);
         }
         else if (enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Starport).count() > 1 && time.lessThanOrEqual(new Time(6, 0))) {
@@ -120,6 +115,27 @@ public class MechBunkerRush extends BuildPivot {
         requiredBuildings.put(UnitType.Terran_Refinery, 1);
         requiredBuildings.put(UnitType.Terran_Factory, 1);
         return requiredBuildings;
+    }
+
+    @Override
+    public int getGasWorkerTarget(int totalGasGathered, HashSet<Unit> allBuildings) {
+        if (gasThrottleLifted) {
+            return 3;
+        }
+
+        boolean factoryComplete = allBuildings.stream()
+            .anyMatch(b -> b.getType() == UnitType.Terran_Factory && b.isCompleted());
+
+        if (factoryComplete) {
+            gasThrottleLifted = true;
+            return 3;
+        }
+
+        if (totalGasGathered >= 100) {
+            return 1;
+        }
+
+        return 3;
     }
 
     @Override

@@ -46,7 +46,8 @@ public class FourRax extends  EnemyStrategy {
                         && (mapInfo.getEnemyMain() == null || enemyUnit.getEnemyPosition().getDistance(mapInfo.getEnemyMain().getCenter()) >= 900)
                     || enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Marine).count() >= 2 && time.lessThanOrEqual(new Time(2, 45))
                         && (mapInfo.getEnemyMain() == null || mapInfo.getEnemyMain().getCenter() == null || enemyUnit.getEnemyPosition().getDistance(mapInfo.getEnemyMain().getCenter()) >= 900)
-                    || enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Marine).count() >= 3 && time.lessThanOrEqual(new Time(3, 5)))) {
+                    || enemyUnits.stream().filter(type -> type.getEnemyType() == UnitType.Terran_Marine).count() >= 3 && time.lessThanOrEqual(new Time(3, 5))
+                        && (mapInfo.getEnemyMain() == null || mapInfo.getEnemyMain().getCenter() == null || enemyUnit.getEnemyPosition().getDistance(mapInfo.getEnemyMain().getCenter()) >= 500))) {
                     return true;
             }
         }

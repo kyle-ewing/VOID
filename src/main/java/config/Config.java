@@ -42,7 +42,7 @@ public final class Config {
 
     // Production and planning
     public boolean debugProductionQueue = false;
-    public boolean debugProdQueueOutput = true;
+    public boolean debugProdQueueOutput = false;
 
     public Config() {
         // HUD and general info

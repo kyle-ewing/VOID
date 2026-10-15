@@ -229,7 +229,7 @@ public class WorkerManager {
                     }
 
                     Unit attackDamaged = null;
-                    if (pulledScvs.contains(worker) && naturalBunker != null
+                    if (pulledScvs.contains(worker) && naturalBunker != null && naturalBunker.isCompleted()
                             && naturalBunker.getHitPoints() < naturalBunker.getType().maxHitPoints()) {
                         attackDamaged = naturalBunker;
                     }
